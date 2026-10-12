@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Power & Charging</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC"}, {"file": "modem.html", "short": "5G modem"}, {"file": "transceiver.html", "short": "RF transceiver"}, {"file": "rf-front-end.html", "short": "RF front-end"}, {"file": "antennas.html", "short": "Antennas & tuning"}, {"file": "gnss.html", "short": "GNSS"}, {"file": "mmwave.html", "short": "mmWave"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth"}, {"file": "nfc-uwb.html", "short": "NFC & UWB"}, {"file": "power.html", "short": "Power & charging"}];
+const PAGE={
+file:"power.html",title:"Power & Charging",kicker:"Battery · charger · PMICs · envelope tracking",
+lede:"Every chip in the phone runs from one battery through a tree of converters. Charge pumps fill the battery quickly with little heat, PMICs generate dozens of tightly regulated rails, and envelope trackers give the RF power amplifiers their own fast-moving supply.",
+cost:["$20–35","Battery cell, charger ICs, PMICs, ET trackers"],
+stats:[["Battery","≈ 4,500–7,000 mAh"],["Wired charging","45–120 W"],["Wireless","Qi2 15–25 W"],["Supply rails","≈ 40–60"],["Charge pump efficiency","≈ 97–98%"]],
+diagram:{cols:7,rows:5,cw:128,
+ caption:"Power flows left to right: from USB-C or the wireless coil into the battery, then through the PMICs to every load.",
+ intro:"Charging paths are on the left, the battery in the middle, and the regulators that feed each part of the phone on the right. Dotted orange lines carry power; dotted grey lines carry control.",
+ groups:[[1,0,2,4,"Charging"],[4,0,4,3,"Power management"]],
+ blocks:[
+  ["usb",0,0,1,1,"USB-C VBUS","","ext","5–20 V"],
+  ["ovp",1,0,1,1,"OVP + load switch","sw"],
+  ["cp",2,0,1,1,"Charge pump 2:1 / 4:1","pwr","hl","≈ 97–98%"],
+  ["qi",0,2,1,1,"Qi2 coil + magnet ring","coil","ext"],
+  ["wrx",1,2,1,1,"Wireless RX IC","pwr","","rectifier"],
+  ["buck",2,2,1,1,"Buck charger","pwr","","CC / CV"],
+  ["bat",3,0,1,4,"Battery cell","bat","hl","Si-C anode"],
+  ["main",4,0,1,1,"Main PMIC","pwr","","multi-phase"],
+  ["sub",4,1,1,1,"Sub-PMIC","pwr","","LDO bank"],
+  ["et",4,2,1,1,"ET trackers","pwr","","PA supply"],
+  ["dpm",4,3,1,1,"Display / camera PMIC","pwr"],
+  ["socr",5,0,2,1,"SoC rails: CPU, GPU, NPU, memory","","ext"],
+  ["rfr",5,1,2,1,"RF, sensor and audio rails","","ext"],
+  ["pas",5,2,2,1,"Power amplifiers (LB, MHB, UHB)","","ext"],
+  ["dcr",5,3,2,1,"OLED, camera sensors and actuators","","ext"],
+  ["cc",0,4,1,1,"USB-C CC lines","","ext"],
+  ["pd",1,4,1,1,"USB PD controller","cpu","","PPS"],
+  ["fg",3,4,1,1,"Fuel gauge + protection","cpu"],
+  ["spmi",5,4,1,1,"SoC power manager","cpu","ext","SPMI"]
+ ],
+ edges:[
+  ["usb","ovp","pwr"],["ovp","cp","pwr"],["cp","bat","pwr"],["qi","wrx","pwr"],["wrx","buck","pwr"],["buck","bat","pwr"],
+  ["bat","main","pwr"],["bat","sub","pwr"],["bat","et","pwr"],["bat","dpm","pwr"],
+  ["main","socr","pwr"],["sub","rfr","pwr"],["et","pas","pwr"],["dpm","dcr","pwr"],
+  ["cc","pd","ctl"],["pd","cp","ctl",null,4],["bat","fg","ctl"],["spmi","dpm","ctl"]
+ ],
+ desc:{
+  usb:"USB Power Delivery negotiates 5 to 20 V; PPS lets the phone request voltage in 20 mV steps.",
+  ovp:"Protects against overvoltage and cuts the input when the cable is unplugged or a fault occurs.",
+  cp:"Switched-capacitor converter that divides the input voltage by 2 or 4. The adapter controls the current, so the phone stays cool while charging at high power.",
+  qi:"Receive coil with a magnet ring that aligns the phone on Qi2 chargers.",
+  wrx:"Rectifies the 100–200 kHz AC from the coil and handles Qi communication.",
+  buck:"Inductor-based charger that controls constant-current and constant-voltage phases for slow and wireless charging.",
+  bat:"Single Li-ion cell (or two in series for 100 W+). Silicon-carbon anodes raise energy density in 2025–26 phones.",
+  main:"Multi-phase buck converters supplying several amps each to CPU, GPU and NPU rails, with voltage set many times per second.",
+  sub:"Many low-dropout regulators for noise-sensitive rails such as RF, PLLs and sensors.",
+  et:"Envelope tracking supplies that follow the RF envelope to raise PA efficiency.",
+  dpm:"Supplies the OLED panel (positive and negative rails), camera sensors and autofocus actuators.",
+  socr:"The largest loads in the phone.",rfr:"Clean, low-noise supplies.",pas:"Up to about 1.5 A peak at high power.",dcr:"Display and camera loads.",
+  cc:"USB-C configuration channel used for PD negotiation.",
+  pd:"Negotiates voltage and current with the adapter and tells the charge pump which mode to use.",
+  fg:"Measures charge in and out, estimates state of charge and health, and protects the cell from over-charge, over-discharge and over-temperature.",
+  spmi:"Sets regulator voltages and reads status over the SPMI bus."
+ }},
+how:[
+ ["Fast charging without heat",["Charging a 5,000 mAh cell at 80 W means about 18 A at the cell voltage. Carrying that through a USB-C cable would be impractical, so the adapter sends a higher voltage at lower current and the phone's charge pump divides the voltage by 2 or 4 with very little loss.","Because a charge pump only divides, the adapter must adjust its output in fine steps (USB PD PPS) to set the exact charging current. This direct-charging approach keeps most of the conversion heat in the adapter instead of the phone."]],
+ ["Regulating dozens of rails",["Different parts of the phone need different voltages: around 0.5–1.0 V for CPU cores, 1.8 V for I/O, clean low-noise rails for RF, and over 7 V for the OLED panel. Two to four PMICs generate them, placed close to their loads to keep resistive losses low.","CPU and GPU rails use multi-phase buck converters that can respond to load steps of several amps within microseconds. The SoC changes their voltages constantly through dynamic voltage and frequency scaling."]],
+ ["Envelope tracking",["A cellular PA with a fixed supply wastes most of its power when the signal is below peak, which is most of the time for 5G waveforms. An envelope tracker makes the PA supply follow the signal's amplitude, keeping the transistor near its efficient operating point.","The tracker combines a fast linear amplifier with a switching converter, and its timing must line up with the RF signal to within a few nanoseconds."]],
+ ["Battery management",["The fuel gauge counts charge in and out (coulomb counting) and combines it with a model of the cell to estimate remaining capacity. Charging slows near full and adapts to temperature and cell age to preserve battery health.","Protection circuits disconnect the cell on over-voltage, over-current or over-temperature faults."]]
+],
+arch:[
+ ["Charge pump direct charging","Adapter-controlled current, phone divides voltage.","Highest efficiency at high power.","Most fast-charging phones"],
+ ["Buck charger","Inductor-based converter in the phone.","Universal and simple; more heat at high power.","Slow and wireless charging"],
+ ["Two cells in series","Battery split into two series cells.","Faster charging; slight capacity loss.","100 W+ phones"],
+ ["Central vs distributed PMIC","One big PMIC vs several near loads.","Distributed has lower losses and better transients.","Distributed in flagships"],
+ ["On-die regulators","Digital LDOs inside the SoC per domain.","Very fast, fine-grained control.","Growing on CPU clusters"],
+ ["ET vs APT for PAs","Real-time envelope supply vs slot-level supply.","ET more efficient at high power.","Both, by power level"]
+],
+chal:[
+ ["Heat while charging","Charging heat adds to SoC and RF heat; charging speed is throttled by skin temperature."],
+ ["Load transients","CPU load steps of several amps in nanoseconds can cause voltage droop and crashes without fast regulators and capacitance."],
+ ["RF noise","Switching converters create spurs that can land in receive bands; frequency planning and LDO filtering prevent desense."],
+ ["Battery aging","Fast charging and heat accelerate capacity loss; adaptive charging slows the last few percent."],
+ ["Safety","Cells store a lot of energy; multiple independent protection layers are required."]
+],
+specs:[["Battery","≈ 4,500–7,000 mAh, Li-ion"],["Wired charging","45–120 W (USB PD 3.1, PPS)"],["Wireless charging","Qi2 15–25 W"],["Charge pump efficiency","≈ 97–98%"],["Main PMIC","Multi-phase bucks, ≈ 6–10 A per rail"],["LDOs","≈ 20–40"],["Control bus","SPMI"],["ET bandwidth","≥ 100 MHz envelope"]],
+parts:[["PMICs","Qualcomm, MediaTek, Samsung","Matched to SoC"],["Charge pumps","TI, Southchip, NuVolta, Halo","2:1 / 4:1"],["Wireless RX","Renesas (IDT), NuVolta, ST","Qi2"],["USB PD controllers","TI, Infineon, NXP","PPS"],["Fuel gauges","TI, Maxim (ADI)","Coulomb counting"],["Battery cells","ATL, BYD, Samsung SDI, LG","Si-C anodes"],["ET trackers","Qualcomm, Qorvo","For PAs"]]
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const idx=PAGES.findIndex(p=>p.file===PAGE.file);
+const prev=PAGES[(idx-1+PAGES.length)%PAGES.length],next=PAGES[(idx+1)%PAGES.length];
+let h=`<div class="top"><a class="home" href="${HOME}">← Phone block diagram</a><nav class="modnav" aria-label="Module pages">${PAGES.map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</nav></div>
+<header class="hdr"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+<div class="costbox"><span class="label">Typical cost per phone</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div></header>
+<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>
+<nav class="toc" aria-label="On this page"><span class="label">On this page</span><a href="#diagram">Block diagram</a><a href="#how">How it works</a><a href="#arch">Architectures</a><a href="#chal">Design challenges</a><a href="#specs">Specifications</a><a href="#parts">Parts &amp; vendors</a></nav>
+<section class="blk" id="diagram"><div class="bh"><h2>Internal block diagram</h2><p>${esc(PAGE.diagram.caption)} Click or tab to a block for details.</p></div><div class="scroll"><svg class="sch" id="sch"></svg></div>
+<div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div></section>
+<section class="blk" id="how"><div class="bh"><h2>How it works</h2></div><div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div></section>
+<section class="blk" id="arch"><div class="bh"><h2>Architecture options</h2><p>The main design choices and where each one is used.</p></div><div class="tw"><table class="atbl"><thead><tr><th>Architecture</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div></section>
+<section class="blk" id="chal"><div class="bh"><h2>Design challenges</h2></div><div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div></section>
+<div class="two">
+<section class="blk" id="specs"><div class="bh"><h2>Key specifications</h2></div><div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div></section>
+<section class="blk" id="parts"><div class="bh"><h2>Parts &amp; vendors</h2><p>Representative examples; exact parts vary by phone and region.</p></div><div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div></section>
+</div>
+<nav class="pn" aria-label="Previous and next module"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}`;
+}
+focus(null);
+document.getElementById("leg").innerHTML=[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>

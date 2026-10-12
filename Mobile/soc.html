@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Application SoC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC"}, {"file": "modem.html", "short": "5G modem"}, {"file": "transceiver.html", "short": "RF transceiver"}, {"file": "rf-front-end.html", "short": "RF front-end"}, {"file": "antennas.html", "short": "Antennas & tuning"}, {"file": "gnss.html", "short": "GNSS"}, {"file": "mmwave.html", "short": "mmWave"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth"}, {"file": "nfc-uwb.html", "short": "NFC & UWB"}, {"file": "power.html", "short": "Power & charging"}];
+const PAGE={
+file:"soc.html",title:"Application SoC",kicker:"System-on-chip · 3 nm class",
+lede:"One die runs the operating system, apps, graphics, AI, camera processing and the 5G modem baseband. Everything else in the phone either feeds it data or keeps it powered.",
+cost:["$190–280","Largest single item in the bill of materials; includes the modem baseband"],
+stats:[["Process","N3P / SF3 class"],["Transistors","≈ 20–30 billion"],["Die area","≈ 120–150 mm²"],["CPU","8 cores, up to ≈ 4.6 GHz"],["Memory","LPDDR5X, ≈ 85 GB/s"]],
+diagram:{cols:8,rows:5,cw:122,
+ caption:"Compute engines on top share a network-on-chip with the memory system, modem and I/O. Off-chip parts sit on the right and bottom.",
+ intro:"The dashed outline is the SoC die. The orange bar is the network-on-chip that every engine uses to reach memory. Dashed grey blocks are separate chips on the board.",
+ groups:[[0,0,6,3,"Application SoC die"]],
+ blocks:[
+  ["cpup",0,0,1,1,"CPU prime cores","cpu","","2 × ≈4.6 GHz"],
+  ["cpue",1,0,1,1,"CPU perf cores","cpu","","6 × ≈3.6 GHz"],
+  ["gpu",2,0,1,1,"GPU","dsp","","shaders + RT"],
+  ["npu",3,0,1,1,"NPU","dsp","","INT4 / INT8"],
+  ["dsp",4,0,1,1,"Sensor & audio DSP","dsp","","always-on"],
+  ["disp",5,0,1,1,"Display & video","dsp","","AV1 · DSC"],
+  ["isp",6,0,1,1,"ISP","dsp","","3 × 18-bit"],
+  ["cam",7,0,1,1,"Camera sensors","","ext","MIPI C-PHY"],
+  ["noc",0,1,7,1,"Network-on-chip (coherent fabric with QoS)","","bus"],
+  ["slc",0,2,1,1,"System cache (SLC)","mem","","≈ 8–16 MB"],
+  ["memc",1,2,1,1,"Memory controller","cpu","","4 × 16-bit"],
+  ["modem",2,2,2,1,"5G modem baseband","dsp","hl","Rel-18 · 12.5 Gbps DL"],
+  ["sec",4,2,1,1,"Secure enclave","lock","","keys · biometrics"],
+  ["pmu",5,2,1,1,"Power manager (AOP)","cpu","","DVFS · boot"],
+  ["io",6,2,1,1,"High-speed I/O","","","PCIe · UFS · USB"],
+  ["ioext",7,2,1,1,"UFS · Wi-Fi · USB","","ext"],
+  ["clk",0,3,1,1,"Clocks & PLLs","osc"],
+  ["ddrphy",1,3,1,1,"LPDDR5X PHY","","","≈ 10.7 Gbps/pin"],
+  ["ser",2,3,1,1,"Serial IQ link","","","to transceiver"],
+  ["gnss",3,3,1,1,"GNSS engine","dsp","","L1 + L5"],
+  ["spmi",5,3,1,1,"SPMI master","","","PMIC control"],
+  ["dsi",6,3,1,1,"MIPI DSI PHY","","","+ DSC"],
+  ["panel",7,3,1,1,"OLED panel","","ext"],
+  ["xo",0,4,1,1,"XO 38.4 / 76.8 MHz","osc","ext"],
+  ["dram",1,4,1,1,"LPDDR5X DRAM","mem","ext","12–16 GB"],
+  ["trx",2,4,1,1,"RF transceiver","","ext"],
+  ["gfe",3,4,1,1,"GNSS front end","","ext"],
+  ["pmic",5,4,1,1,"PMICs","pwr","ext"]
+ ],
+ edges:[
+  ["cpup","noc","bus"],["cpue","noc","bus"],["gpu","noc","bus"],["npu","noc","bus"],["dsp","noc","bus"],["disp","noc","bus"],["isp","noc","bus"],
+  ["noc","slc","bus"],["noc","modem","bus"],["noc","sec","bus"],["noc","io","bus"],["noc","pmu","bus"],
+  ["slc","memc","dig"],["memc","ddrphy","dig"],["ddrphy","dram","dig","x64"],
+  ["cam","isp","dig","CSI-2"],["io","ioext","dig","PCIe"],
+  ["modem","ser","dig"],["ser","trx","dig","IQ"],["gfe","gnss","rf"],["gnss","modem","dig"],
+  ["xo","clk","lo"],["pmu","spmi","ctl"],["spmi","pmic","ctl"],["dsi","panel","dig"]
+ ],
+ desc:{
+  cpup:"Two prime cores with the widest pipelines and largest caches. They run the critical thread of whatever the user is doing (app launch, page load, game logic) at the highest clock the thermal budget allows.",
+  cpue:"Six performance cores for multithreaded work. In all-big-core designs they also handle background tasks at low voltage instead of separate efficiency cores.",
+  gpu:"Tile-based or hybrid-binning GPU with ray-tracing units. Renders UI and games and runs some compute shaders.",
+  npu:"Neural processing unit with tensor, vector and scalar engines and its own SRAM. Runs on-device language models, camera segmentation, speech recognition.",
+  dsp:"Low-power island that stays on while the CPU sleeps. Runs sensor fusion, step counting, wake-word detection and audio processing.",
+  disp:"Composes display layers, applies HDR tone mapping and compresses frames with DSC for the panel. Also contains the hardware video encoders and decoders.",
+  isp:"Image signal processor: three parallel pipelines take raw Bayer data from the camera sensors and produce finished frames (HDR merge, demosaic, noise reduction, tone mapping).",
+  cam:"Main, ultra-wide and telephoto sensors, each streaming raw data over MIPI C-PHY or D-PHY.",
+  noc:"Packet-switched fabric linking every engine to memory and to each other. Quality-of-service rules make sure the display, camera and modem never miss a deadline even when the GPU is saturating bandwidth.",
+  slc:"Last-level cache shared by all engines. Every hit here saves a DRAM access, which costs roughly ten times more energy.",
+  memc:"Schedules reads and writes across four LPDDR5X channels, reordering requests to keep DRAM banks busy and enforcing QoS.",
+  modem:"The 5G baseband: PHY accelerators, DSPs and the protocol-stack CPU. It has its own page.",
+  sec:"Isolated processor with private memory and fused keys. Stores biometric templates, payment tokens and DRM keys, and verifies the boot chain.",
+  pmu:"An always-on microcontroller that boots the chip, runs the DVFS loop for every domain, and handles sleep and wake.",
+  io:"PHYs and controllers for PCIe (Wi-Fi chip), UFS (storage), USB and camera/display interfaces.",
+  ioext:"Storage, the Wi-Fi/Bluetooth chip and the USB-C port.",
+  clk:"PLLs that turn the crystal reference into every on-chip clock, from the 32 kHz sleep clock to multi-GHz CPU clocks.",
+  ddrphy:"Analog interface that drives the LPDDR5X bus. At boot it trains timing and voltage for each data lane.",
+  ser:"High-speed serial lanes carrying digitized IQ samples between the modem and the RF transceiver.",
+  gnss:"Correlators and navigation engine for GPS, Galileo, BeiDou, GLONASS, QZSS and NavIC. Has its own page.",
+  spmi:"Two-wire System Power Management Interface used to set PMIC voltages and read their status.",
+  dsi:"MIPI DSI transmitter that sends compressed frames to the display driver IC.",
+  panel:"LTPO OLED panel with its own display driver IC and touch controller.",
+  xo:"Crystal oscillator (or TCXO) that is the frequency reference for the SoC and the RF transceiver.",
+  dram:"LPDDR5X stacked on top of the SoC (PoP) or placed beside it.",
+  trx:"The RF transceiver chip. Has its own page.",
+  gfe:"External GNSS LNA and SAW filters.",
+  pmic:"Two to four power-management ICs supplying dozens of rails."
+ }},
+how:[
+ ["Heterogeneous compute",["Instead of one big processor, the SoC holds several engines tuned for different work: CPU cores for branchy, sequential code, a GPU for parallel graphics, an NPU for matrix math, an ISP for pixel pipelines and DSPs for always-on signal processing. Running a task on the engine built for it can be 10–100 times more energy-efficient than running it on the CPU.","The operating system scheduler and vendor frameworks decide where work runs. A camera capture, for example, passes through the ISP, then the NPU for segmentation, then the GPU for preview, with the CPU only coordinating."]],
+ ["Memory hierarchy",["Each CPU cluster has private L1 and L2 caches. All engines share the system-level cache, and beyond that the LPDDR5X DRAM. Bandwidth, not compute, limits many workloads: a large language model must stream all of its weights from DRAM for every token, so tokens per second is roughly bandwidth divided by model size.","The memory controller interleaves addresses across four 16-bit channels and many banks so several requests proceed in parallel."]],
+ ["Power and thermal control",["Every block is its own power domain that can be clock-gated or fully power-gated. Dynamic voltage and frequency scaling (DVFS) lowers voltage whenever full speed is not needed; because dynamic power scales with voltage squared, small voltage drops save a lot.","A phone can only shed about 5–8 W of heat continuously through its frame and glass. Thermal sensors across the die feed a governor that throttles clocks before the skin gets uncomfortable, which is why sustained benchmark scores are lower than peak ones."]],
+ ["Physical implementation",["The die is built on the most advanced logic node available, with gate-all-around or advanced FinFET transistors. High-density SRAM, analog PHYs and the modem's mixed-signal parts each need their own design rules.","It is flip-chip bonded to a thin substrate. DRAM is either stacked on top (package-on-package) or placed next to it. Side-by-side placement is growing because it lets the SoC touch the vapor chamber directly."]]
+],
+arch:[
+ ["Integrated modem SoC","Modem baseband on the same die as the application processor.","Lowest power, area and cost; modem upgrades are tied to the SoC cycle.","Snapdragon 8-series, Dimensity 9000-series"],
+ ["AP + discrete modem","Separate modem chip with its own memory and package.","Vendor and node freedom; more board area and idle power.","iPhone, Google Pixel (Tensor + Exynos modem)"],
+ ["All-big-core CPU","Only high-performance cores, relying on DVFS for low-power operation.","Strong multithread performance; idle efficiency depends on voltage scaling.","Qualcomm Oryon, Dimensity 9300 onward"],
+ ["Tri-cluster big.LITTLE","Prime, performance and efficiency cores (for example 1+3+4).","Very low background power; scheduler complexity.","Exynos, Tensor, older flagships"],
+ ["Custom vs licensed cores","Own core design to the Arm ISA, or stock Arm Cortex cores.","Custom can lead on performance per watt; licensed is faster to market.","Custom: Qualcomm, Apple. Licensed: MediaTek, Samsung, Google"],
+ ["Package-on-package vs side-by-side DRAM","DRAM stacked on the SoC, or placed beside it on the board.","PoP saves area; side-by-side cools better.","Both in 2025–26 flagships"],
+ ["Chiplets","Compute and I/O on separate dies joined in one package.","Mixes process nodes and improves yield; adds package cost and height.","PCs and tablets; not yet mainstream in phones"]
+],
+chal:[
+ ["Thermal ceiling","Peak performance is limited by how much heat the phone can spread, not by transistor speed. Floorplans spread hot blocks apart and leave room for sensors."],
+ ["Memory bandwidth","On-device AI and high-refresh graphics compete for the same DRAM bandwidth. Caches, compression and QoS decide who wins."],
+ ["Power integrity","CPU load steps of several amps in nanoseconds cause voltage droop. Multi-phase regulators, on-package capacitors and adaptive clocking keep the rails stable."],
+ ["Modem coexistence","Fast digital logic generates noise that can desense the modem and GNSS. Careful clock planning and spread spectrum avoid spurs on sensitive frequencies."],
+ ["Leakage","At 3 nm, leakage is a large share of idle power. Power gating and retention flip-flops let blocks sleep without losing state."]
+],
+specs:[["Process","TSMC N3P or Samsung SF3/SF2"],["CPU","8 cores (2 prime + 6 performance)"],["Peak CPU clock","≈ 4.2–4.6 GHz"],["GPU APIs","Vulkan 1.3, OpenGL ES 3.2, OpenCL"],["NPU precision","INT4, INT8, FP16"],["Memory","LPDDR5X up to ≈ 10.7 Gbps/pin, 64-bit"],["Storage","UFS 4.x"],["Camera","Three concurrent ISPs, 8K30 / 4K120 video"],["Display","Up to 4K at 144 Hz, DSC 1.2"],["Modem","Integrated, 3GPP Rel-18, 12.5 Gbps DL"],["Sustained power","≈ 5–8 W"]],
+parts:[["Snapdragon 8 Elite-class","Qualcomm","Integrated X85-class modem, Oryon CPU"],["Dimensity 9000-series","MediaTek","All-big-core Cortex CPU, integrated modem"],["Exynos 2x00","Samsung","AMD RDNA-based GPU"],["Tensor G-series","Google","Paired with a separate modem"],["A-series / M-series","Apple","Separate modem (Qualcomm or Apple C-series)"],["LPDDR5X","Samsung, SK hynix, Micron","PoP or side-by-side"],["UFS 4.x","Samsung, Kioxia, SK hynix, Micron","Over MIPI M-PHY"]]
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const idx=PAGES.findIndex(p=>p.file===PAGE.file);
+const prev=PAGES[(idx-1+PAGES.length)%PAGES.length],next=PAGES[(idx+1)%PAGES.length];
+let h=`<div class="top"><a class="home" href="${HOME}">← Phone block diagram</a><nav class="modnav" aria-label="Module pages">${PAGES.map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</nav></div>
+<header class="hdr"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+<div class="costbox"><span class="label">Typical cost per phone</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div></header>
+<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>
+<nav class="toc" aria-label="On this page"><span class="label">On this page</span><a href="#diagram">Block diagram</a><a href="#how">How it works</a><a href="#arch">Architectures</a><a href="#chal">Design challenges</a><a href="#specs">Specifications</a><a href="#parts">Parts &amp; vendors</a></nav>
+<section class="blk" id="diagram"><div class="bh"><h2>Internal block diagram</h2><p>${esc(PAGE.diagram.caption)} Click or tab to a block for details.</p></div><div class="scroll"><svg class="sch" id="sch"></svg></div>
+<div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div></section>
+<section class="blk" id="how"><div class="bh"><h2>How it works</h2></div><div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div></section>
+<section class="blk" id="arch"><div class="bh"><h2>Architecture options</h2><p>The main design choices and where each one is used.</p></div><div class="tw"><table class="atbl"><thead><tr><th>Architecture</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div></section>
+<section class="blk" id="chal"><div class="bh"><h2>Design challenges</h2></div><div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div></section>
+<div class="two">
+<section class="blk" id="specs"><div class="bh"><h2>Key specifications</h2></div><div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div></section>
+<section class="blk" id="parts"><div class="bh"><h2>Parts &amp; vendors</h2><p>Representative examples; exact parts vary by phone and region.</p></div><div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div></section>
+</div>
+<nav class="pn" aria-label="Previous and next module"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}`;
+}
+focus(null);
+document.getElementById("leg").innerHTML=[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>

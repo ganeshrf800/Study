@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flagship Phone Block Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: schematic sheet — title block on top, signal-path selector, diagram + inspector side by side, spectrum ruler and band table below. Copper = active trace. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd;
+  --c-ant:#1d7a69; --c-tune:#3f6f78; --c-rffe:#7d4a93; --c-trx:#4054ad; --c-conn:#1f7b98; --c-soc:#3b4a5e; --c-io:#4f6b3a; --c-pwr:#9a7410;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416;
+  --c-ant:#4cc0a8; --c-tune:#79aeb8; --c-rffe:#c08ad6; --c-trx:#8b9cf0; --c-conn:#5bbcd9; --c-soc:#9eb0c8; --c-io:#9dbd7f; --c-pwr:#e2bb4f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416;
+  --c-ant:#4cc0a8; --c-tune:#79aeb8; --c-rffe:#c08ad6; --c-trx:#8b9cf0; --c-conn:#5bbcd9; --c-soc:#9eb0c8; --c-io:#9dbd7f; --c-pwr:#e2bb4f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0 16px}
+.wrap{max-width:1440px;margin:0 auto;padding-block:28px 56px;display:grid;gap:22px}
+header{display:grid;grid-template-columns:1fr auto;gap:12px 32px;align-items:end;border-bottom:2px solid var(--ink);padding-bottom:14px}
+h1{font-family:var(--display);font-stretch:68%;font-weight:800;font-size:clamp(30px,5vw,52px);line-height:.95;letter-spacing:-.01em;margin:0;text-wrap:balance;text-transform:uppercase}
+header p{margin:8px 0 0;color:var(--muted);max-width:66ch}
+.tb{font-family:var(--mono);font-size:11.5px;display:grid;grid-template-columns:auto auto;border:1px solid var(--line);background:var(--surface)}
+.tb span{padding:4px 10px;border-bottom:1px solid var(--line)}
+.tb span:nth-child(odd){color:var(--muted);border-right:1px solid var(--line);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
+.tb span:nth-last-child(-n+2){border-bottom:0}
+@media (max-width:720px){header{grid-template-columns:1fr}}
+.label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.paths{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.paths .label{margin-right:6px}
+.chip{font:500 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--copper)}
+.chip[aria-pressed="true"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+.chip.ghost{background:transparent;color:var(--muted)}
+button:focus-visible,[tabindex]:focus-visible,tr:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+@media (max-width:1100px){.main{grid-template-columns:1fr}}
+.sheet{background:var(--surface);border:1px solid var(--line);min-width:0}
+.sheet-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 18px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid var(--wire);vertical-align:middle;margin-right:6px}
+.legend i.d{border-top-style:dashed}.legend i.p{border-top-style:dotted;border-top-width:3px}
+.legend b{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px;border:1.5px solid}
+.scroll{overflow-x:auto}
+svg.dia{display:block;width:100%;min-width:980px;height:auto}
+.dia text{font-family:var(--body);fill:var(--ink)}
+.dia .sub{font-family:var(--mono);font-size:9.6px;fill:var(--muted)}
+.dia .lbl{font-size:12px;font-weight:650;font-stretch:88%}
+.dia .col{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;fill:var(--muted)}
+.node{cursor:pointer}
+.node rect{fill:color-mix(in oklab,var(--cat) 9%,var(--surface));stroke:var(--cat);stroke-width:1.2;transition:opacity .2s,stroke-width .15s}
+.node:hover rect{stroke-width:2.4}
+.node.sel rect{stroke:var(--copper);stroke-width:2.6}
+.node .pin{fill:var(--cat)}
+.soc-box{fill:none;stroke:var(--c-soc);stroke-width:1.6;stroke-dasharray:0}
+.soc-bg{fill:color-mix(in oklab,var(--c-soc) 5%,var(--surface));cursor:pointer}
+.soc-title{font-family:var(--display)!important;font-stretch:70%;font-weight:800;font-size:13px;letter-spacing:.04em}
+.link{fill:none;stroke:var(--wire);stroke-width:1.5;transition:opacity .2s}
+.link.dig{stroke-dasharray:6 3;stroke-width:1.3}
+.link.pwr{stroke-dasharray:1.5 3;stroke-width:2;stroke-linecap:round}
+.dim .node:not(.on) rect,.dim .node:not(.on) text{opacity:.28}
+.dim .link:not(.on){opacity:.15}
+.link.on{stroke:var(--copper);stroke-width:2.6;stroke-dasharray:7 5}
+.link.on.fwd{animation:flow 0.9s linear infinite}
+.link.on.rev{animation:flow 0.9s linear infinite reverse}
+.node.on rect{stroke:var(--copper);stroke-width:2}
+@keyframes flow{to{stroke-dashoffset:-24}}
+@media (prefers-reduced-motion:reduce){.link.on.fwd,.link.on.rev{animation:none}}
+aside{background:var(--surface);border:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto;min-width:0}
+@media (max-width:1100px){aside{position:static;max-height:none}}
+.insp-head{padding:14px 16px 12px;border-bottom:1px solid var(--line);display:grid;gap:4px}
+.insp-head h2{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:26px;line-height:1.05;margin:0;text-transform:uppercase;text-wrap:balance}
+.tag{justify-self:start;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--cat,var(--line));color:var(--cat,var(--muted))}
+.insp-body{padding:14px 16px 18px;display:grid;gap:14px}
+.insp-body p{margin:0}
+.insp-body h3{margin:0 0 6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+dl.spec{margin:0;display:grid;grid-template-columns:auto 1fr;font-size:13px;border-top:1px solid var(--line)}
+dl.spec dt,dl.spec dd{margin:0;padding:6px 0;border-bottom:1px solid var(--line)}
+dl.spec dt{color:var(--muted);padding-right:12px;font-family:var(--mono);font-size:11.5px}
+dl.spec dd{font-variant-numeric:tabular-nums}
+ul.parts{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.fn{font-family:var(--display);font-stretch:85%;font-size:17px;font-weight:650;line-height:1.3;margin:0}
+.cost{display:flex;gap:12px;align-items:end;justify-content:space-between;border:1px solid var(--line);background:var(--sunk);padding:10px 12px}
+.cost h3{margin:0 0 2px}
+.amt{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cq{font-size:12px;color:var(--muted);text-align:right;margin:0}
+.inner{background:var(--sunk);padding:6px;border:1px solid var(--line)}
+.isvg{display:block;width:100%;height:auto}
+.isvg .ipkg{fill:var(--surface);stroke:var(--muted);stroke-width:1;stroke-dasharray:5 3}
+.isvg .ipn{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;fill:var(--muted)}
+.isvg .ih{font-family:var(--mono);font-size:9px;letter-spacing:.12em;fill:var(--copper);font-weight:600}
+.isvg .iul{stroke:var(--copper);stroke-width:1}
+.isvg .ib{fill:var(--surface);stroke:var(--ink);stroke-width:1}
+.isvg .ib-ctl{fill:var(--sunk);stroke:var(--wire)}
+.isvg .it{font-family:var(--body);font-size:10.5px;fill:var(--ink)}
+.isvg .isep{stroke:var(--line);stroke-width:1}
+.ig{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.isvg .ia{stroke:var(--muted);stroke-width:1.2}
+.isvg .iah{fill:var(--muted)}
+.isvg .iband{fill:none;stroke:var(--wire);stroke-width:1;stroke-dasharray:2 3}
+.isvg .ictl{stroke:var(--wire);stroke-width:1;stroke-dasharray:2 3}
+.ikey{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.ikey span{display:inline-flex;align-items:center;gap:5px}
+.dia .sub.costt{fill:var(--copper);font-weight:600}
+.sheet-head .chip{padding:3px 10px;font-size:12px}
+.note{font-size:13px;background:var(--copper-soft);padding:9px 11px;border-left:3px solid var(--copper)}
+section.block{background:var(--surface);border:1px solid var(--line);min-width:0}
+section.block>.hd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
+section.block h2{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:22px;margin:0;text-transform:uppercase}
+.hd p{margin:0;color:var(--muted);font-size:13px;max-width:70ch}
+svg.ruler{display:block;width:100%;min-width:760px;height:auto}
+.ruler text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.ruler .lane{font-family:var(--body);font-size:11.5px;font-weight:650;fill:var(--ink)}
+.bar{cursor:pointer;transition:opacity .2s}
+.ruler.dim .bar:not(.on){opacity:.18}
+.bar.on rect{stroke:var(--copper);stroke-width:1.6}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk);position:sticky;top:0}
+td.num{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.b{font-weight:700;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--sunk)}
+tbody tr.on{background:var(--copper-soft)}
+.ft{display:inline-block;font-family:var(--mono);font-size:11px;padding:1px 6px;border:1px solid var(--line);margin:0 4px 2px 0;white-space:nowrap}
+.tblwrap{overflow:auto;max-height:520px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border-top:1px solid var(--line)}
+.filters div{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px;min-width:0}
+.filters b{display:block;font-family:var(--display);font-stretch:75%;font-size:16px;text-transform:uppercase}
+.filters .r{font-family:var(--mono);font-size:11px;color:var(--copper)}
+.modpages{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modpages .label{margin-right:6px}
+.modpages a{font-size:13px;text-decoration:none;color:var(--ink);border:1px solid var(--ink);background:var(--surface);padding:5px 11px}
+.modpages a:hover{background:var(--ink);color:var(--surface)}
+.pagelink{justify-self:start;font-weight:650;font-size:14px;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.pagelink:hover{border-bottom-width:3px}
+.dnav{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.dnav .chip{padding:4px 10px;font-size:12.5px}
+.deeplink{justify-self:start;font-size:12.5px}
+.dgrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:0}
+@media (max-width:1000px){.dgrid{grid-template-columns:1fr}}
+.dmain{padding:16px 18px 20px;border-right:1px solid var(--line);display:grid;gap:10px;align-content:start;min-width:0}
+@media (max-width:1000px){.dmain{border-right:0;border-bottom:1px solid var(--line)}}
+.dmain p{margin:0;max-width:68ch}
+.dt{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:30px;line-height:1;margin:2px 0 4px;text-transform:uppercase;text-wrap:balance}
+.dgrid h4{margin:6px 0 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--copper);font-weight:600}
+.darch{padding:16px 18px 20px;min-width:0;display:grid;gap:10px;align-content:start}
+.tblwrap.noh{max-height:none;border:1px solid var(--line)}
+.atbl{min-width:620px}
+.atbl tbody tr{cursor:default}
+.atbl tbody tr:hover{background:transparent}
+.atbl td{font-size:13px;line-height:1.45}
+.atbl td:nth-child(4){color:var(--muted)}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+</style>
+
+<div class="wrap">
+<a href="../" style="font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--copper)">← Study</a>
+<header>
+  <div>
+    <h1>Inside a 2026 flagship phone</h1>
+    <p>A representative block diagram of a current Android flagship: antennas, tuners and switch matrix, the PA/LNA/filter modules for every band group, the RF transceiver, the X85-class 5G modem inside the application SoC, and everything hanging off it. Click any block, pick a signal path, or select a band.</p>
+  </div>
+  <div class="tb" aria-label="Sheet details">
+    <span>Sheet</span><span>RF + system · rev 2026</span>
+    <span>Modem</span><span>X85-class · Rel-18</span>
+    <span>Sub-6 RX</span><span>4×4 MIMO · LB 2×2</span>
+    <span>mmWave</span><span>3 × AiP modules</span>
+  </div>
+</header>
+
+<nav class="modpages" aria-label="Module pages"><span class="label">Module pages</span>
+  <a href="soc.html">SoC</a><a href="modem.html">5G modem</a><a href="transceiver.html">RF transceiver</a><a href="rf-front-end.html">RF front-end</a><a href="antennas.html">Antennas &amp; tuning</a><a href="gnss.html">GNSS</a><a href="mmwave.html">mmWave</a><a href="wifi-bluetooth.html">Wi-Fi &amp; Bluetooth</a><a href="nfc-uwb.html">NFC &amp; UWB</a><a href="power.html">Power &amp; charging</a>
+</nav>
+
+<div class="paths" role="group" aria-label="Signal paths">
+  <span class="label">Trace a path</span>
+  <div id="presets" style="display:contents"></div>
+</div>
+
+<div class="main">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span class="label">Block diagram · click a block</span>
+      <div class="legend">
+        <span><i></i>RF</span><span><i class="d"></i>Digital / IQ / bus</span><span><i class="p"></i>Power</span>
+        <span><b style="border-color:var(--c-ant)"></b>Antenna</span><span><b style="border-color:var(--c-rffe)"></b>RF front-end</span><span><b style="border-color:var(--c-trx)"></b>Transceiver</span><span><b style="border-color:var(--c-soc)"></b>SoC</span>
+      </div>
+    </div>
+    <div class="scroll"><svg class="dia" id="dia" viewBox="0 0 1186 700" role="img" aria-label="Smartphone block diagram"></svg></div>
+  </div>
+  <aside id="insp" aria-live="polite"></aside>
+</div>
+
+<section class="block" id="deep">
+  <div class="hd"><h2>Implementation &amp; architectures</h2><p>How the selected block is built, and the architecture choices designers have. Click any block in the diagram, or jump to a module here.</p></div>
+  <div class="dnav" id="dnav" role="group" aria-label="Jump to module"></div>
+  <div id="deepbody"></div>
+</section>
+
+<section class="block">
+  <div class="hd"><h2>Spectrum map</h2><p>Every band the front-end has to cover, on a log frequency axis. Hatched = uplink, solid = downlink, single bar = TDD or receive-only. Click a bar.</p></div>
+  <div class="scroll"><svg class="ruler" id="ruler" role="img" aria-label="Frequency bands on a log scale"></svg></div>
+</section>
+
+<section class="block">
+  <div class="hd"><h2>Band &amp; filter table</h2><p>Which module carries each band and the filter technology usually used for it. Click a row to light the module.</p></div>
+  <div class="tblwrap"><table><thead><tr><th>Band</th><th>Mode</th><th>Uplink MHz</th><th>Downlink MHz</th><th>Filter</th><th>Module</th><th>Design pressure</th></tr></thead><tbody id="tb"></tbody></table></div>
+</section>
+
+<section class="block">
+  <div class="hd"><h2>Filter technologies</h2><p>Why one phone needs four kinds of acoustic and ceramic filters.</p></div>
+  <div class="filters">
+    <div><b>SAW</b><span class="r">≈ 0.4 – 1.6 GHz</span><br>Interdigital transducers on LiTaO₃ or LiNbO₃. Cheap and small. Used for low-band duplexers, GNSS and receive-only filters.</div>
+    <div><b>TC-SAW / IHP-SAW</b><span class="r">≈ 0.6 – 2.7 GHz</span><br>Oxide overlay or layered substrate cuts drift to a few ppm/°C. Needed where duplex gaps are narrow, as in B13, B26 and n71.</div>
+    <div><b>BAW (SMR / FBAR)</b><span class="r">≈ 1.5 – 7 GHz</span><br>Bulk resonance in a thin AlN or ScAlN film. High Q and steep skirts for B25, n41, n7 and Wi-Fi coexistence. Broadcom FBAR; Qorvo and Qualcomm SMR.</div>
+    <div><b>LTCC / IPD / XBAW</b><span class="r">≈ 3 – 8 GHz</span><br>Wide fractional bandwidth for n77 (900 MHz wide) and n79. LTCC and IPD trade Q for bandwidth; XBAW-type resonators bridge the gap.</div>
+  </div>
+</section>
+
+<footer>Representative architecture, not a teardown of one model. Part classes reflect 2025–2026 flagships built on Snapdragon 8 Elite–class SoCs with the X85 Modem-RF; vendors and exact module partitioning vary by OEM and region. Band lists follow 3GPP TS 38.101-1/-2.</footer>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const CAT={ant:["--c-ant","Antenna"],tune:["--c-tune","Tuning & switching"],rffe:["--c-rffe","RF front-end"],trx:["--c-trx","Transceiver"],conn:["--c-conn","Connectivity"],soc:["--c-soc","SoC block"],io:["--c-io","Memory & I/O"],pwr:["--c-pwr","Power"]};
+
+// id, x, y, w, h, cat, label, sub, parent
+const NODES=[
+ ["a_main",16,30,118,52,"ant","ANT1 Main","LB/MHB TX+PRx"],
+ ["a_div",16,100,118,52,"ant","ANT2 Diversity","LB/MHB DRx"],
+ ["a_m3",16,170,118,52,"ant","ANT3 MIMO","MHB/UHB RX3"],
+ ["a_m4",16,240,118,52,"ant","ANT4 MIMO","UHB RX4 · SRS"],
+ ["a_wifi",16,350,118,50,"ant","ANT5/6 Wi-Fi","2.4/5/6 GHz 2×2"],
+ ["a_gnss",16,414,118,50,"ant","ANT7 GNSS","L1 + L5"],
+ ["a_nfc",16,478,118,50,"ant","NFC coil","13.56 MHz"],
+ ["a_uwb",16,542,118,50,"ant","UWB antennas","Ch5 / Ch9 · 3 el"],
+ ["a_mmw",16,606,118,50,"ant","mmWave arrays","24–40 GHz"],
+ ["tuner",160,30,118,122,"tune","Antenna tuners","aperture+impedance"],
+ ["asm",160,166,118,126,"tune","Switch matrix","SRS · TX swap"],
+ ["lb",304,30,170,50,"rffe","LB PAMiD","617–960 MHz · SAW"],
+ ["mhb",304,94,170,50,"rffe","MHB PAMiD","1.4–2.7 GHz · BAW mux"],
+ ["uhb",304,158,170,50,"rffe","UHB PAMiD","n77/n78/n79 · 3.3–5 GHz"],
+ ["drx",304,222,170,50,"rffe","DRx module","LNA + SAW/BAW banks"],
+ ["mimo",304,286,170,50,"rffe","MIMO RX L-FEM","RX3/RX4 · MHB+UHB"],
+ ["wfem",304,350,170,50,"rffe","Wi-Fi 7 FEM","PA/LNA · BAW coex"],
+ ["gnss_lna",304,414,170,50,"rffe","GNSS LNA","SAW pre/post filters"],
+ ["nfc",304,478,170,50,"conn","NFC + eSE","reader · card emulation"],
+ ["uwb",304,542,170,50,"conn","UWB transceiver","802.15.4z · AoA"],
+ ["mmw",304,606,170,50,"rffe","mmWave AiP RFIC","beamforming PA/LNA"],
+ ["trx",510,30,150,230,"trx","RF transceiver","sub-6 RX/TX · DPD"],
+ ["et",510,270,150,52,"pwr","Envelope tracker","ET / APT supply"],
+ ["wcombo",510,350,150,52,"conn","Wi-Fi 7 + BT 6","320 MHz · MLO"],
+ ["mmwif",510,606,150,50,"trx","mmWave IF","IF up/down-convert"],
+ ["modem",716,52,238,90,"soc","5G modem · X85-class","Rel-18 · 12.5 Gbps DL","soc"],
+ ["cpu",716,160,115,56,"soc","CPU cluster","8 cores · 3 nm","soc"],
+ ["gpu",839,160,115,56,"soc","GPU","graphics · RT","soc"],
+ ["npu",716,230,115,56,"soc","NPU","INT4/INT8 AI","soc"],
+ ["isp",839,230,115,56,"soc","ISP","triple 18-bit","soc"],
+ ["dsp",716,300,115,56,"soc","Sensor/audio DSP","always-on hub","soc"],
+ ["disp",839,300,115,56,"soc","Display + video","AV1 · 4K HDR","soc"],
+ ["sec",716,370,115,56,"soc","Secure enclave","keys · payments","soc"],
+ ["io",839,370,115,56,"soc","High-speed I/O","PCIe·UFS·MIPI","soc"],
+ ["gnss",716,440,115,56,"soc","GNSS engine","L1/L5 multi-GNSS","soc"],
+ ["slc",839,440,115,56,"soc","System cache","shared SLC","soc"],
+ ["memc",716,510,238,56,"soc","Memory controller","LPDDR5X · 4×16-bit","soc"],
+ ["pmu",716,580,115,56,"soc","Power manager","DVFS · clocks","soc"],
+ ["noc",839,580,115,56,"soc","Interconnect","NoC fabric","soc"],
+ ["dram",1000,30,170,46,"io","LPDDR5X DRAM","12–16 GB · PoP"],
+ ["ufs",1000,88,170,46,"io","UFS 4.1 storage","256 GB – 1 TB"],
+ ["pmic",1000,146,170,46,"pwr","PMIC set","bucks · LDOs · SPMI"],
+ ["chg",1000,204,170,46,"pwr","Charger + battery","charge pump · Qi2"],
+ ["dispm",1000,262,170,46,"io","LTPO OLED","1–120 Hz · MIPI DSI"],
+ ["cam",1000,320,170,46,"io","Cameras","MIPI C-PHY · OIS"],
+ ["audio",1000,378,170,46,"io","Audio","codec · smart amps"],
+ ["sens",1000,436,170,46,"io","Sensors","IMU · baro · ALS"],
+ ["usb",1000,494,170,46,"io","USB-C","USB 3.2 · PD 3.1"],
+ ["sim",1000,552,170,46,"io","SIM / eSIM","DSDA · eUICC"],
+ ["hap",1000,610,170,46,"io","Haptics","X-axis LRA"]
+];
+const SOC={x:700,y:20,w:270,h:656};
+// from, to, type, mx
+const LINKS=[
+ ["a_main","tuner","rf"],["a_div","tuner","rf"],["a_m3","asm","rf"],["a_m4","asm","rf"],["tuner","asm","rf"],
+ ["tuner","lb","rf"],["tuner","mhb","rf"],["tuner","drx","rf",286],["asm","uhb","rf"],["asm","mimo","rf"],["asm","mhb","rf",296],
+ ["lb","trx","rf"],["mhb","trx","rf"],["uhb","trx","rf"],["drx","trx","rf"],["mimo","trx","rf",486],
+ ["et","lb","pwr",498],["et","mhb","pwr",498],["et","uhb","pwr",498],
+ ["a_wifi","wfem","rf"],["wfem","wcombo","rf"],["wcombo","soc","dig"],
+ ["a_gnss","gnss_lna","rf"],["gnss_lna","gnss","rf"],
+ ["a_nfc","nfc","rf"],["nfc","soc","dig"],["a_uwb","uwb","rf"],["uwb","soc","dig"],
+ ["a_mmw","mmw","rf"],["mmw","mmwif","rf"],["mmwif","soc","dig"],
+ ["trx","modem","dig"],
+ ["soc","dram","dig"],["soc","ufs","dig"],["pmic","soc","pwr"],["chg","pmic","pwr"],["soc","dispm","dig"],["soc","cam","dig"],
+ ["soc","audio","dig"],["soc","sens","dig"],["soc","usb","dig"],["soc","sim","dig"],["soc","hap","dig"]
+];
+
+const D={
+ soc:{t:"Application SoC",cat:"soc",role:"One 3 nm die holding the CPU, GPU, NPU, ISP, the 5G modem baseband, GNSS engine, security processor and memory controller. The RF transceiver and front-end sit outside it on the board.",parts:["Snapdragon 8 Elite–class (integrated X85 modem)","MediaTek Dimensity 9000-series with integrated modem","Samsung Exynos 2600-class / Google Tensor (separate or integrated modem)"],specs:[["Process","3 nm class (N3P / SF3)"],["Package","PoP with LPDDR5X, or side-by-side"],["Modem","Integrated baseband, external RF"]]},
+ modem:{t:"5G modem baseband",cat:"soc",role:"Runs the 3GPP protocol stack and PHY: LDPC/polar decoding, MIMO detection, beam management, carrier aggregation scheduling and control of every RF part over MIPI RFFE. X85-class modems add an on-chip AI accelerator for link tuning.",parts:["Qualcomm X85 5G Modem-RF (8th-gen)","MediaTek M80-class","Samsung Exynos Modem 5400"],specs:[["Peak DL","12.5 Gbps"],["Peak UL","3.7 Gbps"],["Release","3GPP Rel-17 / Rel-18 (5G Advanced)"],["Spectrum","Sub-6 FDD+TDD, mmWave, NTN satellite"],["Features","VoNR, DSDA, UL MIMO, SRS 1T4R"]],note:"X85 peak figures: 12.5 Gbps down, 3.7 Gbps up, with an AI-driven traffic engine and integrated satellite support."},
+ cpu:{t:"CPU cluster",cat:"soc",role:"Custom Arm-architecture cores split into prime and performance clusters, sharing an L2 per cluster and the system cache.",parts:["Qualcomm Oryon (2 prime + 6 perf)","Arm Cortex-X9xx / A7xx in other SoCs"],specs:[["Cores","8 (typical 2+6)"],["Peak clock","≈ 4.2–4.6 GHz"],["Supply","Multi-phase buck from PMIC, per-cluster DVFS"]]},
+ gpu:{t:"GPU",cat:"soc",role:"Renders UI and games, and runs some compute. Hardware ray tracing and variable-rate shading are standard on flagships.",parts:["Adreno 8xx","Arm Immortalis","Xclipse (RDNA-based)"],specs:[["APIs","Vulkan 1.3, OpenGL ES 3.2, OpenCL"],["Display out","Up to 4K / 144 Hz internal"]]},
+ npu:{t:"NPU / AI engine",cat:"soc",role:"Matrix and vector engines for on-device LLMs, camera segmentation and speech. Low-precision INT4 and INT8 with mixed FP16.",parts:["Hexagon NPU","MediaTek APU","Google TPU (Tensor)"],specs:[["Precision","INT4 / INT8 / FP16"],["Workloads","On-device LLM, camera, ASR"]]},
+ isp:{t:"Image signal processor",cat:"soc",role:"Turns raw Bayer data from up to three concurrent sensors into images and video: demosaic, HDR merge, noise reduction, face and scene AI.",parts:["Spectra 18-bit triple ISP","Imagiq"],specs:[["Inputs","MIPI C-PHY / D-PHY, 3 concurrent"],["Video","8K30 / 4K120 HDR"]]},
+ dsp:{t:"Sensor & audio DSP",cat:"soc",role:"An always-on island that keeps sensor fusion, step counting, wake-word detection and voice processing running while the CPU sleeps.",parts:["Hexagon sensing hub","Cadence HiFi cores"],specs:[["Buses","I²C, I3C, SPI, SoundWire, I²S"],["Power","Sub-mW always-on domain"]]},
+ disp:{t:"Display & video engine",cat:"soc",role:"Composes display layers, drives the panel over MIPI DSI and handles hardware video encode and decode.",parts:["Display processing unit + video codec block"],specs:[["Codecs","AV1, HEVC, H.264, VP9 decode; HEVC/AV1 encode"],["Interface","MIPI DSI, DSC 1.2 compression"]]},
+ sec:{t:"Secure enclave",cat:"soc",role:"Isolated processor with its own RAM and key storage for biometrics, payment tokens, DRM keys and integrated SIM (iSIM) profiles. Talks to the NFC eSE for contactless payments.",parts:["Qualcomm SPU","Apple SEP equivalent","Titan M2 (Google, external)"],specs:[["Functions","Key storage, attestation, biometric match"],["Certifications","EAL4+ / FIPS on some parts"]]},
+ io:{t:"High-speed I/O",cat:"soc",role:"PHYs for PCIe to the Wi-Fi chip, M-PHY for UFS storage, C/D-PHY for cameras and display, and USB 3.x.",parts:["PCIe Gen 4 ×1 / ×2","UFS 4.x M-PHY Gear 5","USB 3.2 Gen 2 / eUSB2"],specs:[["Wi-Fi link","PCIe Gen 4"],["Storage link","M-PHY HS-G5 ×2 lanes"]]},
+ gnss:{t:"GNSS engine",cat:"soc",role:"Baseband correlators for every satellite system. Dual-frequency L1 + L5 removes most ionospheric error and rejects multipath in cities, giving lane-level accuracy.",parts:["Integrated in SoC (Qualcomm, MediaTek)","Broadcom BCM4778x (standalone, older designs)"],specs:[["Systems","GPS, Galileo, BeiDou, GLONASS, QZSS, NavIC"],["Signals","L1/E1/B1C + L5/E5a/B2a"]]},
+ slc:{t:"System-level cache",cat:"soc",role:"Last-level cache shared by CPU, GPU, NPU and modem. Cuts DRAM traffic and power.",parts:["On-die SRAM"],specs:[["Size","≈ 8–16 MB"]]},
+ memc:{t:"Memory controller",cat:"soc",role:"Four 16-bit LPDDR5X channels to the DRAM stack, with refresh, training and QoS arbitration among the many masters.",parts:["Integrated LPDDR5X controller + PHY"],specs:[["Rate","Up to ≈ 10.7 Gbps per pin"],["Width","64-bit (4 × 16)"],["Bandwidth","≈ 85 GB/s peak"]]},
+ pmu:{t:"Power manager",cat:"soc",role:"Sets voltages and clocks per domain (DVFS), sequences power-up and talks to the external PMICs over SPMI.",parts:["On-die AOP / PMU"],specs:[["Bus","SPMI to PMICs"],["Clock ref","38.4 / 76.8 MHz XO + 32 kHz sleep clock"]]},
+ noc:{t:"Network-on-chip",cat:"soc",role:"Packet fabric that connects all the IP blocks with QoS so the modem and display never starve.",parts:["Coherent + non-coherent NoC"],specs:[["Coherency","CPU, GPU and NPU share coherent memory"]]},
+ trx:{t:"RF transceiver",cat:"trx",role:"Direct-conversion receivers and transmitters for every sub-6 band, with LO synthesizers, ADCs and DACs. Sends digitized IQ to the modem over high-speed serial links. Runs digital predistortion for the PAs and drives the ET tracker. Also builds the TX signal for satellite NTN.",parts:["Qualcomm SDR (paired with X85)","MediaTek MT6xxx RFIC","Samsung Shannon RF"],specs:[["RX chains","≈ 12–20 (4×4 on several bands at once)"],["TX chains","2 (UL MIMO / EN-DC / UL CA)"],["Reference","TCXO / XO 38.4 or 76.8 MHz"],["Control","MIPI RFFE 3.0 to tuners, switches, PAs"]],note:"Concurrent 4×4 on MHB and UHB plus 2×2 on LB is why a phone needs four cellular antennas plus tuning."},
+ et:{t:"Envelope tracker",cat:"pwr",role:"A fast DC-DC that moves the PA's collector supply with the RF envelope, so the PA stays near compression and wastes less power. Falls back to average power tracking (APT) at low output.",parts:["Qualcomm QET 7xxx","Qorvo ET PMIC","Integrated multi-mode trackers"],specs:[["Tracking BW","≥ 100 MHz envelope (5G NR)"],["Efficiency gain","≈ 10–20 points PA PAE vs fixed supply"],["Outputs","Dual for EN-DC / UL MIMO"]]},
+ lb:{t:"Low-band PAMiD",cat:"rffe",role:"PA module with integrated duplexers: GaAs HBT power amplifier, SAW / TC-SAW duplexers, antenna switch, LNAs and a directional coupler for power control. Covers the sub-1 GHz coverage bands.",parts:["Qualcomm QPM","Skyworks Sky5","Qorvo","Murata"],specs:[["Range","617–960 MHz"],["Bands","n71, n12, n13, n14, n5, n8, n20, n26, n28"],["Output","PC3 23 dBm at antenna"],["Filters","SAW, TC-SAW for narrow gaps"]],note:"LB antennas are electrically short in a 160 mm phone, so the aperture tuner switches the frame resonance between n71/n12 and n5/n8."},
+ mhb:{t:"Mid/high-band PAMiD",cat:"rffe",role:"PAs plus BAW/FBAR multiplexers for 1.4–2.7 GHz. Quadplexers and hexaplexers allow carrier aggregation such as B1+B3 or B66+B25 through one antenna. Also carries n41 at HPUE power and the satellite NTN uplink.",parts:["Broadcom AFEM (FBAR)","Qorvo","Qualcomm QPM","Skyworks"],specs:[["Range","1427–2690 MHz"],["Bands","B32, n3, n66, n1, n25, n30, n40, n41, n7, n255"],["Output","PC2 26 dBm for n41 TDD"],["Filters","BAW-SMR / FBAR multiplexers"]]},
+ uhb:{t:"Ultra-high-band PAMiD",cat:"rffe",role:"PA, LNA and wideband filters for C-band and n79. Two TX outputs support UL MIMO; SRS is routed through the switch matrix to all four antennas so the base station can beamform.",parts:["Qualcomm","Qorvo","Skyworks","Murata"],specs:[["Range","3300–5000 MHz"],["Bands","n77, n78, n79, n48"],["Output","PC2 26 dBm, PC1.5 29 dBm"],["Filters","LTCC, IPD, XBAW"]]},
+ drx:{t:"Diversity RX module",cat:"rffe",role:"Second receive path fed from the top antenna: LNAs, SAW/BAW filter banks and band-select switches. Placed near the antenna so the long trace to the transceiver comes after the LNA.",parts:["Qualcomm QDM","Skyworks DRx","Murata"],specs:[["Bands","LB + MHB"],["NF","≈ 1–2 dB module"],["Gain","≈ 15–20 dB"]]},
+ mimo:{t:"MIMO RX L-FEM",cat:"rffe",role:"LNA + filter front-ends for receive chains 3 and 4, giving 4×4 downlink MIMO on MHB and UHB.",parts:["Qorvo","Qualcomm","Murata LFEM"],specs:[["Chains","RX3, RX4"],["Bands","n1/n3/n66/n41, n77/n78/n79"]]},
+ tuner:{t:"Antenna tuners",cat:"tune",role:"Aperture tuners are SOI switches that connect inductors or capacitors to the antenna radiator to move its resonance. Impedance tuners are digitally tunable capacitor networks that correct mismatch from the user's hand or a case. Both are set by the transceiver over MIPI RFFE.",parts:["Qorvo","Murata (pSemi)","Infineon","Qualcomm"],specs:[["Switch Ron×Coff","≈ 80–100 fs (SOI)"],["Control","MIPI RFFE, closed loop via coupler"]]},
+ asm:{t:"Antenna switch matrix",cat:"tune",role:"Low-loss SOI crossbar (DPDT, 3P3T, 4P4T) that lets any transmitter reach any antenna. Used for SRS antenna switching (1T4R) and for swapping TX to the antenna the hand is not blocking.",parts:["Qorvo","Skyworks","Murata","Qualcomm"],specs:[["Insertion loss","≈ 0.3–0.6 dB"],["Linearity","IIP3 > 70 dBm class"]]},
+ wfem:{t:"Wi-Fi 7 front-end module",cat:"rffe",role:"PA, LNA, bypass and T/R switch for each band. 4096-QAM needs very low EVM, so the PA runs well backed off. BAW coexistence filters protect Wi-Fi 2.4 GHz from n40/n41 and split UNII-4 from UNII-5.",parts:["Qorvo","Skyworks","Qualcomm","Murata"],specs:[["Bands","2.4, 5, 6 GHz"],["EVM","≈ −47 dB at MCS13"],["Streams","2×2"]]},
+ wcombo:{t:"Wi-Fi 7 + Bluetooth combo",cat:"conn",role:"Wi-Fi 7 MAC/PHY with multi-link operation across 5 and 6 GHz, plus Bluetooth LE Audio and Channel Sounding. Exchanges coexistence signals with the modem (WCI-2) so LTE/NR transmissions do not desense Wi-Fi.",parts:["Qualcomm FastConnect 7900","Broadcom BCM4398","MediaTek Filogic"],specs:[["Channel","Up to 320 MHz"],["Modulation","4096-QAM"],["PHY rate","≈ 5.8 Gbps (2×2)"],["Link to SoC","PCIe Gen 4"]]},
+ gnss_lna:{t:"GNSS LNA + filters",cat:"rffe",role:"SiGe LNA with SAW filters before and after it. Has to survive strong nearby cellular transmitters: the B13/B14 second harmonic (1554–1576 MHz) lands right on GPS L1, and n255 satellite uplink sits just above.",parts:["Infineon BGA-series","Murata","Qorvo"],specs:[["L1","1559–1610 MHz"],["L5","1164–1189 MHz"],["NF","≈ 0.7–1.0 dB"],["Gain","≈ 15–18 dB"]]},
+ nfc:{t:"NFC controller + eSE",cat:"conn",role:"13.56 MHz reader and card-emulation front-end with an embedded secure element for transit and payment credentials. Some phones also charge accessories over NFC.",parts:["NXP SN220 / SN300","ST ST54"],specs:[["Standards","ISO 14443 A/B, FeliCa, ISO 15693"],["Link to SoC","I²C / SPI"]]},
+ uwb:{t:"UWB transceiver",cat:"conn",role:"Impulse-radio ranging with ~10 cm accuracy. Three antennas in an L-shape measure phase difference to get angle of arrival in two axes. Used for digital car keys and item finding.",parts:["NXP Trimension SR200","Qorvo DW3000-series","Apple U2"],specs:[["Channels","Ch 5 (6.5 GHz), Ch 9 (8.0 GHz)"],["Bandwidth","499.2 MHz"],["Standards","802.15.4z, 802.15.4ab, FiRa, CCC"]]},
+ mmw:{t:"mmWave antenna-in-package",cat:"rffe",role:"Each module contains a beamforming RFIC (PA, LNA and phase shifter per element) bonded to patch and dipole arrays with dual polarization. Three modules sit on different edges so a hand never blocks all of them.",parts:["Qualcomm QTM5xx","Samsung","Murata"],specs:[["Bands","n257, n258, n260, n261"],["Array","1×4 or 2×2 per polarization"],["DL","Up to 8 × 100 MHz CC"],["Link","IF over coax / flex to IF transceiver"]]},
+ mmwif:{t:"mmWave IF transceiver",cat:"trx",role:"Converts between baseband and an intermediate frequency of a few GHz, so the high-loss mmWave signal only exists inside the antenna module.",parts:["Integrated in SDR or separate IFIC"],specs:[["IF","≈ 7–12 GHz"],["Beams","Managed by modem beam-tracking"]]},
+ a_main:{t:"Main antenna",cat:"ant",role:"Usually a segment of the metal frame at the bottom of the phone, away from the head. Primary TX and PRx for low and mid-high bands, with an aperture tuner to cover 617–960 MHz.",parts:["Metal frame slot / LDS radiator"],specs:[["Range","617–2690 MHz (+ UHB via switch)"],["Typical efficiency","LB −5 to −8 dB, MHB −3 to −5 dB"]]},
+ a_div:{t:"Diversity antenna",cat:"ant",role:"Top frame segment for diversity receive. Becomes the TX antenna when the switch matrix detects the bottom is blocked by a hand.",parts:["Metal frame slot"],specs:[["Use","DRx, TX swap, SRS"]]},
+ a_m3:{t:"MIMO antenna 3",cat:"ant",role:"Third receive antenna for 4×4 MIMO on MHB and UHB. Often a side-frame slot or an LDS radiator on the back cover.",parts:["Side-frame slot / FPC"],specs:[["Range","1.7–5 GHz"]]},
+ a_m4:{t:"MIMO antenna 4",cat:"ant",role:"Fourth receive antenna for UHB 4×4. Also transmits SRS so the base station can measure the full 4×4 channel.",parts:["FPC / LDS"],specs:[["Range","3.3–5 GHz"]]},
+ a_wifi:{t:"Wi-Fi / BT antennas",cat:"ant",role:"Two antennas for 2×2 Wi-Fi 7 tri-band. Bluetooth time-shares chain 0.",parts:["Frame slot + FPC"],specs:[["Bands","2.4 / 5 / 6 GHz"]]},
+ a_gnss:{t:"GNSS antenna",cat:"ant",role:"Dual-band L1 + L5 antenna near the top edge for a clear sky view. Circular polarization is hard in a phone, so most are linear.",parts:["Frame slot or LDS"],specs:[["Bands","1164–1189 and 1559–1610 MHz"]]},
+ a_nfc:{t:"NFC coil",cat:"ant",role:"Loop on a ferrite sheet, usually wrapped around or beside the wireless-charging coil on the back.",parts:["FPC coil on ferrite"],specs:[["Frequency","13.56 MHz"]]},
+ a_uwb:{t:"UWB antennas",cat:"ant",role:"Three small patch antennas in an L-shape. The spacing (about half a wavelength) sets the angle-of-arrival accuracy.",parts:["FPC / LDS patches"],specs:[["Spacing","≈ λ/2 at 6.5–8 GHz"]]},
+ a_mmw:{t:"mmWave arrays",cat:"ant",role:"Patch arrays radiate through the back glass; dipole arrays radiate through the side. They are part of the AiP module, shown here separately for clarity.",parts:["In-package antennas"],specs:[["Polarization","Dual (H/V)"],["EIRP","Limited by FCC MPE / power density"]]},
+ dram:{t:"LPDDR5X DRAM",cat:"io",role:"Main memory, stacked on the SoC (PoP) or placed beside it.",parts:["Samsung","SK hynix","Micron"],specs:[["Capacity","12–16 GB"],["Speed","Up to ≈ 10.7 Gbps/pin"]]},
+ ufs:{t:"UFS 4.1 storage",cat:"io",role:"NAND flash with its own controller, connected over MIPI M-PHY.",parts:["Samsung","Kioxia","SK hynix","Micron"],specs:[["Seq. read","≈ 4.2 GB/s"],["Capacity","256 GB – 1 TB"]]},
+ pmic:{t:"PMIC set",cat:"pwr",role:"Two to four PMICs with multi-phase bucks for CPU/GPU rails, dozens of LDOs for RF and sensors, the XO buffer and a real-time clock.",parts:["Qualcomm PM8xxx / PMR","MediaTek MT63xx","Samsung S2MPS"],specs:[["Rails","≈ 40–60"],["Bus","SPMI"]]},
+ chg:{t:"Charger + battery",cat:"pwr",role:"Switched-capacitor charge pumps (2:1 or 4:1) for fast wired charging, a buck charger for trickle and wireless, and a fuel gauge.",parts:["TI / Southchip / NuVolta charge pumps","Si-C anode Li-ion cells"],specs:[["Battery","≈ 4,500–7,000 mAh"],["Wired","45–120 W (USB PD PPS)"],["Wireless","Qi2 15–25 W"]]},
+ dispm:{t:"LTPO OLED display",cat:"io",role:"Panel with variable refresh down to 1 Hz, driven by a display driver IC over MIPI DSI. Touch controller on the same flex.",parts:["Samsung Display","BOE"],specs:[["Refresh","1–120 Hz"],["Peak brightness","≈ 3,000+ nits"]]},
+ cam:{t:"Camera modules",cat:"io",role:"Main, ultra-wide and periscope telephoto, each with its own sensor, actuator driver and OIS.",parts:["Sony LYTIA","Samsung ISOCELL","OmniVision"],specs:[["Interface","MIPI C-PHY / D-PHY"],["Main sensor","≈ 50–200 MP"]]},
+ audio:{t:"Audio",cat:"io",role:"Codec, two boosted class-D smart amplifiers with speaker protection, and three or more MEMS microphones for beamforming.",parts:["Cirrus Logic","Qualcomm Aqstic","TI"],specs:[["Bus","SoundWire / I²S"]]},
+ sens:{t:"Sensors",cat:"io",role:"6-axis IMU, magnetometer, barometer, ambient light and proximity, and an ultrasonic or optical under-display fingerprint reader.",parts:["Bosch","STMicro","TDK InvenSense","Qualcomm 3D Sonic"],specs:[["Bus","I3C / I²C / SPI"]]},
+ usb:{t:"USB-C",cat:"io",role:"USB 3.2 data, DisplayPort alt mode, USB PD 3.1 negotiation, ESD protection and a redriver.",parts:["PD controller","Redriver","ESD diodes"],specs:[["Data","Up to 10 Gbps"]]},
+ sim:{t:"SIM / eSIM",cat:"io",role:"Physical nano-SIM plus an eUICC (or iSIM in the secure enclave). Dual SIM dual active needs the modem to run two stacks at once.",parts:["eUICC (Thales, G+D, NXP)"],specs:[["Mode","DSDS / DSDA"]]},
+ hap:{t:"Haptics",cat:"io",role:"X-axis linear resonant actuator with a closed-loop driver for crisp clicks.",parts:["AAC","Cirrus Logic driver"],specs:[["Type","X-axis LRA"]]}
+};
+
+// Extended data: fn = main function, c = [lo,hi] USD per phone (null = inside SoC), q = cost note, in = internal block rows
+const X={
+ soc:{fn:"Runs the OS, apps, AI and the modem baseband on one die",c:[190,280],q:"Largest single BOM item; includes modem baseband",in:[["Compute",["CPU","GPU","NPU","ISP"]],["Comms",["5G modem","GNSS","Wi-Fi host (PCIe)"]],["Fabric",["NoC","System cache","LPDDR5X controller"]]]},
+ modem:{fn:"Turns digitized RF samples into IP packets and back",c:null,q:"Included in SoC price",in:[["DL PHY",["Serial IQ in","Front-end DSP","FFT","Channel estimation","MIMO detection","LDPC / polar decode"]],["Stack",["MAC","RLC","PDCP","IP to apps"]],["Control",["Protocol CPU","AI tensor core","RF control (MIPI RFFE)"]]]},
+ cpu:{fn:"Executes the OS and app code",c:null,q:"Included in SoC price",in:[["Cluster",["2 prime cores","6 performance cores","L2 per cluster","System cache"]]]},
+ gpu:{fn:"Renders graphics and runs parallel compute",c:null,q:"Included in SoC price",in:[["Pipeline",["Command processor","Shader cores","Ray-tracing units","Tile memory","System cache"]]]},
+ npu:{fn:"Runs neural-network inference at low power",c:null,q:"Included in SoC price",in:[["Engine",["Scalar unit","Vector unit","Tensor (matrix) unit","Local SRAM","DMA to DRAM"]]]},
+ isp:{fn:"Converts raw sensor data into finished photos and video",c:null,q:"Included in SoC price",in:[["Pipeline",["MIPI CSI-2 RX","Bayer pre-processing","HDR merge","Demosaic","Noise reduction","Tone mapping","To encoder"]]]},
+ dsp:{fn:"Keeps sensors and voice wake-up running while the CPU sleeps",c:null,q:"Included in SoC price",in:[["Path",["I3C / SoundWire","Low-power DSP","Wake-word / sensor fusion","Mailbox to CPU"]]]},
+ disp:{fn:"Composes the screen image and encodes or decodes video",c:null,q:"Included in SoC price",in:[["Display",["Layer fetch","Blend and scale","HDR tone map","DSC encode","DSI PHY"]],["Video",["Bitstream","AV1 / HEVC codec","Frame buffer"]]]},
+ sec:{fn:"Protects keys, biometrics and payment credentials",c:null,q:"Included in SoC price",in:[["Enclave",["Secure CPU","Crypto accelerators","True RNG","Key fuses","Private SRAM"]]]},
+ io:{fn:"Provides the high-speed PHYs to off-chip devices",c:null,q:"Included in SoC price",in:[["Ports",["PCIe controller + PHY","UFS host + M-PHY","USB controller + PHY","CSI / DSI PHYs"]]]},
+ gnss:{fn:"Computes position from satellite signals",c:null,q:"Included in SoC price",in:[["Path",["RF / ADC","Acquisition engine","Tracking correlators","Navigation solver","Fused location"]]]},
+ slc:{fn:"Holds shared data close to all processors",c:null,q:"Included in SoC price",in:[["Path",["Requests from masters","Tag lookup","Data SRAM","Miss to DRAM"]]]},
+ memc:{fn:"Schedules every read and write to DRAM",c:null,q:"Included in SoC price",in:[["Path",["Request queues","QoS scheduler","Refresh and training","LPDDR5X PHY","4 × 16-bit channels"]]]},
+ pmu:{fn:"Sets voltage and clock for each on-chip domain",c:null,q:"Included in SoC price",in:[["Control",["DVFS tables","PLLs / clock gen","Power gating","SPMI to PMICs"]]]},
+ noc:{fn:"Moves data between all on-chip blocks",c:null,q:"Included in SoC price",in:[["Fabric",["Initiators","Routers","QoS arbitration","Targets"]]]},
+ trx:{fn:"Converts between RF and digital IQ for every sub-6 band",c:[8,12],q:"One RFIC, CMOS",in:[["RX ×N",["RF input","Mixer","Baseband filter","ADC","Decimation","Serial link to modem"]],["TX ×2",["Serial link","Interpolation","DAC","Filter","Up-mixer","Driver amp"]],["Shared",["LO synthesizers","XO input","DPD feedback RX","ET control","MIPI RFFE master"]]]},
+ et:{fn:"Feeds the PAs a supply voltage that follows the RF envelope",c:[1.5,3],q:"Often one per TX path",in:[["ET mode",["Envelope from transceiver","Linear amplifier","Switching buck","Combiner","PA supply"]],["APT mode",["Buck converter","Fixed PA supply"]]]},
+ lb:{fn:"Amplifies and filters low-band transmit and receive signals",c:[3,5],q:"GaAs PA + SOI + SAW in one module",in:[["TX",["Input match","GaAs HBT driver","Final stage","Output match","Band switch","TC-SAW duplexer","Coupler","Antenna switch"]],["RX",["Duplexer RX port","LNA","To transceiver"]],["Control",["CMOS controller","MIPI RFFE","Bias"]]]},
+ mhb:{fn:"Amplifies and multiplexes 1.4–2.7 GHz signals for carrier aggregation",c:[5,8],q:"Highest-content cellular module",in:[["TX",["Driver","GaAs power stage","Output match","Band select","BAW quadplexer","Coupler","Antenna switch"]],["RX",["Multiplexer RX ports","LNA bank","CA routing","To transceiver"]],["Control",["CMOS controller","MIPI RFFE","Bias"]]]},
+ uhb:{fn:"Amplifies and filters C-band and n79 signals",c:[4,6],q:"Two TX paths for UL MIMO",in:[["TX ×2",["Driver","PA","Harmonic filter","LTCC / XBAW filter","T/R switch","SRS port"]],["RX",["Filter","LNA with bypass","To transceiver"]],["Control",["MIPI RFFE","Bias"]]]},
+ drx:{fn:"Amplifies the diversity antenna's signal near the antenna",c:[1.5,3],q:"SOI LNAs + acoustic filters",in:[["RX",["Antenna port","Band switch","SAW / BAW filter bank","LNA bank","Output mux","To transceiver"]]]},
+ mimo:{fn:"Adds receive chains 3 and 4 for 4×4 MIMO",c:[3,6],q:"Usually 2 modules at $1.5–3",in:[["RX",["Antenna","Switch","Filters","LNAs","To transceiver"]]]},
+ tuner:{fn:"Retunes the antennas for the active band and the user's grip",c:[1.5,3],q:"≈ 4 tuners at $0.3–0.8",in:[["Aperture",["SOI SP4T switch","Inductor / capacitor bank","Radiator tap"]],["Impedance",["Tunable capacitor arrays","π / T network","Feed"]],["Control",["MIPI RFFE","Registers","Charge pump"]]]},
+ asm:{fn:"Routes any transmitter to any antenna",c:[0.5,1.2],q:"SOI switch die",in:[["Core",["4 input ports","SOI FET stacks","4 antenna ports"]],["Support",["Negative charge pump","MIPI RFFE","ESD"]]]},
+ wfem:{fn:"Amplifies and filters Wi-Fi signals at each antenna",c:[3,6],q:"2 FEMs at $1.5–3",in:[["TX",["PA 2.4 GHz","PA 5/6 GHz","Harmonic filter","T/R switch","Antenna"]],["RX",["Antenna","Coex BAW filter","LNA with bypass","To Wi-Fi chip"]],["Support",["Power detector","Control"]]]},
+ wcombo:{fn:"Runs Wi-Fi 7 and Bluetooth radios and protocols",c:[6,10],q:"One combo chip",in:[["Wi-Fi",["PCIe","MAC (MLO)","PHY 4096-QAM","2×2 RF","To FEMs"]],["Bluetooth",["UART / HCI","BT controller","BT radio"]],["Coex",["WCI-2 to modem","PTA arbiter"]]]},
+ gnss_lna:{fn:"Amplifies weak satellite signals before they reach the SoC",c:[0.3,0.7],q:"LNA + 2 SAWs",in:[["Path",["Antenna","Pre-SAW","SiGe LNA","Post-SAW","To GNSS engine"]]]},
+ nfc:{fn:"Reads tags and emulates payment and transit cards",c:[2,4],q:"Controller + eSE",in:[["RF",["Coil","EMC filter","Matching","Analog front-end"]],["Digital",["Arm core","Protocol stack","I²C / SPI to SoC"]],["Secure",["eSE (JavaCard)","Crypto engine"]]]},
+ uwb:{fn:"Measures distance and direction to other UWB devices",c:[3,5],q:"One UWB SoC",in:[["TX",["Pulse generator","PA","T/R switch"]],["RX",["LNA","Mixer","ADC ×3 for AoA"]],["Digital",["Ranging MAC","Secure STS","SPI to SoC"]]]},
+ mmw:{fn:"Forms and steers mmWave beams",c:[30,45],q:"3 modules at $10–15; US mmWave models only",in:[["TX",["IF in","Up-converter","Splitter","Phase shifter ×N","PA ×N","Antenna"]],["RX",["Antenna","LNA ×N","Phase shifter ×N","Combiner","Down-converter","IF out"]],["Support",["LO / PLL","Power management","Temperature sensor"]]]},
+ mmwif:{fn:"Converts between baseband and the mmWave IF",c:[2,4],q:"Separate IFIC or inside the transceiver",in:[["Path",["Baseband IQ","DAC / ADC","IF mixer","IF amplifier","Coax to AiP"]],["Shared",["LO synthesizer"]]]},
+ a_main:{fn:"Radiates and receives LB/MHB energy at the bottom edge",c:[0.5,1.5],q:"Frame slot, feed clip, matching parts",in:[["Structure",["Metal frame segment","Feed point","Ground return"]],["Path",["Radiator","Matching network","Aperture tuner"]]]},
+ a_div:{fn:"Second cellular antenna for diversity and TX swap",c:[0.5,1.5],q:"Frame slot + matching",in:[["Path",["Top frame slot","Matching","Tuner"]]]},
+ a_m3:{fn:"Third receive antenna for 4×4 MIMO",c:[0.3,1],q:"LDS or flex radiator",in:[["Path",["LDS / FPC radiator","Matching","Switch matrix"]]]},
+ a_m4:{fn:"Fourth receive antenna and SRS transmitter",c:[0.3,1],q:"LDS or flex radiator",in:[["Path",["LDS / FPC radiator","Matching","Switch matrix"]]]},
+ a_wifi:{fn:"Two antennas for 2×2 Wi-Fi and Bluetooth",c:[0.6,2],q:"2 antennas",in:[["Chain 0",["Antenna","Diplexer","FEM"]],["Chain 1",["Antenna","Matching","FEM"]]]},
+ a_gnss:{fn:"Receives L1 and L5 satellite signals",c:[0.3,0.8],q:"Frame slot or LDS",in:[["Path",["Radiator","Matching","Pre-SAW"]]]},
+ a_nfc:{fn:"Couples magnetically to cards and readers at 13.56 MHz",c:[0.3,0.8],q:"FPC coil on ferrite",in:[["Stack",["Ferrite sheet","Copper loop","Tuning caps","NFC controller"]]]},
+ a_uwb:{fn:"Three receive elements for angle-of-arrival",c:[0.5,1.5],q:"3 small patches",in:[["Array",["Patch A","Patch B","Patch C"]],["Use",["Phase difference","Azimuth + elevation"]]]},
+ a_mmw:{fn:"Radiating elements of the mmWave modules",c:null,q:"Included in AiP module price",in:[["Element",["Patch (through back)","Dipole (through edge)"]],["Feed",["Dual-pol H / V feed","RFIC channel"]]]},
+ dram:{fn:"Working memory for the OS and apps",c:[50,90],q:"12–16 GB; 2026 memory prices are elevated",in:[["Package",["DRAM die stack","Bank groups","64-bit I/O","PoP balls to SoC"]]]},
+ ufs:{fn:"Stores the OS, apps and photos",c:[25,45],q:"256–512 GB",in:[["Path",["M-PHY","UFS controller","Flash translation layer","SLC write buffer","TLC / QLC NAND dies"]]]},
+ pmic:{fn:"Generates every supply rail from the battery",c:[8,15],q:"2–4 PMICs",in:[["Path",["Battery in","Multi-phase bucks","LDO bank","Rails to SoC / RF"]],["Support",["XO buffer","RTC","SPMI"]]]},
+ chg:{fn:"Charges the battery and reports its state",c:[10,20],q:"Cell $8–15 + charger ICs",in:[["Wired",["USB-C VBUS","OVP switch","Charge pump 2:1 / 4:1","Cell"]],["Wireless",["Qi2 coil","Wireless RX IC","Buck charger","Cell"]],["Monitor",["Fuel gauge","Battery protection"]]]},
+ dispm:{fn:"Shows the image and senses touch",c:[55,85],q:"6.3–6.9 in LTPO OLED",in:[["Image",["MIPI DSI","Display driver IC","LTPO backplane","OLED stack","Cover glass"]],["Touch",["Touch layer","Touch controller","To SoC"]]]},
+ cam:{fn:"Captures images through 3–4 lenses",c:[50,90],q:"Main + ultra-wide + periscope + front",in:[["Module",["Lens stack","Image sensor","AF / OIS driver","MIPI C-PHY"]]]},
+ audio:{fn:"Plays sound and captures voice",c:[5,10],q:"Codec, 2 amps, 3+ mics",in:[["Out",["SoundWire","Codec DAC","Smart amp + boost","Speaker"]],["In",["MEMS mics ×3","Codec ADC","DSP"]]]},
+ sens:{fn:"Measures motion, orientation, pressure, light and fingerprints",c:[6,12],q:"Fingerprint sensor dominates",in:[["Set",["IMU","Magnetometer","Barometer","ALS / proximity","Fingerprint"]],["Path",["I3C / SPI","Sensor hub"]]]},
+ usb:{fn:"Carries data, video and charging power",c:[1,3],q:"PD controller, redriver, ESD",in:[["Path",["Connector","ESD","Redriver","USB PHY in SoC"]],["Power",["CC lines","PD controller","Charger"]]]},
+ sim:{fn:"Holds operator subscriber credentials",c:[1,3],q:"Tray + eUICC",in:[["Path",["SIM tray / eUICC","ISO 7816","Modem"]]]},
+ hap:{fn:"Produces tactile clicks and vibration",c:[2,4],q:"LRA + driver",in:[["Path",["Driver IC","Closed-loop sensing","X-axis LRA"]]]}
+};
+const fmt=c=>c?(c[0]<1?"$"+c[0].toFixed(1):"$"+c[0])+"–"+(c[1]<1?c[1].toFixed(1):c[1]):"in SoC";
+const PRESETS=[
+ {id:"lbtx",n:"n71 uplink",dir:"rev",set:["modem","trx","et","lb","tuner","a_main"],note:"Modem → transceiver → LB PAMiD (PA biased by the envelope tracker) → duplexer → aperture tuner → main antenna. The tuner shifts the frame resonance down to 663–698 MHz."},
+ {id:"mhb",n:"n41 4×4 downlink",dir:"fwd",set:["a_main","a_div","a_m3","a_m4","tuner","asm","mhb","drx","mimo","trx","modem"],note:"Four antennas feed four receive chains: PRx in the MHB PAMiD, DRx module, and the two MIMO L-FEMs, all converging on the transceiver."},
+ {id:"n77",n:"n77 4×4 + SRS",dir:"fwd",set:["a_main","a_div","tuner","asm","uhb","mimo","trx","modem"],note:"C-band receive on four antennas. During SRS slots the switch matrix sends one TX to each antenna in turn so the gNB can measure the full channel."},
+ {id:"mmw",n:"mmWave n260",dir:"fwd",set:["a_mmw","mmw","mmwif","modem"],note:"Phased-array beam at 37–40 GHz → beamforming RFIC → IF over flex → IF transceiver → modem. The modem picks the module and beam with the best reference signal."},
+ {id:"ntn",n:"Satellite SOS (NTN)",dir:"rev",set:["modem","trx","et","mhb","tuner","a_main"],note:"Rel-17 NTN messaging in n255 (L-band) or n256 (S-band) reuses the MHB transmitter at full power through the main antenna."},
+ {id:"wifi",n:"Wi-Fi 7 · 6 GHz",dir:"fwd",set:["a_wifi","wfem","wcombo","io"],note:"Two antennas → FEM → Wi-Fi 7 chip → PCIe into the SoC. MLO can bond a 6 GHz and a 5 GHz link at the same time."},
+ {id:"gnss",n:"GNSS L1 + L5",dir:"fwd",set:["a_gnss","gnss_lna","gnss"],note:"Dual-band GNSS antenna → SAW → LNA → SAW → GNSS engine in the SoC."},
+ {id:"nfc",n:"Tap to pay",dir:"fwd",set:["a_nfc","nfc","sec"],note:"NFC coil → controller and embedded secure element. The SoC secure enclave authorizes the payment after biometric match."},
+ {id:"pwr",n:"Power tree",dir:"rev",set:["chg","pmic","et","lb","mhb","uhb"],note:"Battery → PMICs → SoC rails. The RF PAs get their own fast supply from the envelope tracker."}
+];
+
+// Bands: b, mode, ul, dl, filter[], module, lane, note
+const BANDS=[
+ ["n71","FDD",[663,698],[617,652],["TC-SAW"],"lb","LB","Reverse duplex, 46 MHz gap; antenna at its least efficient"],
+ ["B12 / n12","FDD",[699,716],[729,746],["TC-SAW"],"lb","LB","Narrow 13 MHz duplex gap"],
+ ["B13 / n13","FDD",[777,787],[746,756],["TC-SAW"],"lb","LB","2nd harmonic hits GPS L1"],
+ ["B14 / n14","FDD",[788,798],[758,768],["TC-SAW"],"lb","LB","FirstNet; harmonic near L1"],
+ ["n28","FDD",[703,748],[758,803],["SAW"],"lb","LB","Wide band split into two duplexers"],
+ ["B20 / n20","FDD",[832,862],[791,821],["SAW"],"lb","LB","Reverse duplex"],
+ ["B5 / n5","FDD",[824,849],[869,894],["SAW"],"lb","LB","Shares path with B26"],
+ ["B8 / n8","FDD",[880,915],[925,960],["SAW"],"lb","LB","10 MHz gap"],
+ ["B32 / n75","SDL",null,[1452,1496],["SAW"],"mhb","MHB","Downlink-only CA band"],
+ ["n3","FDD",[1710,1785],[1805,1880],["BAW","TC-SAW"],"mhb","MHB","Overlaps n66 uplink"],
+ ["B25 / n25","FDD",[1850,1915],[1930,1995],["BAW"],"mhb","MHB","15 MHz gap needs BAW"],
+ ["n1","FDD",[1920,1980],[2110,2170],["BAW"],"mhb","MHB","Quadplexed with n3"],
+ ["n66","FDD",[1710,1780],[2110,2200],["BAW"],"mhb","MHB","Shares DL with n1"],
+ ["n30","FDD",[2305,2315],[2350,2360],["BAW"],"mhb","MHB","Steep SDARS protection"],
+ ["n40","TDD",[2300,2400],null,["BAW"],"mhb","MHB","Next to Wi-Fi 2.4 GHz"],
+ ["n7","FDD",[2500,2570],[2620,2690],["BAW"],"mhb","MHB","Wi-Fi 2.4 coexistence"],
+ ["n41","TDD",[2496,2690],null,["BAW"],"mhb","MHB","HPUE PC2; Wi-Fi coexistence"],
+ ["n255 NTN","FDD",[1626.5,1660.5],[1525,1559],["SAW","BAW"],"mhb","NTN","L-band satellite; next to GNSS L1"],
+ ["n256 NTN","FDD",[1980,2010],[2170,2200],["BAW"],"mhb","NTN","S-band satellite"],
+ ["n48 CBRS","TDD",[3550,3700],null,["BAW","LTCC"],"uhb","UHB","Inside n77"],
+ ["n78","TDD",[3300,3800],null,["LTCC","IPD"],"uhb","UHB","500 MHz wide"],
+ ["n77","TDD",[3300,4200],null,["LTCC","XBAW"],"uhb","UHB","900 MHz wide, 4×4 + SRS"],
+ ["n79","TDD",[4400,5000],null,["LTCC","BAW"],"uhb","UHB","Next to Wi-Fi 5 GHz"],
+ ["Wi-Fi 2.4","TDD",[2400,2483.5],null,["BAW"],"wfem","Wi-Fi","Squeezed between n40 and n41"],
+ ["Wi-Fi 5","TDD",[5150,5895],null,["BAW","LTCC"],"wfem","Wi-Fi","UNII-1 to UNII-4"],
+ ["Wi-Fi 6E/7","TDD",[5925,7125],null,["BAW","XBAW"],"wfem","Wi-Fi","Split from 5 GHz by 30 MHz"],
+ ["GNSS L5","RX",null,[1164,1189],["SAW"],"gnss_lna","GNSS","Lane-level accuracy"],
+ ["GNSS L1","RX",null,[1559,1610],["SAW"],"gnss_lna","GNSS","B13 harmonic and n255 nearby"],
+ ["UWB Ch 5","TDD",[6240,6739],null,["LTCC"],"uwb","UWB","499.2 MHz wide"],
+ ["UWB Ch 9","TDD",[7738,8237],null,["LTCC"],"uwb","UWB","Car-key channel"],
+ ["n258","TDD",[24250,27500],null,["In-package"],"mmw","mmW","Europe/Asia mmWave"],
+ ["n261","TDD",[27500,28350],null,["In-package"],"mmw","mmW","US 28 GHz"],
+ ["n260","TDD",[37000,40000],null,["In-package"],"mmw","mmW","US 39 GHz"]
+];
+
+const byId={}; NODES.forEach(n=>byId[n[0]]={id:n[0],x:n[1],y:n[2],w:n[3],h:n[4],cat:n[5],label:n[6],sub:n[7],parent:n[8]});
+byId.soc={id:"soc",...SOC,cat:"soc"};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,mx){
+  let L,R;
+  if(b.x>=a.x+a.w){L=a;R=b}else if(a.x>=b.x+b.w){L=b;R=a}else{
+    const t=a.y<b.y?a:b,o=t===a?b:a;const x=(Math.max(a.x,b.x)+Math.min(a.x+a.w,b.x+b.w))/2;
+    return `M${x} ${t.y+t.h} V${o.y}`;
+  }
+  const sx=L.x+L.w,ex=R.x,lo=Math.max(L.y,R.y),hi=Math.min(L.y+L.h,R.y+R.h);
+  if(hi-lo>=4){const y=(lo+hi)/2;return `M${sx} ${y} H${ex}`}
+  const m=mx??(sx+ex)/2,sy=clamp(R.y+R.h/2,L.y+8,L.y+L.h-8),ey=clamp(L.y+L.h/2,R.y+8,R.y+R.h-8);
+  return `M${sx} ${sy} H${m} V${ey} H${ex}`;
+}
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+
+const svg=document.getElementById("dia");
+// column labels
+[["ANTENNAS",16],["TUNE / SWITCH",160],["RF FRONT-END",304],["TRANSCEIVERS",510],["RF & PERIPHERALS",1000]].forEach(([t,x])=>{const e=el("text",{x,y:18,class:"col"},svg);e.textContent=t});
+// soc container
+const sg=el("g",{"data-id":"soc",class:"socg"},svg);
+const sbg=el("rect",{x:SOC.x,y:SOC.y+10,width:SOC.w,height:SOC.h-10,class:"soc-bg",rx:4},sg);
+el("rect",{x:SOC.x,y:SOC.y+10,width:SOC.w,height:SOC.h-10,class:"soc-box",rx:4},sg);
+const st=el("text",{x:SOC.x+16,y:SOC.y+30,class:"soc-title"},sg);st.textContent="APPLICATION SoC · 3 nm";
+sbg.addEventListener("click",()=>select("soc"));
+const linkG=el("g",{},svg),nodeG=el("g",{},svg);
+const linkEls=LINKS.map(([f,t,ty,mx])=>{const p=el("path",{d:route(byId[f],byId[t],mx),class:"link "+ty},linkG);return{f,t,p}});
+const nodeEls={};
+NODES.forEach(n=>{const o=byId[n[0]];
+  const g=el("g",{class:"node",tabindex:"0",role:"button","aria-label":o.label,style:`--cat:var(${CAT[o.cat][0]})`},nodeG);
+  el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3},g);
+  el("rect",{x:o.x,y:o.y+o.h/2-6,width:3,height:12,class:"pin"},g);
+  const cy=o.y+o.h/2;
+  const t1=el("text",{x:o.x+10,y:cy-2,class:"lbl"},g);t1.textContent=o.label;
+  const t2=el("text",{x:o.x+10,y:cy+12,class:"sub"},g);t2.textContent=o.sub;
+  g.addEventListener("click",e=>{e.stopPropagation();select(o.id)});
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(o.id)}});
+  nodeEls[o.id]=g;
+});
+nodeEls.soc=sg;
+
+const insp=document.getElementById("insp");
+function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function panel(id,extra){
+  const d=D[id];if(!d)return;const c=CAT[d.cat];const x=X[id]||{};
+  insp.innerHTML=`<div class="insp-head" style="--cat:var(${c[0]})"><span class="tag">${c[1]}</span><h2>${esc(d.t)}</h2></div>
+  <div class="insp-body">${extra?`<p class="note">${esc(extra)}</p>`:""}
+  ${x.fn?`<div><h3>Main function</h3><p class="fn">${esc(x.fn)}</p></div>`:""}
+  <div class="cost"><div><h3>Typical cost</h3><span class="amt">${x.c?fmt(x.c):"Included"}</span></div><span class="cq">${esc(x.q||"")}</span></div>
+  ${x.in?`<div><h3>Internal block diagram</h3><div class="inner">${innerSvg(d.t,x.in)}</div>${symKey(x.in)}</div>`:""}
+  <div><h3>How it works</h3><p>${esc(d.role)}</p></div>
+  ${PAGEOF[id]?`<a class="pagelink" href="${PAGEOF[id][0]}">Open the ${esc(PAGEOF[id][1])} page →</a>`:""}
+  ${DEEP[id]?`<button class="chip deeplink" type="button" onclick="document.getElementById('deep').scrollIntoView({behavior:'smooth'})">Implementation &amp; architectures ↓</button>`:""}
+  ${d.specs?`<div><h3>Key figures</h3><dl class="spec">${d.specs.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></div>`:""}
+  ${d.parts?`<div><h3>Typical parts</h3><ul class="parts">${d.parts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>`:""}
+  ${d.note?`<p class="note">${esc(d.note)}</p>`:""}</div>`;
+  deep(id);
+}
+function overview(){
+  insp.innerHTML=`<div class="insp-head"><span class="tag">Overview</span><h2>How the signal gets in</h2></div>
+  <div class="insp-body"><p>A flagship phone carries roughly 12 antennas: four cellular, two Wi-Fi, GNSS, NFC, three UWB, plus three mmWave modules each holding its own array.</p>
+  <p>Between each antenna and the modem sit tuners, a switch matrix, PA/LNA modules full of acoustic filters, and the RF transceiver. The modem baseband itself lives inside the application SoC.</p>
+  ${bomHtml()}
+  <dl class="spec"><dt>Cellular bands</dt><dd>≈ 30 sub-6 + 4 mmWave</dd><dt>DL MIMO</dt><dd>4×4 MHB/UHB, 2×2 LB</dd><dt>UL</dt><dd>2 TX, SRS 1T4R</dd><dt>Filters</dt><dd>≈ 60–100 resonator dies</dd><dt>Peak DL</dt><dd>12.5 Gbps (X85)</dd></dl>
+  <p class="note">Pick a path above, or click any block, band bar or table row.</p></div>`;
+}
+
+// ---------- deep-dive content: impl = how it is built, tech = [process, package], arch = [name, how it works, trade-off, where used] ----------
+const PAM_IMPL=["A PAMiD is a multi-chip module on a 4–6 layer organic laminate. Inside sit an InGaP/GaAs HBT power-amplifier die, an SOI CMOS die carrying the band and antenna switches, LNAs and the digital controller, and several acoustic filter dies (SAW, TC-SAW or BAW) flip-chipped next to them. SMT inductors and capacitors complete the matching networks.",
+ "Compartment shielding (sputtered metal over the mold, with ground walls between sections) keeps the PA output from coupling into the LNA inputs. Newer modules are molded on both sides of the laminate to cut footprint by about 30%. The transceiver configures every switch, bias and gain state over the two-wire MIPI RFFE bus.",
+ "The output match is the hardest part: it has to present a low load impedance (a few ohms) to the PA transistor across a wide bandwidth while the harmonic traps keep 2nd and 3rd harmonics below spurious-emission limits."];
+const PAM_ARCH=[
+ ["PAMiD (integrated duplexers)","PA, filters, switches and LNAs in one module, validated together.","Smallest area and best-known performance; less flexible when a region needs a different band mix.","Flagships, most bands"],
+ ["PAM + discrete duplexers","PA module with separate filter and switch parts on the board.","Easy regional SKU changes; more area and more insertion loss from extra traces.","Mid-range, regional variants"],
+ ["Integrated GaAs HBT PA","Heterojunction bipolar transistors on GaAs, class-AB with envelope tracking.","Best efficiency and linearity at 1–5 GHz; separate die from CMOS control.","Almost every cellular PA today"],
+ ["CMOS / SOI PA","PA built in the same SOI process as the switches.","Lower cost and higher integration; lower efficiency and ruggedness at high power.","Some low-band and Wi-Fi 2.4 GHz PAs"],
+ ["Doherty or load-modulated PA","Main and peaking amplifiers share the load to keep efficiency high at back-off.","Good back-off efficiency without ET; narrowband, harder across wide UHB.","Base stations; research and early UHB handset parts"],
+ ["Envelope tracking vs APT supply","ET follows the RF envelope in real time; APT adjusts the supply once per slot.","ET adds efficiency at high power; APT is simpler and fine at low power.","Both are used, switched by power level"]
+];
+const DEEP={
+ soc:{tech:["TSMC N3P or Samsung SF3/SF2 (gate-all-around)","Flip-chip, PoP or side-by-side LPDDR"],
+  impl:["The application SoC is a single die of roughly 120–150 mm² with 20–30 billion transistors, built on the most advanced node the vendor can get. Each IP block (CPU clusters, GPU, NPU, ISP, modem, display, video, security) is a separate power and clock domain on a shared network-on-chip, so idle blocks can be fully power-gated.",
+  "The die is flip-chip bonded to a thin substrate. LPDDR5X either sits on top as package-on-package or beside the SoC on the board; side-by-side placement is becoming common because it gives the SoC a direct path to the heat spreader. A phone can only remove about 5–8 W continuously, so thermal design, not peak clock, decides sustained performance.",
+  "Dozens of supply rails come from external PMICs, and each rail is adjusted many times a second by DVFS. The on-die power manager (an always-on microcontroller) runs this loop and also handles boot, secure keys and sleep states."],
+  arch:[["Integrated modem SoC","Modem baseband on the same die as the application processor.","Lower power, cost and board area; modem upgrades are tied to the SoC cycle.","Snapdragon 8-series, Dimensity 9000-series"],
+   ["AP + discrete modem","Separate modem chip with its own memory, linked over PCIe or a custom bus.","Freedom to mix vendors and nodes; extra package, area and idle power.","iPhone (Qualcomm or Apple C-series modem), Google Tensor + Exynos modem"],
+   ["All-big-core CPU","Only high-performance cores (e.g. 2 prime + 6 performance), no small cores.","Faster burst and multi-thread performance; relies on DVFS for idle efficiency.","Qualcomm Oryon, MediaTek Dimensity 9300 onward"],
+   ["Tri-cluster big.LITTLE","Prime, performance and efficiency cores (e.g. 1+3+4).","Very low idle power; scheduler complexity.","Exynos, Tensor, earlier flagships"],
+   ["Chiplet / multi-die","Compute and I/O split across dies joined by advanced packaging.","Mixes nodes and raises yield; packaging cost and thickness.","Not yet mainstream in phones; used in PCs and tablets"]]},
+ modem:{tech:["Same die as SoC (3 nm class)","Shares SoC package"],
+  impl:["A 5G baseband combines three kinds of hardware. Hardwired accelerators handle the heavy, fixed math: FFT/IFFT for OFDM, channel estimation, MIMO detection, LDPC and polar decoding, and HARQ combining. Programmable vector DSPs handle the parts that change between 3GPP releases. Arm or RISC-V control cores run the L2/L3 protocol stack (MAC, RLC, PDCP, RRC, NAS) on a real-time OS.",
+  "Downlink samples arrive from the transceiver as digital IQ over high-speed serial lanes. The largest memory in the modem is the HARQ soft buffer, which keeps failed code blocks so retransmissions can be combined. The modem also schedules every RF part: it tells the transceiver which bands and carriers to use, sets antenna tuners and switches over MIPI RFFE, and coordinates with Wi-Fi and Bluetooth through a coexistence interface.",
+  "X85-class modems add an AI accelerator used for beam prediction, link adaptation and traffic prioritization, and support NTN satellite links with Doppler and long-delay compensation."],
+  arch:[["Accelerator-centric","Most PHY functions in fixed-function hardware.","Lowest power per bit; new 3GPP features may need new silicon.","Common for high-throughput paths"],
+   ["DSP-centric (software-defined)","PHY mostly in software on vector DSPs.","Easy to update for new releases; higher power.","Earlier modems, low-volume designs"],
+   ["Hybrid (typical today)","Accelerators for decoding and FFT, DSP for control-heavy PHY.","Balances efficiency and flexibility.","Qualcomm, MediaTek, Samsung"],
+   ["Modem-RF system","Vendor supplies modem, transceiver, RF front-end and tuning as one validated set.","Fast time to market and tuned performance; less RF vendor choice.","Qualcomm Modem-RF platforms"],
+   ["Open RF front-end","OEM picks PAs and filters from several vendors around the modem.","Cost and supply flexibility; more integration and calibration work.","Many OEMs for some bands"]]},
+ trx:{tech:["RF CMOS, typically a mature-to-advanced node chosen for analog performance","Flip-chip or WLP on the main board"],
+  impl:["The transceiver is a mixed-signal CMOS chip with many complete receive paths and two transmit paths. Each receiver takes the signal from an external LNA, down-converts it straight to baseband with a passive mixer driven by a 25% duty-cycle LO, then amplifies it in a transimpedance amplifier, filters it, and digitizes it with a high-speed sigma-delta or SAR ADC. Digital decimation filters bring the sample rate down before the IQ data is serialized to the modem.",
+  "Each transmitter does the reverse: DAC, reconstruction filter, quadrature up-mixer and a driver amplifier that feeds the external PA. A separate feedback receiver samples the PA output so the transceiver can run digital predistortion (DPD), which cancels PA nonlinearity and lets the PA run closer to compression.",
+  "Several fractional-N synthesizers (often all-digital PLLs with a DCO) generate the LOs, because carrier aggregation needs several independent carriers at once. Built-in calibrations correct IQ imbalance, DC offset, second-order intermodulation (IIP2) and LO leakage, since zero-IF receivers are sensitive to all of these."],
+  arch:[["Zero-IF (direct conversion)","RF is mixed straight to 0 Hz baseband.","No image filter and simple to integrate; needs DC-offset, IIP2 and flicker-noise calibration.","All current cellular transceivers"],
+   ["Low-IF","RF is mixed to a few MHz, then digitized.","Avoids DC offset and flicker noise; needs image rejection.","GNSS and Bluetooth receivers"],
+   ["Superheterodyne / IF","One or more intermediate frequencies before baseband.","Good selectivity; more parts and LOs.","mmWave paths (IF to the AiP modules)"],
+   ["Direct RF sampling","ADC samples RF directly, all mixing done digitally.","Very flexible; too power-hungry for phones today.","Base stations, test equipment"],
+   ["Discrete vs integrated","Separate transceiver chip, or RF integrated into the SoC.","Separate gives isolation and node freedom; integrated saves cost.","Flagships use discrete; lower tiers often integrate"],
+   ["Cartesian vs polar TX","IQ up-conversion, or amplitude and phase modulated separately.","Cartesian handles wide NR bandwidths; polar is more efficient but narrowband.","Cartesian dominates for 5G"]]},
+ et:{tech:["CMOS / BCD power process","WLCSP near the PA modules"],
+  impl:["An envelope tracker is a hybrid supply. A fast linear amplifier (class-AB, several hundred MHz bandwidth) follows the high-frequency part of the RF envelope, while a switching buck converter supplies the slow, high-current part efficiently. Their outputs combine at the PA collector.",
+  "The transceiver sends the envelope signal (digitally shaped and delay-aligned to the RF) to the tracker. Timing alignment between envelope and RF must be within a few nanoseconds, or the PA output distorts. At low output power the tracker switches to APT mode, where only the buck runs."],
+  arch:[["Hybrid ET (linear + switcher)","Linear stage for fast changes, buck for average current.","Wide bandwidth with good efficiency; complex control.","Flagship cellular TX"],
+   ["APT (average power tracking)","Buck sets one supply level per slot.","Simple and efficient at low power; no gain at peak power.","Low-power states, Wi-Fi"],
+   ["Multi-level / discrete ET","Supply switches between a few fixed levels.","Handles wide bandwidths with less linear-stage loss.","Newer wideband NR designs"],
+   ["Dual-channel ET","Two independent trackers.","Supports EN-DC and UL MIMO with two PAs active.","Current flagships"]]},
+ lb:{tech:["GaAs HBT + SOI CMOS + TC-SAW dies","Multi-chip laminate module, double-sided mold"],impl:PAM_IMPL,arch:PAM_ARCH,extra:"Low band is limited by the antenna more than the PA: a 160 mm phone is under half a wavelength at 617 MHz, so radiation efficiency can be −6 dB or worse and the aperture tuner is essential."},
+ mhb:{tech:["GaAs HBT + SOI CMOS + BAW/FBAR dies","Multi-chip laminate module"],impl:PAM_IMPL,arch:PAM_ARCH,extra:"Mid/high band carries the most carrier-aggregation combinations, so this module holds quadplexers and hexaplexers whose filters must not load each other. BAW resonators are needed for B25, n41 and n7 because their duplex gaps and Wi-Fi neighbors need very steep skirts."},
+ uhb:{tech:["GaAs HBT + SOI CMOS + LTCC/XBAW filters","Multi-chip laminate module"],impl:PAM_IMPL,arch:PAM_ARCH,extra:"n77 is 900 MHz wide (about 24% fractional bandwidth), which ordinary BAW resonators cannot cover. Designers use LTCC or IPD filters, or wider-band XBAW-type resonators. Two PAs allow UL MIMO, and PC2 (26 dBm) or PC1.5 (29 dBm) needs high PA efficiency."},
+ drx:{tech:["SOI CMOS LNA/switch + SAW/BAW dies","Laminate module"],
+  impl:["A diversity receive module is a receive-only front end: band-select switches, a bank of SAW and BAW filters, and SOI CMOS LNAs. It sits close to the top antenna so the noise figure is set before the long board trace back to the transceiver, which can add 1–2 dB of loss.",
+  "LNA gain is switchable (high gain, low gain, bypass) so strong signals near the base station do not overload the transceiver."],
+  arch:[["Integrated LFEM","LNAs, switches and filters in one module.","Small and well-matched; fixed band set.","Flagships"],
+   ["Discrete LNA + filters","Separate parts on the board.","Flexible; more area and loss.","Lower tiers"],
+   ["Combined DRx + MIMO","One module serves diversity and MIMO chains.","Fewer modules; more crowded routing.","Recent consolidated designs"]]},
+ mimo:{tech:["SOI CMOS + acoustic filters","Laminate module"],
+  impl:["MIMO L-FEMs are built the same way as the DRx module, but only for the bands that run 4×4 (mid/high band and UHB). Each one feeds receive chains 3 and 4 of the transceiver.","Because four antennas see different fading, 4×4 MIMO roughly doubles peak throughput over 2×2 and improves cell-edge reliability."],
+  arch:[["Separate MIMO L-FEMs","One module per extra antenna.","Places each LNA near its antenna; more modules.","Most flagships"],
+   ["Shared with DRx","MIMO chains inside the diversity module.","Fewer parts; longer traces for some chains.","Space-constrained designs"]]},
+ tuner:{tech:["RF SOI CMOS (stacked FETs)","WLCSP, a few mm²"],
+  impl:["An aperture tuner is a small SOI switch that connects inductors or capacitors from a point on the antenna radiator to ground, which changes its electrical length and moves the resonance. An impedance tuner is a network of digitally tunable capacitors (DTCs) at the antenna feed that corrects mismatch.",
+  "SOI FETs are stacked in series so the switch can withstand the large RF voltage swing at the antenna (tens of volts peak). The key figure is Ron × Coff, around 80–100 fs; lower means less loss when on and less loading when off."],
+  arch:[["Aperture tuning","Changes the antenna's resonant frequency.","Recovers low-band efficiency; adds switch loss.","Every flagship low-band antenna"],
+   ["Impedance tuning","Matches the feed to the changing antenna impedance.","Corrects hand and case effects; does not fix radiation efficiency.","Main and diversity feeds"],
+   ["Open-loop vs closed-loop","Fixed settings per band, or adjusted from measured reflection.","Closed-loop adapts to grip; needs a coupler and detection.","Closed-loop on main antennas"],
+   ["SOI switch vs MEMS vs BST","Switched capacitors, micro-mechanical capacitors, or ferroelectric caps.","SOI won on cost and reliability; MEMS had lower loss; BST lacked linearity.","SOI is now standard"]]},
+ asm:{tech:["RF SOI CMOS","WLCSP"],
+  impl:["The switch matrix is an SOI crossbar of stacked FETs. Each path trades insertion loss (fewer, wider FETs) against isolation and linearity (more FETs in the stack). A negative-voltage charge pump biases off-state FETs so they stay linear at high RF power.",
+  "It is used for SRS antenna switching, where one transmitter sends sounding signals from each antenna in turn, and for TX antenna selection when a hand covers the bottom antenna."],
+  arch:[["Discrete switch matrix","Separate 4P4T or DPDT part.","Flexible routing; one more insertion loss in the path.","Most 4-antenna designs"],
+   ["Switches inside PAMiD","Antenna-swap switching built into the PA module.","Fewer parts; less flexible antenna assignment.","Some designs"],
+   ["1T2R vs 1T4R SRS","Sounding on two or four antennas.","1T4R gives the base station full channel knowledge for beamforming.","1T4R on n77/n78 flagships"]]},
+ wfem:{tech:["GaAs or SiGe PA + SOI switch + BAW filters","Laminate module"],
+  impl:["Each Wi-Fi front-end module combines a PA, an LNA with bypass, a T/R switch, a power detector and coexistence filters. Wi-Fi 7's 4096-QAM needs EVM around −47 dB, so the PA runs well backed off from saturation, which costs efficiency.",
+  "BAW filters at 2.4 GHz keep Wi-Fi and cellular n40/n41 from blocking each other. At 5/6 GHz, steep filters separate UNII-4 from UNII-5 so both bands can run at once for multi-link operation."],
+  arch:[["External FEM","Separate PA/LNA module per chain.","Highest output power and best EVM at 6 GHz; more area and cost.","Flagships"],
+   ["Integrated PA (iPA)","PA and LNA built into the Wi-Fi chip.","Cheaper and smaller; lower power, weaker 6 GHz range.","Mid-range phones"],
+   ["Shared cellular/Wi-Fi antenna","Diplexer lets Wi-Fi share a cellular antenna.","Saves antennas; adds loss and coexistence risk.","Some compact designs"]]},
+ wcombo:{tech:["Advanced CMOS","WLCSP or BGA on main board"],
+  impl:["The connectivity combo chip contains the Wi-Fi 7 MAC and PHY, a 2×2 RF transceiver per band, and a Bluetooth controller and radio. It connects to the SoC over PCIe for Wi-Fi and UART or a dedicated link for Bluetooth.",
+  "Multi-link operation (MLO) lets the chip send on 5 and 6 GHz links at once, or switch between them per packet. Coexistence signals (WCI-2) from the modem tell it when LTE/NR will transmit near 2.4 GHz so it can avoid collisions."],
+  arch:[["Discrete combo chip","Wi-Fi and Bluetooth in a separate chip.","Best performance and independent upgrades.","Most flagships"],
+   ["Integrated in SoC","Wi-Fi/BT MAC and baseband on the SoC die, external RF or FEM.","Lower cost; RF compromises from shared die.","Some MediaTek and lower-tier SoCs"],
+   ["MLO modes","Simultaneous (STR), enhanced single-radio (eMLSR).","STR gives the highest throughput; eMLSR saves power.","Both in Wi-Fi 7 phones"]]},
+ mmw:{tech:["SiGe BiCMOS or SOI/bulk CMOS RFIC","Antenna-in-package on multilayer substrate"],
+  impl:["Each module is a small multilayer organic substrate with patch antennas on one side and dipoles on the edge, with a beamforming RFIC mounted on the other side. The RFIC has a PA, LNA and phase shifter for every antenna element, plus an up/down-converter between IF and mmWave and its own LO.",
+  "Beams are formed in the analog domain by setting phase shifts per element. The modem picks the best module and beam from a codebook using reference-signal measurements and tracks the beam as the phone moves. Three modules on different edges make sure at least one has line of sight even when a hand blocks the others.",
+  "Transmit power is limited by RF exposure rules (power density at mmWave), so the modem lowers power when the phone detects it is close to the body."],
+  arch:[["Analog beamforming","Phase shift per element, one stream per polarization.","Low power and cost; one beam at a time.","Phones"],
+   ["Hybrid beamforming","Analog sub-arrays with digital combining.","Multiple beams and users; more power.","Base stations, CPE"],
+   ["Antenna-in-package (AiP)","Antennas and RFIC in one module.","Shortest, lowest-loss path; module must sit at the edge.","All mmWave phones"],
+   ["IF vs direct conversion","IF cable from transceiver, or baseband straight into the module.","IF eases routing over flex; direct saves a conversion stage.","IF architecture is common today"]]},
+ mmwif:{tech:["RF CMOS","Separate IFIC or part of transceiver"],
+  impl:["The IF transceiver converts baseband IQ to an intermediate frequency of several GHz and back. That IF travels over thin coax or flex to each mmWave module, where it is converted again to 24–40 GHz.","Choosing the IF is a trade-off: a lower IF loses less in cables, while a higher IF makes image rejection in the module easier."],
+  arch:[["Separate IFIC","Dedicated chip for the mmWave IF.","Keeps the sub-6 transceiver simpler.","Earlier designs"],
+   ["Integrated in transceiver","IF paths inside the main transceiver.","Fewer chips; more complex transceiver.","Recent platforms"]]},
+ gnss_lna:{tech:["SiGe or SOI LNA + SAW","Tiny WLCSP / module"],
+  impl:["GNSS signals arrive around −130 dBm, below the noise floor, so the front end needs a low noise figure and very good blocker rejection. A SAW filter before the LNA removes strong cellular signals; a second SAW after it cleans up the band before the receiver.","The LNA must stay linear while the phone's own transmitter is on, which is why the B13/B14 harmonic and n255 satellite uplink are classic design cases."],
+  arch:[["External LNA + SAW","Dedicated front end near the antenna.","Best sensitivity; extra parts.","Flagships with L1 + L5"],
+   ["LNA in transceiver","Uses an LNA inside the RF chip.","Cheaper; worse noise figure after board losses.","Lower-cost phones"],
+   ["L1-only vs dual-band","Single band, or L1 + L5.","Dual band gives lane-level accuracy and urban multipath rejection.","Dual band is standard on flagships"]]},
+ nfc:{tech:["CMOS controller + secure element die","WLCSP or SiP"],
+  impl:["The NFC controller drives the 13.56 MHz coil, demodulates load-modulated replies from cards in reader mode, and modulates the field itself in card-emulation mode. A small Arm core runs the protocol stack.",
+  "For payments, the card credentials live in an embedded secure element (eSE), a tamper-resistant chip running Java Card applets. The SoC secure enclave checks the user's fingerprint or face before the eSE is allowed to respond."],
+  arch:[["Embedded SE (eSE)","Credentials in a secure chip next to the NFC controller.","Works offline; OEM controls the secure element.","Apple Pay, Samsung Pay"],
+   ["Host card emulation (HCE)","Credentials as cloud tokens, handled by the app processor.","No secure hardware needed; needs periodic connectivity.","Google Wallet on many Android phones"],
+   ["UICC-based SE","Credentials on the SIM, linked by SWP.","Operator controlled; now rare.","Older operator wallets"]]},
+ uwb:{tech:["CMOS UWB SoC","WLCSP"],
+  impl:["UWB sends pulses about 2 ns wide spread over 500 MHz. The receiver measures time of flight with about 10 cm accuracy, and three antennas in an L-shape measure phase differences to find angle of arrival in two axes.","A scrambled timestamp sequence (STS) in each packet prevents relay attacks, which is why car makers trust UWB for digital keys."],
+  arch:[["Standalone UWB chip","Separate transceiver and antennas.","Best ranging accuracy; extra part.","Most UWB phones"],
+   ["Integrated in connectivity combo","UWB inside the Wi-Fi/BT chip.","Lower cost; shared RF constraints.","Emerging"],
+   ["802.15.4z vs 4ab","4ab adds narrowband assistance and longer range.","4ab uses less power for discovery.","4ab in new 2026 designs"]]},
+ cpu:{tech:["3 nm class FinFET / GAA","Inside SoC"],
+  impl:["Each core is an out-of-order superscalar design with wide decode (8 or more instructions per cycle on prime cores), a large reorder buffer and several MB of L2 per cluster. Cores share the system-level cache.","Each cluster has its own voltage rail and clock so the OS scheduler can run light work on slower, lower-voltage cores."],
+  arch:[["Custom Arm-ISA cores","Vendor designs the core to the Arm instruction set.","Higher performance per watt; large design team.","Qualcomm Oryon, Apple"],
+   ["Licensed Arm Cortex cores","Stock Cortex-X and Cortex-A cores.","Faster to market; same cores as competitors.","MediaTek, Samsung, Google"],
+   ["RISC-V","Open instruction set.","No license fee; software ecosystem still maturing for phone app processors.","Microcontrollers inside SoCs today"]]},
+ gpu:{tech:["3 nm class","Inside SoC"],
+  impl:["The GPU is an array of shader cores with fixed-function units for texturing, rasterization and, on flagships, ray tracing. Mobile GPUs split the screen into tiles that fit in on-chip memory, which saves a lot of DRAM bandwidth and power."],
+  arch:[["Tile-based deferred rendering","Bins geometry per tile, shades each tile in on-chip memory.","Very low bandwidth; extra binning pass.","Arm Mali/Immortalis, Imagination"],
+   ["Hybrid binning","Chooses binned or direct rendering per frame.","Flexible for different workloads.","Qualcomm Adreno"],
+   ["Desktop-derived (RDNA)","Desktop architecture adapted for mobile.","Strong compute features; higher power.","Samsung Xclipse"]]},
+ npu:{tech:["3 nm class","Inside SoC"],
+  impl:["The NPU combines a matrix (tensor) engine for multiply-accumulate at INT4/INT8/FP16, a vector unit for activations and normalization, and a scalar control core. Local SRAM keeps weights and activations near the math units because DRAM bandwidth, not compute, limits on-device LLMs."],
+  arch:[["Scalar + vector + tensor","Heterogeneous engine with shared memory.","Flexible across model types.","Qualcomm Hexagon"],
+   ["Systolic array","Grid of MAC units passing data neighbor to neighbor.","Very efficient for dense matrix math.","Google TPU in Tensor"],
+   ["GPU-based AI","Run models on GPU shaders.","No extra hardware; less efficient.","Fallback on many phones"]]},
+ memc:{tech:["Inside SoC","PHY at die edge"],
+  impl:["The memory controller arbitrates requests from every master, reorders them to keep DRAM banks busy, and applies QoS so the display and modem are never starved. The PHY handles training of timing and voltage for each data lane at boot."],
+  arch:[["PoP LPDDR","DRAM stacked on SoC.","Smallest area, shortest wires; traps heat.","Many flagships"],
+   ["Side-by-side LPDDR","DRAM beside the SoC on the board.","Better cooling; longer routing.","Growing in 2025–26 designs"],
+   ["LPDDR5X vs LPDDR6","Next generation raises per-pin speed and adds sub-channels.","More bandwidth for on-device AI.","LPDDR6 arriving in new SoCs"]]},
+ dram:{tech:["1-beta / 1-gamma DRAM nodes","Stacked die in BGA or PoP"],
+  impl:["Four to eight DRAM dies are stacked and wire-bonded in one package. LPDDR5X runs a low-voltage I/O and uses deep sleep modes so standby power stays in the milliwatt range."],
+  arch:[["PoP","On top of SoC.","Area-efficient.","Many phones"],["Discrete beside SoC","Separate package on board.","Better thermal path.","Rising"]]},
+ ufs:{tech:["3D NAND (200+ layers) + controller","BGA"],
+  impl:["A UFS device has a controller running a flash translation layer, an SLC write buffer for bursts, and TLC or QLC 3D NAND dies. It connects to the SoC over two MIPI M-PHY lanes."],
+  arch:[["UFS 4.x","JEDEC standard over M-PHY.","Standard parts from many vendors.","Android flagships"],
+   ["NVMe-based","PCIe-based storage with custom controller.","Tight OS integration.","Apple"],
+   ["UFS 5.0","Next generation with higher lane speed.","More bandwidth for AI models.","Upcoming"]]},
+ pmic:{tech:["BCD power process","WLCSP + board inductors"],
+  impl:["Each PMIC has multi-phase buck converters for the big CPU and GPU rails, many LDOs for noise-sensitive RF and sensor rails, a crystal oscillator buffer and a real-time clock. The SoC sets voltages over SPMI."],
+  arch:[["Central PMIC","One large PMIC near the SoC.","Simple; long, lossy routing to remote loads.","Older phones"],
+   ["Distributed PMICs","Several PMICs, each near its loads.","Lower IR drop and better transient response.","Current flagships"],
+   ["On-die regulators","Digital LDOs inside the SoC per domain.","Fine-grained, fast voltage control.","Growing on CPU clusters"]]},
+ chg:{tech:["Charge pump + buck charger ICs","Li-ion cell, often Si-C anode"],
+  impl:["Fast wired charging uses a switched-capacitor charge pump: the charger negotiates a higher voltage over USB PD and the pump divides it by 2 or 4 with very high efficiency, so less heat is made in the phone. A buck charger handles slow and wireless charging, and a fuel gauge tracks the battery."],
+  arch:[["Charge pump direct charging","Adapter controls current, pump divides voltage.","Highest efficiency at 45–120 W.","Most fast-charging phones"],
+   ["Buck charger","Inductor-based converter in the phone.","Simple and universal; more heat.","Slow and wireless charging"],
+   ["Two-cell series (2S)","Two cells in series for higher power.","Faster charging; less space efficient.","100 W+ phones"],
+   ["Si-C anode cells","Silicon-carbon anode.","Higher energy density; swelling management.","Many 2025–26 phones"]]},
+ dispm:{tech:["LTPO TFT + RGB OLED","Chip-on-plastic DDIC"],
+  impl:["LTPO backplanes mix LTPS and oxide transistors so the panel can hold an image at 1 Hz without flicker. The display driver IC buffers frames and handles compression. Touch sensors are patterned directly on the encapsulation layer."],
+  arch:[["LTPO vs LTPS","Variable refresh down to 1 Hz, or fixed refresh.","LTPO saves power; costs more.","LTPO on flagships"],
+   ["Tandem OLED","Two emissive stacks.","Brighter and longer-lived; costlier.","Some 2025–26 flagships"],
+   ["On-cell touch","Touch sensor on the OLED encapsulation.","Thinner panel.","Most OLED phones"]]},
+ cam:{tech:["Stacked BSI CMOS sensors","Camera modules with OIS"],
+  impl:["Image sensors are stacked: a pixel wafer bonded to a logic wafer, sometimes with a DRAM layer for fast readout. Periscope telephotos fold the light path with a prism."],
+  arch:[["Quad Bayer","2×2 same-color pixel groups.","Binning for low light, remosaic for resolution.","Most main cameras"],
+   ["Periscope telephoto","Folded optics.","Long focal length in a thin phone.","Flagships"],
+   ["Sensor-side processing","Some processing on the sensor's logic layer.","Lower readout bandwidth.","Emerging"]]}
+};
+// short fallbacks for blocks without a full entry
+["dsp","disp","sec","io","gnss","slc","pmu","noc","audio","sens","usb","sim","hap","a_main","a_div","a_m3","a_m4","a_wifi","a_gnss","a_nfc","a_uwb","a_mmw"].forEach(id=>{
+ if(DEEP[id])return;
+ const ant=id.startsWith("a_");
+ DEEP[id]=ant?{tech:["Metal frame slot, LDS or flexible circuit","Matched on the main board"],
+  impl:["Phone antennas are built into the metal frame (slots cut to form radiators), laser-direct-structured traces on plastic carriers (LDS), or flexible printed circuits. The ground plane of the phone is part of the antenna, so the PCB and battery shape its pattern.","Placement is a compromise: low-band antennas need the frame ends, MIMO antennas need spacing for low correlation, and every antenna must stay clear of cameras, speakers and the user's hand."],
+  arch:[["Metal frame slot","Frame segments separated by plastic gaps.","Large radiators for low band; sensitive to hand grip.","Most metal-frame phones"],["LDS / FPC","Traces on plastic or flex.","Flexible placement; smaller radiators.","MIMO, Wi-Fi, GNSS"],["Shared antenna","Several systems share one radiator through a multiplexer.","Saves space; adds loss.","Wi-Fi/GNSS sharing"]]}
+ :{tech:["Inside SoC or standalone IC","—"],impl:[D[id].role],arch:[]};
+});
+const PAGEOF={};
+[["soc.html","SoC",["soc","cpu","gpu","npu","isp","dsp","disp","sec","io","slc","memc","pmu","noc","dram","ufs","dispm","cam","audio","sens","hap"]],
+ ["modem.html","5G modem",["modem","sim"]],
+ ["transceiver.html","RF transceiver",["trx"]],
+ ["rf-front-end.html","RF front-end",["lb","mhb","uhb","drx","mimo","et"]],
+ ["antennas.html","Antennas & tuning",["a_main","a_div","a_m3","a_m4","tuner","asm"]],
+ ["gnss.html","GNSS",["a_gnss","gnss_lna","gnss"]],
+ ["mmwave.html","mmWave",["a_mmw","mmw","mmwif"]],
+ ["wifi-bluetooth.html","Wi-Fi & Bluetooth",["a_wifi","wfem","wcombo"]],
+ ["nfc-uwb.html","NFC & UWB",["a_nfc","nfc","a_uwb","uwb"]],
+ ["power.html","Power & charging",["pmic","chg","usb"]]].forEach(([f,n,ids])=>ids.forEach(i=>PAGEOF[i]=[f,n]));
+function deep(id){
+ const d=DEEP[id],b=D[id];if(!d||!b)return;
+ const c=CAT[b.cat];
+ document.getElementById("deepbody").innerHTML=`<div class="dgrid">
+  <div class="dmain"><span class="tag" style="--cat:var(${c[0]})">${c[1]}</span><h3 class="dt">${esc(b.t)}</h3>${PAGEOF[id]?`<a class="pagelink" href="${PAGEOF[id][0]}">Open the full ${esc(PAGEOF[id][1])} page →</a>`:""}
+   <dl class="spec dtech"><dt>Process</dt><dd>${esc(d.tech[0])}</dd><dt>Package</dt><dd>${esc(d.tech[1])}</dd></dl>
+   <h4>How it is implemented</h4>${d.impl.map(p=>`<p>${esc(p)}</p>`).join("")}${d.extra?`<p class="note">${esc(d.extra)}</p>`:""}</div>
+  ${d.arch.length?`<div class="darch"><h4>Architecture options</h4><div class="tblwrap noh"><table class="atbl"><thead><tr><th>Architecture</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${d.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td>${esc(a[3])}</td></tr>`).join("")}</tbody></table></div></div>`:""}
+ </div>`;
+ document.querySelectorAll("#dnav .chip").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.id===id)));
+}
+// ---------- internal schematic renderer ----------
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12" stroke-dasharray="0"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>'
+};
+const SYMNAME={amp:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"Data converter",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power stage"};
+function sym(s){
+ if(/OIS|Driver IC|controller|Touch/i.test(s))return null;
+ if(/phase shifter/i.test(s))return "phase";
+ if(/splitter|combiner/i.test(s))return "sum";
+ if(/\b(ADC|DAC)\b/.test(s))return "conv";
+ if(/mixer|up-converter|down-converter/i.test(s))return "mixer";
+ if(/coupler/i.test(s))return "cpl";
+ if(/filter|SAW|BAW|duplexer|plexer|LTCC|XBAW/i.test(s))return "filter";
+ if(/(^|\s)(PA|LNA)\b|amplif|\bamp\b|^Driver$|driver amp|GaAs|power stage|Final stage|Smart amp/i.test(s))return "amp";
+ if(/switch|select|\bmux\b|T\/R|crossbar|FET stacks/i.test(s))return "sw";
+ if(/^antenna$|radiator|patch|dipole|frame (slot|segment)|copper loop|^coil$|^Antenna port$/i.test(s))return "ant";
+ if(/PLL|synth|LO \/|XO|oscillator/i.test(s))return "osc";
+ if(/buck|charge pump|LDO|boost/i.test(s))return "pwr";
+ return null;
+}
+const CTRL=/^(Control|Support|Shared|Monitor|Coex)$/;
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+function innerSvg(name,rows){
+ const W=340,P=14,GAP=18,AR=16;
+ let cols=rows.filter(r=>!CTRL.test(r[0])),bands=rows.filter(r=>CTRL.test(r[0]));
+ if(!cols.length){cols=bands;bands=[]}
+ const n=cols.length;let cw=(W-2*P-(n-1)*GAP)/n;cw=Math.min(cw,210);
+ const ox=(W-(n*cw+(n-1)*GAP))/2;
+ let s="",bottoms=[];const top=44;
+ cols.forEach(([lab,st],ci)=>{
+  const x=ox+ci*(cw+GAP);
+  s+=`<text x="${x+cw/2}" y="${top-10}" text-anchor="middle" class="ih">${esc(lab.toUpperCase())}</text>`;
+  s+=`<line x1="${x+6}" x2="${x+cw-6}" y1="${top-5}" y2="${top-5}" class="iul"/>`;
+  let y=top+4;
+  st.forEach((t,i)=>{
+   const g=sym(t),gw=28,lines=wrapT(t,Math.max(8,Math.floor((cw-gw-14)/5.6))),h=Math.max(30,lines.length*12.5+12);
+   if(i>0)s+=`<line x1="${x+cw/2}" x2="${x+cw/2}" y1="${y-AR}" y2="${y-2}" class="ia" marker-end="url(#iarr)"/>`;
+   s+=`<rect x="${x}" y="${y}" width="${cw}" height="${h}" rx="2" class="ib${g?" ib-"+g:""}"/>`;
+   if(g)s+=`<g class="ig" transform="translate(${x+5} ${y+h/2-9})">${G[g]}</g>`;
+   s+=`<line x1="${x+gw}" x2="${x+gw}" y1="${y+4}" y2="${y+h-4}" class="isep"/>`;
+   lines.forEach((ln,k)=>{s+=`<text x="${x+gw+7}" y="${y+h/2+4+(k-(lines.length-1)/2)*12.5}" class="it">${esc(ln)}</text>`});
+   y+=h+AR;
+  });
+  bottoms.push([x+cw/2,y-AR]);
+ });
+ let yb=Math.max(...bottoms.map(b=>b[1]));
+ if(bands.length){
+  const by=yb+26;let yy=by+20;
+  bands.forEach(([lab,st],bi)=>{
+   s+=`<text x="${P}" y="${yy-6}" class="ih" text-anchor="start">${esc(lab.toUpperCase())} BUS</text>`;
+   let xx=P,rowH=26;
+   st.forEach(t=>{const g=sym(t),w=Math.min(W-2*P,t.length*5.6+(g?34:16));
+    if(xx+w>W-P){xx=P;yy+=rowH+6}
+    s+=`<rect x="${xx}" y="${yy}" width="${w}" height="${rowH}" rx="2" class="ib ib-ctl"/>`;
+    if(g)s+=`<g class="ig" transform="translate(${xx+5} ${yy+4}) scale(.95)">${G[g]}</g>`;
+    s+=`<text x="${xx+(g?27:8)}" y="${yy+17}" class="it">${esc(t)}</text>`;
+    xx+=w+6;});
+   yy+=rowH+22;
+  });
+  s+=`<rect x="${P-6}" y="${by}" width="${W-2*P+12}" height="${yy-by-12}" rx="3" class="iband"/>`;
+  bottoms.forEach(([bx,bt])=>{s+=`<line x1="${bx}" x2="${bx}" y1="${bt}" y2="${by}" class="ictl"/>`});
+  yb=yy-12;
+ }
+ const H=yb+16;
+ return `<svg viewBox="0 0 ${W} ${H}" class="isvg" role="img" aria-label="Internal block diagram of ${esc(name)}"><defs><marker id="iarr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 Z" class="iah"/></marker></defs>
+ <rect x="3" y="3" width="${W-6}" height="${H-6}" rx="5" class="ipkg"/><text x="12" y="17" class="ipn">${esc(name.toUpperCase())} · INTERNAL</text>${s}</svg>`;
+}
+function symKey(rows){
+ const used=[...new Set(rows.flatMap(r=>r[1]).map(sym).filter(Boolean))];
+ if(!used.length)return "";
+ return `<div class="ikey">${used.map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="ig">${G[k]}</svg>${SYMNAME[k]}</span>`).join("")}</div>`;
+}
+function bomHtml(){
+  const grp={"RF front-end & antennas":["a_main","a_div","a_m3","a_m4","a_wifi","a_gnss","a_nfc","a_uwb","tuner","asm","lb","mhb","uhb","drx","mimo","wfem","gnss_lna","et"],"Transceivers & radios":["trx","wcombo","nfc","uwb"],"mmWave (US models)":["mmw","mmwif"],"SoC":["soc"],"Memory & storage":["dram","ufs"],"Display, camera & rest":["dispm","cam","audio","sens","usb","sim","hap","pmic","chg"]};
+  let tl=0,th=0;const rows=Object.entries(grp).map(([g,ids])=>{let l=0,h=0;ids.forEach(i=>{const c=X[i]&&X[i].c;if(c){l+=c[0];h+=c[1]}});tl+=l;th+=h;return `<dt>${g}</dt><dd>$${Math.round(l)}–${Math.round(h)}</dd>`}).join("");
+  return `<div><h3>Estimated bill of materials</h3><dl class="spec">${rows}<dt><b>Chips & modules shown</b></dt><dd><b>$${Math.round(tl)}–${Math.round(th)}</b></dd></dl><p class="cq" style="margin-top:6px">High-volume OEM estimates in USD, excluding housing, PCB, assembly and royalties.</p></div>`;
+}
+let showCost=false;
+function relabel(){NODES.forEach(n=>{const g=nodeEls[n[0]];const t=g.querySelectorAll("text")[1];const x=X[n[0]];t.textContent=showCost?(x?(x.c?fmt(x.c):x.q.startsWith("Included in AiP")?"in AiP":"in SoC"):""):n[7];t.classList.toggle("costt",showCost)})}
+let curPreset=null;
+function apply(set,dir,sel){
+  const S=new Set(set);
+  if([...S].some(i=>byId[i]&&byId[i].parent==="soc"))S.add("soc");
+  svg.classList.toggle("dim",!!set.length);
+  Object.entries(nodeEls).forEach(([id,g])=>{g.classList.toggle("on",S.has(id));g.classList.toggle("sel",id===sel)});
+  linkEls.forEach(l=>{const on=S.has(l.f)&&S.has(l.t)&&!(l.f==="soc"&&!S.has(l.t))&&!(l.t==="soc"&&!S.has(l.f));
+    l.p.classList.toggle("on",on);l.p.classList.toggle("fwd",on&&dir==="fwd");l.p.classList.toggle("rev",on&&dir==="rev")});
+}
+function neighbors(id){
+  const s=[id];const node=byId[id];
+  linkEls.forEach(l=>{
+    if(l.f===id)s.push(l.t);if(l.t===id)s.push(l.f);
+    if(node&&node.parent==="soc"){}
+  });
+  if(id==="soc")return ["soc"];
+  return s;
+}
+function select(id,extra){
+  curPreset=null;setChips();clearBands();
+  apply(neighbors(id),null,id);panel(id,extra);
+}
+function runPreset(p){
+  clearBands();
+  if(curPreset===p.id){curPreset=null;setChips();apply([],null);overview();return}
+  curPreset=p.id;setChips();apply(p.set,p.dir,null);
+  insp.innerHTML=`<div class="insp-head" style="--cat:var(--copper)"><span class="tag">Signal path</span><h2>${esc(p.n)}</h2></div>
+  <div class="insp-body"><p>${esc(p.note)}</p><div><h3>Blocks on this path</h3><ul class="parts">${p.set.map(i=>`<li>${esc(byId[i].label)}</li>`).join("")}</ul></div>
+  <p class="label">${p.dir==="rev"?"Animated toward the antenna (transmit)":"Animated toward the SoC (receive)"}</p></div>`;
+}
+const pc=document.getElementById("presets");
+PRESETS.forEach(p=>{const b=document.createElement("button");b.className="chip";b.textContent=p.n;b.dataset.id=p.id;b.setAttribute("aria-pressed","false");b.onclick=()=>runPreset(p);pc.appendChild(b)});
+const cb=document.createElement("button");cb.className="chip ghost";cb.textContent="Show costs on diagram";cb.setAttribute("aria-pressed","false");
+cb.onclick=()=>{showCost=!showCost;cb.setAttribute("aria-pressed",String(showCost));cb.textContent=showCost?"Show descriptions":"Show costs on diagram";relabel()};
+document.querySelector(".sheet-head").insertBefore(cb,document.querySelector(".legend"));
+const clr=document.createElement("button");clr.className="chip ghost";clr.textContent="Clear";clr.onclick=()=>{curPreset=null;setChips();clearBands();apply([],null);overview()};pc.appendChild(clr);
+function setChips(){pc.querySelectorAll(".chip[data-id]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.id===curPreset)))}
+svg.addEventListener("click",e=>{if(e.target===svg){curPreset=null;setChips();clearBands();apply([],null);overview()}});
+
+// ---------- spectrum ruler ----------
+const ru=document.getElementById("ruler");
+const F0=550,F1=8600,X0=78,XW=900,W=1000;
+const fx=f=>X0+(Math.log(f)-Math.log(F0))/(Math.log(F1)-Math.log(F0))*XW;
+const LANES=[["LB","--c-rffe"],["MHB","--c-rffe"],["NTN","--c-trx"],["UHB","--c-rffe"],["Wi-Fi","--c-conn"],["GNSS","--c-ant"],["UWB","--c-conn"]];
+let y=30;const bandEls=[];
+LANES.forEach(([ln,col])=>{
+  const items=BANDS.map((b,i)=>({b,i})).filter(o=>o.b[6]===ln);
+  const rows=[];
+  items.forEach(o=>{const r=[o.b[2],o.b[3]].filter(Boolean);const lo=Math.min(...r.map(v=>v[0])),hi=Math.max(...r.map(v=>v[1]));
+    let k=rows.findIndex(row=>row.every(([a,c])=>fx(hi)+4<fx(a)||fx(lo)>fx(c)+4));if(k<0){k=rows.length;rows.push([])}rows[k].push([lo,hi]);o.row=k;});
+  const lh=Math.max(rows.length,1)*15+8;
+  el("line",{x1:X0,x2:X0+XW,y1:y+lh,y2:y+lh,stroke:"var(--line)"},ru);
+  const lt=el("text",{x:8,y:y+lh/2+4,class:"lane"},ru);lt.textContent=ln;
+  items.forEach(o=>{const b=o.b;const g=el("g",{class:"bar","data-i":o.i,tabindex:"0"},ru);
+    const ty=y+5+o.row*15;
+    const tt=el("title",{},g);tt.textContent=`${b[0]} · ${b[1]}${b[2]?` · UL ${b[2][0]}–${b[2][1]}`:""}${b[3]?` · DL ${b[3][0]}–${b[3][1]}`:""} MHz`;
+    if(b[2]){const isT=b[1]!=="FDD";el("rect",{x:fx(b[2][0]),y:ty,width:Math.max(2,fx(b[2][1])-fx(b[2][0])),height:10,fill:isT?`var(${col})`:"url(#hatch)",stroke:`var(${col})`,"stroke-width":".8","fill-opacity":isT?".75":"1"},g)}
+    if(b[3]){el("rect",{x:fx(b[3][0]),y:ty,width:Math.max(2,fx(b[3][1])-fx(b[3][0])),height:10,fill:`var(${col})`,"fill-opacity":".9"},g)}
+    g.addEventListener("click",()=>pickBand(o.i));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"){pickBand(o.i)}});
+    bandEls[o.i]=g;});
+  y+=lh;
+});
+const defs=el("defs",{},ru);const pat=el("pattern",{id:"hatch",width:"4",height:"4",patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"},defs);
+el("rect",{width:"4",height:"4",fill:"var(--surface)"},pat);el("line",{x1:"0",y1:"0",x2:"0",y2:"4",stroke:"var(--ink)","stroke-width":"1.6","stroke-opacity":".55"},pat);
+[600,700,800,1000,1200,1500,2000,2500,3000,4000,5000,6000,7000,8000].forEach(f=>{
+  el("line",{x1:fx(f),x2:fx(f),y1:24,y2:y,stroke:"var(--line)","stroke-dasharray":"2 3"},ru);
+  const t=el("text",{x:fx(f),y:y+16,"text-anchor":"middle"},ru);t.textContent=f>=1000?(f/1000)+" GHz":f+" MHz";
+});
+const mm=el("text",{x:X0,y:16},ru);mm.textContent="mmWave n257/n258/n260/n261 (24–40 GHz) sit far off this axis, in the AiP modules.";
+ru.setAttribute("viewBox",`0 0 ${W} ${y+28}`);
+
+// ---------- table ----------
+const tb=document.getElementById("tb");const rowEls=[];
+const mname={lb:"LB PAMiD",mhb:"MHB PAMiD",uhb:"UHB PAMiD",wfem:"Wi-Fi 7 FEM",gnss_lna:"GNSS LNA",uwb:"UWB transceiver",mmw:"mmWave AiP"};
+BANDS.forEach((b,i)=>{const tr=document.createElement("tr");tr.tabIndex=0;
+  const r=v=>v?`${v[0]}–${v[1]}`:"—";
+  let ul=b[2],dl=b[3];if(b[1]==="TDD"){dl=b[2]}
+  tr.innerHTML=`<td class="b">${esc(b[0])}</td><td class="num">${b[1]}</td><td class="num">${r(b[1]==="RX"||b[1]==="SDL"?null:ul)}</td><td class="num">${r(dl)}</td><td>${b[4].map(f=>`<span class="ft">${f}</span>`).join("")}</td><td>${mname[b[5]]}</td><td>${esc(b[7])}</td>`;
+  tr.onclick=()=>pickBand(i);tr.onkeydown=e=>{if(e.key==="Enter")pickBand(i)};
+  tb.appendChild(tr);rowEls[i]=tr;});
+
+function clearBands(){ru.classList.remove("dim");bandEls.forEach(g=>g&&g.classList.remove("on"));rowEls.forEach(r=>r.classList.remove("on"))}
+function pickBand(i){
+  const b=BANDS[i];const mod=b[5];
+  curPreset=null;setChips();
+  let set=[mod,...neighbors(mod)];
+  if(["lb","mhb","uhb"].includes(mod))set=[mod,"trx","modem","et",mod==="uhb"?"asm":"tuner",mod==="uhb"?"a_m4":"a_main"];
+  if(mod==="mmw")set=["a_mmw","mmw","mmwif","modem"];
+  apply(set,null,mod);
+  panel(mod,`${b[0]} (${b[1]}${b[2]&&b[1]==="FDD"?`, UL ${b[2][0]}–${b[2][1]}`:""}${b[3]?`, DL ${b[3][0]}–${b[3][1]}`:b[2]&&b[1]!=="FDD"?`, ${b[2][0]}–${b[2][1]}`:""} MHz) · ${b[4].join(" / ")} · ${b[7]}`);
+  ru.classList.add("dim");bandEls.forEach((g,k)=>g&&g.classList.toggle("on",k===i));rowEls.forEach((r,k)=>r.classList.toggle("on",k===i));
+}
+const dn=document.getElementById("dnav");
+[["soc","SoC"],["modem","5G modem"],["trx","RF transceiver"],["mhb","PA modules (PAMiD)"],["et","Envelope tracker"],["drx","Diversity RX"],["tuner","Antenna tuners"],["asm","Switch matrix"],["mmw","mmWave AiP"],["wfem","Wi-Fi FEM"],["wcombo","Wi-Fi/BT combo"],["gnss_lna","GNSS front end"],["nfc","NFC"],["uwb","UWB"],["cpu","CPU"],["gpu","GPU"],["npu","NPU"],["memc","Memory"],["ufs","Storage"],["pmic","PMIC"],["chg","Charging"],["dispm","Display"],["cam","Cameras"],["a_main","Antennas"]].forEach(([id,n])=>{
+ const b=document.createElement("button");b.className="chip";b.textContent=n;b.dataset.id=id;b.setAttribute("aria-pressed","false");b.onclick=()=>{curPreset=null;setChips();clearBands();apply(neighbors(id),null,id);panel(id)};dn.appendChild(b)});
+overview();deep("soc");
+})();
+</script>
+
+</html>
