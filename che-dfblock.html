@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>d- and f-block elements - Class 12 Chemistry</title>
+<meta name="description" content="d- and f-block elements: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-dfblock" data-title="d- and f-block elements">
+  <header><div class="tag">The d- and f-Block Elements</div><h3>Transition metals: configuration, colour, magnetism, lanthanoid contraction</h3></header>
+  <p class="lead">In d-block elements the last electron enters the (n−1)d subshell. Because the ns and (n−1)d levels are close in energy, these metals show several oxidation states, form coloured ions and often have unpaired electrons. In the f-block the 4f (lanthanoids) or 5f (actinoids) subshell is filling.</p>
+  <ul class="keypoints">
+    <li>General configuration of the 3d series: [Ar] 3d<sup>1–10</sup> 4s<sup>1–2</sup>. Exceptions: Cr is 3d<sup>5</sup>4s<sup>1</sup> and Cu is 3d<sup>10</sup>4s<sup>1</sup> because half-filled and fully filled d subshells are extra stable.</li>
+    <li>A transition element has an incomplete d subshell in the atom or in a common ion. Zn, Cd and Hg (d<sup>10</sup>) are d-block but not strictly transition elements.</li>
+    <li>Variable oxidation states: Mn shows +2 to +7. In the first half of the series the maximum state equals the number of ns + d electrons (Sc +3 … Mn +7); the lower states are most stable for the later elements.</li>
+    <li>Colour comes from d–d transitions: an ion with 1 to 9 d electrons absorbs visible light and shows the complementary colour. d<sup>0</sup> (Sc<sup>3+</sup>, Ti<sup>4+</sup>) and d<sup>10</sup> (Zn<sup>2+</sup>, Cu<sup>+</sup>) ions are colourless.</li>
+    <li>Lanthanoid contraction: the steady fall in ionic radius from La<sup>3+</sup> to Lu<sup>3+</sup> because 4f electrons shield the nuclear charge poorly. It makes Zr and Hf almost the same size, so they are chemically very alike and hard to separate.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">μ = √( n(n + 2) ) BM<small>Spin-only magnetic moment; n = number of unpaired electrons; BM = Bohr magneton</small></div>
+    <div class="eq">3d series: [Ar] 3d<sup>x</sup> 4s<sup>y</sup><small>Cr: 3d⁵4s¹, Cu: 3d¹⁰4s¹ are the two exceptions</small></div>
+    <div class="eq">2KMnO<sub>4</sub> → K<sub>2</sub>MnO<sub>4</sub> + MnO<sub>2</sub> + O<sub>2</sub><small>Heating permanganate (about 513 K)</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Spin-only magnetic moment: fill the d orbitals</div>
+    <div class="controls"><div class="ctl"><label for="che-dfblock-n">d electrons (n) <output></output></label><input type="range" id="che-dfblock-n" min="0" max="10" step="1" value="5" data-unit=""></div></div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Unpaired electrons<b data-r="u">-</b></div>
+      <div class="readout">μ (spin-only)<b data-r="mu">-</b></div>
+      <div class="readout">Magnetism<b data-r="mag">-</b></div>
+      <div class="readout">Example ions<b data-r="ex" style="font-size:.85rem">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas');
+    const ex=['Sc³⁺, Ti⁴⁺, Mn⁷⁺','Ti³⁺, V⁴⁺','Ti²⁺, V³⁺','V²⁺, Cr³⁺','Cr²⁺, Mn³⁺','Mn²⁺, Fe³⁺','Fe²⁺, Co³⁺','Co²⁺','Ni²⁺','Cu²⁺','Zn²⁺, Cu⁺'];
+    const sup=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','¹⁰'];
+    const nm=['xy','yz','zx','x²−y²','z²'];
+    function arrow(ctx,x,y,up,len){const t=up?y-len/2:y+len/2,b=up?y+len/2:y-len/2,s=up?1:-1;
+      ctx.beginPath();ctx.moveTo(x,b);ctx.lineTo(x,t);ctx.moveTo(x-4,t+s*7);ctx.lineTo(x,t);ctx.lineTo(x+4,t+s*7);ctx.stroke();}
+    function draw(){
+      const n=+root.querySelector('#che-dfblock-n').value;
+      const {ctx,w}=TB.canvas(cv,170);
+      const ink=TB.css('--ink'),sub=TB.css('--sub'),mut=TB.css('--muted');
+      const bs=46,gap=10,tot=5*bs+4*gap,x0=(w-tot)/2,y0=44,bh=64;
+      const up=Math.min(n,5),dn=Math.max(0,n-5),u=n<=5?n:10-n;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';
+      ctx.fillStyle=ink;ctx.fillText('3d'+sup[n]+'   (Hund\'s rule: singly first, then pair up)',w/2,22);
+      for(let i=0;i<5;i++){const x=x0+i*(bs+gap);
+        ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.strokeRect(x,y0,bs,bh);
+        ctx.strokeStyle=sub;ctx.lineWidth=2;
+        if(i<up)arrow(ctx,x+bs*0.32,y0+bh/2,true,38);
+        if(i<dn)arrow(ctx,x+bs*0.68,y0+bh/2,false,38);
+        ctx.fillStyle=mut;ctx.fillText(nm[i],x+bs/2,y0+bh+18);}
+      ctx.fillStyle=ink;ctx.fillText(u+' unpaired',w/2,y0+bh+42);
+      const mu=Math.sqrt(u*(u+2));
+      TB.set(root,'[data-r=u]',u);TB.set(root,'[data-r=mu]',TB.fmt(mu,2)+' BM');
+      TB.set(root,'[data-r=mag]',u?'Paramagnetic':'Diamagnetic');TB.set(root,'[data-r=ex]',ex[n]);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Lanthanoid contraction: Ln³⁺ radius from La to Lu</div>
+    <div class="controls"><div class="ctl"><label for="che-dfblock-ln">Element (La = 0, Lu = 14) <output></output></label><input type="range" id="che-dfblock-ln" min="0" max="14" step="1" value="7" data-unit=""></div></div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Element<b data-r="el">-</b></div>
+      <div class="readout">Ln³⁺ radius<b data-r="r">-</b></div>
+      <div class="readout">Shrinkage from La³⁺<b data-r="d">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas');
+    const el=['La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu'];
+    const R=[103,102,99,98.3,97,95.8,94.7,93.8,92.3,91.2,90.1,89,88,86.8,86.1];
+    function draw(){
+      const k=+root.querySelector('#che-dfblock-ln').value;
+      const {ctx,w,h}=TB.canvas(cv,220);
+      const ink=TB.css('--ink'),sub=TB.css('--sub'),mut=TB.css('--muted'),line=TB.css('--line');
+      const L=44,Rr=14,T=22,B=34,pw=w-L-Rr,ph=h-T-B,lo=84,hi=106;
+      const X=i=>L+pw*i/14,Y=v=>T+ph*(hi-v)/(hi-lo);
+      ctx.font='11px "Source Sans 3", sans-serif';ctx.textAlign='right';ctx.lineWidth=1;
+      [86,92,98,104].forEach(v=>{ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(w-Rr,Y(v));ctx.stroke();ctx.fillStyle=mut;ctx.fillText(v,L-5,Y(v)+4);});
+      ctx.save();ctx.translate(11,T+ph/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle=mut;ctx.fillText('radius (pm)',0,0);ctx.restore();
+      ctx.strokeStyle=sub;ctx.lineWidth=2;ctx.beginPath();R.forEach((v,i)=>{i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v))});ctx.stroke();
+      ctx.textAlign='center';
+      R.forEach((v,i)=>{ctx.fillStyle=i===k?sub:mut;ctx.beginPath();ctx.arc(X(i),Y(v),i===k?6:3,0,7);ctx.fill();ctx.fillStyle=i===k?ink:mut;ctx.fillText(el[i],X(i),h-16);});
+      ctx.fillStyle=ink;ctx.font='12px "Source Sans 3", sans-serif';ctx.fillText(R[k]+' pm',Math.min(Math.max(X(k),30),w-30),Y(R[k])-12);
+      TB.set(root,'[data-r=el]',el[k]);TB.set(root,'[data-r=r]',R[k]+' pm');TB.set(root,'[data-r=d]',TB.fmt(R[0]-R[k],1)+' pm');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Mn<sup>2+</sup> versus Cu<sup>2+</sup>.</b> Mn<sup>2+</sup> is d<sup>5</sup>: five unpaired electrons, μ = √(5×7) = √35 = 5.92 BM. Cu<sup>2+</sup> is d<sup>9</sup>: one unpaired electron, μ = √(1×3) = 1.73 BM. A magnetic balance measures μ and so tells a chemist how many unpaired electrons an ion has.</p>
+    <p><b>Iron Pillar of Delhi.</b> The 7 m tall, roughly 6 tonne wrought-iron pillar at Mehrauli, erected about 1600 years ago, has hardly rusted. Its high phosphorus content helped a thin, adherent protective layer of iron(III) oxide-hydroxide and iron phosphate form on the surface, a natural passivation that works because iron has several oxidation states (+2, +3).</p>
+    <p><b>Zirconium and hafnium.</b> Zr (160 pm) and Hf (159 pm) have nearly equal radii because of the lanthanoid contraction between them, so they always occur together in minerals and need special methods to separate.</p>
+  </div>
+  <div class="quiz"><p class="q">Which ion has the largest spin-only magnetic moment?</p><div class="opts"><button data-ok>Fe³⁺</button><button>Cr³⁺</button><button>Cu²⁺</button><button>Zn²⁺</button></div><p class="why" hidden>Fe³⁺ is d⁵ with 5 unpaired electrons: μ = √35 = 5.92 BM. Cr³⁺ (d³) gives 3.87 BM, Cu²⁺ (d⁹) 1.73 BM and Zn²⁺ (d¹⁰) 0.</p></div>
+</article><div class="pager"><a href="che-polymers.html"><small>Previous</small>Polymers</a><a class="next" href="che-coordination.html"><small>Next</small>Coordination compounds</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Biotechnology: PCR and rDNA - Class 12 Biology</title>
+<meta name="description" content="Biotechnology: PCR and rDNA: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-biotech-principles" data-title="Biotechnology: PCR and rDNA">
+  <header><div class="tag">Biotechnology: Principles and Processes</div><h3>Cutting, copying and reading DNA</h3></header>
+  <p class="lead">Recombinant DNA technology cuts DNA at exact places, joins it to a vector, puts it into a host and grows many copies. PCR copies a chosen stretch of DNA in a test tube, and gel electrophoresis sorts fragments by size.</p>
+  <ul class="keypoints">
+    <li><b>Restriction enzymes</b> (molecular scissors) cut at palindromic sites. EcoRI recognises G^AATTC and leaves sticky ends; <b>DNA ligase</b> joins the pieces.</li>
+    <li><b>Vectors</b> carry the gene: plasmids (pBR322 has ori, selectable markers and cloning sites), bacteriophages, Ti plasmid of Agrobacterium for plants. Selection: antibiotic resistance or insertional inactivation of a marker.</li>
+    <li>Steps: isolate DNA, cut with enzyme, amplify gene by PCR, ligate into vector, transform host (heat shock, 42 °C), screen, grow in a bioreactor, downstream processing.</li>
+    <li><b>PCR</b> cycle: denaturation (about 94 °C), annealing of primers (about 55 °C), extension by Taq polymerase (72 °C). Taq comes from the heat-loving bacterium <i>Thermus aquaticus</i>.</li>
+    <li>DNA is negatively charged, so it runs toward the anode (+) through agarose; shorter fragments move farther. Ethidium bromide with UV shows orange bands.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">N = N<sub>0</sub> × 2<sup>n</sup><small>Ideal PCR: copies after n cycles</small></div>
+    <div class="eq">Site frequency = 1 / 4<sup>k</sup><small>k = length of recognition site (6-cutter: 1 in 4096 bp; 4-cutter: 1 in 256 bp)</small></div>
+    <div class="eq">distance ∝ −log<sub>10</sub>(size)<small>Gel migration, roughly, within the useful range</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: PCR cycles</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-biotech-principles-n">Cycles completed <output></output></label><input type="range" id="bio-biotech-principles-n" min="0" max="35" step="1" value="10"></div>
+      <div class="ctl"><label for="bio-biotech-principles-s">Starting copies, log<sub>10</sub> <output></output></label><input type="range" id="bio-biotech-principles-s" min="0" max="6" step="1" value="3"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts"><div class="readout">Copies now<b data-r="N">-</b></div><div class="readout">Fold increase<b data-r="fold">-</b></div><div class="readout">Cycle to reach 10¹⁰<b data-r="ct">-</b></div><div class="readout">Run time (approx)<b data-r="min">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas'),q=s=>root.querySelector(s);
+    const sci=x=>x<1e7?TB.fmt(x,0):(x/Math.pow(10,Math.floor(Math.log10(x)))).toFixed(2)+'×10^'+Math.floor(Math.log10(x));
+    function draw(){
+      const n=+q('#bio-biotech-principles-n').value,s=+q('#bio-biotech-principles-s').value,N0=Math.pow(10,s);
+      const g=TB.canvas(cv,310),ctx=g.ctx,W=g.w,H=g.h,L=44,R=12,pw=W-L-R,NM=35;
+      const X=c=>L+c/NM*pw;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='left';ctx.fillStyle=TB.css('--ink');
+      ctx.fillText('Temperature profile (°C)',L,14);
+      const ty=T=>112-(T-50)/(100-50)*84;
+      ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');ctx.textAlign='right';
+      [94,72,55].forEach(T=>{ctx.beginPath();ctx.moveTo(L,ty(T));ctx.lineTo(W-R,ty(T));ctx.stroke();ctx.fillText(T+'°',L-5,ty(T)+4);});
+      function path(a,b){ctx.beginPath();for(let i=a;i<b;i++){const p=[[0,94],[.33,94],[.34,55],[.66,55],[.67,72],[1,72]];p.forEach((v,k)=>{const x=X(i+v[0]),y=ty(v[1]);(i===a&&k===0)?ctx.moveTo(x,y):ctx.lineTo(x,y);});}ctx.stroke();}
+      ctx.lineWidth=1.2;ctx.strokeStyle=TB.css('--muted');path(0,NM);
+      ctx.lineWidth=2.2;ctx.strokeStyle=TB.css('--sub');if(n>0)path(0,n);
+      ctx.textAlign='center';ctx.fillStyle=TB.css('--muted');ctx.fillText('94 denature · 55 anneal · 72 extend',L+pw/2,128);
+      const y0=150,y1=H-34,Y=lg=>y1-(lg/17)*(y1-y0);
+      ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('Copies of target (log scale)',L,y0-8);
+      ctx.strokeStyle=TB.css('--line');ctx.textAlign='right';ctx.fillStyle=TB.css('--muted');
+      [[0,'10⁰'],[5,'10⁵'],[10,'10¹⁰'],[15,'10¹⁵']].forEach(a=>{ctx.beginPath();ctx.moveTo(L,Y(a[0]));ctx.lineTo(W-R,Y(a[0]));ctx.stroke();ctx.fillText(a[1],L-5,Y(a[0])+4);});
+      ctx.setLineDash([5,4]);ctx.strokeStyle=TB.css('--bad');ctx.beginPath();ctx.moveTo(L,Y(10));ctx.lineTo(W-R,Y(10));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=TB.css('--bad');ctx.textAlign='right';ctx.fillText('detectable (illustrative)',W-R,Y(10)-4);
+      ctx.strokeStyle=TB.css('--sub');ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(X(0),Y(s));ctx.lineTo(X(NM),Y(s+NM*Math.LOG10E*Math.LN2));ctx.stroke();
+      const cl=s+n*Math.LOG10E*Math.LN2;ctx.fillStyle=TB.css('--sub');ctx.beginPath();ctx.arc(X(n),Y(cl),5.5,0,7);ctx.fill();
+      ctx.fillStyle=TB.css('--muted');ctx.textAlign='center';[0,10,20,30].forEach(c=>ctx.fillText(c,X(c),H-18));
+      ctx.fillStyle=TB.css('--ink');ctx.fillText('Cycle number',L+pw/2,H-4);
+      TB.set(root,'[data-r=N]',sci(N0*Math.pow(2,n)));
+      TB.set(root,'[data-r=fold]',sci(Math.pow(2,n))+'x');
+      TB.set(root,'[data-r=ct]',N0>=1e10?'0':Math.ceil(Math.log2(1e10/N0)));
+      TB.set(root,'[data-r=min]',TB.fmt(n*1.5,0)+' min');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: agarose gel</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-biotech-principles-dig">Lane 1: plasmid (5000 bp) digest</label><select id="bio-biotech-principles-dig"><option value="5000">Cut once: 5000</option><option value="3500,1500" selected>Cut twice: 3500 + 1500</option><option value="2500,1700,800">Cut three times: 2500 + 1700 + 800</option></select></div>
+      <div class="ctl"><label for="bio-biotech-principles-fs">Lane 2: your fragment <output></output></label><input type="range" id="bio-biotech-principles-fs" min="100" max="10000" step="50" value="1200" data-unit=" bp"></div>
+      <div class="ctl"><label for="bio-biotech-principles-rt">Run time <output></output></label><input type="range" id="bio-biotech-principles-rt" min="40" max="100" step="5" value="75" data-unit=" %"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts"><div class="readout">Lane 1 total<b data-r="tot">-</b></div><div class="readout">Lane 2 travelled<b data-r="d2">-</b></div><div class="readout">Nearest ladder band<b data-r="nl">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas'),q=s=>root.querySelector(s);
+    const LAD=[10000,5000,3000,2000,1000,500,250,100];
+    function draw(){
+      const fr=q('#bio-biotech-principles-dig').value.split(',').map(Number),fs=+q('#bio-biotech-principles-fs').value,rt=+q('#bio-biotech-principles-rt').value/100;
+      const g=TB.canvas(cv,290),ctx=g.ctx,W=g.w,H=g.h,gx=70,gw=Math.min(W-90,260),gy=40,gh=H-70;
+      const pos=s=>Math.min(.97,rt*(4.4-Math.log10(s))/2.6),Y=s=>gy+pos(s)*gh;
+      ctx.font='12px "Source Sans 3", sans-serif';
+      ctx.fillStyle=TB.css('--paper');ctx.strokeStyle=TB.css('--line');ctx.lineWidth=1;ctx.fillRect(gx-30,gy-14,gw+60,gh+14);ctx.strokeRect(gx-30,gy-14,gw+60,gh+14);
+      const lanes=[gx,gx+gw/3,gx+2*gw/3],names=['Ladder','Lane 1','Lane 2'],lw=Math.min(50,gw/3-14);
+      ctx.textAlign='center';ctx.fillStyle=TB.css('--ink');
+      lanes.forEach((x,i)=>{ctx.strokeStyle=TB.css('--muted');ctx.strokeRect(x-lw/2,gy-8,lw,8);ctx.fillText(names[i],x,gy-20);});
+      ctx.fillStyle=TB.css('--muted');ctx.textAlign='center';ctx.fillText('DNA runs from wells (−) toward + anode',W/2,H-6);
+      ctx.textAlign='right';
+      LAD.forEach(s=>{ctx.fillStyle=TB.css('--muted');ctx.fillRect(lanes[0]-lw/2,Y(s)-1.5,lw,3);ctx.fillStyle=TB.css('--ink');ctx.fillText(s,lanes[0]-lw/2-5,Y(s)+4);});
+      fr.forEach(s=>{ctx.globalAlpha=Math.max(.4,Math.min(1,s/4000));ctx.fillStyle=TB.css('--sub');ctx.fillRect(lanes[1]-lw/2,Y(s)-2.5,lw,5);ctx.globalAlpha=1;ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText(s,lanes[1]+lw/2+4,Y(s)+4);});
+      ctx.fillStyle=TB.css('--sub');ctx.fillRect(lanes[2]-lw/2,Y(fs)-2.5,lw,5);
+      TB.set(root,'[data-r=tot]',TB.fmt(fr.reduce((a,b)=>a+b,0),0)+' bp');
+      TB.set(root,'[data-r=d2]',TB.fmt(pos(fs)*100,0)+' % of gel');
+      let nl=LAD[0];LAD.forEach(s=>{if(Math.abs(Math.log(s/fs))<Math.abs(Math.log(nl/fs)))nl=s});
+      TB.set(root,'[data-r=nl]',nl+' bp');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>RT-PCR testing for Covid-19 first turns viral RNA into DNA (reverse transcriptase), then amplifies it. A fluorescent signal crosses the detection threshold at the Ct (cycle threshold). Worked example: if a swab holds 10<sup>6</sup> viral copies, reaching 10<sup>10</sup> needs 2<sup>n</sup> = 10<sup>4</sup>, so n = log<sub>2</sub>(10<sup>4</sup>) = 13.3, about 14 cycles. A swab with only 10 copies needs 2<sup>n</sup> = 10<sup>9</sup>, n ≈ 30. A low Ct therefore means a high viral load. In the gel, a 5000 bp plasmid cut twice by EcoRI into 3500 + 1500 bp shows two bands whose sizes add to 5000.</p></div>
+  <div class="quiz"><p class="q">After 20 cycles of ideal PCR starting from one DNA molecule, the number of copies is about:</p><div class="opts"><button>20</button><button>400</button><button data-ok>10<sup>6</sup> (2<sup>20</sup> = 1,048,576)</button><button>10<sup>20</sup></button></div><p class="why" hidden>Each cycle doubles the DNA, so N = 2<sup>20</sup> = 1,048,576, about a million. Exponential growth is why PCR can detect a few molecules.</p></div>
+</article><div class="pager"><a href="bio-immunity.html"><small>Previous</small>Human health and immunity</a><a class="next" href="bio-biotech-applications.html"><small>Next</small>Biotechnology applications</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

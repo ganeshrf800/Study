@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Human reproduction - Class 12 Biology</title>
+<meta name="description" content="Human reproduction: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-human-repro" data-title="Human reproduction">
+  <header><div class="tag">Human Reproduction</div><h3>Gametes, the menstrual cycle and early embryo</h3></header>
+  <p class="lead">Humans reproduce sexually and give birth to live young. The testes make sperm continuously from puberty, while the ovaries release usually one egg about every month, in a cycle controlled by four hormones. If a sperm fertilises the egg, the embryo travels to the uterus and implants in its lining.</p>
+  <ul class="keypoints">
+    <li><b>Male system</b>: testes (in the scrotum, 2 to 2.5 °C below body temperature), epididymis, vas deferens, urethra, and accessory glands (seminal vesicles, prostate, bulbourethral). Inside the testis, seminiferous tubules hold germ cells and Sertoli cells; Leydig cells outside them make testosterone.</li>
+    <li><b>Female system</b>: ovaries, oviducts (infundibulum, ampulla, isthmus), uterus (perimetrium, myometrium, endometrium), cervix and vagina. Fertilisation happens in the ampulla.</li>
+    <li><b>Spermatogenesis</b>: spermatogonium (2n=46) → primary spermatocyte (2n) → 2 secondary spermatocytes (n) → 4 spermatids → 4 sperm. <b>Oogenesis</b>: begins before birth; the primary oocyte stays arrested in prophase I until puberty; meiosis II finishes only if a sperm enters, giving 1 ovum + polar bodies.</li>
+    <li><b>Cycle</b> (about 28 days): menstrual phase (days 1 to 5), follicular phase (FSH grows follicles, oestrogen rebuilds the lining), ovulation (LH surge, about day 14), luteal phase (corpus luteum makes progesterone). Without fertilisation the corpus luteum degenerates and the lining is shed.</li>
+    <li><b>Development</b>: zygote → cleavage → morula → blastocyst (trophoblast + inner cell mass) → implantation → placenta, which makes hCG, hPL and oestrogen/progesterone. Gestation is about 9 months.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Ovulation day ≈ cycle length − 14<small>The luteal phase is fairly constant at about 14 days; the follicular phase varies</small></div>
+    <div class="eq">1 spermatogonium → 4 sperm; 1 oogonium → 1 ovum + 3 polar bodies<small>Meiosis is equal in males and unequal in females</small></div>
+    <div class="eq">Expected delivery = first day of last period + 280 days<small>40 weeks; about 266 days from fertilisation</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: the menstrual cycle day by day</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-human-repro-day">Cycle day <output></output></label><input type="range" id="bio-human-repro-day" min="1" max="28" step="1" value="14"></div>
+      <div class="ctl"><label for="bio-human-repro-len">Cycle length <output></output></label><input type="range" id="bio-human-repro-len" min="21" max="35" step="1" value="28" data-unit=" d"></div>
+    </div>
+    <canvas class="stage" id="bio-human-repro-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Phase<b data-r="ph" style="font-size:.9rem">-</b></div>
+      <div class="readout">FSH<b data-r="fsh">-</b></div><div class="readout">LH<b data-r="lh">-</b></div>
+      <div class="readout">Oestrogen<b data-r="e2">-</b></div><div class="readout">Progesterone<b data-r="p4">-</b></div>
+    </div>
+    <p id="bio-human-repro-txt" aria-live="polite" style="font-size:.95rem"></p>
+    <p style="font-size:.85rem;color:var(--muted)">Hormone levels are a simplified teaching model in relative units (0 to 100), not clinical values. The luteal phase is kept at 14 days, so a longer cycle means a later ovulation.</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-human-repro-cv'),q=s=>root.querySelector(s);
+    const g=(x,c,s)=>Math.exp(-Math.pow((x-c)/s,2)),sg=x=>1/(1+Math.exp(-x));
+    const H={fsh:(d,o)=>10+30*g(d,2.5,4)+30*g(d,o,1.4),lh:(d,o)=>8+92*g(d,o,1.1)+5*g(d,o+6,5),
+      e2:(d,o)=>12+68*g(d,o-1,2.6)+30*g(d,o+7,3.5),p4:(d,o)=>4+86*sg((d-o-0.5)*2.5)*g(d,o+7,4.2)};
+    const lvl=v=>v>=65?'High':v>=30?'Medium':'Low';
+    function draw(){
+      const L=+q('#bio-human-repro-len').value,o=L-14,dayEl=q('#bio-human-repro-day');
+      dayEl.max=L;if(+dayEl.value>L)dayEl.value=L;const d=+dayEl.value;
+      const gr=TB.canvas(cv,314),ctx=gr.ctx,W=gr.w,Ht=gr.h,Lm=34,R=10,T=34,B=72,pw=W-Lm-R,ph=Ht-T-B;
+      const X=t=>Lm+(t-1)/(L-1)*pw,Y=v=>T+ph-v/100*ph;
+      ctx.font='12px "Source Sans 3", sans-serif';
+      /* phase bands */
+      const bands=[[1,5.5,'Menstrual','--bad'],[5.5,o-0.5,'Follicular','--chem'],[o-0.5,o+0.5,'','--maths'],[o+0.5,L,'Luteal','--bio']];
+      bands.forEach(b=>{ctx.globalAlpha=.13;ctx.fillStyle=TB.css(b[3]);ctx.fillRect(X(Math.max(1,b[0])),T,X(Math.min(L,b[1]))-X(Math.max(1,b[0])),ph);ctx.globalAlpha=1;
+        if(b[2]){ctx.fillStyle=TB.css('--muted');ctx.textAlign='center';ctx.fillText(b[2],(X(Math.max(1,b[0]))+X(Math.min(L,b[1])))/2,T-6);}});
+      ctx.fillStyle=TB.css('--maths');ctx.textAlign='center';ctx.fillText('Ovul.',X(o),T-18);
+      ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');ctx.lineWidth=1;ctx.textAlign='right';
+      [0,50,100].forEach(v=>{ctx.beginPath();ctx.moveTo(Lm,Y(v));ctx.lineTo(W-R,Y(v));ctx.stroke();ctx.fillText(v,Lm-5,Y(v)+4);});
+      ctx.textAlign='center';const stp=L>28?7:7;for(let t=1;t<=L;t+=stp)ctx.fillText(t,X(t),Ht-B+16);ctx.fillText(L,X(L),Ht-B+16);
+      ctx.fillStyle=TB.css('--ink');ctx.fillText('Day of cycle',Lm+pw/2,Ht-B+31);
+      const cols={fsh:'--physics',lh:'--maths',e2:'--bio',p4:'--chem'},nm={fsh:'FSH',lh:'LH',e2:'Oestrogen',p4:'Progesterone'};
+      ctx.lineWidth=2.4;
+      Object.keys(H).forEach(k=>{ctx.strokeStyle=TB.css(cols[k]);ctx.beginPath();for(let i=0;i<=200;i++){const t=1+(L-1)*i/200,x=X(t),y=Y(Math.min(100,H[k](t,o)));i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();});
+      /* legend */
+      let lx=Lm,ly=Ht-22;ctx.textAlign='left';Object.keys(H).forEach(k=>{const wd=ctx.measureText(nm[k]).width+30;if(lx+wd>W){lx=Lm;ly+=16;}ctx.fillStyle=TB.css(cols[k]);ctx.fillRect(lx,ly-4,12,4);ctx.fillStyle=TB.css('--ink');ctx.fillText(nm[k],lx+16,ly);lx+=wd;});
+      /* day marker */
+      ctx.setLineDash([4,3]);ctx.strokeStyle=TB.css('--ink');ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(X(d),T);ctx.lineTo(X(d),T+ph);ctx.stroke();ctx.setLineDash([]);
+      Object.keys(H).forEach(k=>{ctx.fillStyle=TB.css(cols[k]);ctx.beginPath();ctx.arc(X(d),Y(Math.min(100,H[k](d,o))),4.5,0,7);ctx.fill();});
+      const v={};Object.keys(H).forEach(k=>v[k]=Math.min(100,H[k](d,o)));
+      let ph_,txt;
+      if(d<=5){ph_='Menstrual';txt='Progesterone and oestrogen are low, so the thickened lining breaks down and is shed through the vagina (menstruation). FSH is rising and a group of follicles starts to grow.';}
+      else if(d<o){ph_='Follicular';txt='FSH grows the follicles; they make oestrogen. Oestrogen rebuilds the endometrium (proliferative phase) and rises steeply as one Graafian follicle becomes dominant.';}
+      else if(d===o){ph_='Ovulation';txt='Peak oestrogen triggers the LH surge (with a smaller FSH rise). The Graafian follicle ruptures and releases a secondary oocyte. The egg can be fertilised for about 24 hours.';}
+      else if(d<L-1){ph_='Luteal';txt='The ruptured follicle becomes the corpus luteum, which secretes progesterone. The endometrium becomes thick, glandular and ready for implantation (secretory phase).';}
+      else{ph_='Luteal (end)';txt='If there is no pregnancy the corpus luteum degenerates, progesterone and oestrogen fall and the lining begins to break down. If fertilisation has occurred, hCG from the embryo keeps the corpus luteum going.';}
+      TB.set(root,'[data-r=ph]',ph_);
+      TB.set(root,'[data-r=fsh]',lvl(v.fsh)+' ('+Math.round(v.fsh)+')');TB.set(root,'[data-r=lh]',lvl(v.lh)+' ('+Math.round(v.lh)+')');
+      TB.set(root,'[data-r=e2]',lvl(v.e2)+' ('+Math.round(v.e2)+')');TB.set(root,'[data-r=p4]',lvl(v.p4)+' ('+Math.round(v.p4)+')');
+      q('#bio-human-repro-txt').textContent='Day '+d+'. '+txt;
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: from fertilisation to implantation</div>
+    <div class="controls"><div class="ctl"><label for="bio-human-repro-dev">Days after fertilisation <output></output></label><input type="range" id="bio-human-repro-dev" min="0" max="8" step="1" value="0" data-unit=" d"></div></div>
+    <canvas class="stage" id="bio-human-repro-cv2"></canvas>
+    <div class="readouts"><div class="readout">Stage<b data-r="st" style="font-size:.9rem">-</b></div><div class="readout">Cells (approx.)<b data-r="n">-</b></div><div class="readout">Where<b data-r="wh" style="font-size:.9rem">-</b></div></div>
+    <p id="bio-human-repro-txt2" aria-live="polite" style="font-size:.95rem"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-human-repro-cv2'),q=s=>root.querySelector(s);
+    const S=[
+     ['Zygote','1','Ampulla','A sperm has entered the secondary oocyte and the two nuclei fuse, restoring 46 chromosomes. The zona pellucida surrounds the zygote.'],
+     ['Cleavage','2','Oviduct','Rapid mitotic divisions (cleavage) with no growth in size. Each cell is called a blastomere. Cilia and muscle move the embryo toward the uterus.'],
+     ['Cleavage','4','Oviduct','The embryo is still inside the zona pellucida and about the same size as the original zygote.'],
+     ['Cleavage','8','Isthmus','8 blastomeres. A clinic doing ZIFT transfers embryos of up to 8 blastomeres into the fallopian tube.'],
+     ['Morula','16','Enters uterus','A solid ball of cells that looks like a mulberry. It reaches the uterus about 3 to 4 days after fertilisation.'],
+     ['Blastocyst','about 60','Uterus (free)','Outer trophoblast cells surround a fluid cavity; the inner cell mass (embryoblast) will form the embryo. A transfer of more than 8 blastomeres (IUT) is made into the uterus.'],
+     ['Blastocyst','about 100','Touches lining','The blastocyst sheds the zona pellucida. The trophoblast attaches to the endometrium.'],
+     ['Implanting','100+','Endometrium','The blastocyst sinks into the uterine lining (implantation). Trophoblast finger-like projections, the chorionic villi, begin to form the placenta.'],
+     ['Implanted','150+','Embedded','Implantation is complete. The trophoblast makes hCG, the hormone that pregnancy tests detect. The corpus luteum is kept active.']];
+    function cell(ctx,x,y,r,fill){ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=TB.css('--muted');ctx.lineWidth=1;ctx.stroke();}
+    function draw(){
+      const d=+q('#bio-human-repro-dev').value,gr=TB.canvas(cv,310),ctx=gr.ctx,W=gr.w,H=gr.h;
+      ctx.font='12px "Source Sans 3", sans-serif';
+      /* travel strip */
+      const x0=24,x1=W-24,y0=40,pos=[0,.1,.2,.3,.56,.7,.78,.86,.9];
+      ctx.strokeStyle=TB.css('--sub');ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0+(x1-x0)*.5,y0);ctx.stroke();
+      ctx.lineWidth=1.5;ctx.strokeStyle=TB.css('--muted');ctx.fillStyle=TB.css('--sub');ctx.globalAlpha=.25;
+      ctx.beginPath();ctx.rect(x0+(x1-x0)*.5,y0-16,(x1-x0)*.5,32);ctx.fill();ctx.globalAlpha=1;ctx.stroke();
+      ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('Fallopian tube',x0,y0-18);ctx.textAlign='right';ctx.fillText('Uterus',x1,y0-20);
+      const mx=x0+(x1-x0)*pos[d];ctx.fillStyle=TB.css('--bad');ctx.beginPath();ctx.arc(mx,y0,7,0,7);ctx.fill();
+      /* embryo drawing */
+      const cx=W/2,R=58;let cy=H/2+22;
+      const ey=H-110;
+      if(d>=6){ /* endometrium */
+        ctx.fillStyle=TB.css('--bad');ctx.globalAlpha=.18;ctx.fillRect(0,ey,W,110);ctx.globalAlpha=1;
+        ctx.strokeStyle=TB.css('--bad');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,ey);ctx.lineTo(W,ey);ctx.stroke();
+        ctx.fillStyle=TB.css('--muted');ctx.textAlign='left';ctx.fillText('Endometrium',8,H-8);
+        cy=[0,0,0,0,0,0,ey-(R+6),ey+0.2*R,ey+0.55*R][d];
+      }
+      const r=R;
+      if(d<=4){
+        ctx.strokeStyle=TB.css('--muted');ctx.setLineDash([4,3]);ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cx,cy,r+8,0,7);ctx.stroke();ctx.setLineDash([]);
+        const n=Math.pow(2,d);let cr=r-2;
+        if(n===1)cell(ctx,cx,cy,cr,'color-mix(in srgb,'+TB.css('--bio')+' 30%,'+TB.css('--paper')+')');
+        else if(n===2){cr=r/2-1;[-1,1].forEach(sg=>cell(ctx,cx+sg*cr,cy,cr,'color-mix(in srgb,'+TB.css('--bio')+' 30%,'+TB.css('--paper')+')'));}
+        else{const c=r/(Math.sqrt(n-.5)+.9);cr=c*.92;
+          for(let i=0;i<n;i++){const rad=c*Math.sqrt(i+.5),a=i*2.39996;cell(ctx,cx+rad*Math.cos(a),cy+rad*Math.sin(a),cr,'color-mix(in srgb,'+TB.css('--bio')+' 30%,'+TB.css('--paper')+')');}}
+        if(d===0){cell(ctx,cx-r*.18,cy,6,TB.css('--maths'));}
+        ctx.fillStyle=TB.css('--muted');ctx.textAlign='center';ctx.fillText('zona pellucida (dashed)',cx,cy+r+24);
+      } else {
+        if(d===5){ctx.strokeStyle=TB.css('--muted');ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(cx,cy,r+8,0,7);ctx.stroke();ctx.setLineDash([]);}
+        const rr=d===5?r:r+6;
+        ctx.fillStyle=TB.css('--soft');ctx.beginPath();ctx.arc(cx,cy,rr-4,0,7);ctx.fill();
+        for(let i=0;i<28;i++){const a=i/28*Math.PI*2;cell(ctx,cx+rr*Math.cos(a),cy+rr*Math.sin(a),6.5,'color-mix(in srgb,'+TB.css('--chem')+' 35%,'+TB.css('--paper')+')');}
+        for(let i=0;i<7;i++){const a=2.4+i*.55,rad=i?rr*.38:0;cell(ctx,cx-rr*.25+rad*Math.cos(a*3),cy-rr*.15+rad*Math.sin(a*3),7,'color-mix(in srgb,'+TB.css('--bio')+' 55%,'+TB.css('--paper')+')');}
+        if(d<=6){ctx.fillStyle=TB.css('--ink');ctx.textAlign='center';ctx.fillText('Outer ring: trophoblast. Pink: inner cell mass. Centre: cavity.',cx,cy+rr+22);}
+      }
+      const s=S[d];
+      TB.set(root,'[data-r=st]',s[0]);TB.set(root,'[data-r=n]',s[1]);TB.set(root,'[data-r=wh]',s[2]);
+      q('#bio-human-repro-txt2').textContent='Day '+d+'. '+s[3];
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>In vitro fertilisation (IVF) copies the steps above in the laboratory: egg and sperm are combined in a dish and the embryo is placed in the body at the stages in the second widget (ZIFT up to 8 blastomeres, IUT beyond that; ICSI injects one sperm into the egg). The first IVF baby worldwide, Louise Brown, was born on 25 July 1978, and India's first, Kanupriya (Durga), on 3 October 1978 in Kolkata. Worked example for a 28-day cycle: ovulation is on day 28 − 14 = 14. An egg survives about 1 day and sperm up to about 3 days, so the fertile window is roughly days 11 to 14. Implantation comes about 7 days after fertilisation, near day 21. Delivery is expected 280 days after the first day of the last period, which is 280 − 14 = 266 days after fertilisation.</p></div>
+  <div class="quiz"><p class="q">Which event directly triggers ovulation?</p><div class="opts"><button>A rise in progesterone from the corpus luteum</button><button data-ok>A surge of LH, set off by high oestrogen</button><button>A fall in FSH to its lowest level</button><button>The start of menstruation</button></div><p class="why" hidden>High oestrogen from the mature follicle causes a mid-cycle LH surge (with a smaller FSH rise). LH makes the Graafian follicle rupture and release the secondary oocyte. Progesterone rises only after ovulation.</p></div>
+</article><div class="pager"><a href="bio-plant-repro.html"><small>Previous</small>Flowering plant reproduction</a><a class="next" href="bio-inheritance.html"><small>Next</small>Principles of inheritance</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

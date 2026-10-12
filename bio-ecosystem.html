@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ecosystem energy flow - Class 12 Biology</title>
+<meta name="description" content="Ecosystem energy flow: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-ecosystem" data-title="Ecosystem energy flow">
+  <header><div class="tag">Ecosystem</div><h3>Food chains, the 10 percent law, productivity and decomposition</h3></header>
+  <p class="lead">Energy enters an ecosystem as sunlight, is captured by producers and then passes up the food chain, losing most of it as heat at each step. Nutrients, unlike energy, are recycled, with decomposers closing the loop.</p>
+  <ul class="keypoints">
+    <li>Trophic levels: producers (T<sub>1</sub>), primary consumers (T<sub>2</sub>), secondary (T<sub>3</sub>), tertiary (T<sub>4</sub>). The grazing food chain starts with plants; the detritus food chain starts with dead matter and is the major conduit in many ecosystems.</li>
+    <li><b>10 percent law</b> (Lindeman): only about 10% of energy at one level is passed on to the next. This is why food chains have only 3 to 5 steps. Energy flow is unidirectional; the pyramid of energy is always upright.</li>
+    <li>Plants capture only 2 to 10% of the photosynthetically active radiation (PAR), which is about 50% of incident solar radiation.</li>
+    <li><b>GPP &minus; R = NPP</b>. Net primary productivity is the biomass available to consumers. Secondary productivity is the rate at which consumers form new organic matter.</li>
+    <li>Decomposition: fragmentation, leaching, catabolism, humification, mineralisation. It is faster with warmth, moisture and nitrogen-rich litter, and slower with lignin and chitin or in cold, dry conditions.</li>
+    <li>Nutrient cycles (carbon, phosphorus) move between the reservoir pool and the cycling pool. Phosphorus has no gaseous phase.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">E<sub>n+1</sub> = E<sub>n</sub> &times; (efficiency)<small>Efficiency about 10% (0.10) per step</small></div>
+    <div class="eq">NPP = GPP &minus; R<small>R = respiratory loss of plants (g m<sup>&minus;2</sup> yr<sup>&minus;1</sup> or kcal m<sup>&minus;2</sup> yr<sup>&minus;1</sup>)</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: energy pyramid</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-ecosystem-e0">Energy fixed by producers <output></output></label><input type="range" id="bio-ecosystem-e0" min="1000" max="100000" step="1000" value="10000" data-unit=" kJ"></div>
+      <div class="ctl"><label for="bio-ecosystem-eff">Transfer efficiency <output></output></label><input type="range" id="bio-ecosystem-eff" min="5" max="20" step="1" value="10" data-unit=" %"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts"><div class="readout">Reaching tertiary consumers<b data-r="t4">-</b></div><div class="readout">Lost as heat before T<sub>4</sub><b data-r="loss">-</b></div><div class="readout">Levels with at least 1 kJ<b data-r="lv">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas'),q=s=>root.querySelector(s);
+    const NM=['Producers','Primary consumers','Secondary consumers','Tertiary consumers','Quaternary consumers'];
+    function draw(){
+      const e0=+q('#bio-ecosystem-e0').value,f=+q('#bio-ecosystem-eff').value/100;
+      const E=NM.map((_,i)=>e0*Math.pow(f,i));
+      const g=TB.canvas(cv,270),ctx=g.ctx,W=g.w,H=g.h,rh=H/5,mw=W-24;
+      ctx.font='12px "Source Sans 3", sans-serif';
+      E.forEach((v,i)=>{const y=i*rh+4,w=Math.max(3,mw*v/e0),x=(W-w)/2;
+        ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText(NM[i]+': '+(v>=100?TB.fmt(v,0):TB.fmt(v,2))+' kJ',12,y+11);
+        ctx.fillStyle=TB.css(i?'--sub':'--good');ctx.fillRect(x,y+16,w,rh-26);});
+      TB.set(root,'[data-r=t4]',TB.fmt(E[3],2)+' kJ');
+      TB.set(root,'[data-r=loss]',TB.fmt(e0-E[3],0)+' kJ');
+      TB.set(root,'[data-r=lv]',E.filter(v=>v>=1).length+' of 5');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: net primary productivity</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-ecosystem-gpp">GPP <output></output></label><input type="range" id="bio-ecosystem-gpp" min="500" max="4000" step="100" value="2000" data-unit=" g/m²/yr"></div>
+      <div class="ctl"><label for="bio-ecosystem-r">Plant respiration R <output></output></label><input type="range" id="bio-ecosystem-r" min="100" max="3000" step="100" value="800" data-unit=" g/m²/yr"></div>
+    </div>
+    <div style="background:var(--soft);border-radius:6px;height:26px;overflow:hidden;display:flex"><div data-bar="npp" style="background:var(--good)"></div><div data-bar="res" style="background:var(--bad)"></div></div>
+    <div class="readouts"><div class="readout">NPP = GPP &minus; R<b data-r="npp">-</b></div><div class="readout">Green = NPP, red = respired<b data-r="pct">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget'),q=s=>root.querySelector(s);
+    function draw(){const G=+q('#bio-ecosystem-gpp').value,R=Math.min(G,+q('#bio-ecosystem-r').value),N=G-R;
+      q('[data-bar=npp]').style.width=N/G*100+'%';q('[data-bar=res]').style.width=R/G*100+'%';
+      TB.set(root,'[data-r=npp]',TB.fmt(N,0)+' g/m²/yr');TB.set(root,'[data-r=pct]',TB.fmt(N/G*100,0)+'% of GPP kept');}
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>Worked example with the default values: producers fix 10,000 kJ. Primary consumers get 10% = 1,000 kJ, secondary consumers 100 kJ, tertiary consumers 10 kJ. So 9,990 kJ is lost as heat or used in respiration before the 4th level, which is why a tiger-like top carnivore needs a huge area. Decomposition shows up in the Ganga: untreated sewage is rich in organic matter, so microbes decomposing it use up dissolved oxygen (BOD rises). CPCB water quality norms ask for DO of at least 6 mg/L and BOD of at most 2 mg/L for a drinking-water source after disinfection; fish need roughly 4 mg/L or more of oxygen, so stretches loaded with sewage lose fish while the oxygen-poor water favours organisms that cope without it.</p></div>
+  <div class="quiz"><p class="q">A producer level fixes 20,000 kJ. At 10% transfer, how much reaches the secondary consumers?</p><div class="opts"><button>2,000 kJ</button><button data-ok>200 kJ</button><button>20 kJ</button><button>10,000 kJ</button></div><p class="why" hidden>Primary consumers: 20,000 &times; 0.10 = 2,000 kJ. Secondary consumers: 2,000 &times; 0.10 = 200 kJ.</p></div>
+</article><div class="pager"><a href="bio-population.html"><small>Previous</small>Population growth and interactions</a><a class="next" href="bio-biodiversity.html"><small>Next</small>Biodiversity and conservation</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

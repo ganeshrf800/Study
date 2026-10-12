@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Matrices and transformations - Class 12 Mathematics</title>
+<meta name="description" content="Matrices and transformations: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-matrices" data-title="Matrices and transformations">
+  <header><div class="tag">Matrices</div><h3>Matrices: operations and geometric transformations</h3></header>
+  <p class="lead">A matrix is a rectangular array of numbers that can store a table, a system of equations or a transformation of the plane. Matrices add entry by entry, but they multiply row-by-column, and that product is not commutative. A 2 × 2 matrix acting on points moves, stretches, turns or flips the whole plane at once.</p>
+  <ul class="keypoints">
+    <li>Order m × n means m rows and n columns. Addition and subtraction need equal orders; AB needs (columns of A) = (rows of B), and the order of AB is (rows of A) × (columns of B).</li>
+    <li>Matrix multiplication is associative and distributes over addition, but in general AB ≠ BA, and AB = O does not force A = O or B = O.</li>
+    <li>Transpose Aᵀ swaps rows and columns. Symmetric: Aᵀ = A. Skew-symmetric: Aᵀ = −A (so every diagonal entry is 0). Every square matrix is a sum of a symmetric and a skew-symmetric matrix.</li>
+    <li>Special matrices: zero, diagonal, scalar, identity I (AI = IA = A), upper and lower triangular.</li>
+    <li>The columns of a 2 × 2 matrix are the images of the unit vectors (1, 0) and (0, 1); the unit square is carried to a parallelogram whose area is |det A|.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">(A + B)<sub>ij</sub> = a<sub>ij</sub> + b<sub>ij</sub><small>Same order required. k·A multiplies every entry by k</small></div>
+    <div class="eq">(AB)<sub>ij</sub> = Σ<sub>k</sub> a<sub>ik</sub> b<sub>kj</sub><small>Row i of A dotted with column j of B</small></div>
+    <div class="eq">(AB)ᵀ = BᵀAᵀ, (A + B)ᵀ = Aᵀ + Bᵀ<small>Reverse the order when transposing a product</small></div>
+    <div class="eq">A = ½(A + Aᵀ) + ½(A − Aᵀ)<small>Symmetric part plus skew-symmetric part</small></div>
+    <div class="eq">R(θ) = [cos θ, −sin θ; sin θ, cos θ]<small>Rotation of the plane by θ anticlockwise about the origin</small></div>
+    <div class="eq">(x′, y′)ᵀ = [a b; c d] (x, y)ᵀ<small>Area of the image of any region = |ad − bc| × original area</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Matrix calculator: type your own entries</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-matrices-size">Order of A and B</label><select id="mat-matrices-size"><option value="2">2 × 2</option><option value="3">3 × 3</option></select></div>
+      <div class="ctl"><label for="mat-matrices-op">Operation</label><select id="mat-matrices-op"><option value="add">A + B</option><option value="sub">A − B</option><option value="mul" selected>A × B</option><option value="mul2">B × A</option><option value="k">k · A</option><option value="tA">Aᵀ (transpose)</option><option value="sq">A² = A × A</option></select></div>
+      <div class="ctl"><label for="mat-matrices-k">Scalar k <output></output></label><input type="range" id="mat-matrices-k" min="-5" max="5" step="1" value="2"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:center;margin-bottom:.6rem">
+      <div><b>A</b><div id="mat-matrices-ga" style="display:grid;gap:.25rem;margin-top:.2rem"></div></div>
+      <div><b>B</b><div id="mat-matrices-gb" style="display:grid;gap:.25rem;margin-top:.2rem"></div></div>
+      <div id="mat-matrices-out" style="min-width:0"></div>
+    </div>
+    <p id="mat-matrices-why" style="font-family:var(--f-mono);font-size:.88rem;color:var(--muted);overflow-wrap:anywhere"></p>
+    <div class="readouts">
+      <div class="readout">Is AB = BA?<b data-r="comm">-</b></div>
+      <div class="readout">Type of A<b data-r="type" style="font-size:.9rem">-</b></div>
+      <div class="readout">det A<b data-r="det">-</b></div>
+      <div class="readout">Trace of A<b data-r="tr">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const sz=$('#mat-matrices-size'),op=$('#mat-matrices-op'),kk=$('#mat-matrices-k'),gA=$('#mat-matrices-ga'),gB=$('#mat-matrices-gb'),out=$('#mat-matrices-out'),why=$('#mat-matrices-why');
+const defA={2:[[1,2],[3,4]],3:[[1,2,3],[4,5,6],[7,8,10]]},defB={2:[[0,1],[1,0]],3:[[1,0,2],[0,1,0],[3,0,1]]};
+const cellsA=[],cellsB=[];
+function build(g,pre,cells){for(let i=0;i<3;i++){cells[i]=[];for(let j=0;j<3;j++){const e=document.createElement('input');e.type='number';e.step='any';e.id='mat-matrices-'+pre+i+j;e.style.cssText=inpStyle;e.setAttribute('aria-label','Matrix '+pre.toUpperCase()+' row '+(i+1)+' column '+(j+1));e.style.gridRow=i+1;e.style.gridColumn=j+1;g.appendChild(e);cells[i][j]=e;}}}
+build(gA,'a',cellsA);build(gB,'b',cellsB);
+function setSize(n){[gA,gB].forEach(g=>g.style.gridTemplateColumns='repeat('+n+',3.4rem)');
+ for(let i=0;i<3;i++)for(let j=0;j<3;j++){const v=(i<n&&j<n)?'':'none';cellsA[i][j].style.display=v;cellsB[i][j].style.display=v;
+  if(i<n&&j<n){cellsA[i][j].value=defA[n][i][j];cellsB[i][j].value=defB[n][i][j];}}}
+sz.addEventListener('change',()=>setSize(+sz.value));setSize(2);
+const rd=(cells,n)=>{const M=[];for(let i=0;i<n;i++){M[i]=[];for(let j=0;j<n;j++)M[i][j]=num(cells[i][j]);}return M;};
+const mul=(A,B)=>A.map((r,i)=>r.map((_,j)=>r.reduce((s,_2,k)=>s+A[i][k]*B[k][j],0)));
+const T=A=>A.map((r,i)=>r.map((_,j)=>A[j][i]));
+const same=(A,B)=>A.every((r,i)=>r.every((v,j)=>Math.abs(v-B[i][j])<1e-9));
+const det=A=>A.length==2?A[0][0]*A[1][1]-A[0][1]*A[1][0]:A[0][0]*(A[1][1]*A[2][2]-A[1][2]*A[2][1])-A[0][1]*(A[1][0]*A[2][2]-A[1][2]*A[2][0])+A[0][2]*(A[1][0]*A[2][1]-A[1][1]*A[2][0]);
+function kind(A){const n=A.length,t=[];let diag=true,sym=true,skew=true,up=true,lo=true;
+ for(let i=0;i<n;i++)for(let j=0;j<n;j++){const v=A[i][j];if(i!=j&&Math.abs(v)>1e-9)diag=false;if(Math.abs(v-A[j][i])>1e-9)sym=false;if(Math.abs(v+A[j][i])>1e-9)skew=false;if(i>j&&Math.abs(v)>1e-9)up=false;if(i<j&&Math.abs(v)>1e-9)lo=false;}
+ const d0=A[0][0],allz=A.every(r=>r.every(v=>Math.abs(v)<1e-9));
+ if(allz)return 'Zero matrix';
+ if(diag){const sc=A.every((r,i)=>Math.abs(r[i]-d0)<1e-9);t.push(sc&&Math.abs(d0-1)<1e-9?'Identity':sc?'Scalar':'Diagonal');}
+ else{if(sym)t.push('Symmetric');if(skew)t.push('Skew-symmetric');if(up)t.push('Upper triangular');if(lo)t.push('Lower triangular');}
+ return t.length?t.join(', '):'General square matrix';}
+function draw(){const n=+sz.value,A=rd(cellsA,n),B=rd(cellsB,n),k=+kk.value,o=op.value;let M,lbl,expl='';
+ const e=(i,j)=>'₁₂₃'[i]+'₁₂₃'[j];
+ const terms=(f)=>Array.from({length:n},(_,t)=>f(t));
+ if(o=='add'){M=A.map((r,i)=>r.map((v,j)=>v+B[i][j]));lbl='A + B';expl='(A+B)₁₁ = a₁₁ + b₁₁ = '+F(A[0][0])+' + '+F(B[0][0])+' = '+F(M[0][0]);}
+ else if(o=='sub'){M=A.map((r,i)=>r.map((v,j)=>v-B[i][j]));lbl='A − B';expl='(A−B)₁₁ = a₁₁ − b₁₁ = '+F(A[0][0])+' − '+F(B[0][0])+' = '+F(M[0][0]);}
+ else if(o=='k'){M=A.map(r=>r.map(v=>k*v));lbl=F(k)+' · A';expl='(kA)₁₁ = k·a₁₁ = '+F(k)+' × '+F(A[0][0])+' = '+F(M[0][0]);}
+ else if(o=='tA'){M=T(A);lbl='Aᵀ';expl='(Aᵀ)₁₂ = a₂₁ = '+F(A[1][0])+' : rows become columns.';}
+ else{const X=o=='mul2'?B:A,Y=o=='mul'?B:o=='mul2'?A:A,nm=o=='mul'?'AB':o=='mul2'?'BA':'A²';M=mul(X,Y);lbl=o=='mul'?'A × B':o=='mul2'?'B × A':'A × A';
+  const sx=o=='mul2'?'b':'a',sy=o=='mul'?'b':o=='mul2'?'a':'a';
+  expl='('+nm+')₁₁ = '+terms(t=>sx+'₁'+SUBS[t+1]+sy+SUBS[t+1]+'₁').join(' + ')+' = '+terms(t=>F(X[0][t])+'×'+F(Y[t][0])).join(' + ')+' = '+F(M[0][0]);}
+ out.innerHTML='<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><b>'+lbl+' =</b>'+gridHTML(M)+'</div>';
+ why.textContent=expl;
+ const AB=mul(A,B),BA=mul(B,A);
+ R('comm',same(AB,BA)?'Yes':'No');R('type',kind(A));R('det',F(det(A)));R('tr',F(A.reduce((s,r,i)=>s+r[i],0)));}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Transform the unit square with a 2 × 2 matrix</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-matrices-pre">Load a preset</label><select id="mat-matrices-pre"><option value="1,0,0,1">Identity</option><option value="0.866,-0.5,0.5,0.866">Rotate 30° anticlockwise</option><option value="0,-1,1,0">Rotate 90° anticlockwise</option><option value="2,0,0,0.5">Scale: x by 2, y by 0.5</option><option value="1,1,0,1">Shear along x</option><option value="0,1,1,0">Reflect in the line y = x</option><option value="1,0,0,-1">Reflect in the x-axis</option><option value="1,0,0,0">Project onto the x-axis</option></select></div>
+      <div class="ctl"><label for="mat-matrices-ta">a (top left) <output></output></label><input type="range" id="mat-matrices-ta" min="-2" max="2" step="0.001" value="1"></div>
+      <div class="ctl"><label for="mat-matrices-tb">b (top right) <output></output></label><input type="range" id="mat-matrices-tb" min="-2" max="2" step="0.001" value="0"></div>
+      <div class="ctl"><label for="mat-matrices-tc">c (bottom left) <output></output></label><input type="range" id="mat-matrices-tc" min="-2" max="2" step="0.001" value="0"></div>
+      <div class="ctl"><label for="mat-matrices-td">d (bottom right) <output></output></label><input type="range" id="mat-matrices-td" min="-2" max="2" step="0.001" value="1"></div>
+    </div>
+    <canvas class="stage" id="mat-matrices-cv" style="max-width:440px;margin-inline:auto"></canvas>
+    <div class="readouts">
+      <div class="readout">Matrix [a b; c d]<b data-r="m" style="font-size:.85rem">-</b></div>
+      <div class="readout">det = area scale<b data-r="det">-</b></div>
+      <div class="readout">Orientation<b data-r="or" style="font-size:.85rem">-</b></div>
+      <div class="readout">Image of (1, 0)<b data-r="e1">-</b></div>
+      <div class="readout">Image of (0, 1)<b data-r="e2">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const pre=$('#mat-matrices-pre'),sl=['a','b','c','d'].map(k=>$('#mat-matrices-t'+k)),cv=$('#mat-matrices-cv');
+pre.addEventListener('change',()=>{const v=pre.value.split(',').map(Number);sl.forEach((s,i)=>{s.value=v[i];s.dispatchEvent(new Event('input',{bubbles:true}));});});
+function draw(){const [a,b,c,d]=sl.map(s=>+s.value);const P=mkP(cv,-4,4,-4,4,'eq'),ctx=P.ctx;
+ axes(P,1,1,v=>v==0?'0':String(v));
+ const M=p=>[a*p[0]+b*p[1],c*p[0]+d*p[1]];
+ for(let i=-6;i<=6;i++){poly(P,[M([i,-7]),M([i,7])],LN(),1,[3,3],false);poly(P,[M([-7,i]),M([7,i])],LN(),1,[3,3],false);}
+ const sq=[[0,0],[1,0],[1,1],[0,1]],im=sq.map(M);
+ poly(P,sq,MUT(),1.5,[5,4]);
+ fill(P,im,SUB(),0.3);poly(P,im,SUB(),2);
+ arrow2(P,0,0,a,c,BAD(),2.5);arrow2(P,0,0,b,d,GOOD(),2.5);
+ txt(P,'e₁′',P.X(a)+6,P.Y(c)-8,BAD());txt(P,'e₂′',P.X(b)+6,P.Y(d)-8,GOOD());
+ txt(P,'dashed: unit square',P.L+6,P.T+10,MUT());
+ const D=a*d-b*c;
+ R('m','['+F(a,2)+' '+F(b,2)+'; '+F(c,2)+' '+F(d,2)+']');R('det',F(D,3));
+ R('or',Math.abs(D)<1e-3?'Collapsed to a line':D>0?'Preserved':'Flipped (mirror)');
+ R('e1','('+F(a,2)+', '+F(c,2)+')');R('e2','('+F(b,2)+', '+F(d,2)+')');}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>Every rotation in a game, a photo editor or a CAD drawing is a matrix product. To rotate the pixel (3, 2) by 90° anticlockwise about the origin, multiply by R(90°) = [0 −1; 1 0]: x′ = 0·3 + (−1)·2 = −2 and y′ = 1·3 + 0·2 = 3, so the new position is (−2, 3). Because det R = 0·0 − (−1)(1) = 1, areas are unchanged. Two turns are one matrix R(90°)² = [−1 0; 0 −1], a 180° turn.</p>
+  <p>Web search uses the same machinery. Take three pages: A links to B and C, B links to C, C links to A. Its link matrix (each column splits a page's vote equally among the pages it links to) is M = [0 0 1; ½ 0 0; ½ 1 0]. Start with equal rank (⅓, ⅓, ⅓): one multiplication gives Mv = (⅓, ⅙, ½), whose entries still add to 1. Repeating the multiplication settles at the vector with Mr = r, namely r = (⅖, ⅕, ⅖). Page C is as important as A because it receives all of B's vote and half of A's.</p></div>
+
+  <div class="quiz"><p class="q">A is a 2 × 3 matrix and B is a 3 × 4 matrix. Which statement is correct?</p><div class="opts"><button data-ok>AB exists and has order 2 × 4; BA does not exist.</button><button>AB exists and has order 3 × 3.</button><button>Both AB and BA exist, with orders 2 × 4 and 4 × 2.</button><button>Neither product exists.</button></div><p class="why" hidden>AB needs columns of A (3) = rows of B (3), and its order is rows of A × columns of B = 2 × 4. For BA we would need columns of B (4) = rows of A (2), which fails.</p></div>
+</article><div class="pager"><a href="mat-diffeq.html"><small>Previous</small>Differential equations</a><a class="next" href="mat-determinants.html"><small>Next</small>Determinants and inverse</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

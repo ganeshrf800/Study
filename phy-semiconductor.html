@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>p-n junction, rectifier and LED - Class 12 Physics</title>
+<meta name="description" content="p-n junction, rectifier and LED: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-semiconductor" data-title="p-n junction, rectifier and LED">
+  <header><div class="tag">Semiconductor Electronics: Materials, Devices and Simple Circuits</div><h3>p-n junction diode, rectifier and LED</h3></header>
+  <p class="lead">A semiconductor such as silicon conducts a little, and doping controls how much and by which carriers. Joining p-type and n-type material makes a p-n junction that lets current pass in one direction only. That single property builds rectifiers, solar cells and light-emitting diodes.</p>
+  <ul class="keypoints">
+    <li>n-type: donor atoms (P, As) add free electrons. p-type: acceptor atoms (B, Al, In) create holes. Both stay electrically neutral overall.</li>
+    <li>At the junction, carriers diffuse and leave a depletion layer with a built-in barrier potential: about 0.7 V for Si and 0.3 V for Ge.</li>
+    <li>Forward bias (p to +) shrinks the depletion layer and current rises sharply beyond the knee voltage. Reverse bias widens it and only a tiny leakage current flows.</li>
+    <li>A rectifier converts AC to DC; a capacitor filter smooths the pulses. In India, 50 Hz mains gives 50 Hz ripple in half-wave and 100 Hz ripple in full-wave rectification.</li>
+    <li>In an LED, electrons and holes recombine and release a photon of energy about equal to the band gap: E<sub>g</sub> = hc/λ.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">I = I<sub>s</sub> (e<sup>eV/ηkT</sup> − 1)<small>diode equation; kT/e ≈ 0.026 V at room temperature</small></div>
+    <div class="eq">n<sub>e</sub> n<sub>h</sub> = n<sub>i</sub>²<small>in a doped semiconductor</small></div>
+    <div class="eq">V<sub>dc</sub> = V<sub>m</sub>/π (half-wave) &emsp; 2V<sub>m</sub>/π (full-wave)<small>average output for an ideal diode, peak V<sub>m</sub></small></div>
+    <div class="eq">E<sub>g</sub> = hc/λ ≈ 1240/λ(nm) eV<small>LED colour from band gap</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Diode I-V characteristic</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-semiconductor-t">Device</label><select id="phy-semiconductor-t"><option value="si">Silicon diode</option><option value="ge">Germanium diode</option><option value="red">Red LED</option><option value="blue">Blue LED</option></select></div>
+      <div class="ctl"><label for="phy-semiconductor-v">Voltage across diode <output></output></label><input type="range" id="phy-semiconductor-v" min="-2" max="3.5" step="0.05" value="0.6" data-unit=" V"></div>
+    </div>
+    <canvas class="stage" id="phy-semiconductor-cv1"></canvas>
+    <div class="readouts">
+      <div class="readout">Bias<b id="phy-semiconductor-r1">-</b></div>
+      <div class="readout">Knee voltage<b id="phy-semiconductor-r2">-</b></div>
+      <div class="readout">Current I<b id="phy-semiconductor-r3">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const cv=$('phy-semiconductor-cv1'),ts=$('phy-semiconductor-t'),vs=$('phy-semiconductor-v');
+      const P={si:{Is:1e-14,n:1,vk:0.7,led:null},ge:{Is:1e-8,n:1,vk:0.3,led:null},red:{Is:1e-17,n:2,vk:1.8,led:[255,50,40]},blue:{Is:1e-27,n:2,vk:3.0,led:[70,110,255]}};
+      function draw(){
+        const p=P[ts.value],V=+vs.value,VT=0.02585;
+        const cur=v=>v<0?0:p.Is*(Math.exp(v/(p.n*VT))-1)*1e3; // mA
+        const ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted'),bad=TB.css('--bad'),good=TB.css('--good');
+        const {ctx,w,h}=TB.canvas(cv,260);ctx.clearRect(0,0,w,h);
+        const L=14,R=w-14,T=14,B=h-34,vmin=-2,vmax=3.5,imax=20,imin=-2;
+        const gx=v=>L+(v-vmin)/(vmax-vmin)*(R-L),gy=i=>B-(i-imin)/(imax-imin)*(B-T);
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,gy(0));ctx.lineTo(R,gy(0));ctx.moveTo(gx(0),T);ctx.lineTo(gx(0),B);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='center';
+        [-2,-1,0,1,2,3].forEach(v=>{ctx.fillRect(gx(v)-.5,gy(0),1,4);if(v!==0)ctx.fillText(v,gx(v),gy(0)+16);});
+        ctx.fillText('Voltage V (volt)',(L+R)/2,h-5);
+        ctx.textAlign='left';ctx.fillText('I (mA)',gx(0)+5,T+8);ctx.fillText('20',gx(0)+5,gy(20)+20);
+        ctx.fillStyle=muted;ctx.textAlign='left';ctx.fillText('reverse: only nA leakage',L+2,gy(0)-6);
+        ctx.strokeStyle=sub;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(gx(vmin),gy(0));ctx.lineTo(gx(0),gy(0));
+        for(let k=0;k<=300;k++){const v=k*vmax/300,i=Math.min(cur(v),imax);ctx.lineTo(gx(v),gy(i));if(i>=imax)break;}
+        ctx.stroke();
+        ctx.strokeStyle=bad;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(gx(p.vk),gy(0));ctx.lineTo(gx(p.vk),T+30);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=bad;ctx.textAlign=p.vk>2.6?'right':'left';ctx.fillText('Vₖ ≈ '+p.vk+' V',gx(p.vk)+(p.vk>2.6?-4:4),T+42);
+        const I=cur(V),Ic=Math.min(I,imax);ctx.fillStyle=good;ctx.beginPath();ctx.arc(gx(V),gy(Ic),5.5,0,7);ctx.fill();
+        // LED icon
+        const cx=L+50,cy=T+44;ctx.lineWidth=2;ctx.strokeStyle=ink;ctx.beginPath();ctx.arc(cx,cy,15,0,7);ctx.stroke();
+        if(p.led){const a=Math.min(1,I/8);ctx.fillStyle='rgba('+p.led.join(',')+','+a.toFixed(2)+')';ctx.beginPath();ctx.arc(cx,cy,15,0,7);ctx.fill();
+          if(a>0.05){ctx.strokeStyle='rgba('+p.led.join(',')+','+a.toFixed(2)+')';ctx.lineWidth=2;for(let k=0;k<8;k++){const an=k*Math.PI/4;ctx.beginPath();ctx.moveTo(cx+19*Math.cos(an),cy+19*Math.sin(an));ctx.lineTo(cx+26*Math.cos(an),cy+26*Math.sin(an));ctx.stroke();}}}
+        ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText(p.led?(I>0.05?'LED on':'LED off'):'(no light)',cx,cy+38);
+        TB.set(root,'#phy-semiconductor-r1',V<0?'Reverse (blocks)':V<p.vk?'Forward, below knee':'Forward (conducts)');
+        TB.set(root,'#phy-semiconductor-r2',p.vk+' V');
+        TB.set(root,'#phy-semiconductor-r3',V<0?'≈ 0 (leakage)':I<0.01?(I*1000).toFixed(2)+' µA':I.toFixed(2)+' mA');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Rectifier with optional filter capacitor</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-semiconductor-m">Circuit</label><select id="phy-semiconductor-m"><option value="1">Half-wave (one diode)</option><option value="2" selected>Full-wave (bridge, two diodes conduct)</option></select></div>
+      <div class="ctl"><label for="phy-semiconductor-a">Input peak V<sub>m</sub> <output></output></label><input type="range" id="phy-semiconductor-a" min="3" max="20" step="1" value="10" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-semiconductor-f">Filter capacitor</label><select id="phy-semiconductor-f"><option value="0">Off</option><option value="1">On</option></select></div>
+      <div class="ctl"><label for="phy-semiconductor-rc">Load time constant RC <output></output></label><input type="range" id="phy-semiconductor-rc" min="0.5" max="10" step="0.5" value="3" data-unit=" periods"></div>
+    </div>
+    <canvas class="stage" id="phy-semiconductor-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">Peak output<b id="phy-semiconductor-q1">-</b></div>
+      <div class="readout">Average DC output<b id="phy-semiconductor-q2">-</b></div>
+      <div class="readout">Ripple (peak to peak)<b id="phy-semiconductor-q3">-</b></div>
+      <div class="readout">Ripple frequency (50 Hz mains)<b id="phy-semiconductor-q4">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const cv=$('phy-semiconductor-cv2');
+      function draw(){
+        const nd=+$('phy-semiconductor-m').value,Vm=+$('phy-semiconductor-a').value,filt=$('phy-semiconductor-f').value==='1',RC=+$('phy-semiconductor-rc').value;
+        const spp=200,dt=1/spp,warm=8*spp,tot=3*spp;let vc=0;const out=[];
+        for(let k=0;k<warm+tot;k++){const t=k*dt,s=Math.sin(2*Math.PI*t);
+          let r=nd===1?Math.max(0,Vm*s-0.7):Math.max(0,Vm*Math.abs(s)-1.4);
+          if(filt){vc=Math.max(r,vc*Math.exp(-dt/RC));r=vc;}
+          if(k>=warm)out.push(r);}
+        const ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted');
+        const {ctx,w,h}=TB.canvas(cv,250);ctx.clearRect(0,0,w,h);
+        const L=36,R=w-12,T=12,B=h-26,ym=22,gx=k=>L+k/tot*(R-L),gy=v=>(T+B)/2-v/ym*((B-T)/2);
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,gy(0));ctx.lineTo(R,gy(0));ctx.moveTo(L,T);ctx.lineTo(L,B);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='right';[-20,-10,0,10,20].forEach(v=>ctx.fillText(v,L-4,gy(v)+4));
+        ctx.textAlign='center';[0,1,2,3].forEach(c=>ctx.fillText(c,gx(c*spp),h-13));ctx.fillText('time (cycles of the mains)',(L+R)/2+10,h-1);
+        ctx.strokeStyle=muted;ctx.globalAlpha=.7;ctx.setLineDash([4,3]);ctx.beginPath();for(let k=0;k<=tot;k++){const v=Vm*Math.sin(2*Math.PI*k*dt);if(k===0)ctx.moveTo(gx(k),gy(v));else ctx.lineTo(gx(k),gy(v));}ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+        ctx.strokeStyle=sub;ctx.lineWidth=2.6;ctx.beginPath();out.forEach((v,k)=>{if(k===0)ctx.moveTo(gx(k),gy(v));else ctx.lineTo(gx(k),gy(v));});ctx.stroke();
+        ctx.fillStyle=muted;ctx.textAlign='left';ctx.fillText('dashed: AC input',L+6,T+10);ctx.fillStyle=sub;ctx.fillText('solid: output across load',L+6,T+24);
+        const mx=Math.max(...out),mn=Math.min(...out),avg=out.reduce((a,b)=>a+b,0)/out.length;
+        TB.set(root,'#phy-semiconductor-q1',mx.toFixed(2)+' V');TB.set(root,'#phy-semiconductor-q2',avg.toFixed(2)+' V');
+        TB.set(root,'#phy-semiconductor-q3',filt?(mx-mn).toFixed(2)+' V':'full swing (unfiltered)');
+        TB.set(root,'#phy-semiconductor-q4',nd===1?'50 Hz':'100 Hz');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>A solar cell is a large p-n junction: photons with energy above the silicon band gap (1.1 eV) create electron-hole pairs, and the junction's built-in field sweeps them apart as current. Under PM Surya Ghar: Muft Bijli Yojana, a rooftop system of 3 kW in a sunny Indian city yields about 3 kW × 4 h of full-sun equivalent per day × 30 days = 360 kWh a month; the central subsidy is ₹30,000 per kW for the first 2 kW and ₹18,000 for the third, so ₹78,000 in all. DC from the panels is turned back into AC by an inverter, and phone chargers and LED drivers go the other way with a rectifier. LED bulbs: a red LED with λ = 650 nm has photon energy 1240/650 = 1.9 eV, matching the knee near 1.8 V in the plot above; white LEDs use blue (≈ 2.8 eV) plus a phosphor. A 9 W LED replacing a 60 W incandescent bulb used 5 h a day saves 51 W × 5 h × 365 = 93 kWh a year, about ₹650 at ₹7 per unit.</p></div>
+  <div class="quiz"><p class="q">A p-n junction diode is connected with its p-side to the positive terminal of a battery. Which statement is correct?</p><div class="opts"><button>The depletion layer widens and no current flows</button><button data-ok>The depletion layer narrows and current flows once the applied voltage exceeds the knee voltage</button><button>The barrier potential increases</button><button>Holes and electrons both move away from the junction</button></div><p class="why" hidden>This is forward bias. The applied field opposes the built-in field, so the depletion layer narrows and the barrier is lowered; majority carriers cross the junction and current rises rapidly beyond about 0.7 V for silicon.</p></div>
+</article><div class="pager"><a href="phy-nuclei.html"><small>Previous</small>Radioactivity and binding energy</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

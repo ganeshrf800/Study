@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DNA structure and replication - Class 12 Biology</title>
+<meta name="description" content="DNA structure and replication: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-dna-replication" data-title="DNA structure and replication">
+  <header><div class="tag">Molecular Basis of Inheritance</div><h3>DNA structure and semi-conservative replication</h3></header>
+  <p class="lead">DNA is a double helix of two antiparallel polynucleotide strands held by base pairs: A with T (two hydrogen bonds) and G with C (three). Because each strand can serve as a template, replication makes two molecules that each keep one old strand and one new strand. Meselson and Stahl proved this in 1958.</p>
+  <ul class="keypoints">
+    <li><b>Nucleotide</b> = nitrogenous base + deoxyribose sugar + phosphate. Purines: A, G. Pyrimidines: C, T (U in RNA). Strands join by 3'-5' phosphodiester bonds; bases pair by hydrogen bonds.</li>
+    <li><b>Watson and Crick (1953)</b> model: right-handed helix, antiparallel strands, 10 bp per turn, pitch 3.4 nm, 0.34 nm between base pairs. Chargaff's rule: A = T and G = C, so purines = pyrimidines.</li>
+    <li><b>Replication</b> begins at the origin (ori). Helicase unwinds, forming a replication fork. DNA polymerase adds nucleotides only in the 5'→3' direction, so the leading strand is continuous and the lagging strand is made as short Okazaki fragments joined by DNA ligase.</li>
+    <li><b>Packaging</b>: DNA wraps around a histone octamer (8 proteins; positively charged because of lysine and arginine) to form a nucleosome (about 200 bp). Nucleosomes form chromatin: euchromatin (loose, active) and heterochromatin (dense, inactive).</li>
+    <li><b>DNA fingerprinting</b> uses VNTRs (variable number of tandem repeats), which differ between individuals but are inherited half from each parent. Alec Jeffreys developed it in the 1980s.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">[A] = [T], [G] = [C]<small>Chargaff's rules; (A+G)/(T+C) = 1</small></div>
+    <div class="eq">Length = bp × 0.34 nm<small>Rise per base pair along the helix</small></div>
+    <div class="eq">Molecules after n rounds = 2<sup>n</sup>; hybrid fraction = 2 / 2<sup>n</sup><small>Semi-conservative replication, parent labelled with <sup>15</sup>N</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: Meselson-Stahl experiment</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-dna-replication-n"><span>Generations in <sup>14</sup>N medium</span> <output></output></label><input type="range" id="bio-dna-replication-n" min="0" max="4" step="1" value="1"></div>
+      <div class="ctl"><label for="bio-dna-replication-m">Model to test</label><select id="bio-dna-replication-m"><option value="semi">Semi-conservative</option><option value="cons">Conservative</option><option value="disp">Dispersive</option></select></div>
+    </div>
+    <canvas class="stage" id="bio-dna-replication-cv"></canvas>
+    <div class="readouts"><div class="readout">DNA molecules<b data-r="tot">-</b></div><div class="readout"><sup>15</sup>N/<sup>15</sup>N (heavy)<b data-r="hh">-</b></div><div class="readout"><sup>15</sup>N/<sup>14</sup>N (hybrid)<b data-r="hl">-</b></div><div class="readout"><sup>14</sup>N/<sup>14</sup>N (light)<b data-r="ll">-</b></div></div>
+    <p id="bio-dna-replication-txt" aria-live="polite" style="font-size:.95rem"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-dna-replication-cv'),q=s=>root.querySelector(s);
+    function mols(m,n){const T=Math.pow(2,n),a=[];
+      if(n===0)return [[1,1]];
+      if(m==='semi'){for(let i=0;i<2;i++)a.push([1,0]);for(let i=2;i<T;i++)a.push([0,0]);}
+      else if(m==='cons'){a.push([1,1]);for(let i=1;i<T;i++)a.push([0,0]);}
+      else{for(let i=0;i<T;i++)a.push([1/T,1/T]);}
+      return a;}
+    function draw(){
+      const n=+q('#bio-dna-replication-n').value,m=q('#bio-dna-replication-m').value,M=mols(m,n),T=M.length;
+      const g=TB.canvas(cv,290),ctx=g.ctx,W=g.w,H=g.h;ctx.font='12px "Source Sans 3", sans-serif';
+      const tx=22,tw=44,ty=34,th=H-60;
+      ctx.strokeStyle=TB.css('--muted');ctx.lineWidth=2;ctx.beginPath();ctx.roundRect?ctx.roundRect(tx,ty,tw,th,[0,0,22,22]):ctx.rect(tx,ty,tw,th);ctx.stroke();
+      ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('CsCl tube',tx-8,ty-14);
+      ctx.fillStyle=TB.css('--muted');ctx.fillText('light',tx+tw+4,ty+10);ctx.fillText('heavy',tx+tw+4,ty+th-6);
+      const bands={};M.forEach(x=>{const d=Math.round((x[0]+x[1])/2*1000)/1000;bands[d]=(bands[d]||0)+1;});
+      Object.keys(bands).forEach(k=>{const d=+k,y=ty+14+d*(th-44),a=bands[k]/T;
+        ctx.globalAlpha=.25+.75*a;ctx.fillStyle=TB.css(d>0.75?'--bad':d<0.25?'--physics':'--bio');ctx.fillRect(tx+3,y,tw-6,9);ctx.globalAlpha=1;
+        ctx.fillStyle=TB.css('--ink');ctx.fillText(Math.round(a*100)+'%',tx+tw+34,y+9);});
+      /* molecules */
+      const px=150,cols=4,cw=(W-px-8)/cols,mw=Math.min(cw-8,36);
+      ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('DNA molecules',px,ty-14);
+      M.forEach((x,i)=>{const cx=px+(i%cols)*cw+4,cy=ty+10+Math.floor(i/cols)*34;
+        x.forEach((f,s)=>{const nseg=8,sw=mw/nseg;for(let k=0;k<nseg;k++){ctx.fillStyle=TB.css(k<Math.round(f*nseg)?'--bad':'--physics');ctx.fillRect(cx+k*sw,cy+s*7,sw+.5,4);}});
+        ctx.strokeStyle=TB.css('--line');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,cy+5.5);ctx.lineTo(cx+mw,cy+5.5);ctx.stroke();});
+      ctx.fillStyle=TB.css('--bad');ctx.fillRect(12,H-16,12,5);ctx.fillStyle=TB.css('--ink');ctx.fillText('15N strand',28,H-10);
+      ctx.fillStyle=TB.css('--physics');ctx.fillRect(110,H-16,12,5);ctx.fillStyle=TB.css('--ink');ctx.fillText('14N strand',126,H-10);
+      const hh=M.filter(x=>x[0]===1&&x[1]===1).length,ll=M.filter(x=>x[0]===0&&x[1]===0).length;
+      TB.set(root,'[data-r=tot]',T);TB.set(root,'[data-r=hh]',hh);TB.set(root,'[data-r=ll]',ll);TB.set(root,'[data-r=hl]',T-hh-ll);
+      const msg={semi:['Start: all DNA is heavy (15N/15N), a single band at the bottom.','After 1 round every molecule is a hybrid: one old 15N strand, one new 14N strand. One band in the middle.','After 2 rounds: 2 hybrid and 2 light molecules, so two bands (50% each).','After 3 rounds: 2 hybrid and 6 light, so hybrid is 25% and light 75%.','After 4 rounds: 2 hybrid and 14 light (12.5% and 87.5%). This matches the real result, which supports semi-conservative replication.'],
+       cons:['Start: all heavy.','Conservative replication keeps the old molecule intact: after 1 round there would be one heavy and one light band, never a hybrid. The experiment did not show this.','Heavy would stay at 25% and light 75%, still with no hybrid band.','Heavy 12.5%, light 87.5%, no hybrid.','Heavy 6.25%, light 93.75%, no hybrid.'],
+       disp:['Start: all heavy.','Dispersive replication mixes old and new pieces, so after 1 round one band at the middle density (as observed).','After 2 rounds there would still be a single band, now at a lighter density (25% 15N). The experiment showed two bands, so this model fails.','A single band at 12.5% 15N.','A single band at 6.25% 15N.']};
+      q('#bio-dna-replication-txt').textContent='Generation '+n+'. '+msg[m][n];
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: base composition and hydrogen bonds</div>
+    <div class="controls"><div class="ctl"><label for="bio-dna-replication-gc">G + C content <output></output></label><input type="range" id="bio-dna-replication-gc" min="20" max="80" step="1" value="41" data-unit="%"></div>
+    <div class="ctl"><label for="bio-dna-replication-bp">Length <output></output></label><input type="range" id="bio-dna-replication-bp" min="1000" max="10000" step="500" value="4000" data-unit=" bp"></div></div>
+    <canvas class="stage" id="bio-dna-replication-cv2"></canvas>
+    <div class="readouts"><div class="readout">%A = %T<b data-r="at">-</b></div><div class="readout">%G = %C<b data-r="gc">-</b></div><div class="readout">Hydrogen bonds<b data-r="hb">-</b></div><div class="readout">Length of helix<b data-r="len">-</b></div></div>
+    <p style="font-size:.85rem;color:var(--muted)">The ladder shows 20 base pairs in the chosen proportion: A-T rungs have 2 hydrogen bonds, G-C rungs have 3. Real DNA is not arranged in a regular pattern like this.</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-dna-replication-cv2'),q=s=>root.querySelector(s);
+    function draw(){
+      const gc=+q('#bio-dna-replication-gc').value,bp=+q('#bio-dna-replication-bp').value;
+      const g=TB.canvas(cv,200),ctx=g.ctx,W=g.w,H=g.h;ctx.font='12px "Source Sans 3", sans-serif';
+      const n=20,k=Math.round(gc/100*n),x0=20,x1=W-20,dx=(x1-x0)/(n-1);let acc=0;
+      ctx.lineWidth=3;ctx.strokeStyle=TB.css('--muted');
+      ctx.beginPath();ctx.moveTo(x0-6,56);ctx.lineTo(x1+6,56);ctx.moveTo(x0-6,H-56);ctx.lineTo(x1+6,H-56);ctx.stroke();
+      let gcN=0;
+      for(let i=0;i<n;i++){acc+=k;const isGC=acc>=n;if(isGC)acc-=n;if(isGC)gcN++;
+        const x=x0+i*dx,top=i%2?'T':'A',lt=isGC?(i%2?'C':'G'):top,rt=isGC?(lt==='G'?'C':'G'):(lt==='A'?'T':'A');
+        const mid=H/2;ctx.strokeStyle=TB.css(isGC?'--chem':'--maths');ctx.lineWidth=isGC?3:2;
+        ctx.beginPath();ctx.moveTo(x,56);ctx.lineTo(x,H-56);ctx.stroke();
+        ctx.fillStyle=TB.css('--ink');ctx.textAlign='center';ctx.fillText(lt,x,48);ctx.fillText(rt,x,H-40);}
+      ctx.fillStyle=TB.css('--maths');ctx.fillRect(x0,H-22,14,4);ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('A-T (2 bonds)',x0+20,H-16);
+      ctx.fillStyle=TB.css('--chem');ctx.fillRect(x0+120,H-22,14,4);ctx.fillStyle=TB.css('--ink');ctx.fillText('G-C (3 bonds)',x0+140,H-16);
+      ctx.fillText("5'",2,48);ctx.fillText("3'",2,H-40);
+      const at=(100-gc)/2,gcf=gc/2,hb=bp*(2*(100-gc)/100+3*gc/100);
+      TB.set(root,'[data-r=at]',at+'% each');TB.set(root,'[data-r=gc]',gcf+'% each');TB.set(root,'[data-r=hb]',TB.fmt(hb,0));
+      const L=bp*0.34;TB.set(root,'[data-r=len]',L>=1000?TB.fmt(L/1000,2)+' μm':TB.fmt(L,0)+' nm');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>DNA fingerprinting is used in Indian courts for paternity and criminal cases, and India's work in this area grew from the Centre for Cellular and Molecular Biology (CCMB) and the Centre for DNA Fingerprinting and Diagnostics in Hyderabad. A child inherits each VNTR band from one of the two parents, so every band in the child's pattern must also appear in the mother's or the father's. Worked example on length: the human diploid cell has about 6.6 × 10<sup>9</sup> bp, so its DNA is 6.6 × 10<sup>9</sup> × 0.34 × 10<sup>-9</sup> m = 2.24 m, folded into a nucleus a few micrometres wide. <i>E. coli</i> has 4.6 × 10<sup>6</sup> bp; with two forks each adding about 2000 bp per second, replication takes 4.6 × 10<sup>6</sup> / 4000 = 1150 s, about 19 minutes.</p></div>
+  <div class="quiz"><p class="q">E. coli grown for many generations in <sup>15</sup>N is moved to <sup>14</sup>N medium. After two rounds of replication, what do the DNA molecules look like?</p><div class="opts"><button>All hybrid</button><button data-ok>Half hybrid and half light</button><button>All light</button><button>One quarter heavy, three quarters light</button></div><p class="why" hidden>Semi-conservative replication gives 4 molecules from 1. The two old 15N strands each end up in one hybrid molecule (2 hybrid), and the other 2 molecules are entirely new 14N (light). So half hybrid and half light.</p></div>
+</article><div class="pager"><a href="bio-inheritance.html"><small>Previous</small>Principles of inheritance</a><a class="next" href="bio-gene-expression.html"><small>Next</small>Transcription, translation, lac operon</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Biodiversity and conservation - Class 12 Biology</title>
+<meta name="description" content="Biodiversity and conservation: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-biodiversity" data-title="Biodiversity and conservation">
+  <header><div class="tag">Biodiversity and Conservation</div><h3>Species-area relationship, hotspots and conservation</h3></header>
+  <p class="lead">Larger areas hold more species, in a predictable curve. Because some regions hold huge numbers of unique species in a small, threatened space, conservation prioritises hotspots and uses both in situ and ex situ methods.</p>
+  <ul class="keypoints">
+    <li>Species-area (Alexander von Humboldt): S = C A<sup>z</sup>. On a log-log plot it is a straight line of slope z, usually 0.1 to 0.2 within a region and 0.6 to 1.2 across whole continents.</li>
+    <li>Diversity is highest in the tropics (more stable climate, more solar energy, more time to evolve). Four causes of loss (&ldquo;evil quartet&rdquo;): habitat loss and fragmentation, over-exploitation, alien invasions, co-extinctions.</li>
+    <li>A <b>biodiversity hotspot</b> has very high endemism (over 1,500 endemic vascular plants) and has lost at least 70% of its original habitat. The world has 34; India has parts of 4.</li>
+    <li><b>In situ</b>: conserve in the natural habitat (national parks, sanctuaries, biosphere reserves, sacred groves). <b>Ex situ</b>: outside it (zoos, botanical gardens, seed banks, cryopreservation, in vitro fertilisation).</li>
+    <li>India has about 2.4% of the world's land area but about 8.1% of its species.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">S = C A<sup>z</sup><small>S species, A area, C a constant (intercept), z slope</small></div>
+    <div class="eq">log S = log C + z log A<small>Straight line on log-log axes</small></div>
+    <div class="eq">S<sub>2</sub>/S<sub>1</sub> = (A<sub>2</sub>/A<sub>1</sub>)<sup>z</sup><small>Doubling the area multiplies species by 2<sup>z</sup></small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: species-area curve</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-biodiversity-z">Slope z <output></output></label><input type="range" id="bio-biodiversity-z" min="0.1" max="1.2" step="0.05" value="0.2"></div>
+      <div class="ctl"><label for="bio-biodiversity-a">Area, log<sub>10</sub> of km&sup2; <output></output></label><input type="range" id="bio-biodiversity-a" min="0" max="6" step="0.1" value="4"></div>
+      <div class="ctl"><label for="bio-biodiversity-c">C <output></output></label><input type="range" id="bio-biodiversity-c" min="1" max="50" step="1" value="10"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts"><div class="readout">Area chosen<b data-r="A">-</b></div><div class="readout">Species S<b data-r="S">-</b></div><div class="readout">Doubling area gives<b data-r="dbl">-</b></div><div class="readout">Species kept if 90% habitat lost<b data-r="loss">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas'),q=s=>root.querySelector(s);
+    const sup=n=>String(n).split('').map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹⁻'['0123456789-'.indexOf(c)]).join('');
+    function draw(){
+      const z=+q('#bio-biodiversity-z').value,la=+q('#bio-biodiversity-a').value,C=+q('#bio-biodiversity-c').value,lc=Math.log10(C);
+      const g=TB.canvas(cv,270),ctx=g.ctx,W=g.w,H=g.h,L=50,R=14,T=26,B=38,pw=W-L-R,ph=H-T-B;
+      const y0=Math.floor(Math.min(0,lc)),y1=Math.ceil(lc+6*z);
+      const X=a=>L+a/6*pw,Y=s=>T+ph-(s-y0)/(y1-y0)*ph;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.lineWidth=1;ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');
+      ctx.textAlign='right';for(let s=y0;s<=y1;s++){ctx.beginPath();ctx.moveTo(L,Y(s));ctx.lineTo(W-R,Y(s));ctx.stroke();ctx.fillText('10'+sup(s),L-5,Y(s)+4);}
+      ctx.textAlign='center';for(let a=0;a<=6;a++)ctx.fillText('10'+sup(a),X(a),H-B+16);
+      ctx.fillStyle=TB.css('--ink');ctx.fillText('Area A (km²)',L+pw/2,H-6);ctx.textAlign='left';ctx.fillText('Species S (both axes logarithmic)',L,15);
+      ctx.setLineDash([5,4]);ctx.strokeStyle=TB.css('--muted');ctx.beginPath();ctx.moveTo(X(0),Y(lc));ctx.lineTo(X(6),Y(lc+1.2));ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle=TB.css('--sub');ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X(0),Y(lc));ctx.lineTo(X(6),Y(lc+6*z));ctx.stroke();
+      const ls=lc+z*la;ctx.fillStyle=TB.css('--bad');ctx.beginPath();ctx.arc(X(la),Y(ls),6,0,7);ctx.fill();
+      ctx.fillStyle=TB.css('--muted');ctx.textAlign='left';ctx.fillText('dashed: z = 0.2 reference',L+8,T+30);
+      const A=Math.pow(10,la),S=C*Math.pow(A,z);
+      TB.set(root,'[data-r=A]',TB.fmt(A,0)+' km²');TB.set(root,'[data-r=S]',TB.fmt(S,0));
+      TB.set(root,'[data-r=dbl]','×'+TB.fmt(Math.pow(2,z),3)+' species');
+      TB.set(root,'[data-r=loss]',TB.fmt(Math.pow(.1,z)*100,0)+'%');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: India's four hotspots</div>
+    <div class="controls"><div class="ctl"><label for="bio-biodiversity-hs">Hotspot <output></output></label><select id="bio-biodiversity-hs"><option value="0">Western Ghats and Sri Lanka</option><option value="1">Himalaya</option><option value="2">Indo-Burma</option><option value="3">Sundaland (Nicobar Islands)</option></select></div></div>
+    <div class="tw"><table class="t" data-card><tbody></tbody></table></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const H=[
+     [['Where in India','Sahyadri range along the west coast, Gujarat border to Kanyakumari'],['Known for','Lion-tailed macaque, Nilgiri tahr, many amphibians; high plant endemism'],['Pressure','Plantations, dams, mining, roads; UNESCO World Heritage listing since 2012'],['Protected area','Silent Valley, Periyar, Nagarhole, Bhimashankar']],
+     [['Where in India','Arc of the Himalayas from Jammu and Kashmir to Arunachal Pradesh (the hotspot extends across Nepal and Bhutan)'],['Known for','Snow leopard, red panda, Himalayan monal, rhododendrons'],['Pressure','Deforestation, hydro projects, grazing, tourism and climate change'],['Protected area','Great Himalayan NP, Nanda Devi, Kanchenjunga']],
+     [['Where in India','North-eastern India (south of the Brahmaputra) and the Andaman Islands region'],['Known for','Hoolock gibbon, many orchids, rich bird and amphibian life'],['Pressure','Jhum (shifting cultivation) on short cycles, logging, hunting'],['Protected area','Kaziranga, Manas, Namdapha, Dibru-Saikhowa']],
+     [['Where in India','Nicobar Islands (the rest of the hotspot lies in Southeast Asia)'],['Known for','Island endemics such as the Nicobar megapode and Nicobar tree shrew'],['Pressure','Small island area so low resilience; settlement, tourism, tsunami and storms'],['Protected area','Great Nicobar Biosphere Reserve']]];
+    function draw(){const k=+root.querySelector('#bio-biodiversity-hs').value;
+      root.querySelector('[data-card] tbody').innerHTML=H[k].map(r=>'<tr><th style="width:8.5rem">'+r[0]+'</th><td>'+r[1]+'</td></tr>').join('');}
+    TB.live(root,draw);})();</script>
+  </div>
+  <h4>In situ and ex situ</h4>
+  <div class="tw"><table class="t"><thead><tr><th></th><th>In situ</th><th>Ex situ</th></tr></thead><tbody>
+    <tr><td>Where</td><td>Natural habitat</td><td>Outside habitat: zoo, botanical garden, seed bank, gene bank</td></tr>
+    <tr><td>Examples in India</td><td>Corbett, Kaziranga, Sundarbans; biosphere reserves; sacred groves of Meghalaya (Khasi, Jaintia), Western Ghats, Aravallis</td><td>NBPGR seed banks, Lalbagh Botanical Garden, cryopreservation of gametes</td></tr>
+    <tr><td>Strength</td><td>Protects whole ecosystem and interactions</td><td>Safety net for species on the brink; allows breeding programmes</td></tr>
+  </tbody></table></div>
+  <div class="world"><h4>In the real world</h4><p>The Amazon (about 6 million km&sup2;) and the Western Ghats (about 1.6 lakh km&sup2;) differ in area by 6,000,000 / 160,000 = 37.5 times. With z = 0.2, area alone predicts only 37.5<sup>0.2</sup> = e<sup>0.2 ln 37.5</sup> = e<sup>0.725</sup> &approx; 2.1 times as many species. The Amazon's real excess is much greater because it sits on the equator (warm, wet, stable), another reason diversity peaks in the tropics. Habitat loss: if a forest shrinks to 10% of its area with z = 0.2, species left = 0.1<sup>0.2</sup> = 0.63, so about 37% of species are lost. People protect habitat in many ways: Project Tiger (1973) created tiger reserves, Chipko (1973, Garhwal Himalaya, Gaura Devi and village women) hugged trees to stop felling, and sacred groves protect pockets of forest for local custom.</p></div>
+  <div class="quiz"><p class="q">On a log-log graph of species against area, the slope of the line is:</p><div class="opts"><button>C</button><button data-ok>z</button><button>S</button><button>log C</button></div><p class="why" hidden>Taking logs of S = C A<sup>z</sup> gives log S = log C + z log A. That is a straight line with slope z and intercept log C.</p></div>
+</article><div class="pager"><a href="bio-ecosystem.html"><small>Previous</small>Ecosystem energy flow</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

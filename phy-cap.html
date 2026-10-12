@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Capacitors and dielectrics - Class 12 Physics</title>
+<meta name="description" content="Capacitors and dielectrics: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-cap" data-title="Capacitors and dielectrics">
+  <header><div class="tag">Electrostatic Potential and Capacitance</div><h3>Capacitors: plates, dielectrics, combinations and stored energy</h3></header>
+  <p class="lead">A capacitor stores charge, and energy, in the electric field between two conductors. Its capacitance C = Q/V depends only on geometry and on the insulator (dielectric) between the plates, not on the charge or voltage.</p>
+  <ul class="keypoints">
+    <li>For a parallel-plate capacitor, C = ε₀A/d. Bigger plates or a smaller gap give more capacitance.</li>
+    <li>A dielectric of constant K multiplies the capacitance by K, because its molecules polarise and weaken the field inside.</li>
+    <li>In series the charge is the same on each capacitor and the voltages add; in parallel the voltage is the same and the charges add.</li>
+    <li>Energy stored: U = ½CV² = Q²/2C = ½QV, held in the field with energy density ½ε₀E².</li>
+    <li>Inserting a dielectric with the battery connected keeps V fixed (Q and U rise); with the battery removed it keeps Q fixed (V and U fall).</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">C = Q / V<small>Definition; unit farad (F) = C V⁻¹</small></div>
+    <div class="eq">C = Kε<sub>0</sub>A / d<small>Parallel plate with dielectric of constant K (K = 1 for vacuum, ε<sub>0</sub> = 8.85×10⁻¹² F m⁻¹)</small></div>
+    <div class="eq">1/C<sub>s</sub> = 1/C<sub>1</sub> + 1/C<sub>2</sub> + …<small>Series: same Q, smaller than the smallest</small></div>
+    <div class="eq">C<sub>p</sub> = C<sub>1</sub> + C<sub>2</sub> + …<small>Parallel: same V, larger than the largest</small></div>
+    <div class="eq">U = ½CV² = Q²/(2C)<small>Energy stored; u = ½ε<sub>0</sub>E² per unit volume</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: parallel plate capacitor with a dielectric</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-cap-a">Plate area A <output></output></label><input type="range" id="phy-cap-a" min="10" max="200" step="5" value="100" data-unit=" cm²"></div>
+      <div class="ctl"><label for="phy-cap-d">Separation d <output></output></label><input type="range" id="phy-cap-d" min="0.5" max="5" step="0.5" value="1" data-unit=" mm"></div>
+      <div class="ctl"><label for="phy-cap-k">Dielectric constant K <output></output></label><input type="range" id="phy-cap-k" min="1" max="10" step="0.1" value="1" data-unit=""></div>
+      <div class="ctl"><label for="phy-cap-v">Charging voltage V <output></output></label><input type="range" id="phy-cap-v" min="1" max="100" step="1" value="10" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-cap-mode">When K is changed</label><select id="phy-cap-mode"><option value="batt">Battery stays connected (V fixed)</option><option value="iso">Battery removed (Q fixed)</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Capacitance C<b data-r="C">-</b></div>
+      <div class="readout">Charge Q<b data-r="Q">-</b></div>
+      <div class="readout">Voltage across plates<b data-r="V">-</b></div>
+      <div class="readout">Energy U<b data-r="U">-</b></div>
+      <div class="readout">Field between plates<b data-r="E">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">In "Battery removed" mode the capacitor is charged to V with K = 1 and then isolated; raising K then lowers the voltage and energy by the factor K.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      const E0=8.854e-12;
+      const eng=(x,u)=>{if(x===0)return '0 '+u;const t=[[1e6,'M'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'μ'],[1e-9,'n'],[1e-12,'p']];const a=Math.abs(x);let f=t[t.length-1];for(const e of t){if(a>=e[0]*0.9995){f=e;break}}return (x/f[0]).toPrecision(3)+' '+f[1]+u};
+      function arrow(ctx,x0,y0,x1,y1,hs){ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-0.45),y1-hs*Math.sin(a-0.45));ctx.lineTo(x1-hs*Math.cos(a+0.45),y1-hs*Math.sin(a+0.45));ctx.closePath();ctx.fill()}
+      function draw(){
+        const Ac=+$('#phy-cap-a').value,A=Ac*1e-4,dm=+$('#phy-cap-d').value,d=dm*1e-3,Kd=+$('#phy-cap-k').value,V=+$('#phy-cap-v').value,mode=$('#phy-cap-mode').value;
+        const C0=E0*A/d,C=Kd*C0;let Q,Vc,U;
+        if(mode==='batt'){Vc=V;Q=C*V;U=0.5*C*V*V}else{Q=C0*V;Vc=Q/C;U=Q*Q/(2*C)}
+        const Ef=Vc/d;
+        const g=TB.canvas($('canvas'),230),ctx=g.ctx,w=g.w,h=g.h;
+        const sub=TB.css('--sub'),bad=TB.css('--bad'),ink=TB.css('--ink');
+        const cx=w/2,cy=h/2-6,half=Math.min(0.3*w,0.1*w+0.2*w*Math.sqrt(A/0.02)),gap=18+dm*12;
+        ctx.globalAlpha=(Kd-1)/9*0.45;ctx.fillStyle=sub;ctx.fillRect(cx-half,cy-gap/2,2*half,gap);ctx.globalAlpha=1;
+        ctx.fillStyle=sub;ctx.fillRect(cx-half,cy-gap/2-6,2*half,6);ctx.fillRect(cx-half,cy+gap/2,2*half,6);
+        const n=Math.max(1,Math.min(14,Math.round(2+3*Math.log10(Q/1e-10))));
+        ctx.font='bold 14px "Source Sans 3", sans-serif';ctx.textAlign='center';
+        for(let i=0;i<n;i++){const x=cx-half+(i+0.5)*2*half/n;ctx.fillStyle=bad;ctx.fillText('+',x,cy-gap/2-10);ctx.fillStyle=sub;ctx.fillText('−',x,cy+gap/2+20)}
+        const al=0.2+0.8*Math.sqrt(Math.min(1,Ef/2e5));
+        ctx.strokeStyle=bad;ctx.fillStyle=bad;ctx.lineWidth=1.6;ctx.globalAlpha=al;
+        for(let i=0;i<6;i++){const x=cx-half+(i+0.5)*2*half/6;arrow(ctx,x,cy-gap/2+2,x,cy+gap/2-2,5)}
+        ctx.globalAlpha=1;
+        ctx.fillStyle=ink;ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='left';
+        ctx.fillText(mode==='batt'?'Battery connected: V fixed':'Battery removed: Q fixed',8,16);
+        ctx.fillText('A = '+Ac+' cm²    d = '+dm+' mm    K = '+Kd.toFixed(1),8,h-8);
+        TB.set(root,'[data-r=C]',eng(C,'F'));TB.set(root,'[data-r=Q]',eng(Q,'C'));TB.set(root,'[data-r=V]',Vc.toPrecision(3)+' V');
+        TB.set(root,'[data-r=U]',eng(U,'J'));TB.set(root,'[data-r=E]',eng(Ef,'V/m'));
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: two capacitors in series or parallel</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-cap-c1">C₁ <output></output></label><input type="range" id="phy-cap-c1" min="1" max="100" step="1" value="10" data-unit=" μF"></div>
+      <div class="ctl"><label for="phy-cap-c2">C₂ <output></output></label><input type="range" id="phy-cap-c2" min="1" max="100" step="1" value="20" data-unit=" μF"></div>
+      <div class="ctl"><label for="phy-cap-vs">Battery voltage <output></output></label><input type="range" id="phy-cap-vs" min="1" max="50" step="1" value="12" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-cap-mode2">Connection</label><select id="phy-cap-mode2"><option value="ser">Series</option><option value="par">Parallel</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Equivalent C<b data-r="ce">-</b></div>
+      <div class="readout">Total charge drawn<b data-r="qt">-</b></div>
+      <div class="readout">Total energy<b data-r="ut">-</b></div>
+    </div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      function draw(){
+        const c1=+$('#phy-cap-c1').value,c2=+$('#phy-cap-c2').value,V=+$('#phy-cap-vs').value,mode=$('#phy-cap-mode2').value;
+        let ce,rows;
+        if(mode==='ser'){ce=c1*c2/(c1+c2);const Q=ce*V;rows=[{C:c1,Q:Q,V:Q/c1},{C:c2,Q:Q,V:Q/c2}]}
+        else{ce=c1+c2;rows=[{C:c1,Q:c1*V,V:V},{C:c2,Q:c2*V,V:V}]}
+        const g=TB.canvas($('canvas'),mode==='ser'?190:210),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),soft=TB.css('--soft'),sub=TB.css('--sub');
+        const xl=24,xr=w-24,yt=mode==='ser'?50:40,yb=mode==='ser'?150:172,ym=(yt+yb)/2;
+        ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.strokeRect(xl,yt,xr-xl,yb-yt);
+        function hole(x,y,ww,hh){ctx.fillStyle=soft;ctx.fillRect(x-ww/2,y-hh/2,ww,hh)}
+        hole(xl,ym,12,16);ctx.strokeStyle=ink;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(xl-9,ym-3);ctx.lineTo(xl+9,ym-3);ctx.stroke();
+        ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(xl-5,ym+3);ctx.lineTo(xl+5,ym+3);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='left';
+        ctx.fillText(V+' V',xl+12,ym+4);
+        const xs=mode==='ser'?[xl+(xr-xl)*0.34,xl+(xr-xl)*0.74]:[xl+(xr-xl)*0.33,xl+(xr-xl)*0.66];
+        rows.forEach((r,i)=>{
+          const x=xs[i];
+          ctx.strokeStyle=sub;ctx.lineWidth=2.5;
+          if(mode==='ser'){hole(x,yt,10,28);ctx.beginPath();ctx.moveTo(x-4,yt-13);ctx.lineTo(x-4,yt+13);ctx.moveTo(x+4,yt-13);ctx.lineTo(x+4,yt+13);ctx.stroke();
+            ctx.fillStyle=ink;ctx.textAlign='center';
+            ctx.fillText('C'+(i+1)+' = '+r.C+' μF',x,yt+30);ctx.fillText('Q = '+TB.fmt(r.Q,2)+' μC',x,yt+45);ctx.fillText('V = '+TB.fmt(r.V,2)+' V',x,yt+60);}
+          else{hole(x,ym,28,10);ctx.beginPath();ctx.moveTo(x-13,ym-4);ctx.lineTo(x+13,ym-4);ctx.moveTo(x-13,ym+4);ctx.lineTo(x+13,ym+4);ctx.stroke();
+            ctx.fillStyle=ink;ctx.textAlign='left';
+            ctx.fillText('C'+(i+1)+' = '+r.C+' μF',x+18,ym-12);ctx.fillText('Q = '+TB.fmt(r.Q,2)+' μC',x+18,ym+3);ctx.fillText('V = '+TB.fmt(r.V,2)+' V',x+18,ym+18);}
+        });
+        const Qt=ce*V;
+        TB.set(root,'[data-r=ce]',TB.fmt(ce,3)+' μF');TB.set(root,'[data-r=qt]',TB.fmt(Qt,2)+' μC');TB.set(root,'[data-r=ut]',TB.fmt(0.5*ce*V*V,2)+' μJ');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>A camera flash charges a capacitor slowly from the battery through a step-up circuit, then dumps it through the xenon tube in about a millisecond. For C = 100 μF charged to 300 V: U = ½ × 100×10⁻⁶ × 300² = 4.5 J and Q = CV = 0.03 C. Releasing 4.5 J in 1 ms is an average power of 4.5 kW, far more than the small battery could supply directly.</p>
+    <p>A capacitive touchscreen works because your finger changes a capacitance. A fingertip pad of about 1 cm² over a glass layer 0.5 mm thick (K ≈ 7) forms a capacitor C = 7 × 8.85×10⁻¹² × 10⁻⁴ / 5×10⁻⁴ ≈ 12 pF to the sensing electrode. The controller scans the grid, detects this small change at one crossing and reports the touch position. This is also why ordinary gloves, which are thick insulators, stop it from working.</p>
+  </div>
+  <div class="quiz"><p class="q">A capacitor stays connected to a battery while a dielectric slab of K = 4 is slid between its plates. The energy stored becomes:</p><div class="opts"><button data-ok>4 times larger</button><button>4 times smaller</button><button>16 times larger</button><button>unchanged</button></div><p class="why" hidden>With the battery connected, V stays fixed. C becomes 4C, so U = ½CV² becomes 4 times larger. (If the battery had been removed, Q would stay fixed and U = Q²/2C would fall to a quarter.)</p></div>
+</article><div class="pager"><a href="phy-gauss.html"><small>Previous</small>Gauss&#x27;s law and its uses</a><a class="next" href="phy-current.html"><small>Next</small>Current, Ohm&#x27;s law and resistivity</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

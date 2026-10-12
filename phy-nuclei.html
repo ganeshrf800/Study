@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Radioactivity and binding energy - Class 12 Physics</title>
+<meta name="description" content="Radioactivity and binding energy: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-nuclei" data-title="Radioactivity and binding energy">
+  <header><div class="tag">Nuclei</div><h3>Radioactive decay, half-life and binding energy</h3></header>
+  <p class="lead">Unstable nuclei decay at random, yet a large sample decays in a perfectly predictable way: the same fraction disappears in each equal interval of time. The energy that holds a nucleus together, its binding energy, explains why fusion of light nuclei and fission of heavy ones both release energy.</p>
+  <ul class="keypoints">
+    <li>Decay is random for a single nucleus, but the number left follows N = N<sub>0</sub> e<sup>-λt</sup> for a large sample. The decay constant λ is the probability of decay per unit time.</li>
+    <li>Half-life T<sub>1/2</sub> = 0.693/λ is the time for half the nuclei to decay. Mean life τ = 1/λ.</li>
+    <li>Activity A = λN is the number of decays per second (becquerel, Bq). It falls in the same way as N.</li>
+    <li>Mass defect Δm = Zm<sub>p</sub> + (A − Z)m<sub>n</sub> − m<sub>nucleus</sub>; binding energy = Δm c², and 1 u = 931.5 MeV.</li>
+    <li>Binding energy per nucleon rises to a peak of about 8.8 MeV near iron (A = 56): fusing light nuclei or splitting heavy ones moves towards the peak and releases energy.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">N = N<sub>0</sub> e<sup>-λt</sup> = N<sub>0</sub> (½)<sup>t/T</sup><small>T = half-life</small></div>
+    <div class="eq">T<sub>1/2</sub> = ln 2 / λ = 0.693 / λ<small>τ = 1/λ = 1.44 T<sub>1/2</sub></small></div>
+    <div class="eq">A = −dN/dt = λN<small>activity; 1 Bq = 1 decay/s; 1 Ci = 3.7×10<sup>10</sup> Bq</small></div>
+    <div class="eq">B.E. = Δm × 931.5 MeV<small>Δm in atomic mass units (u)</small></div>
+    <div class="eq">R = R<sub>0</sub> A<sup>1/3</sup>, R<sub>0</sub> = 1.2 fm<small>nuclear radius</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Simulated decay of 400 nuclei</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-nuclei-T">Half-life T<sub>1/2</sub> <output></output></label><input type="range" id="phy-nuclei-T" min="1" max="5" step="0.5" value="2" data-unit=" s"></div>
+      <div class="ctl"><label>Run</label><div style="display:flex;gap:.5rem"><button class="btn" id="phy-nuclei-go" type="button">Start</button><button class="btn" id="phy-nuclei-rs" type="button">Reset</button></div></div>
+    </div>
+    <canvas class="stage" id="phy-nuclei-cv1"></canvas>
+    <div class="readouts">
+      <div class="readout">Time t<b id="phy-nuclei-r1">-</b></div>
+      <div class="readout">Undecayed N<b id="phy-nuclei-r2">-</b></div>
+      <div class="readout">Expected N<sub>0</sub>(½)<sup>t/T</sup><b id="phy-nuclei-r3">-</b></div>
+      <div class="readout">Decay constant λ<b id="phy-nuclei-r4">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const cv=$('phy-nuclei-cv1'),Ts=$('phy-nuclei-T'),go=$('phy-nuclei-go'),rs=$('phy-nuclei-rs'),N0=400;
+      let alive,t,hist,running=false,last=0,count;
+      function reset(){alive=new Array(N0).fill(true);count=N0;t=0;hist=[[0,N0]];running=false;go.textContent='Start';}
+      reset();
+      function step(ts){
+        if(!running)return;
+        const dt=Math.min(0.1,(ts-last)/1000);last=ts;const T=+Ts.value;
+        const p=1-Math.pow(2,-dt/T);
+        for(let i=0;i<N0;i++)if(alive[i]&&Math.random()<p){alive[i]=false;count--;}
+        t+=dt;hist.push([t,count]);
+        if(t>=6*T){running=false;go.textContent='Start';}
+        draw();
+        if(running)requestAnimationFrame(step);
+      }
+      go.addEventListener('click',()=>{if(running){running=false;go.textContent='Start';return;}
+        if(t>=6*(+Ts.value))reset();running=true;go.textContent='Pause';last=performance.now();requestAnimationFrame(step);});
+      rs.addEventListener('click',()=>{reset();draw();});
+      Ts.addEventListener('input',()=>{reset();draw();});
+      function draw(){
+        const T=+Ts.value,ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted'),bad=TB.css('--bad'),soft=TB.css('--line');
+        const {ctx,w,h}=TB.canvas(cv,310);ctx.clearRect(0,0,w,h);
+        const cols=40,cell=(w-20)/cols;
+        for(let i=0;i<N0;i++){const cx=10+(i%cols+.5)*cell,cy=10+(Math.floor(i/cols)+.5)*cell;
+          ctx.beginPath();ctx.arc(cx,cy,Math.max(1.8,cell*.32),0,7);ctx.fillStyle=alive[i]?sub:soft;ctx.fill();}
+        const gy0=10+10*cell+14,L=40,R=w-12,B=h-30,Tp=gy0+8;
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,Tp);ctx.lineTo(L,B);ctx.lineTo(R,B);ctx.stroke();
+        const xmax=6*T,gx=tt=>L+tt/xmax*(R-L),gy=n=>B-n/N0*(B-Tp);
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='center';
+        for(let k=0;k<=6;k++){ctx.fillRect(gx(k*T)-.5,B,1,4);ctx.fillText(k,gx(k*T),B+16);}
+        ctx.fillText('time in half-lives (1 half-life = '+T+' s)',(L+R)/2,h-5);
+        ctx.textAlign='right';[0,200,400].forEach(n=>ctx.fillText(n,L-5,gy(n)+4));
+        ctx.strokeStyle=sub;ctx.lineWidth=1.8;ctx.setLineDash([5,4]);ctx.beginPath();
+        for(let k=0;k<=120;k++){const tt=xmax*k/120,n=N0*Math.pow(.5,tt/T);if(k===0)ctx.moveTo(gx(tt),gy(n));else ctx.lineTo(gx(tt),gy(n));}
+        ctx.stroke();ctx.setLineDash([]);
+        ctx.strokeStyle=bad;ctx.lineWidth=2;ctx.beginPath();hist.forEach((p,i)=>{if(i===0)ctx.moveTo(gx(p[0]),gy(p[1]));else ctx.lineTo(gx(p[0]),gy(p[1]));});ctx.stroke();
+        ctx.textAlign='left';ctx.fillStyle=sub;ctx.fillText('dashed: theory',R-96,Tp+12);ctx.fillStyle=bad;ctx.fillText('solid: this run',R-96,Tp+26);
+        TB.set(root,'#phy-nuclei-r1',t.toFixed(1)+' s');TB.set(root,'#phy-nuclei-r2',count);
+        TB.set(root,'#phy-nuclei-r3',(N0*Math.pow(.5,t/T)).toFixed(0));TB.set(root,'#phy-nuclei-r4',(0.693/T).toFixed(3)+' s⁻¹');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Binding energy per nucleon</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-nuclei-A">Mass number A <output></output></label><input type="range" id="phy-nuclei-A" min="2" max="238" step="1" value="56"></div>
+    </div>
+    <canvas class="stage" id="phy-nuclei-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">B.E. per nucleon<b id="phy-nuclei-q1">-</b></div>
+      <div class="readout">Total binding energy<b id="phy-nuclei-q2">-</b></div>
+      <div class="readout">Mass defect Δm<b id="phy-nuclei-q3">-</b></div>
+      <div class="readout">Energy release possible by<b id="phy-nuclei-q4">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const cv=$('phy-nuclei-cv2'),As=$('phy-nuclei-A');
+      const D=[[2,1.11],[4,7.07],[7,5.61],[12,7.68],[16,7.98],[20,8.03],[28,8.45],[40,8.55],[56,8.79],[84,8.72],[120,8.51],[138,8.39],[208,7.87],[238,7.57]];
+      function be(A){if(A<=D[0][0])return D[0][1];for(let i=1;i<D.length;i++)if(A<=D[i][0]){const a=D[i-1],b=D[i];return a[1]+(b[1]-a[1])*(A-a[0])/(b[0]-a[0]);}return D[D.length-1][1];}
+      function draw(){
+        const A=+As.value,e=be(A),ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted'),bad=TB.css('--bad');
+        const {ctx,w,h}=TB.canvas(cv,260);ctx.clearRect(0,0,w,h);
+        const L=36,R=w-12,T=14,B=h-30,gx=a=>L+a/240*(R-L),gy=v=>B-v/10*(B-T);
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,B);ctx.lineTo(R,B);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='center';
+        [0,60,120,180,240].forEach(a=>ctx.fillText(a,gx(a),B+14));ctx.fillText('Mass number A',(L+R)/2,h-5);
+        ctx.textAlign='right';[0,2,4,6,8,10].forEach(v=>{ctx.fillText(v,L-4,gy(v)+4);if(v>0){ctx.strokeStyle=muted;ctx.globalAlpha=.25;ctx.beginPath();ctx.moveTo(L,gy(v));ctx.lineTo(R,gy(v));ctx.stroke();ctx.globalAlpha=1;}});
+        ctx.textAlign='left';ctx.fillText('B.E./A (MeV)',L+4,T+8);
+        ctx.strokeStyle=sub;ctx.lineWidth=2.4;ctx.beginPath();D.forEach((p,i)=>{const x=gx(p[0]),y=gy(p[1]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+        ctx.fillStyle=ink;[[4,'⁴He',1],[56,'⁵⁶Fe',0],[238,'²³⁸U',0]].forEach(p=>{const x=gx(p[0]),y=gy(be(p[0]));ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill();
+          ctx.textAlign=p[0]>200?'right':'left';ctx.fillText(p[1],x+(p[0]>200?-6:6),y-7);});
+        const x=gx(A),y=gy(e);ctx.strokeStyle=bad;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(x,B);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=bad;ctx.beginPath();ctx.arc(x,y,5.5,0,7);ctx.fill();
+        ctx.fillStyle=muted;ctx.textAlign='center';ctx.fillText('fusion',gx(25),B-8);ctx.fillText('fission',gx(190),B-8);
+        const tot=A*e;
+        TB.set(root,'#phy-nuclei-q1',e.toFixed(2)+' MeV');TB.set(root,'#phy-nuclei-q2',tot.toFixed(0)+' MeV');TB.set(root,'#phy-nuclei-q3',(tot/931.5).toFixed(3)+' u');
+        TB.set(root,'#phy-nuclei-q4',A<52?'fusion':A>60?'fission':'neither (most stable)');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Carbon dating. Living wood holds carbon-14 at a fixed ratio to carbon-12; after death the C-14 (T<sub>1/2</sub> = 5730 years) decays and is not replaced. If a charcoal sample from an archaeological site such as Lothal or Dholavira has only 25% of the original C-14 activity, then N/N<sub>0</sub> = (½)<sup>t/5730</sup> = ¼ gives t = 2 half-lives = 11,460 years. Nuclear power: Tarapur (India's first reactors, 1969) and Kudankulam (two VVER-1000 units, 1000 MW each) use fission. Fissioning U-235 (B.E./A ≈ 7.6 MeV) into fragments near A ≈ 118 (≈ 8.5 MeV) gains about 0.9 × 236 ≈ 200 MeV per nucleus. One kilogram of U-235 holds 6.022×10<sup>23</sup> × 1000/235 = 2.56×10<sup>24</sup> nuclei, releasing 2.56×10<sup>24</sup> × 200 × 1.6×10<sup>-13</sup> J ≈ 8.2×10<sup>13</sup> J, about 2.3×10<sup>7</sup> kWh (23 million units).</p></div>
+  <div class="quiz"><p class="q">A radioactive sample has a half-life of 10 days. What fraction of the original nuclei remains after 30 days?</p><div class="opts"><button>1/3</button><button>1/6</button><button data-ok>1/8</button><button>1/16</button></div><p class="why" hidden>30 days is 3 half-lives, so N/N<sub>0</sub> = (½)³ = 1/8.</p></div>
+</article><div class="pager"><a href="phy-bohr.html"><small>Previous</small>Bohr model and hydrogen spectrum</a><a class="next" href="phy-semiconductor.html"><small>Next</small>p-n junction, rectifier and LED</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

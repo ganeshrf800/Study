@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chemistry in everyday life - Class 12 Chemistry</title>
+<meta name="description" content="Chemistry in everyday life: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-everyday" data-title="Chemistry in everyday life">
+  <header><div class="tag">Chemistry in Everyday Life (NCERT Chemistry Part II, Ch 16)</div><h3>Drugs, soaps, detergents, preservatives and sweeteners</h3></header>
+  <p class="lead">Drugs act on a specific biological target, such as an enzyme or receptor, to treat disease. The same molecular thinking explains why soap fails in hard water but detergents do not, and why a few chemicals can keep food safe or replace sugar.</p>
+  <ul class="keypoints">
+    <li>Drug classes: analgesics (pain), antipyretics (fever), antacids (excess stomach acid), antihistamines (allergy), tranquillisers (anxiety), antibiotics (kill or stop bacteria), antiseptics (on living tissue) and disinfectants (on non-living things).</li>
+    <li>Antibiotics may be bactericidal (penicillin, ofloxacin) or bacteriostatic (chloramphenicol); broad-spectrum ones act on many types of bacteria. Antibiotics do nothing against viruses.</li>
+    <li>Soap is the sodium or potassium salt of a long-chain fatty acid, made by saponification. Its Ca²⁺ and Mg²⁺ salts are insoluble, so it forms scum in hard water. Synthetic detergents (anionic, cationic, non-ionic) do not.</li>
+    <li>Food preservatives: sodium benzoate, salt, sugar, potassium metabisulphite, BHA and BHT. Artificial sweeteners give sweetness with almost no calories: saccharin, aspartame, sucralose, alitame.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Fat + 3NaOH → glycerol + 3RCOONa<small>Saponification; R = C<sub>15</sub>H<sub>31</sub>, C<sub>17</sub>H<sub>35</sub>, etc.</small></div>
+    <div class="eq">2C<sub>17</sub>H<sub>35</sub>COO⁻ + Ca²⁺ → (C<sub>17</sub>H<sub>35</sub>COO)<sub>2</sub>Ca↓<small>Scum in hard water</small></div>
+    <div class="eq">Mg(OH)<sub>2</sub> + 2HCl → MgCl<sub>2</sub> + 2H<sub>2</sub>O<small>Milk of magnesia; NaHCO<sub>3</sub> + HCl → NaCl + H<sub>2</sub>O + CO<sub>2</sub></small></div>
+    <div class="eq">Salicylic acid + (CH<sub>3</sub>CO)<sub>2</sub>O → aspirin + CH<sub>3</sub>COOH<small>Acetylation of the –OH group</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Substance classifier: pick one, learn its class and use</div>
+    <div class="controls"><div class="ctl"><label for="che-everyday-sel">Substance</label><select id="che-everyday-sel"></select></div></div>
+    <div class="readouts">
+      <div class="readout">Class<b data-r="cls" style="font-size:.95rem">-</b></div>
+      <div class="readout">Formula or type<b data-r="frm" style="font-size:.95rem">-</b></div>
+    </div>
+    <p data-r="how" style="margin-top:.7rem"></p>
+    <p data-r="use"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const D=[
+     ['Aspirin','Analgesic (non-narcotic), antipyretic','2-acetoxybenzoic acid','Blocks the enzyme that makes prostaglandins, which cause pain and fever; in low doses it also thins blood.','Headache, fever, and low-dose prevention of heart attacks. Can irritate the stomach lining.'],
+     ['Paracetamol','Analgesic (non-narcotic), antipyretic','4-hydroxyacetanilide','Reduces pain and fever; barely affects inflammation.','First-choice medicine for fever and mild pain. An overdose damages the liver.'],
+     ['Morphine','Analgesic (narcotic)','Opiate alkaloid','Binds opioid receptors in the brain and numbs pain; it is addictive and causes drowsiness.','Severe pain after surgery and in terminal cancer, under strict medical control.'],
+     ['Sodium bicarbonate','Antacid','NaHCO₃','Neutralises stomach HCl; the CO₂ released causes belching. Too much makes the stomach alkaline and can increase acid production again.','Quick relief from acidity (baking soda in water).'],
+     ['Milk of magnesia','Antacid','Mg(OH)₂ suspension','Slightly soluble base that neutralises HCl without making the stomach too alkaline.','Acidity and indigestion; larger doses act as a laxative.'],
+     ['Cimetidine','Antacid (acid-production blocker)','H₂-receptor antagonist','Blocks histamine at the H₂ receptors in the stomach wall, so less HCl is released rather than neutralising what is there.','Stomach ulcers and persistent acidity.'],
+     ['Cetirizine','Antihistamine','H₁-receptor antagonist','Blocks histamine at H₁ receptors, which stops sneezing, itching and watery eyes.','Allergies and hay fever. Newer ones cause less drowsiness.'],
+     ['Luminal (phenobarbital)','Tranquilliser','Barbiturate','Depresses the central nervous system by acting on neurotransmitter receptors.','Sedative and anti-seizure medicine, under prescription only.'],
+     ['Penicillin G','Antibiotic (bactericidal, narrow-spectrum)','Beta-lactam','Blocks formation of the bacterial cell wall, so the cell bursts. Discovered by Alexander Fleming in 1928.','Infections by Gram-positive bacteria. Some people are allergic to it.'],
+     ['Chloramphenicol','Antibiotic (bacteriostatic, broad-spectrum)','Nitrobenzene derivative','Stops bacteria from making protein so they cannot multiply.','Typhoid and some eye infections; used with care because of toxicity.'],
+     ['Ofloxacin','Antibiotic (bactericidal, broad-spectrum)','Fluoroquinolone','Blocks bacterial DNA replication enzymes.','Urinary and respiratory infections.'],
+     ['Dettol','Antiseptic','Chloroxylenol + terpineol','Kills or stops growth of microbes and is mild enough to apply on skin.','Washing cuts and wounds.'],
+     ['Tincture of iodine','Antiseptic','2 to 3 % iodine in alcohol and water','Iodine is a strong oxidiser that kills microbes on contact.','Applied to wounds and before injections.'],
+     ['Phenol, 1 % solution','Disinfectant','C₆H₅OH','Used on non-living things; 0.2 % phenol is antiseptic, 1 % is a disinfectant and is too harsh for skin.','Floors, toilets and instruments.'],
+     ['Sodium stearate','Soap','C₁₇H₃₅COO⁻Na⁺','Hydrocarbon tail dissolves grease, ionic head faces water, forming micelles. Fails in hard water, making scum with Ca²⁺ and Mg²⁺.','Bathing and washing clothes.'],
+     ['Sodium lauryl sulphate','Synthetic detergent (anionic)','CH₃(CH₂)₁₁OSO₃⁻Na⁺','Works in hard water because its Ca²⁺ and Mg²⁺ salts are soluble. Straight chains are biodegradable; branched chains pollute rivers with foam.','Shampoos, toothpaste, dishwashing and laundry powders.'],
+     ['Cetyltrimethylammonium bromide','Synthetic detergent (cationic)','[C₁₆H₃₃N(CH₃)₃]⁺Br⁻','Positively charged head, with germicidal action; expensive, so used in limited amounts.','Hair conditioners.'],
+     ['Polyethylene glycol stearate','Synthetic detergent (non-ionic)','C₁₇H₃₅COO(CH₂CH₂O)ₙCH₂CH₂OH','No ions; the chain of ether oxygens makes it soluble. Low foaming.','Liquid dishwashing detergents.'],
+     ['Sodium benzoate','Food preservative','C₆H₅COONa','Slows the growth of microbes in acidic food (it works as benzoic acid).','Soft drinks, jams, sauces and pickles.'],
+     ['Common salt and sugar','Food preservative','NaCl and sucrose','Draw water out of microbial cells by osmosis so they cannot grow.','Pickles, jams, dried fish and salted meat.'],
+     ['BHT (butylated hydroxytoluene)','Food preservative (antioxidant)','Phenolic antioxidant','Reacts with free radicals before the food fat is oxidised and turns rancid.','Edible oils, chips and packaged snacks.'],
+     ['Saccharin','Artificial sweetener','Aromatic sulphimide','About 550 times as sweet as cane sugar; passes through the body unchanged, so zero calories.','Sugar-free products and for diabetics.'],
+     ['Aspartame','Artificial sweetener','Dipeptide ester','About 100 times as sweet as sucrose; breaks down at cooking temperature, so used only in cold foods. Not safe for people with phenylketonuria.','Cold drinks, sugar-free desserts.'],
+     ['Sucralose','Artificial sweetener','Chlorinated sucrose','About 600 times as sweet as sucrose; stable at cooking temperature and does not provide calories.','Baking and hot foods.']
+    ];
+    const CL={};
+    const sel=root.querySelector('#che-everyday-sel');
+    D.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d[0];sel.appendChild(o);});
+    sel.value=0;
+    function draw(){const d=D[+sel.value];
+      TB.set(root,'[data-r=cls]',d[1]);TB.set(root,'[data-r=frm]',d[2]);
+      TB.set(root,'p[data-r=how]','How it works: '+d[3]);TB.set(root,'p[data-r=use]','Use: '+d[4]);}
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Test yourself: name the class</div>
+    <p data-r="ask" style="font-weight:600;margin:0 0 .6rem"></p>
+    <div class="tabs" id="che-everyday-btns"></div>
+    <p data-r="fb" style="min-height:1.6em"></p>
+    <div class="controls"><div class="ctl"><button class="btn" id="che-everyday-next" type="button">Next substance</button></div></div>
+    <div class="readouts"><div class="readout">Score<b data-r="sc">0 / 0</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const Q=[['Aspirin','Analgesic'],['Paracetamol','Analgesic'],['Morphine','Analgesic'],['Sodium bicarbonate','Antacid'],['Milk of magnesia','Antacid'],['Cimetidine','Antacid'],['Cetirizine','Antihistamine'],['Luminal','Tranquilliser'],['Penicillin G','Antibiotic'],['Chloramphenicol','Antibiotic'],['Ofloxacin','Antibiotic'],['Dettol','Antiseptic or disinfectant'],['Tincture of iodine','Antiseptic or disinfectant'],['1 % phenol solution','Antiseptic or disinfectant'],['Sodium stearate','Soap'],['Sodium lauryl sulphate','Synthetic detergent'],['Cetyltrimethylammonium bromide','Synthetic detergent'],['Sodium benzoate','Food preservative'],['BHT','Food preservative'],['Saccharin','Artificial sweetener'],['Aspartame','Artificial sweetener'],['Sucralose','Artificial sweetener']];
+    const C=['Analgesic','Antacid','Antihistamine','Tranquilliser','Antibiotic','Antiseptic or disinfectant','Soap','Synthetic detergent','Food preservative','Artificial sweetener'];
+    const box=root.querySelector('#che-everyday-btns');
+    let cur=0,ok=0,n=0,done=false;
+    C.forEach(c=>{const b=document.createElement('button');b.type='button';b.textContent=c;box.appendChild(b);
+      b.addEventListener('click',()=>{if(done)return;done=true;n++;const good=Q[cur][1]===c;if(good)ok++;
+        TB.set(root,'p[data-r=fb]',good?'Correct: '+Q[cur][0]+' is in the class: '+c+'.':'Not quite. '+Q[cur][0]+' is: '+Q[cur][1]+'.');
+        TB.set(root,'[data-r=sc]',ok+' / '+n);});});
+    function pick(){let k;do{k=Math.floor(Math.random()*Q.length);}while(k===cur&&Q.length>1);cur=k;done=false;
+      TB.set(root,'p[data-r=ask]','Which class is '+Q[cur][0]+'?');TB.set(root,'p[data-r=fb]','');}
+    root.querySelector('#che-everyday-next').addEventListener('click',pick);
+    cur=Math.floor(Math.random()*Q.length);done=false;
+    function draw(){TB.set(root,'p[data-r=ask]','Which class is '+Q[cur][0]+'?');}
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Worked example: antacid for acidity.</b> Gastric juice is about pH 1.5, so [H<sup>+</sup>] = 10<sup>−1.5</sup> = 0.0316 mol/L. Suppose 100 mL of it is present: 3.16 mmol HCl. A 400 mg Mg(OH)<sub>2</sub> tablet (molar mass 58.3) is 400/58.3 = 6.86 mmol, which neutralises 2 × 6.86 = 13.7 mmol HCl, so one tablet is more than enough here. NaHCO<sub>3</sub> (84 g/mol) of 400 mg is 4.76 mmol, neutralising 4.76 mmol HCl, and releases CO<sub>2</sub>. Taking much more than needed pushes the stomach toward alkaline, which is why doses are limited.</p>
+    <p><b>Soap in hard water.</b> Borewell water in parts of Rajasthan and Gujarat has high Ca²⁺ and Mg²⁺. Soap wastes itself as scum before it lathers; a sodium lauryl sulphate detergent lathers immediately.</p>
+    <p><b>Antibiotic resistance.</b> Taking antibiotics for viral colds, or stopping a course early, lets resistant bacteria survive and multiply. India has some of the highest antibiotic consumption in the world, so completing the doctor's course is a public-health issue and not just personal.</p>
+  </div>
+  <div class="quiz"><p class="q">Why do synthetic detergents work in hard water while soaps do not?</p><div class="opts"><button data-ok>Their calcium and magnesium salts are soluble, so no scum forms.</button><button>They contain no hydrocarbon chain, so they do not react with metal ions.</button><button>They are always cationic and repel Ca<sup>2+</sup> and Mg<sup>2+</sup>.</button><button>They contain extra NaOH, which removes the hardness.</button></div><p class="why" hidden>Soap anions form insoluble (RCOO)<sub>2</sub>Ca and (RCOO)<sub>2</sub>Mg. Detergents with sulphate or sulphonate heads form soluble salts with these ions, so they keep cleaning. Most household detergents are anionic, not cationic.</p></div>
+</article><div class="pager"><a href="che-pcomp.html"><small>Previous</small>NH3, H2SO4, O3 and Cl2</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

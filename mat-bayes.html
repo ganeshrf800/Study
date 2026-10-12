@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Conditional probability and Bayes - Class 12 Mathematics</title>
+<meta name="description" content="Conditional probability and Bayes: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-bayes" data-title="Conditional probability and Bayes">
+  <header><div class="tag">Probability</div><h3>Conditional probability and Bayes' theorem</h3></header>
+  <p class="lead">Conditional probability P(A | B) is the chance of A once you know that B has happened: the sample space shrinks to B. Bayes' theorem runs the conditioning backwards, from an observed effect (a positive test) to a hidden cause (the disease). The result is often surprising, because a rare condition produces many false alarms from the large healthy group.</p>
+  <ul class="keypoints">
+    <li>P(A | B) = P(A ∩ B) / P(B), defined only when P(B) &gt; 0. Rearranged it gives the multiplication rule P(A ∩ B) = P(B) P(A | B).</li>
+    <li>Events A and B are independent when P(A ∩ B) = P(A) P(B), equivalently P(A | B) = P(A). Independent is not the same as mutually exclusive.</li>
+    <li>If E₁, ..., E<sub>n</sub> partition the sample space, the total probability is P(A) = Σ P(E<sub>i</sub>) P(A | E<sub>i</sub>).</li>
+    <li>Bayes' theorem: P(E<sub>i</sub> | A) = P(E<sub>i</sub>) P(A | E<sub>i</sub>) / Σ<sub>j</sub> P(E<sub>j</sub>) P(A | E<sub>j</sub>). P(E<sub>i</sub>) are priors, P(E<sub>i</sub> | A) are posteriors.</li>
+    <li>Counting people instead of multiplying fractions (natural frequencies) makes Bayes' theorem easy to check by hand.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">P(A | B) = P(A ∩ B) / P(B)<small>P(B) ≠ 0; also P(A′ | B) = 1 − P(A | B)</small></div>
+    <div class="eq">P(A ∩ B) = P(A) P(B | A) = P(B) P(A | B)<small>Multiplication rule</small></div>
+    <div class="eq">P(A) = P(E₁)P(A | E₁) + P(E₂)P(A | E₂) + ...<small>Theorem of total probability</small></div>
+    <div class="eq">P(D | +) = P(D) P(+ | D) / [P(D) P(+ | D) + P(D′) P(+ | D′)]<small>Bayes for a test: prevalence × sensitivity over all positives</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">1000 people, one screening test</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-bayes-prev">Prior: share who are sick <output></output></label><input type="range" id="mat-bayes-prev" min="0.1" max="50" step="0.1" value="2" data-unit="%"></div>
+      <div class="ctl"><label for="mat-bayes-sens">Sensitivity P(+ given sick) <output></output></label><input type="range" id="mat-bayes-sens" min="50" max="100" step="1" value="90" data-unit="%"></div>
+      <div class="ctl"><label for="mat-bayes-fpr">False positive rate P(+ given healthy) <output></output></label><input type="range" id="mat-bayes-fpr" min="0" max="30" step="0.5" value="5" data-unit="%"></div>
+    </div>
+    <canvas class="stage" id="mat-bayes-cv"></canvas>
+    <p id="mat-bayes-say" style="margin:.5rem 0 0"></p>
+    <div class="readouts">
+      <div class="readout" style="border-left:6px solid var(--bad)">Sick, test positive (TP)<b data-r="tp">-</b></div>
+      <div class="readout" style="border-left:6px solid var(--maths)">Sick, test negative (FN)<b data-r="fn">-</b></div>
+      <div class="readout" style="border-left:6px solid var(--physics)">Healthy, test positive (FP)<b data-r="fp">-</b></div>
+      <div class="readout" style="border-left:6px solid var(--line)">Healthy, test negative (TN)<b data-r="tn">-</b></div>
+      <div class="readout">P(sick | positive), exact<b data-r="ppv">-</b></div>
+      <div class="readout">P(sick | negative), exact<b data-r="npv">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const g=k=>+$('#mat-bayes-'+k).value,cv=$('#mat-bayes-cv'),say=$('#mat-bayes-say');
+function draw(){const prev=g('prev')/100,sens=g('sens')/100,fpr=g('fpr')/100;
+ const sick=Math.round(1000*prev),healthy=1000-sick,TP=Math.round(sick*sens),FN=sick-TP,FP=Math.round(healthy*fpr),TN=healthy-FP;
+ const cols=40,rows=25,pad=8,cs=Math.max(4,((cv.clientWidth||600)-2*pad)/cols),T=TB.canvas(cv,Math.ceil(rows*cs+2*pad)),ctx=T.ctx;
+ const col=[BAD(),TB.css('--maths'),PHY(),MUT()],cnt=[TP,FN,FP,TN];let idx=0;
+ for(let k=0;k<4;k++){ctx.fillStyle=col[k];ctx.globalAlpha=k==3?.35:1;for(let m=0;m<cnt[k];m++,idx++){const r=Math.floor(idx/cols),c=idx%cols;ctx.fillRect(pad+c*cs+.5,pad+r*cs+.5,cs-1.5,cs-1.5);}}ctx.globalAlpha=1;
+ const pos=TP+FP,pp=prev*sens/(prev*sens+(1-prev)*fpr),pn=prev*(1-sens)/(prev*(1-sens)+(1-prev)*(1-fpr));
+ R('tp',String(TP));R('fn',String(FN));R('fp',String(FP));R('tn',String(TN));R('ppv',F(pp*100,1)+'%');R('npv',F(pn*100,2)+'%');
+ say.innerHTML=pos?'Of 1000 people, <b>'+sick+'</b> are sick. <b>'+pos+'</b> test positive, but only <b>'+TP+'</b> of them are really sick: '+TP+'/'+pos+' = <b>'+F(TP/pos*100,1)+'%</b> (rounded to whole people; the exact answer is '+F(pp*100,1)+'%).':'Nobody tests positive at these settings.';}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>Suppose a rapid test for a disease has sensitivity 99% and a false positive rate of 5%, and 1% of a town has the disease. Imagine 10,000 people. About 100 are sick: 99 test positive and 1 is missed. Of the 9,900 healthy people, 5% = 495 test positive by mistake. So 99 + 495 = 594 people test positive, and only 99 of them are sick: P(sick | positive) = 99/594 = 1/6 ≈ 16.7%. By Bayes' theorem: (0.01 × 0.99) / (0.01 × 0.99 + 0.99 × 0.05) = 0.0099 / 0.0594 = 1/6.</p>
+  <p>A negative result is far more reassuring: 9,405 healthy people test negative against 1 sick, so P(sick | negative) = 1/9,406 ≈ 0.011%. This is why doctors confirm a positive screening result with a second, more specific test, and why screening works best on groups where the prior is higher. Drag the prior slider up to 20% and watch the share of true positives climb.</p></div>
+
+  <div class="quiz"><p class="q">A disease affects 2% of people. A test is positive for 90% of sick people and also for 5% of healthy people. A person tests positive. About what is the probability they are sick?</p><div class="opts"><button data-ok>About 27%</button><button>90%</button><button>2%</button><button>About 5%</button></div><p class="why" hidden>P = (0.02 × 0.90) / (0.02 × 0.90 + 0.98 × 0.05) = 0.018 / 0.067 ≈ 0.269. In 1000 people: 18 sick positives against 49 healthy positives, 18/67.</p></div>
+</article><div class="pager"><a href="mat-linprog.html"><small>Previous</small>Linear programming</a><a class="next" href="mat-binomial.html"><small>Next</small>Random variables and binomial</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

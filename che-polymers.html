@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polymers - Class 12 Chemistry</title>
+<meta name="description" content="Polymers: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-polymers" data-title="Polymers">
+  <header><div class="tag">Polymers (NCERT Chemistry Part II, Ch 15)</div><h3>Addition and condensation polymers, rubber and plastics</h3></header>
+  <p class="lead">A polymer is a very large molecule built by joining many small monomers. In addition polymerisation unsaturated monomers add to one another with no loss of atoms; in condensation polymerisation bifunctional monomers join with the loss of a small molecule such as water. The structure of the chain decides whether the material is a plastic, a fibre or an elastomer.</p>
+  <ul class="keypoints">
+    <li>Addition polymers: polythene, PVC, polystyrene, Teflon, Orlon (polyacrylonitrile), natural rubber, neoprene. Condensation polymers: nylon-6,6, nylon-6, terylene (PET), Bakelite.</li>
+    <li>LDPE (branched) is made by free-radical polymerisation at 350-570 K and 1000-2000 atm with a trace of oxygen or peroxide; HDPE (linear, denser) is made with a Ziegler-Natta catalyst (TiCl<sub>4</sub> + Al(C<sub>2</sub>H<sub>5</sub>)<sub>3</sub>) at 333-343 K and 6-7 atm.</li>
+    <li>Nylon-6,6 = hexane-1,6-diamine + hexanedioic (adipic) acid, losing two H<sub>2</sub>O per repeat unit. Bakelite = phenol + methanal, cross-linked 3-D network, thermosetting.</li>
+    <li>By force: elastomers (weak forces; rubber), fibres (strong H-bonds; nylon, terylene), thermoplastics (soften on heating; polythene, PVC), thermosetting plastics (cross-linked; Bakelite, melamine).</li>
+    <li>Natural rubber is cis-1,4-polyisoprene. Vulcanisation heats it with sulphur (373-415 K) to form S cross-links, making it harder and more elastic. Biodegradable polymers include PHBV and nylon-2-nylon-6.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">n CH<sub>2</sub>=CH<sub>2</sub> → [–CH<sub>2</sub>–CH<sub>2</sub>–]<sub>n</sub><small>Addition; polythene</small></div>
+    <div class="eq">n H<sub>2</sub>N(CH<sub>2</sub>)<sub>6</sub>NH<sub>2</sub> + n HOOC(CH<sub>2</sub>)<sub>4</sub>COOH → [–NH(CH<sub>2</sub>)<sub>6</sub>NHCO(CH<sub>2</sub>)<sub>4</sub>CO–]<sub>n</sub> + 2n H<sub>2</sub>O<small>Nylon-6,6, repeat unit M = 226.3</small></div>
+    <div class="eq">M(polymer) ≈ n × M(repeat unit)<small>n = degree of polymerisation; end groups ignored</small></div>
+    <div class="eq">Mass of monomers = mass of polymer × ΣM(monomers) / M(repeat unit)<small>Addition polymers: ratio is 1; condensation: greater than 1</small></div>
+    <div class="eq">n C<sub>6</sub>H<sub>5</sub>OH + n HCHO → novolac → Bakelite<small>With hexamethylenetetramine: cross-linked network</small></div>
+    <div class="eq">Buna-S: butadiene + styrene (Na catalyst)<small>Copolymer; Buna-N: butadiene + acrylonitrile</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: choose a polymer</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-polymers-sel">Polymer</label><select id="che-polymers-sel"></select></div>
+      <div class="ctl"><label for="che-polymers-n">Degree of polymerisation n <output></output></label><input type="range" id="che-polymers-n" min="50" max="5000" step="50" value="1000" data-unit=""></div>
+    </div>
+    <canvas class="stage" id="che-polymers-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Type<b id="che-polymers-type" style="font-size:.95rem">-</b></div>
+      <div class="readout">Class<b id="che-polymers-cls" style="font-size:.95rem">-</b></div>
+      <div class="readout">Repeat unit M (g/mol)<b id="che-polymers-mu">-</b></div>
+      <div class="readout">Polymer M at this n (g/mol)<b id="che-polymers-mp">-</b></div>
+      <div class="readout">Monomers for 1 kg polymer<b id="che-polymers-mon">-</b></div>
+      <div class="readout">Small molecule released per kg<b id="che-polymers-w">-</b></div>
+    </div>
+    <p id="che-polymers-note" style="font-size:.9rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const P=[
+        {n:'Polythene, LDPE',t:'Addition (free radical)',cls:'Thermoplastic',m:'Ethene, CH₂=CH₂',unit:'–CH₂–CH₂–',M:28.05,Ms:28.05,sub:'',note:'350-570 K, 1000-2000 atm, trace O₂ or peroxide. Branched, low density: carry bags, films.'},
+        {n:'Polythene, HDPE',t:'Addition (Ziegler-Natta)',cls:'Thermoplastic',m:'Ethene, CH₂=CH₂',unit:'–CH₂–CH₂–',M:28.05,Ms:28.05,sub:'',note:'333-343 K, 6-7 atm, TiCl₄ + Al(C₂H₅)₃. Linear chains pack closely: buckets, pipes, bottles.'},
+        {n:'Polypropene',t:'Addition',cls:'Thermoplastic',m:'Propene, CH₂=CHCH₃',unit:'–CH₂–CH(CH₃)–',M:42.08,Ms:42.08,sub:'CH₃',note:'Ropes, tiffin boxes, woven sacks, bottle caps.'},
+        {n:'PVC',t:'Addition',cls:'Thermoplastic',m:'Chloroethene, CH₂=CHCl',unit:'–CH₂–CHCl–',M:62.50,Ms:62.50,sub:'Cl',note:'Pipes, cable insulation, flooring. Burning releases HCl.'},
+        {n:'Teflon (PTFE)',t:'Addition',cls:'Thermoplastic',m:'Tetrafluoroethene, CF₂=CF₂',unit:'–CF₂–CF₂–',M:100.02,Ms:100.02,sub:'F₂',all:true,note:'Non-stick cookware coating; very strong C–F bonds, chemically inert.'},
+        {n:'Orlon (polyacrylonitrile)',t:'Addition',cls:'Fibre',m:'Acrylonitrile, CH₂=CHCN',unit:'–CH₂–CH(CN)–',M:53.06,Ms:53.06,sub:'CN',note:'Substitute for wool; sweaters and blankets.'},
+        {n:'Polystyrene',t:'Addition',cls:'Thermoplastic',m:'Styrene, C₆H₅CH=CH₂',unit:'–CH₂–CH(C₆H₅)–',M:104.15,Ms:104.15,sub:'C₆H₅',note:'Disposable cups, packaging foam (thermocol is expanded polystyrene).'},
+        {n:'Natural rubber',t:'Addition (natural)',cls:'Elastomer',m:'Isoprene, CH₂=C(CH₃)–CH=CH₂',unit:'–CH₂–C(CH₃)=CH–CH₂–',M:68.12,Ms:68.12,sub:null,note:'cis-1,4-polyisoprene; all double bonds are cis, so chains coil and stretch. Vulcanise with S to harden.'},
+        {n:'Neoprene',t:'Addition',cls:'Elastomer',m:'Chloroprene, CH₂=C(Cl)–CH=CH₂',unit:'–CH₂–C(Cl)=CH–CH₂–',M:88.54,Ms:88.54,sub:null,note:'Oil-resistant rubber for conveyor belts, gaskets, hoses.'},
+        {n:'Nylon-6,6',t:'Condensation',cls:'Fibre',m:'Hexane-1,6-diamine + hexanedioic acid',unit:'–NH(CH₂)₆NH–CO(CH₂)₄CO–',M:226.32,Ms:262.35,sub:null,by:'water',note:'Polyamide: amide links form strong H-bonds between chains. Ropes, tyre cords, fabrics.'},
+        {n:'Nylon-6',t:'Condensation (ring opening)',cls:'Fibre',m:'Caprolactam (heated with water)',unit:'–NH(CH₂)₅CO–',M:113.16,Ms:113.16,sub:null,by:'none',note:'The cyclic amide opens and joins end to end; no small molecule is lost. Fibres, tyre cords.'},
+        {n:'Terylene / PET',t:'Condensation',cls:'Fibre / thermoplastic',m:'Ethane-1,2-diol + terephthalic acid',unit:'–OCH₂CH₂O–CO–C₆H₄–CO–',M:192.17,Ms:228.20,sub:null,by:'water',note:'Polyester. Polyester fabric and PET bottles are the same polymer.'},
+        {n:'Bakelite',t:'Condensation (cross-linked)',cls:'Thermosetting',m:'Phenol + methanal',unit:'network of –C₆H₃(OH)–CH₂– units',M:null,Ms:null,sub:null,note:'Phenol rings joined by –CH₂– bridges in three dimensions; it sets permanently and cannot be remelted. Used for switches, handles, electrical fittings.'}];
+      const sel=$('che-polymers-sel');P.forEach((p,i)=>sel.add(new Option(p.n,i)));sel.value=9;
+      function draw(){
+        const p=P[+sel.value],n=+$('che-polymers-n').value;
+        TB.set(root,'#che-polymers-type',p.t);TB.set(root,'#che-polymers-cls',p.cls);
+        if(p.M){
+          TB.set(root,'#che-polymers-mu',p.M.toFixed(2));TB.set(root,'#che-polymers-mp',TB.fmt(n*p.M,0));
+          const mon=1000*p.Ms/p.M;TB.set(root,'#che-polymers-mon',TB.fmt(mon,0)+' g');
+          TB.set(root,'#che-polymers-w',p.by==='water'?TB.fmt(mon-1000,0)+' g of H₂O':'None');
+        } else {TB.set(root,'#che-polymers-mu','-');TB.set(root,'#che-polymers-mp','Cross-linked network');TB.set(root,'#che-polymers-mon','-');TB.set(root,'#che-polymers-w','H₂O (as it forms)');}
+        $('che-polymers-note').textContent=p.note;
+        const g=TB.canvas($('che-polymers-cv'),230),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),hi=TB.css('--maths');
+        ctx.textAlign='center';ctx.font='13px "Source Sans 3", sans-serif';ctx.fillStyle=mut;
+        ctx.fillText('Monomer(s): '+p.m,w/2,18);
+        ctx.fillStyle=sub;ctx.font='600 20px "Source Sans 3", sans-serif';ctx.fillText('↓ '+(p.by==='water'?'− 2H₂O per unit':(p.t.indexOf('Addition')===0?'no atoms lost':'polymerise')),w/2,46);
+        // zigzag backbone
+        if(p.sub!==null){
+          const N=8,x0=20,sp=(w-40)/(N-1),yb=100;
+          ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();
+          for(let i=0;i<N;i++){const x=x0+i*sp,y=yb+(i%2?-14:14);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();
+          ctx.font='600 12px "Source Sans 3", sans-serif';
+          for(let i=0;i<N;i++){const x=x0+i*sp,up=i%2===1,y=yb+(up?-14:14);
+            if(p.sub&&(p.all||i%2===0)){ctx.strokeStyle=hi;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(up?-18:18));ctx.stroke();ctx.fillStyle=hi;ctx.fillText(p.sub,x,y+(up?-24:30));}}
+          // bracket round first unit
+          ctx.strokeStyle=sub;ctx.lineWidth=1.5;const bx1=x0-8,bx2=x0+sp+8;ctx.strokeRect(bx1,yb-36,bx2-bx1,78);
+          ctx.fillStyle=mut;ctx.font='12px "Source Sans 3", sans-serif';ctx.fillText('one repeat unit',(bx1+bx2)/2+18,yb+58);
+        } else {
+          ctx.fillStyle=ink;ctx.font='600 15px "JetBrains Mono", monospace';
+          const t=p.unit;ctx.fillText(t,w/2,110);
+          const tw=ctx.measureText(t).width;ctx.strokeStyle=sub;ctx.lineWidth=2;
+          const bl=w/2-tw/2-10,br=w/2+tw/2+10;ctx.beginPath();ctx.moveTo(bl+6,88);ctx.lineTo(bl,88);ctx.lineTo(bl,124);ctx.lineTo(bl+6,124);ctx.moveTo(br-6,88);ctx.lineTo(br,88);ctx.lineTo(br,124);ctx.lineTo(br-6,124);ctx.stroke();
+          ctx.fillStyle=sub;ctx.font='600 14px "Source Sans 3", sans-serif';ctx.textAlign='left';ctx.fillText(p.M?'n':'',br+4,130);ctx.textAlign='center';
+        }
+        ctx.fillStyle=ink;ctx.font='600 15px "Source Sans 3", sans-serif';ctx.fillText(p.n+(p.M?'  [ n = '+n+' ]':''),w/2,h-34);
+        ctx.fillStyle=mut;ctx.font='12px "Source Sans 3", sans-serif';ctx.fillText(p.sub===''?'Each corner is CH₂ (hydrogens not drawn)':(p.sub?'Substituent X = '+p.sub+' on alternate carbons (H atoms not drawn)':'Repeat unit shown in brackets'),w/2,h-14);
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: plastic recycling codes</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-polymers-rc">Number inside the triangle <output></output></label><input type="range" id="che-polymers-rc" min="1" max="7" step="1" value="1" data-unit=""></div>
+    </div>
+    <svg id="che-polymers-tri" viewBox="0 0 120 100" width="120" height="100" style="display:block;margin:0 auto" role="img" aria-label="Recycling triangle with resin code number"></svg>
+    <div class="readouts">
+      <div class="readout">Polymer<b id="che-polymers-rp" style="font-size:.95rem">-</b></div>
+      <div class="readout">Made from<b id="che-polymers-rm" style="font-size:.95rem">-</b></div>
+      <div class="readout">Typical uses in India<b id="che-polymers-ru" style="font-size:.95rem">-</b></div>
+      <div class="readout">Recycling note<b id="che-polymers-rn" style="font-size:.95rem">-</b></div>
+    </div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const C=[['PET (polyethylene terephthalate)','Ethane-1,2-diol + terephthalic acid','Water and cold-drink bottles, polyester fibre','Widely collected; flakes are spun into polyester fibre. Do not refill repeatedly.'],
+        ['HDPE (high-density polyethylene)','Ethene','Shampoo bottles, crates, pipes, milk cans','Easy to recycle into pipes and crates.'],
+        ['PVC (polyvinyl chloride)','Chloroethene','Water pipes, cable insulation, window frames','Hard to recycle; releases HCl if burned, so never burn it.'],
+        ['LDPE (low-density polyethylene)','Ethene','Carry bags, milk pouches, cling film','Thin films tangle in machines; collected less often.'],
+        ['PP (polypropene)','Propene','Bottle caps, tiffin boxes, woven fertiliser sacks, ropes','Recycled into crates and containers.'],
+        ['PS (polystyrene)','Styrene','Disposable cups, thermocol packing','Bulky and light: expensive to collect.'],
+        ['Other (PC, PLA, multilayer laminates)','Various','Snack packets, CDs, some bio-plastics','Mixed or multilayer plastics are the hardest to recycle.']];
+      function draw(){
+        const k=+$('che-polymers-rc').value,c=C[k-1];
+        TB.set(root,'#che-polymers-rp',c[0]);TB.set(root,'#che-polymers-rm',c[1]);TB.set(root,'#che-polymers-ru',c[2]);TB.set(root,'#che-polymers-rn',c[3]);
+        const s=$('che-polymers-tri'),NS='http://www.w3.org/2000/svg';s.innerHTML='';
+        const poly=document.createElementNS(NS,'polygon');poly.setAttribute('points','60,8 112,92 8,92');poly.setAttribute('fill','none');poly.setAttribute('stroke',TB.css('--sub'));poly.setAttribute('stroke-width',7);poly.setAttribute('stroke-linejoin','round');s.appendChild(poly);
+        const t=document.createElementNS(NS,'text');t.setAttribute('x',60);t.setAttribute('y',74);t.setAttribute('text-anchor','middle');t.setAttribute('font-size',34);t.setAttribute('font-weight',700);t.setAttribute('fill',TB.css('--ink'));t.textContent=k;s.appendChild(t);
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="tw"><table class="t"><thead><tr><th>Biodegradable polymer</th><th>Monomers</th><th>Use</th></tr></thead><tbody>
+    <tr><td>PHBV</td><td>3-Hydroxybutanoic acid + 3-hydroxypentanoic acid</td><td>Packaging, orthopaedic devices, controlled drug release</td></tr>
+    <tr><td>Nylon-2-nylon-6</td><td>Glycine + aminocaproic acid (6-aminohexanoic acid)</td><td>Degradable packaging, sutures</td></tr>
+  </tbody></table></div>
+
+  <div class="world"><h4>In the real world</h4><p>A 1-litre PET bottle weighs roughly 25 g. The repeat unit has M = 192.17 g/mol, so 25 g is 25 / 192.17 = 0.130 mol of units, or 0.130 × 6.022 × 10²³ = 7.8 × 10²² repeat units. Much of India's used PET is collected by the informal waste sector and recycled into polyester fibre for clothing and filling. For nylon-6,6, 1 kg of polymer needs 1000 × 262.35 / 226.32 = 1159 g of monomers and releases 159 g of water. The single-use plastic ban of July 2022 covered items such as plastic cutlery, ear buds with plastic sticks and thin carry bags, pushing industry to biodegradable alternatives like PHBV. Truck and car tyres combine vulcanised natural rubber and Buna-S, with nylon-6 or polyester cords for strength.</p></div>
+  <div class="quiz"><p class="q">Which statement about nylon-6,6 is correct?</p>
+    <div class="opts"><button>It is an addition polymer of one monomer.</button><button data-ok>It is a condensation polymer of a diamine and a dicarboxylic acid, losing water.</button><button>It is a cross-linked thermosetting plastic.</button><button>It is a natural polymer.</button></div>
+    <p class="why" hidden>Nylon-6,6 forms from hexane-1,6-diamine and hexanedioic acid by condensation, releasing two molecules of water per repeat unit. It is a linear polyamide fibre, not cross-linked like Bakelite.</p></div>
+</article><div class="pager"><a href="che-nucleic.html"><small>Previous</small>DNA, RNA and vitamins</a><a class="next" href="che-dfblock.html"><small>Next</small>d- and f-block elements</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

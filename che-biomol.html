@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Carbohydrates, amino acids, proteins - Class 12 Chemistry</title>
+<meta name="description" content="Carbohydrates, amino acids, proteins: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-biomol" data-title="Carbohydrates, amino acids, proteins">
+  <header><div class="tag">Biomolecules (NCERT Chemistry Part II, Ch 10)</div><h3>Glucose, amino acids, peptides and protein structure</h3></header>
+  <p class="lead">Carbohydrates are polyhydroxy aldehydes or ketones (or compounds that give them on hydrolysis); proteins are polymers of α-amino acids joined by peptide bonds. In water, glucose sits mostly as ring forms in equilibrium with a trace of the open chain, and a protein's function depends on how its chain is folded.</p>
+  <ul class="keypoints">
+    <li>Glucose, C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>, is D-(+)-glucose: in the Fischer projection the OH on C5 is on the right. Ring closure (C5–OH adds to C1=O) gives two anomers, α (anomeric OH down in the Haworth ring) and β (up), which interconvert in solution (mutarotation) to a mixture with [α]<sub>D</sub> = +52.5°.</li>
+    <li>Sucrose (α-glucose C1–O–C2 β-fructose) is non-reducing; maltose (α-1,4) and lactose (β-1,4) are reducing. Starch = amylose (linear, α-1,4) + amylopectin (branched, α-1,6 as well); cellulose has β-1,4 links, which humans cannot digest; glycogen is the animal store.</li>
+    <li>Amino acids exist as zwitterions, H<sub>3</sub>N⁺–CHR–COO⁻. A peptide bond is the amide link –CO–NH– formed with loss of water. An n-residue chain has n − 1 peptide bonds.</li>
+    <li>Protein structure: primary (sequence), secondary (α-helix, β-pleated sheet; hydrogen bonds), tertiary (3-D folding; disulphide bridges, H-bonds, ionic and hydrophobic forces), quaternary (several chains, e.g. haemoglobin).</li>
+    <li>Denaturation (heat, acid, alcohol) destroys the secondary and tertiary structure but not the primary: a boiled egg stays hard.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">C<sub>12</sub>H<sub>22</sub>O<sub>11</sub> + H<sub>2</sub>O → C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + C<sub>6</sub>H<sub>12</sub>O<sub>6</sub><small>Sucrose → glucose + fructose (invert sugar)</small></div>
+    <div class="eq">[α]<sub>D</sub>: sucrose +66.5°, glucose +52.5°, fructose −92.4°<small>Mixture after inversion: (52.5 − 92.4)/2 ≈ −20°</small></div>
+    <div class="eq">α-D-glucose (+112°) ⇌ β-D-glucose (+19°)<small>Equilibrium 36 % α, 64 % β: 0.36×112 + 0.64×19 = +52.5°</small></div>
+    <div class="eq">H<sub>2</sub>N–CHR–COOH ⇌ H<sub>3</sub>N⁺–CHR–COO⁻<small>Zwitterion; pI = (pK<sub>a1</sub> + pK<sub>a2</sub>)/2, glycine 5.97</small></div>
+    <div class="eq">M(peptide) = ΣM(amino acids) − (n−1) × 18.02<small>One water lost per peptide bond</small></div>
+    <div class="eq">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + Br<sub>2</sub>/H<sub>2</sub>O → gluconic acid<small>HNO<sub>3</sub> gives saccharic acid; HI gives n-hexane (straight chain)</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: glucose open chain, rings and mutarotation</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-biomol-form">Draw glucose as</label><select id="che-biomol-form">
+        <option value="open">Open chain (Fischer projection)</option><option value="alpha" selected>α-D-glucopyranose (Haworth)</option><option value="beta">β-D-glucopyranose (Haworth)</option></select></div>
+      <div class="ctl"><label for="che-biomol-start">Dissolve pure crystals of</label><select id="che-biomol-start"><option value="1">α-D-glucose</option><option value="0">β-D-glucose</option></select></div>
+      <div class="ctl"><label for="che-biomol-t">Time in water <output></output></label><input type="range" id="che-biomol-t" min="0" max="150" step="1" value="0" data-unit=" min"></div>
+    </div>
+    <canvas class="stage" id="che-biomol-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Specific rotation [α]<sub>D</sub><b id="che-biomol-rot">-</b></div>
+      <div class="readout">α-anomer<b id="che-biomol-pa">-</b></div>
+      <div class="readout">β-anomer<b id="che-biomol-pb">-</b></div>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted)">The rotation drifts to +52.5° whichever anomer you start with. The time constant (30 min) is illustrative; real rates depend on temperature and pH. The open-chain form is well under 1 % at any time.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      function lbl(ctx,t,x,y,col){ctx.fillStyle=col||TB.css('--ink');ctx.fillText(t,x,y);}
+      function draw(){
+        const form=$('che-biomol-form').value,start=+$('che-biomol-start').value,t=+$('che-biomol-t').value;
+        const fa=0.36+(start-0.36)*Math.exp(-t/30),rot=fa*112+(1-fa)*19;
+        TB.set(root,'#che-biomol-rot','+'+rot.toFixed(1)+'°');TB.set(root,'#che-biomol-pa',(fa*100).toFixed(0)+' %');TB.set(root,'#che-biomol-pb',((1-fa)*100).toFixed(0)+' %');
+        const g=TB.canvas($('che-biomol-cv'),290),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),mut=TB.css('--muted'),hi=TB.css('--maths'),sub=TB.css('--sub');
+        ctx.font='13px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.lineWidth=2;ctx.strokeStyle=ink;
+        if(form==='open'){
+          const x0=w/2,y0=44,dy=(h-96)/5,ys=[0,1,2,3,4,5].map(i=>y0+i*dy);
+          const right=[true,false,true,true];
+          ctx.beginPath();ctx.moveTo(x0,ys[0]+10);ctx.lineTo(x0,ys[5]-10);ctx.stroke();
+          ctx.font='600 13px "Source Sans 3", sans-serif';lbl(ctx,'CHO',x0,ys[0]+4,hi);
+          ctx.font='13px "Source Sans 3", sans-serif';lbl(ctx,'CH₂OH',x0,ys[5]+5,ink);
+          for(let i=0;i<4;i++){const y=ys[i+1];ctx.beginPath();ctx.moveTo(x0-26,y);ctx.lineTo(x0+26,y);ctx.stroke();
+            lbl(ctx,right[i]?'OH':'H',x0+40,y+4);lbl(ctx,right[i]?'H':'OH',x0-40,y+4);}
+          ctx.textAlign='left';ctx.fillStyle=mut;
+          ['C1','C2','C3','C4','C5','C6'].forEach((c,i)=>ctx.fillText(c,12,ys[i]+4));
+          ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('aldehyde C=O: reacts with C5–OH to close the ring',12,h-30);
+          ctx.fillStyle=mut;ctx.fillText('D-series: OH on C5 points right',12,h-10);
+        } else {
+          const cx=w/2,cy=h/2+4;
+          const P={C5:[cx-36,cy-20],O:[cx+26,cy-20],C1:[cx+62,cy+4],C2:[cx+32,cy+32],C3:[cx-32,cy+32],C4:[cx-62,cy+4]};
+          const ring=['C5','O','C1','C2','C3','C4'];
+          ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();
+          ring.forEach((k,i)=>{const p=P[k];if(i===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1]);});ctx.closePath();ctx.stroke();
+          ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(P.C2[0],P.C2[1]);ctx.lineTo(P.C3[0],P.C3[1]);ctx.stroke();ctx.lineWidth=2;
+          // ring O label
+          ctx.fillStyle=TB.css('--soft');ctx.fillRect(P.O[0]-8,P.O[1]-9,16,18);ctx.fillStyle=ink;ctx.fillText('O',P.O[0],P.O[1]+5);
+          const a=form==='alpha';
+          const sub_=[['C1',a?1:-1,'OH',true],['C1',a?-1:1,'H',false],['C2',1,'OH'],['C3',-1,'OH'],['C4',1,'OH'],['C5',-1,'CH₂OH']];
+          // direction: +1 down, -1 up
+          sub_.forEach(s=>{const p=P[s[0]],d=s[1],y2=p[1]+d*28;
+            ctx.strokeStyle=s[3]?hi:ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(p[0],y2);ctx.stroke();
+            ctx.fillStyle=s[3]?hi:ink;ctx.font=(s[3]?'600 ':'')+'13px "Source Sans 3", sans-serif';ctx.fillText(s[2],p[0],y2+(d>0?15:-5));});
+          ctx.font='11px "Source Sans 3", sans-serif';ctx.fillStyle=mut;
+          ['C1','C2','C3','C4','C5'].forEach(k=>{const p=P[k],dx=cx-p[0],dy=cy-p[1],L=Math.hypot(dx,dy);ctx.fillText(k.slice(1),p[0]+dx/L*11,p[1]+dy/L*11+4);});
+          ctx.font='13px "Source Sans 3", sans-serif';ctx.textAlign='left';ctx.fillStyle=ink;
+          ctx.fillText(a?'α-D-glucopyranose: anomeric OH down (trans to CH₂OH)':'β-D-glucopyranose: anomeric OH up (cis to CH₂OH)',10,18);
+          ctx.fillStyle=mut;ctx.fillText('Thick bond = front edge of the ring; orange = anomeric carbon C1',10,h-10);
+        }
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: build a dipeptide and count peptide bonds</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-biomol-a1">First residue (N-terminal)</label><select id="che-biomol-a1"></select></div>
+      <div class="ctl"><label for="che-biomol-a2">Second residue (C-terminal)</label><select id="che-biomol-a2"></select></div>
+      <div class="ctl"><label for="che-biomol-n">Chain length n <output></output></label><input type="range" id="che-biomol-n" min="2" max="30" step="1" value="5" data-unit=" residues"></div>
+    </div>
+    <canvas class="stage" id="che-biomol-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">Dipeptide<b id="che-biomol-seq">-</b></div>
+      <div class="readout">Dipeptide mass (g/mol)<b id="che-biomol-mass">-</b></div>
+      <div class="readout">Peptide bonds in n-chain<b id="che-biomol-pb2">-</b></div>
+      <div class="readout">Water lost for n-chain<b id="che-biomol-wl">-</b></div>
+      <div class="readout">Possible sequences, 20ⁿ<b id="che-biomol-seqs">-</b></div>
+      <div class="readout">Approx. mass of n-chain (g/mol)<b id="che-biomol-nm">-</b></div>
+    </div>
+    <p id="che-biomol-note" style="font-size:.9rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const A=[['Glycine','Gly','H',75.07,'nonpolar, non-essential'],['Alanine','Ala','CH₃',89.09,'nonpolar, non-essential'],['Valine','Val','CH(CH₃)₂',117.15,'nonpolar, essential'],
+        ['Serine','Ser','CH₂OH',105.09,'polar, non-essential'],['Cysteine','Cys','CH₂SH',121.16,'polar, forms S–S bridges'],['Phenylalanine','Phe','CH₂C₆H₅',165.19,'nonpolar aromatic, essential'],
+        ['Aspartic acid','Asp','CH₂COOH',133.10,'acidic, non-essential'],['Lysine','Lys','(CH₂)₄NH₂',146.19,'basic, essential']];
+      const s1=$('che-biomol-a1'),s2=$('che-biomol-a2');
+      A.forEach((a,i)=>{s1.add(new Option(a[0],i));s2.add(new Option(a[0],i));});s1.value=0;s2.value=1;
+      function draw(){
+        const i=+s1.value,j=+s2.value,n=+$('che-biomol-n').value;
+        const m=A[i][3]+A[j][3]-18.02;
+        TB.set(root,'#che-biomol-seq',A[i][1]+'–'+A[j][1]);TB.set(root,'#che-biomol-mass',m.toFixed(2));
+        TB.set(root,'#che-biomol-pb2',n-1);TB.set(root,'#che-biomol-wl',(n-1)+' molecules');
+        TB.set(root,'#che-biomol-seqs',(Math.pow(20,n)).toExponential(2).replace('e+','×10^'));
+        TB.set(root,'#che-biomol-nm',TB.fmt(n*110,0));
+        $('che-biomol-note').textContent=(i===j?'Same residue twice: only one dipeptide, '+A[i][1]+'–'+A[j][1]+'. ':A[i][1]+'–'+A[j][1]+' and '+A[j][1]+'–'+A[i][1]+' are different compounds (the free –NH₂ end and the free –COOH end swap). ')+A[i][0]+': '+A[i][4]+'; '+A[j][0]+': '+A[j][4]+'. Average residue mass is taken as 110 g/mol.';
+        const g=TB.canvas($('che-biomol-cv2'),190),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),mut=TB.css('--muted'),hi=TB.css('--maths'),sub=TB.css('--sub');
+        const sp=(w-96)/5,x=k=>48+k*sp,mid=h/2+6,hiY=mid-18,loY=mid+18;
+        const pos=[[x(0),loY,'H₂N'],[x(1),hiY,'CH'],[x(2),loY,'C'],[x(3),hiY,'N'],[x(4),loY,'CH'],[x(5),hiY,'COOH']];
+        ctx.font='13px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.lineWidth=2;
+        // peptide bond highlight
+        ctx.fillStyle=sub;ctx.globalAlpha=.15;ctx.fillRect(x(2)-18,Math.min(hiY,loY)-40,x(3)-x(2)+36,100);ctx.globalAlpha=1;
+        ctx.strokeStyle=ink;ctx.beginPath();
+        pos.forEach((p,k)=>{if(k===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1]);});ctx.stroke();
+        // atom labels with soft background
+        pos.forEach(p=>{const tw=ctx.measureText(p[2]).width+6;ctx.fillStyle=TB.css('--soft');ctx.fillRect(p[0]-tw/2,p[1]-9,tw,18);ctx.fillStyle=ink;ctx.fillText(p[2],p[0],p[1]+5);});
+        ctx.strokeStyle=ink;
+        function sub1(px,py,dy,t,col){ctx.beginPath();ctx.moveTo(px,py+(dy>0?9:-9));ctx.lineTo(px,py+dy);ctx.stroke();ctx.fillStyle=col;ctx.fillText(t,px,py+dy+(dy>0?14:-5));}
+        sub1(x(1),hiY,-28,A[i][2],hi);sub1(x(4),loY,28,A[j][2],hi);
+        sub1(x(2),loY,26,'=O',ink);sub1(x(3),hiY,-24,'H',ink);
+        ctx.fillStyle=sub;ctx.font='600 12px "Source Sans 3", sans-serif';ctx.fillText('peptide bond (–CO–NH–)',(x(2)+x(3))/2,h-8);
+        ctx.fillStyle=mut;ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='left';ctx.fillText('R₁ = '+A[i][2],8,16);ctx.textAlign='right';ctx.fillText('R₂ = '+A[j][2],w-8,16);
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: four levels of protein structure</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-biomol-lv">Level</label><select id="che-biomol-lv">
+        <option value="0">Primary: amino-acid sequence</option><option value="1">Secondary: α-helix and β-pleated sheet</option><option value="2">Tertiary: folded single chain</option><option value="3">Quaternary: several chains together</option><option value="4">Denatured (heat, acid, alcohol)</option></select></div>
+    </div>
+    <canvas class="stage" id="che-biomol-cv3"></canvas>
+    <div class="readouts">
+      <div class="readout">Held together by<b id="che-biomol-bond">-</b></div>
+      <div class="readout">Example<b id="che-biomol-ex">-</b></div>
+    </div>
+    <p id="che-biomol-ds" style="font-size:.9rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const T=[['Peptide (covalent amide) bonds','Insulin: A chain of 21 and B chain of 30 residues','The sequence is fixed by the gene. Change one residue and the protein can change completely, as in sickle-cell haemoglobin (Glu to Val).'],
+        ['Hydrogen bonds between C=O and N–H of the backbone','α-Keratin (hair, nails): α-helix; silk fibroin: β-sheet','The α-helix has 3.6 residues per turn, with H-bonds within one chain. In a β-sheet, H-bonds join neighbouring strands.'],
+        ['Disulphide (S–S) bridges, H-bonds, ionic and hydrophobic interactions','Myoglobin (153 residues), enzymes','Fibrous proteins (keratin, collagen) stay elongated; globular proteins (albumin, enzymes) fold into compact shapes that dissolve in water.'],
+        ['Non-covalent forces between separate polypeptide chains','Haemoglobin: 4 chains (2α + 2β)','Not every protein has this level; it needs two or more polypeptide chains.'],
+        ['Secondary and tertiary structure are lost; primary sequence is intact','Coagulation of egg white on boiling; curdling of milk','Denaturation changes shape, so biological activity is lost. It is usually irreversible when the protein has aggregated.']];
+      function curve(ctx,pts,close){ctx.beginPath();const n=pts.length;
+        for(let i=0;i<n;i++){const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+          if(i===0)ctx.moveTo(p1[0],p1[1]);
+          if(!close&&i>=n-1)break;
+          for(let k=1;k<=10;k++){const t=k/10,t2=t*t,t3=t2*t;
+            const x=.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3);
+            const y=.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
+            ctx.lineTo(x,y);}}
+        ctx.stroke();}
+      function draw(){
+        const v=+$('che-biomol-lv').value;
+        TB.set(root,'#che-biomol-bond',T[v][0]);TB.set(root,'#che-biomol-ex',T[v][1]);$('che-biomol-ds').textContent=T[v][2];
+        const g=TB.canvas($('che-biomol-cv3'),190),ctx=g.ctx,w=g.w,h=g.h,cy=h/2;
+        const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),hi=TB.css('--maths'),bio=TB.css('--bio');
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.lineWidth=2.5;
+        const cols=[sub,hi,bio,TB.css('--good'),TB.css('--physics')];
+        if(v===0){const n=9,sp=(w-50)/(n-1);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(25,cy);ctx.lineTo(w-25,cy);ctx.stroke();
+          for(let i=0;i<n;i++){ctx.fillStyle=cols[i%5];ctx.beginPath();ctx.arc(25+i*sp,cy,10,0,7);ctx.fill();}
+          ctx.fillStyle=ink;ctx.fillText('N-terminus',45,cy-22);ctx.fillText('C-terminus',w-45,cy-22);ctx.fillText('each circle is one amino acid; the line is the peptide bonds',w/2,cy+36);}
+        if(v===1){ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();const x0=20,xe=w/2-14;for(let t=0;t<=6*Math.PI;t+=.12){const x=x0+t/(6*Math.PI)*(xe-x0)+10*Math.cos(t),y=cy+22*Math.sin(t);if(t===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();
+          ctx.fillStyle=ink;ctx.fillText('α-helix',(x0+xe)/2,cy+52);
+          const sx=w/2+14,ex=w-20;ctx.strokeStyle=hi;
+          for(let r=0;r<3;r++){const y=cy-30+r*30;ctx.beginPath();ctx.moveTo(sx,y);for(let k=1;k<=6;k++)ctx.lineTo(sx+(ex-sx)*k/6,y+(k%2?-8:8)*(r%2?-1:1)*1);ctx.stroke();}
+          ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.setLineDash([3,3]);for(let k=1;k<=5;k++){const x=sx+(ex-sx)*k/6;ctx.beginPath();ctx.moveTo(x,cy-30-8);ctx.lineTo(x,cy+30+8);ctx.stroke();}ctx.setLineDash([]);
+          ctx.fillStyle=ink;ctx.fillText('β-pleated sheet (dashed: H-bonds)',(sx+ex)/2,cy+60);}
+        if(v===2){ctx.strokeStyle=bio;ctx.lineWidth=3;const c=w/2,pts=[[c-90,cy+10],[c-60,cy-40],[c-20,cy-10],[c-30,cy+35],[c+10,cy+50],[c+50,cy+20],[c+30,cy-30],[c+80,cy-40],[c+100,cy+5]];curve(ctx,pts,false);
+          ctx.strokeStyle=hi;ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(c-60,cy-40);ctx.lineTo(c+30,cy-30);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle=hi;ctx.fillText('S–S bridge',c-15,cy-48);ctx.fillStyle=ink;ctx.fillText('one chain folded into a compact 3-D shape',c,h-10);}
+        if(v===3){const c=w/2,r=34;[[-r-8,-r+4],[r+8,-r+4],[-r-8,r+8],[r+8,r+8]].forEach((q,i)=>{ctx.fillStyle=cols[i];ctx.globalAlpha=.55;ctx.beginPath();ctx.arc(c+q[0],cy+q[1]-6,r,0,7);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=ink;ctx.fillText(i<2?'α':'β',c+q[0],cy+q[1]-2);});
+          ctx.fillStyle=ink;ctx.fillText('haemoglobin: four subunits',c,h-8);}
+        if(v===4){ctx.strokeStyle=mut;ctx.lineWidth=2.5;const c=w/2;const pts=[];for(let i=0;i<14;i++)pts.push([20+i*(w-40)/13,cy+(i%2?1:-1)*(10+((i*37)%25))]);curve(ctx,pts,false);
+          ctx.fillStyle=ink;ctx.fillText('unfolded chain: sequence intact, shape and activity lost',c,h-10);}
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>A fasting blood-glucose reading of 5.5 mmol/L is the same as 5.5 × 180.16 = 991 mg/L, i.e. about 99 mg/dL, the border of the normal range used in Indian diabetes screening. India is among the world's largest producers of sugarcane, and when sucrose is hydrolysed (by the enzyme invertase in honey-making, or by boiling sugar syrup with a little acid) the mixture turns from +66.5° to about −20°, which is why it is called invert sugar. Glucose polymerises as starch (rice, wheat, roti) and cellulose (cotton); the human gut has amylase but no cellulase. Proteins in pulses such as toor dal and chickpea are rich in lysine, which cereals lack, while cereals supply the methionine that pulses lack, so dal with rice or roti makes a more complete protein.</p></div>
+  <div class="quiz"><p class="q">A tripeptide has three amino-acid residues. How many peptide bonds and how many water molecules are lost when it forms from free amino acids?</p>
+    <div class="opts"><button>3 and 3</button><button data-ok>2 and 2</button><button>2 and 3</button><button>1 and 1</button></div>
+    <p class="why" hidden>n residues are joined by n − 1 peptide bonds, and each bond forms by condensation with the loss of one H₂O. For n = 3 that is 2 bonds and 2 water molecules.</p></div>
+</article><div class="pager"><a href="che-amines.html"><small>Previous</small>Amines and diazonium salts</a><a class="next" href="che-nucleic.html"><small>Next</small>DNA, RNA and vitamins</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

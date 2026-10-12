@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wheatstone bridge, metre bridge, potentiometer - Class 12 Physics</title>
+<meta name="description" content="Wheatstone bridge, metre bridge, potentiometer: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-bridges" data-title="Wheatstone bridge, metre bridge, potentiometer">
+  <header><div class="tag">Current Electricity</div><h3>Wheatstone bridge, metre bridge and potentiometer</h3></header>
+  <p class="lead">Both instruments find a value by balancing, so that a galvanometer reads zero and no current is drawn at the moment of measurement. The metre bridge measures an unknown resistance; the potentiometer compares emfs and finds internal resistance without loading the cell.</p>
+  <ul class="keypoints">
+    <li>Wheatstone bridge: when P/Q = R/S the galvanometer shows no deflection, and the arms' potentials at the two middle points are equal.</li>
+    <li>Metre bridge is a Wheatstone bridge whose two ratio arms are the two parts of a 100 cm uniform wire, so X = R(100 − l)/l.</li>
+    <li>The balance point should lie near 50 cm for best accuracy; use a different R if l is close to 0 or 100.</li>
+    <li>Potentiometer: a long uniform wire carries a steady current, so the potential drop per unit length (gradient) k is constant. A cell balanced at length l has emf E = kl.</li>
+    <li>Because no current flows from the test cell at balance, a potentiometer measures true emf, which a voltmeter cannot.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">P/Q = R/S<small>Wheatstone bridge balance condition</small></div>
+    <div class="eq">X = R (100 − l) / l<small>Metre bridge; R in the left gap, l measured from the left end in cm</small></div>
+    <div class="eq">k = V/L = I ρ / A<small>Potential gradient of the potentiometer wire (V m⁻¹)</small></div>
+    <div class="eq">E<sub>1</sub>/E<sub>2</sub> = l<sub>1</sub>/l<sub>2</sub><small>Comparing two emfs</small></div>
+    <div class="eq">r = R (l<sub>1</sub> − l<sub>2</sub>) / l<sub>2</sub><small>Internal resistance; l<sub>1</sub> open circuit, l<sub>2</sub> with resistance R across the cell</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: find the balance point of a metre bridge</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-bridges-r">Known resistance R <output></output></label><input type="range" id="phy-bridges-r" min="1" max="20" step="1" value="10" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-bridges-x">Unknown resistance X <output></output></label><input type="range" id="phy-bridges-x" min="1" max="30" step="1" value="15" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-bridges-j">Jockey position l <output></output></label><input type="range" id="phy-bridges-j" min="1" max="99" step="0.5" value="25" data-unit=" cm"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">True balance point<b data-r="bal">-</b></div>
+      <div class="readout">Galvanometer voltage<b data-r="dv">-</b></div>
+      <div class="readout">Status<b data-r="st">-</b></div>
+      <div class="readout">X = R(100 − l)/l<b data-r="xc">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Move the jockey until the needle sits at zero. Then X from the formula equals the true X you set. Moving X or R shifts the balance point.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      function draw(){
+        const R=+$('#phy-bridges-r').value,X=+$('#phy-bridges-x').value,j=+$('#phy-bridges-j').value,Vs=2;
+        const bal=100*R/(R+X),dv=Vs*(X/(R+X)-(100-j)/100);
+        const g=TB.canvas($('canvas'),245),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),soft=TB.css('--soft'),sub=TB.css('--sub'),bad=TB.css('--bad'),good=TB.css('--good'),mut=TB.css('--muted');
+        const xl=20,xr=w-20,xm=(xl+xr)/2,yt=50,yw=160,yb=214;
+        ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.beginPath();
+        ctx.moveTo(xl,yw);ctx.lineTo(xl,yt);ctx.lineTo(xr,yt);ctx.lineTo(xr,yw);
+        ctx.moveTo(xl,yw);ctx.lineTo(xl,yb);ctx.lineTo(xr,yb);ctx.lineTo(xr,yw);
+        ctx.moveTo(xm,yt);ctx.lineTo(xm,84);ctx.stroke();
+        ctx.fillStyle=soft;ctx.fillRect(xm-12,yb-8,24,16);ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(xm-3,yb-11);ctx.lineTo(xm-3,yb+11);ctx.stroke();ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(xm+3,yb-5);ctx.lineTo(xm+3,yb+5);ctx.stroke();
+        function box(cx){ctx.fillStyle=soft;ctx.fillRect(cx-20,yt-9,40,18);ctx.strokeStyle=sub;ctx.lineWidth=2;ctx.strokeRect(cx-18,yt-7,36,14)}
+        box((xl+xm)/2);box((xm+xr)/2);
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.fillStyle=ink;
+        ctx.fillText('R = '+R+' Ω',(xl+xm)/2,yt-14);ctx.fillText('X = '+X+' Ω',(xm+xr)/2,yt-14);
+        ctx.fillText('2 V',xm+22,yb+4);ctx.fillText('B',xm+10,yt-6);
+        // slide wire
+        ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xl,yw);ctx.lineTo(xr,yw);ctx.stroke();
+        ctx.lineWidth=1;ctx.strokeStyle=mut;
+        for(let t=0;t<=100;t+=10){const x=xl+t/100*(xr-xl);ctx.beginPath();ctx.moveTo(x,yw+4);ctx.lineTo(x,yw+(t%50===0?12:8));ctx.stroke()}
+        ctx.fillStyle=ink;[0,50,100].forEach(t=>ctx.fillText(t,xl+t/100*(xr-xl),yw+24));
+        ctx.fillText('A',xl+6,yw-7);ctx.fillText('C',xr-6,yw-7);
+        const xj=xl+j/100*(xr-xl);
+        // galvanometer
+        const gy=100,gr=15;
+        ctx.fillStyle=soft;ctx.beginPath();ctx.arc(xm,gy,gr,0,7);ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.stroke();
+        ctx.beginPath();ctx.moveTo(xm,gy+gr);ctx.lineTo(xj,yw);ctx.stroke();
+        const ang=Math.max(-1,Math.min(1,dv/0.5))*55*Math.PI/180;
+        ctx.strokeStyle=bad;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(xm,gy+5);ctx.lineTo(xm+Math.sin(ang)*(gr-2),gy+5-Math.cos(ang)*(gr-2));ctx.stroke();
+        ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('G',xm+gr+4,gy+4);
+        ctx.fillStyle=good;ctx.beginPath();ctx.arc(xj,yw,5,0,7);ctx.fill();
+        ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('jockey l = '+j+' cm',Math.max(60,Math.min(w-60,xj)),yw+40);
+        const ok=Math.abs(j-bal)<=0.5;
+        TB.set(root,'[data-r=bal]',bal.toFixed(1)+' cm');
+        TB.set(root,'[data-r=dv]',(dv*1000).toFixed(0)+' mV');
+        TB.set(root,'[data-r=st]',ok?'Balanced':(dv>0?'Move jockey left':'Move jockey right'));
+        TB.set(root,'[data-r=xc]',(R*(100-j)/j).toFixed(2)+' Ω');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: potentiometer, the balance length of a cell</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-bridges-rh">Rheostat in driver circuit <output></output></label><input type="range" id="phy-bridges-rh" min="0" max="20" step="0.5" value="2" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-bridges-e">Emf of test cell E <output></output></label><input type="range" id="phy-bridges-e" min="0.5" max="1.8" step="0.01" value="1.5" data-unit=" V"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Wire current I<b data-r="I">-</b></div>
+      <div class="readout">Potential gradient k<b data-r="k">-</b></div>
+      <div class="readout">Balance length l = E/k<b data-r="l">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Driver cell 2 V (negligible internal resistance), wire 10 m long with total resistance 10 Ω. Raise the rheostat to lower the gradient: the balance length grows, giving a more sensitive measurement, until it runs off the end of the wire.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      function draw(){
+        const Rh=+$('#phy-bridges-rh').value,E=+$('#phy-bridges-e').value;
+        const I=2/(10+Rh),k=I*1,Vw=k*10,l=E/k,ok=l<=10;
+        const g=TB.canvas($('canvas'),240),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),bad=TB.css('--bad'),good=TB.css('--good');
+        const gx0=40,gx1=w-14,gy0=26,gy1=h-38,X=m=>gx0+m/10*(gx1-gx0),Y=v=>gy1-v/2*(gy1-gy0);
+        ctx.font='12px "Source Sans 3", sans-serif';
+        ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx0,gy0);ctx.lineTo(gx0,gy1);ctx.lineTo(gx1,gy1);ctx.stroke();
+        ctx.fillStyle=ink;ctx.textAlign='right';[0,0.5,1,1.5,2].forEach(v=>{ctx.fillText(v,gx0-5,Y(v)+4);ctx.beginPath();ctx.moveTo(gx0-3,Y(v));ctx.lineTo(gx0,Y(v));ctx.stroke()});
+        ctx.textAlign='center';for(let m=0;m<=10;m+=2)ctx.fillText(m,X(m),gy1+14);
+        ctx.fillText('distance along wire from the driver end (m)',(gx0+gx1)/2,gy1+30);
+        ctx.textAlign='left';ctx.fillText('V',4,gy0-10);
+        ctx.strokeStyle=sub;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(10),Y(Vw));ctx.stroke();
+        ctx.setLineDash([5,3]);ctx.strokeStyle=bad;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(gx0,Y(E));ctx.lineTo(gx1,Y(E));ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=bad;ctx.textAlign='left';ctx.fillText('E = '+E.toFixed(2)+' V',gx0+6,Y(E)-6);
+        if(ok){ctx.setLineDash([3,3]);ctx.strokeStyle=good;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(X(l),Y(E));ctx.lineTo(X(l),gy1);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle=good;ctx.beginPath();ctx.arc(X(l),Y(E),5.5,0,7);ctx.fill();
+          ctx.textAlign=l>6?'right':'left';ctx.fillText('balance l = '+l.toFixed(2)+' m',X(l)+(l>6?-8:8),gy1-8)}
+        else{ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('No balance: E is larger than the drop across the wire',(gx0+gx1)/2,gy0+14)}
+        TB.set(root,'[data-r=I]',(I*1000).toFixed(1)+' mA');
+        TB.set(root,'[data-r=k]',k.toFixed(4)+' V/m');
+        TB.set(root,'[data-r=l]',ok?l.toFixed(2)+' m':'beyond 10 m');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>In the school lab, a metre bridge uses a 1 m manganin wire stretched over a metre scale. With R = 5 Ω in the left gap and balance at l = 40 cm, X = R(100 − l)/l = 5 × 60 / 40 = 7.5 Ω. Repeating with R and X interchanged and averaging reduces errors from the copper strips at the ends of the wire (end corrections).</p>
+    <p>Industry uses the same idea in strain gauges: the weighbridges used for goods wagons and trucks, and the load cells in kitchen scales, wire four gauges as a Wheatstone bridge. A load stretches the gauges and unbalances the bridge by a few millivolts, which is amplified and read as weight.</p>
+    <p>Potentiometer check: in the widget at 2 V across 10 Ω + 2 Ω, I = 2/12 = 0.167 A, k = 0.167 V/m, so a 1.5 V cell balances at 1.5/0.167 = 9.0 m. A Weston standard cell (1.018 V) would balance at 1.018/0.167 ≈ 6.11 m; the ratio of balance lengths then gives the ratio of emfs, E₁/E₂ = l₁/l₂.</p>
+  </div>
+  <div class="quiz"><p class="q">In a metre bridge, R = 5 Ω is in the left gap and the balance point is at 40 cm from the left end. The unknown resistance X in the right gap is:</p><div class="opts"><button data-ok>7.5 Ω</button><button>3.3 Ω</button><button>2 Ω</button><button>12.5 Ω</button></div><p class="why" hidden>R/X = l/(100 − l) = 40/60, so X = 5 × 60/40 = 7.5 Ω.</p></div>
+</article><div class="pager"><a href="phy-kirchhoff.html"><small>Previous</small>Kirchhoff&#x27;s laws</a><a class="next" href="phy-bfield-currents.html"><small>Next</small>Magnetic field due to currents</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

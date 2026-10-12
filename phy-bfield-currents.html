@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Magnetic field due to currents - Class 12 Physics</title>
+<meta name="description" content="Magnetic field due to currents: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-bfield-currents" data-title="Magnetic field due to currents">
+  <header><div class="tag">Moving Charges and Magnetism</div><h3>Magnetic field of currents: Biot-Savart, Ampere's law, parallel wires</h3></header>
+  <p class="lead">Moving charges produce magnetic fields. The Biot-Savart law adds up the contribution of every small piece of current, and Ampere's law gives a shortcut when the situation is symmetric. These two give the fields of a straight wire, a circular loop and a solenoid, and explain why parallel currents attract.</p>
+  <ul class="keypoints">
+    <li>Biot-Savart: each current element I dl gives dB = (μ₀/4π) I dl sinθ / r². The direction is given by the right-hand rule.</li>
+    <li>Long straight wire: B = μ₀I/(2πr), falling as 1/r. Field lines are circles around the wire.</li>
+    <li>Ampere's law: ∮B·dl = μ₀I<sub>enclosed</sub>. For an ideal solenoid it gives a uniform B = μ₀nI inside and almost zero outside.</li>
+    <li>Parallel currents in the same direction attract; opposite currents repel. This defines the ampere.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">dB = (μ₀/4π) · I dl sinθ / r²<small>Biot-Savart law; μ₀ = 4π×10⁻⁷ T m A⁻¹</small></div>
+    <div class="eq">B = μ₀ I / (2π r)<small>long straight wire, r = perpendicular distance</small></div>
+    <div class="eq">B = μ₀ N I / (2R)<small>centre of a circular coil of N turns, radius R</small></div>
+    <div class="eq">B = μ₀ N I R² / [2(R² + x²)<sup>3/2</sup>]<small>on the axis of the coil, distance x from the centre</small></div>
+    <div class="eq">∮ B·dl = μ₀ I<sub>enc</sub><small>Ampere's circuital law</small></div>
+    <div class="eq">B = μ₀ n I<small>inside a long solenoid, n = turns per metre</small></div>
+    <div class="eq">F/L = μ₀ I₁ I₂ / (2π d)<small>force per unit length between parallel wires</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: field profile of three current sources</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-bfield-src">Source</label><select id="phy-bfield-src"><option value="wire">Long straight wire</option><option value="loop">Circular coil (field along its axis)</option><option value="sol">Long solenoid (field across its radius)</option></select></div>
+      <div class="ctl"><label for="phy-bfield-i">Current I <output></output></label><input type="range" id="phy-bfield-i" min="0.1" max="20" step="0.1" value="5" data-unit=" A"></div>
+      <div class="ctl"><label for="phy-bfield-s">Distance r / radius R <output></output></label><input type="range" id="phy-bfield-s" min="1" max="30" step="0.5" value="5" data-unit=" cm"></div>
+      <div class="ctl" id="phy-bfield-nctl"><label for="phy-bfield-n"><span>Turns N</span> <output></output></label><input type="range" id="phy-bfield-n" min="1" max="2000" step="1" value="100"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Field at marked point<b data-r="b">-</b></div>
+      <div class="readout">Rule used<b data-r="rule" style="font-size:.8rem">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const MU=4*Math.PI*1e-7;
+    function bf(B){const a=Math.abs(B);if(a>=1e-3)return TB.fmt(B*1e3,2)+' mT';if(a>=1e-6)return TB.fmt(B*1e6,2)+' µT';return TB.fmt(B*1e9,2)+' nT';}
+    function field(type,I,s,N,x){if(type==='wire')return MU*I/(2*Math.PI*x);if(type==='loop')return MU*N*I*s*s/(2*Math.pow(s*s+x*x,1.5));return Math.abs(x)<=s?MU*N*I:0;}
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),240);
+      const type=$('#phy-bfield-src').value,I=+$('#phy-bfield-i').value,s=+$('#phy-bfield-s').value/100,N=+$('#phy-bfield-n').value;
+      const lab=$('#phy-bfield-nctl label span');const nc=$('#phy-bfield-nctl');
+      lab.textContent=type==='sol'?'Turns per metre n':'Turns N';nc.style.opacity=type==='wire'?0.4:1;
+      const Nn=type==='wire'?1:N;
+      let x0,x1,xm,rule,xl;
+      if(type==='wire'){x0=0.25*s;x1=4*s;xm=s;rule='B = μ₀I/(2πr)';xl='distance r from wire (cm)';}
+      else if(type==='loop'){x0=-3*s;x1=3*s;xm=0;rule='B = μ₀NIR²/[2(R²+x²)^1.5]';xl='position x along axis (cm), 0 = centre';}
+      else{x0=0;x1=3*s;xm=0;rule='B = μ₀nI inside, 0 outside';xl='distance from axis (cm); wall at R';}
+      const yAt=x=>field(type,I,s,Nn,x);
+      let ym=0;for(let i=0;i<=100;i++){ym=Math.max(ym,yAt(x0+(x1-x0)*i/100));}ym*=1.15;
+      TB.set(root,'[data-r=b]',bf(yAt(type==='wire'?s:0)));TB.set(root,'[data-r=rule]',rule);
+      const ml=50,mr=12,mt=18,mb=34,pw=w-ml-mr,ph=h-mt-mb;
+      const X=x=>ml+(x-x0)/(x1-x0)*pw,Y=y=>mt+ph-y/ym*ph;
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),acc=TB.css('--maths'),line=TB.css('--line');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';
+      ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,mt+ph);ctx.lineTo(ml+pw,mt+ph);ctx.stroke();
+      ctx.fillStyle=ink;ctx.textAlign='right';ctx.fillText(bf(ym),ml-4,mt+4);ctx.fillText('0',ml-4,mt+ph);
+      ctx.textAlign='center';[0,0.5,1].forEach(f=>{const x=x0+(x1-x0)*f;ctx.fillText(TB.fmt(x*100,1),X(x),mt+ph+12);});
+      ctx.fillText(xl,ml+pw/2,h-8);
+      ctx.save();ctx.translate(12,mt+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('B',0,0);ctx.restore();
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();
+      for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200;const px=X(x),py=Y(yAt(x));i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+      ctx.stroke();
+      if(type==='sol'){ctx.strokeStyle=line;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(s),mt);ctx.lineTo(X(s),mt+ph);ctx.stroke();ctx.setLineDash([]);}
+      ctx.fillStyle=acc;ctx.beginPath();ctx.arc(X(xm),Y(yAt(type==='wire'?s:0)),5,0,2*Math.PI);ctx.fill();
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: force between two parallel wires</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-bfield-i1">Current I₁ <output></output></label><input type="range" id="phy-bfield-i1" min="1" max="50" step="1" value="10" data-unit=" A"></div>
+      <div class="ctl"><label for="phy-bfield-i2">Current I₂ <output></output></label><input type="range" id="phy-bfield-i2" min="1" max="50" step="1" value="10" data-unit=" A"></div>
+      <div class="ctl"><label for="phy-bfield-d">Separation d <output></output></label><input type="range" id="phy-bfield-d" min="1" max="50" step="1" value="10" data-unit=" cm"></div>
+      <div class="ctl"><label for="phy-bfield-dir">Directions</label><select id="phy-bfield-dir"><option value="same">Same direction</option><option value="opp">Opposite directions</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Force per metre F/L<b data-r="f">-</b></div>
+      <div class="readout">Nature<b data-r="n">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+    function arrow(ctx,x,y,dir,len,col){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dir*len,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x+dir*(len+8),y);ctx.lineTo(x+dir*len,y-6);ctx.lineTo(x+dir*len,y+6);ctx.closePath();ctx.fill();}
+    function wire(ctx,x,y,out,ink,sub){ctx.strokeStyle=sub;ctx.fillStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,13,0,2*Math.PI);ctx.stroke();
+      if(out){ctx.beginPath();ctx.arc(x,y,3.5,0,2*Math.PI);ctx.fill();}else{ctx.beginPath();ctx.moveTo(x-6,y-6);ctx.lineTo(x+6,y+6);ctx.moveTo(x+6,y-6);ctx.lineTo(x-6,y+6);ctx.stroke();}}
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),170);
+      const I1=+$('#phy-bfield-i1').value,I2=+$('#phy-bfield-i2').value,d=+$('#phy-bfield-d').value/100,same=$('#phy-bfield-dir').value==='same';
+      const F=2e-7*I1*I2/d;
+      TB.set(root,'[data-r=f]',F>=1e-3?TB.fmt(F*1e3,2)+' mN/m':TB.fmt(F*1e6,2)+' µN/m');TB.set(root,'[data-r=n]',same?'attraction':'repulsion');
+      const ink=TB.css('--ink'),sub=TB.css('--sub'),acc=TB.css('--maths'),mut=TB.css('--muted');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';ctx.textAlign='center';
+      const gap=40+4*(d*100),cx=w/2,x1=cx-gap/2,x2=cx+gap/2,cy=h/2+4;
+      const len=Math.max(8,Math.min(60,12+14*(Math.log10(F)+7)));
+      wire(ctx,x1,cy,true,ink,sub);wire(ctx,x2,cy,same,ink,sub);
+      if(same){arrow(ctx,x1+16,cy,1,len,acc);arrow(ctx,x2-16,cy,-1,len,acc);}else{arrow(ctx,x1-16,cy,-1,len,acc);arrow(ctx,x2+16,cy,1,len,acc);}
+      ctx.fillStyle=ink;ctx.fillText('I₁ (out of page)',x1,cy-30);ctx.fillText(same?'I₂ (out of page)':'I₂ (into page)',x2,cy-30);
+      ctx.fillStyle=mut;ctx.fillText('d = '+TB.fmt(d*100,0)+' cm (end-on view, arrow length shows relative force)',cx,h-12);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>A solenoid wound with 500 turns over 25 cm has n = 500/0.25 = 2000 turns per metre. With I = 2 A the field inside is B = μ₀nI = 4π×10⁻⁷ × 2000 × 2 ≈ 5.0×10⁻³ T = 5 mT, about 100 times Earth's field of roughly 4×10⁻⁵ T. Put a soft iron core inside and the field rises by a factor of hundreds; this is how scrapyard electromagnet cranes lift steel.</p>
+  <p>Two parallel wires 1 m apart, each carrying 1 A in vacuum, attract with F/L = 2×10⁻⁷ N per metre. That value is the definition of the ampere in older SI. A 100 A overhead cable seen from 10 m below produces only B = 2×10⁻⁷ × 100/10 = 2×10⁻⁶ T = 2 µT, much smaller than Earth's field.</p></div>
+  <div class="quiz"><p class="q">Two long parallel wires carry currents in the same direction. What happens?</p><div class="opts"><button data-ok>They attract each other.</button><button>They repel each other.</button><button>There is no force because the net charge is zero.</button><button>They twist but feel no net force.</button></div><p class="why" hidden>The field of wire 1 at wire 2 is perpendicular to wire 2, and F = I₂L × B points toward wire 1. The same argument holds the other way, so the force is attractive. The wires are neutral, but the magnetic force acts on the moving charges.</p></div>
+</article><div class="pager"><a href="phy-bridges.html"><small>Previous</small>Wheatstone bridge, metre bridge, potentiometer</a><a class="next" href="phy-lorentz.html"><small>Next</small>Moving charge in a magnetic field</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Linear programming - Class 12 Mathematics</title>
+<meta name="description" content="Linear programming: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-linprog" data-title="Linear programming">
+  <header><div class="tag">Linear Programming</div><h3>Linear programming: feasible region and corner points</h3></header>
+  <p class="lead">Linear programming finds the best value (largest profit or smallest cost) of a linear objective Z = ax + by when x and y must satisfy a set of linear inequalities. The inequalities cut out a convex feasible region; the corner point theorem says that the best value is always reached at a corner of that region, so only a few points need to be checked.</p>
+  <ul class="keypoints">
+    <li>Decision variables x, y; constraints are linear inequalities (resource limits) plus the non-negativity conditions x ≥ 0, y ≥ 0.</li>
+    <li>Feasible region = all points satisfying every constraint. It is convex; its boundary lines meet at corner points (vertices).</li>
+    <li>Corner point theorem: if the feasible region is bounded, Z has both a maximum and a minimum, and each occurs at a corner point. If two corners give the same optimum, every point on the segment joining them is optimal.</li>
+    <li>If the region is unbounded, a maximum or minimum may not exist; draw the half-plane ax + by &gt; M (or &lt; m) and see whether it has a point in common with the region.</li>
+    <li>Method: formulate, draw the region, find the corners, evaluate Z at each, choose the largest or smallest.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Z = ax + by<small>Objective function; the iso-lines Z = c are parallel, with slope −a/b</small></div>
+    <div class="eq">a₁x + b₁y ≤ c₁, a₂x + b₂y ≤ c₂, x ≥ 0, y ≥ 0<small>Constraints; each ≤ gives a half-plane, test with the origin</small></div>
+    <div class="eq">Corner: solve the two boundary equations together<small>e.g. x + y = 40 and 2x + y = 60 meet at (20, 20)</small></div>
+    <div class="eq">Z<sub>max</sub> = max over corners, Z<sub>min</sub> = min over corners<small>Valid when the feasible region is bounded</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">A dairy plans its production: slide the objective and the capacities</div>
+    <p style="margin:0 0 .6rem;font-size:.95rem">x = batches of paneer, y = batches of curd. Constraint C1: x + y ≤ L (packaging hours). Constraint C2: 2x + y ≤ K (milk units). Also x, y ≥ 0. Objective Z = ax + by (profit in ₹ thousand).</p>
+    <div class="controls">
+      <div class="ctl"><label for="mat-linprog-mode">Goal</label><select id="mat-linprog-mode"><option value="max">Maximise Z</option><option value="min">Minimise Z</option></select></div>
+      <div class="ctl"><label for="mat-linprog-a">a (profit per paneer batch) <output></output></label><input type="range" id="mat-linprog-a" min="-10" max="10" step="1" value="3"></div>
+      <div class="ctl"><label for="mat-linprog-b">b (profit per curd batch) <output></output></label><input type="range" id="mat-linprog-b" min="-10" max="10" step="1" value="2"></div>
+      <div class="ctl"><label for="mat-linprog-L">L (packaging limit) <output></output></label><input type="range" id="mat-linprog-L" min="20" max="60" step="1" value="40"></div>
+      <div class="ctl"><label for="mat-linprog-K">K (milk limit) <output></output></label><input type="range" id="mat-linprog-K" min="20" max="100" step="1" value="60"></div>
+      <div class="ctl"><label for="mat-linprog-t">Slide the iso-line Z = c <output></output></label><input type="range" id="mat-linprog-t" min="0" max="100" step="1" value="60" data-unit="%"></div>
+    </div>
+    <canvas class="stage" id="mat-linprog-cv" style="max-width:480px;margin-inline:auto"></canvas>
+    <div class="tw" style="margin-top:.6rem"><table class="t" id="mat-linprog-tab"></table></div>
+    <div class="readouts">
+      <div class="readout">Optimal value of Z<b data-r="opt">-</b></div>
+      <div class="readout">Optimal corner(s)<b data-r="at" style="font-size:.9rem">-</b></div>
+      <div class="readout">Corner points<b data-r="nv">-</b></div>
+      <div class="readout">Area of feasible region<b data-r="area">-</b></div>
+      <div class="readout">Iso-line level c<b data-r="c">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const g=k=>+$('#mat-linprog-'+k).value,cv=$('#mat-linprog-cv'),tab=$('#mat-linprog-tab');
+function clipHP(poly,a,b,c){const out=[];for(let i=0;i<poly.length;i++){const P=poly[i],Q=poly[(i+1)%poly.length],fp=a*P[0]+b*P[1]-c,fq=a*Q[0]+b*Q[1]-c;
+ if(fp<=1e-12)out.push(P);if((fp<-1e-12&&fq>1e-12)||(fp>1e-12&&fq<-1e-12)){const t=fp/(fp-fq);out.push([P[0]+t*(Q[0]-P[0]),P[1]+t*(Q[1]-P[1])]);}}return out;}
+function draw(){const a=g('a'),b=g('b'),L=g('L'),K=g('K'),min=$('#mat-linprog-mode').value=='min';
+ let reg=[[0,0],[200,0],[200,200],[0,200]];reg=clipHP(reg,1,1,L);reg=clipHP(reg,2,1,K);
+ const V=[];reg.forEach(p=>{if(!V.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1e-9))V.push(p);});
+ const Zs=V.map(p=>a*p[0]+b*p[1]),best=min?Math.min(...Zs):Math.max(...Zs),worst=min?Math.max(...Zs):Math.min(...Zs);
+ const opt=V.map((p,i)=>Math.abs(Zs[i]-best)<1e-9);
+ const zlo=Math.min(...Zs),zhi=Math.max(...Zs),tt=g('t')/100,c=zlo+tt*(zhi-zlo);
+ const P=mkP(cv,0,65,0,65,'eq');axes(P,10,10);
+ txt(P,'x (paneer)',P.W-P.R-4,P.H-P.B-10,MUT(),'right');txt(P,'y (curd)',P.L+6,P.T+8,MUT());
+ const lineAt=(A,B,C,col,w,dash)=>{if(Math.abs(B)>1e-9)poly2(P,[[0,C/B],[65,(C-A*65)/B]],col,w,dash);else poly2(P,[[C/A,0],[C/A,65]],col,w,dash);};
+ function poly2(P,pts,col,w,dash){poly(P,pts,col,w,dash,false);}
+ lineAt(1,1,L,PHY(),2);lineAt(2,1,K,GOOD(),2);
+ txt(P,'C1: x + y = '+L,P.W-P.R-4,P.T+12,PHY(),'right');txt(P,'C2: 2x + y = '+K,P.W-P.R-4,P.T+28,GOOD(),'right');txt(P,'dashed: Z = c',P.W-P.R-4,P.T+44,BAD(),'right');
+ if(V.length>2){fill(P,V,SUB(),0.28);poly(P,V,SUB(),2);}
+ if(Math.abs(a)+Math.abs(b)>0){if(Math.abs(b)>=Math.abs(a))poly(P,[[0,c/b],[65,(c-a*65)/b]],BAD(),2,[6,4],false);else poly(P,[[c/a,0],[(c-b*65)/a,65]],BAD(),2,[6,4],false);}
+ V.forEach((p,i)=>{dot(P,p[0],p[1],opt[i]?GOOD():INK(),opt[i]?6:4);
+  const s='('+F(p[0],1)+', '+F(p[1],1)+')';const px=P.X(p[0]),py=P.Y(p[1]);const cx=P.ctx;cx.font=FONT;const w=cx.measureText(s).width;
+  txt(P,s,Math.min(Math.max(px+8,4),P.W-w-4),Math.min(Math.max(py-10,10),P.H-P.B-6),opt[i]?GOOD():INK());});
+ let h='<tr><th>Corner (x, y)</th><th>Z = '+F(a)+'x + '+F(b)+'y</th><th></th></tr>';
+ V.forEach((p,i)=>{h+='<tr'+(opt[i]?' style="font-weight:700;color:var(--good)"':'')+'><td>('+F(p[0],2)+', '+F(p[1],2)+')</td><td>'+F(Zs[i],2)+'</td><td>'+(opt[i]?(min?'minimum':'maximum'):'')+'</td></tr>';});
+ tab.innerHTML=h;
+ let ar=0;for(let i=0;i<V.length;i++){const p=V[i],q=V[(i+1)%V.length];ar+=p[0]*q[1]-q[0]*p[1];}
+ R('opt',F(best,2));
+ const ps=V.filter((p,i)=>opt[i]).map(p=>'('+F(p[0],1)+', '+F(p[1],1)+')');
+ R('at',ps.length>1?(Math.abs(a)+Math.abs(b)==0?'All points (Z = 0)':ps.join(' and ')+' and the segment between'):ps[0]);
+ R('nv',String(V.length));R('area',F(Math.abs(ar)/2,1));R('c',F(c,2));}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>A dairy plant in Gujarat or Karnataka has limited packaging hours and limited milk. With L = 40 and K = 60, the feasible region is the quadrilateral with corners O(0, 0), (30, 0), (20, 20) and (0, 40). The corner (20, 20) comes from x + y = 40 and 2x + y = 60: subtracting gives x = 20, then y = 20.</p>
+  <p>Take profit Z = 3x + 2y (₹ thousand). Z(0, 0) = 0, Z(30, 0) = 90, Z(20, 20) = 60 + 40 = 100 and Z(0, 40) = 80. The maximum is ₹100 thousand at (20, 20): 20 batches of paneer and 20 of curd use all the packaging hours and all the milk. Change a to 1 and b to 1 in the widget: both (20, 20) and (0, 40) give Z = 40, so every point of the segment between them is optimal. The same method plans diet mixes, fertiliser blends and factory shifts.</p></div>
+
+  <div class="quiz"><p class="q">The feasible region of a problem is bounded, with corner points (0, 0), (6, 0), (4, 4), (0, 5). For Z = 2x + 3y, what is the maximum?</p><div class="opts"><button data-ok>20, at (4, 4)</button><button>15, at (0, 5)</button><button>12, at (6, 0)</button><button>24, at (6, 4)</button></div><p class="why" hidden>Z at the corners: 0, 12, 8 + 12 = 20 and 15. The largest is 20 at (4, 4). (6, 4) is not a corner of the region, so it is not a candidate.</p></div>
+</article><div class="pager"><a href="mat-threed.html"><small>Previous</small>Three-dimensional geometry</a><a class="next" href="mat-bayes.html"><small>Next</small>Conditional probability and Bayes</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

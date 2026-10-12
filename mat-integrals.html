@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Integrals - Class 12 Mathematics</title>
+<meta name="description" content="Integrals: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-integrals" data-title="Integrals">
+  <header><div class="tag">Integrals</div><h3>The definite integral as area, and the fundamental theorem</h3></header>
+  <p class="lead">Slice the region under a curve into thin strips, add up their areas, and let the strips get thinner. The sum settles down to a number: the definite integral. The fundamental theorem of calculus says this limit can be found without any slicing, by evaluating an antiderivative at the two ends.</p>
+  <ul class="keypoints">
+    <li>An indefinite integral ∫f(x)dx = F(x) + C is the family of antiderivatives, F′ = f.</li>
+    <li>The definite integral ∫<sub>a</sub><sup>b</sup> f(x)dx is the limit of Riemann sums; for f ≥ 0 it is the area under the curve; below the x-axis the area counts negative.</li>
+    <li>First fundamental theorem: if A(x) = ∫<sub>a</sub><sup>x</sup> f(t)dt, then A′(x) = f(x). Second: ∫<sub>a</sub><sup>b</sup> f(x)dx = F(b) − F(a).</li>
+    <li>Methods: substitution, integration by parts, partial fractions, and standard forms.</li>
+    <li>Useful property: ∫<sub>0</sub><sup>a</sup> f(x)dx = ∫<sub>0</sub><sup>a</sup> f(a − x)dx, and an odd function over [−a, a] integrates to 0.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">∫<sub>a</sub><sup>b</sup> f dx = lim<sub>n→∞</sub> Σ f(x<sub>i</sub>)·h<small>h = (b − a)/n, x<sub>i</sub> = a + ih (right-end sum)</small></div>
+    <div class="eq">∫<sub>a</sub><sup>b</sup> f(x)dx = F(b) − F(a)<small>F is any antiderivative of f</small></div>
+    <div class="eq">∫ u·v dx = u∫v dx − ∫(u′∫v dx)dx<small>Integration by parts; choose u by ILATE</small></div>
+    <div class="eq">∫eˣ[f(x) + f′(x)]dx = eˣf(x) + C<small>A common shortcut</small></div>
+    <div class="eq">∫<sub>−a</sub><sup>a</sup> f dx = 2∫<sub>0</sub><sup>a</sup> f dx or 0<small>Even function: twice; odd function: zero</small></div>
+  </div>
+  <h4>Standard integrals</h4>
+  <div class="tw"><table class="t"><tr><th>Integrand</th><th>Integral (+ C)</th><th>Integrand</th><th>Integral (+ C)</th></tr>
+    <tr><td>xⁿ (n ≠ −1)</td><td>xⁿ⁺¹/(n + 1)</td><td>1/√(a² − x²)</td><td>sin⁻¹(x/a)</td></tr>
+    <tr><td>1/x</td><td>ln|x|</td><td>1/(a² + x²)</td><td>(1/a) tan⁻¹(x/a)</td></tr>
+    <tr><td>eˣ</td><td>eˣ</td><td>1/(x² − a²)</td><td>(1/2a) ln|(x − a)/(x + a)|</td></tr>
+    <tr><td>aˣ</td><td>aˣ/ln a</td><td>1/(a² − x²)</td><td>(1/2a) ln|(a + x)/(a − x)|</td></tr>
+    <tr><td>sin x</td><td>−cos x</td><td>1/√(x² − a²)</td><td>ln|x + √(x² − a²)|</td></tr>
+    <tr><td>cos x</td><td>sin x</td><td>1/√(x² + a²)</td><td>ln|x + √(x² + a²)|</td></tr>
+    <tr><td>sec²x</td><td>tan x</td><td>√(a² − x²)</td><td>(x/2)√(a² − x²) + (a²/2) sin⁻¹(x/a)</td></tr>
+    <tr><td>cosec²x</td><td>−cot x</td><td>tan x</td><td>ln|sec x|</td></tr>
+    <tr><td>sec x tan x</td><td>sec x</td><td>cot x</td><td>ln|sin x|</td></tr>
+    <tr><td>cosec x cot x</td><td>−cosec x</td><td>sec x</td><td>ln|sec x + tan x|</td></tr></table></div>
+  <div class="widget"><div class="w-title">Riemann sums converge to the integral</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-integrals-fn">Function and interval</label><select id="mat-integrals-fn"><option value="sq">x² on [0, 3]</option><option value="sin">sin x on [0, π]</option><option value="exp">eˣ on [0, 2]</option><option value="sqrt">√x on [0, 4]</option></select></div>
+      <div class="ctl"><label for="mat-integrals-rule">Rule</label><select id="mat-integrals-rule"><option value="L">Left rectangles</option><option value="R">Right rectangles</option><option value="M">Midpoint rectangles</option><option value="T">Trapezoids</option></select></div>
+      <div class="ctl"><label for="mat-integrals-n">Strips n <output></output></label><input type="range" id="mat-integrals-n" min="1" max="200" step="1" value="4"></div>
+    </div>
+    <canvas class="stage" id="mat-integrals-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Riemann sum<b data-r="s">-</b></div>
+      <div class="readout">Exact integral<b data-r="e">-</b></div>
+      <div class="readout">Error<b data-r="er">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-integrals-fn'),sr=$('#mat-integrals-rule'),sn=$('#mat-integrals-n'),cv=$('#mat-integrals-cv');
+const FN={sq:{f:x=>x*x,a:0,b:3,ex:9,t:'9'},sin:{f:Math.sin,a:0,b:Math.PI,ex:2,t:'2'},exp:{f:Math.exp,a:0,b:2,ex:Math.exp(2)-1,t:'e² − 1 = 6.3891'},sqrt:{f:Math.sqrt,a:0,b:4,ex:16/3,t:'16/3 = 5.3333'}};
+function draw(){const d=FN[sel.value],f=d.f,a=d.a,b=d.b,n=+sn.value,rule=sr.value,h=(b-a)/n;
+ let ymax=0;for(let i=0;i<=200;i++)ymax=Math.max(ymax,f(a+(b-a)*i/200));
+ const pad=(b-a)*0.06;
+ const P=mkP(cv,a-pad,b+pad,-0.1*ymax,1.15*ymax,260);
+ axes(P,nice((b-a)/5),nice(ymax/4),v=>Math.abs(v-Math.PI)<1e-6?'π':Math.abs(v-Math.PI/2)<1e-6?'π/2':+v.toFixed(2)+'',v=>+v.toFixed(2)+'');
+ const c=P.ctx;let sum=0;
+ c.lineWidth=1;c.strokeStyle=SUB();
+ for(let i=0;i<n;i++){const xl=a+i*h,xr=xl+h;let v,pts;
+  if(rule==='T'){const l=f(xl),r=f(xr);sum+=h*(l+r)/2;pts=[[xl,0],[xl,l],[xr,r],[xr,0]];}
+  else{v=rule==='L'?f(xl):rule==='R'?f(xr):f(xl+h/2);sum+=h*v;pts=[[xl,0],[xl,v],[xr,v],[xr,0]];}
+  fill(P,pts,SUB(),0.3);
+  if(n<=60){clip(P);c.beginPath();pts.forEach((p,k)=>k?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.stroke();c.restore();}}
+ fn(P,f,INK(),2.4,null,400,a,b);
+ txt(P,'n = '+n+(n>=100?'  (strips too thin to outline)':''),P.L+8,P.T+9);
+ TB.set(root,'[data-r=s]',sum.toFixed(5));TB.set(root,'[data-r=e]',d.t);TB.set(root,'[data-r=er]',(sum-d.ex>=0?'+':'')+(sum-d.ex).toFixed(5));
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Fundamental theorem: the area function A(t) has slope f(t)</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-integrals-ftcf">Function f</label><select id="mat-integrals-ftcf"><option value="sq">f(x) = x²</option><option value="lin">f(x) = 2x + 1</option><option value="cos">f(x) = cos x</option></select></div>
+      <div class="ctl"><label for="mat-integrals-t">Upper limit t <output></output></label><input type="range" id="mat-integrals-t" min="0" max="3" step="0.05" value="1.5"></div>
+    </div>
+    <canvas class="stage" id="mat-integrals-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">A(t) = ∫₀ᵗ f (numerical)<b data-r="a">-</b></div>
+      <div class="readout">F(t) − F(0) (exact)<b data-r="f">-</b></div>
+      <div class="readout">f(t)<b data-r="ft">-</b></div>
+      <div class="readout">[A(t+0.01) − A(t)] / 0.01<b data-r="sl">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-integrals-ftcf'),st=$('#mat-integrals-t'),cv=$('#mat-integrals-cv2');
+const FN={sq:{f:x=>x*x,F:x=>x*x*x/3,lo:-0.2,hi:9.5,max:3},lin:{f:x=>2*x+1,F:x=>x*x+x,lo:-0.5,hi:7.5,max:3},cos:{f:Math.cos,F:Math.sin,lo:-1.2,hi:1.2,max:Math.PI}};
+function draw(){const d=FN[sel.value];st.max=d.max;let t=Math.min(+st.value,d.max);st.value=t;
+ st.closest('.ctl').querySelector('output').textContent=t.toLocaleString('en-IN',{maximumFractionDigits:3});
+ const P=mkP(cv,-0.1,d.max+0.1,d.lo,d.hi,240);
+ axes(P,d.max>3.1?Math.PI/2:0.5,nice((d.hi-d.lo)/5),v=>Math.abs(v-Math.PI/2)<1e-6?'π/2':Math.abs(v-Math.PI)<1e-6?'π':+v.toFixed(2)+'',v=>+v.toFixed(2)+'');
+ const pts=[[0,0]];for(let i=0;i<=100;i++){const x=t*i/100;pts.push([x,d.f(x)]);}pts.push([t,0]);
+ fill(P,pts,SUB(),0.3);
+ fn(P,d.f,INK(),2.4,null,400,0,d.max);
+ const c=P.ctx;clip(P);c.strokeStyle=BAD();c.lineWidth=1.5;c.setLineDash([4,3]);c.beginPath();c.moveTo(P.X(t),P.Y(0));c.lineTo(P.X(t),P.Y(d.f(t)));c.stroke();c.setLineDash([]);c.restore();
+ dot(P,t,d.f(t),BAD(),5);
+ const A=(u)=>simpson(d.f,0,u,400);
+ TB.set(root,'[data-r=a]',A(t).toFixed(5));TB.set(root,'[data-r=f]',(d.F(t)-d.F(0)).toFixed(5));
+ TB.set(root,'[data-r=ft]',d.f(t).toFixed(4));TB.set(root,'[data-r=sl]',((A(t+0.01)-A(t))/0.01).toFixed(4));
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>A rocket's accelerometer records acceleration, and the flight computer integrates it to get velocity. Take an illustrative first-stage profile for an ISRO launch vehicle (not an actual flight record): a(t) = 10 + 0.1t m/s² for 0 ≤ t ≤ 60 s. Then v(60) = ∫₀⁶⁰ (10 + 0.1t)dt = [10t + 0.05t²]₀⁶⁰ = 600 + 180 = 780 m/s. Integrating again, the distance covered is ∫₀⁶⁰ (10t + 0.05t²)dt = [5t² + 0.05t³/3]₀⁶⁰ = 18000 + 3600 = 21600 m, that is 21.6 km. (Real vehicles also lose mass and fight gravity and drag, so the real acceleration is not this simple.)</p></div>
+  <div class="quiz"><p class="q">What is ∫₀^π sin x dx?</p><div class="opts"><button data-ok>2</button><button>0</button><button>1</button><button>π</button></div><p class="why" hidden>∫ sin x dx = −cos x, so the value is −cos π − (−cos 0) = 1 + 1 = 2. This is the area under one hump of the sine curve, and the Riemann sum above converges to it.</p></div>
+</article><div class="pager"><a href="mat-applderiv.html"><small>Previous</small>Applications of derivatives</a><a class="next" href="mat-area.html"><small>Next</small>Area under and between curves</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

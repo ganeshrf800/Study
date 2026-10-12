@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vector algebra - Class 12 Mathematics</title>
+<meta name="description" content="Vector algebra: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-vectors" data-title="Vector algebra">
+  <header><div class="tag">Vector Algebra</div><h3>Vectors: dot product and cross product</h3></header>
+  <p class="lead">A vector has a magnitude and a direction, and in three dimensions it is written with three components. The dot product turns two vectors into a number that measures how much they point the same way (and gives angles and projections). The cross product turns them into a new vector perpendicular to both, whose length is the area of the parallelogram they span.</p>
+  <ul class="keypoints">
+    <li>Vector a = a₁i + a₂j + a₃k has magnitude |a| = √(a₁² + a₂² + a₃²) and unit vector â = a/|a|. Its direction cosines are a₁/|a|, a₂/|a|, a₃/|a|.</li>
+    <li>Dot product a·b = |a||b| cos θ = a₁b₁ + a₂b₂ + a₃b₃ is a scalar. It is 0 exactly when the (non-zero) vectors are perpendicular; it is commutative.</li>
+    <li>Cross product a×b has magnitude |a||b| sin θ and direction given by the right-hand rule. It is anticommutative: b×a = −(a×b), and a×b = 0 for parallel vectors.</li>
+    <li>|a×b| is the area of the parallelogram on a and b; ½|a×b| is the area of the triangle. The scalar triple product a·(b×c) is the volume of the parallelepiped on a, b, c.</li>
+    <li>i×j = k, j×k = i, k×i = j, and i·i = j·j = k·k = 1, i·j = 0.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">cos θ = a·b / (|a||b|)<small>Angle between two vectors, 0 ≤ θ ≤ π</small></div>
+    <div class="eq">Scalar projection of a on b = a·b / |b|<small>Vector projection = (a·b / |b|²) b</small></div>
+    <div class="eq">a×b = |i j k; a₁ a₂ a₃; b₁ b₂ b₃|<small>= (a₂b₃ − a₃b₂)i − (a₁b₃ − a₃b₁)j + (a₁b₂ − a₂b₁)k</small></div>
+    <div class="eq">|a×b|² + (a·b)² = |a|²|b|²<small>Lagrange's identity; links sin θ and cos θ</small></div>
+    <div class="eq">[a b c] = a·(b×c) = |a₁ a₂ a₃; b₁ b₂ b₃; c₁ c₂ c₃|<small>Volume of the parallelepiped; 0 means a, b, c are coplanar</small></div>
+    <div class="eq">|a + b|² = |a|² + |b|² + 2 a·b<small>Triangle inequality: |a + b| ≤ |a| + |b|</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Two vectors in 3D: components, angle, projection and cross product</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-vectors-mode">Show</label><select id="mat-vectors-mode"><option value="dot">Dot product: projection of a on b</option><option value="cross">Cross product: parallelogram and a × b</option></select></div>
+      <div class="ctl"><label for="mat-vectors-view">Turn the view <output></output></label><input type="range" id="mat-vectors-view" min="-90" max="90" step="1" value="30" data-unit="°"></div>
+      <div class="ctl"><label for="mat-vectors-ax">a₁ (x of a) <output></output></label><input type="range" id="mat-vectors-ax" min="-5" max="5" step="1" value="3"></div>
+      <div class="ctl"><label for="mat-vectors-ay">a₂ (y of a) <output></output></label><input type="range" id="mat-vectors-ay" min="-5" max="5" step="1" value="2"></div>
+      <div class="ctl"><label for="mat-vectors-az">a₃ (z of a) <output></output></label><input type="range" id="mat-vectors-az" min="-5" max="5" step="1" value="1"></div>
+      <div class="ctl"><label for="mat-vectors-bx">b₁ (x of b) <output></output></label><input type="range" id="mat-vectors-bx" min="-5" max="5" step="1" value="1"></div>
+      <div class="ctl"><label for="mat-vectors-by">b₂ (y of b) <output></output></label><input type="range" id="mat-vectors-by" min="-5" max="5" step="1" value="3"></div>
+      <div class="ctl"><label for="mat-vectors-bz">b₃ (z of b) <output></output></label><input type="range" id="mat-vectors-bz" min="-5" max="5" step="1" value="2"></div>
+    </div>
+    <canvas class="stage" id="mat-vectors-cv" style="max-width:520px;margin-inline:auto"></canvas>
+    <p style="font-size:.85rem;color:var(--muted);margin:.4rem 0 0">Set a₃ = b₃ = 0 for a flat 2D picture. Blue is a, teal is b. In the cross mode the red arrow shows only the direction of a × b (drawn 4 units long); its true length is |a × b|.</p>
+    <div class="readouts">
+      <div class="readout">|a|, |b|<b data-r="mag" style="font-size:.9rem">-</b></div>
+      <div class="readout">a · b<b data-r="dot">-</b></div>
+      <div class="readout">Angle θ<b data-r="ang">-</b></div>
+      <div class="readout">Projection of a on b<b data-r="proj">-</b></div>
+      <div class="readout">a × b<b data-r="cr" style="font-size:.9rem">-</b></div>
+      <div class="readout">|a × b| = parallelogram area<b data-r="ar">-</b></div>
+      <div class="readout">Triangle area ½|a × b|<b data-r="tri">-</b></div>
+      <div class="readout">Relation<b data-r="rel" style="font-size:.85rem">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const sub3=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add3=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul3=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const dot3=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross3=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],nrm3=a=>Math.hypot(a[0],a[1],a[2]);
+function P3(p,phi,E){const c=Math.cos(phi),s=Math.sin(phi);const xp=p[0]*c-p[1]*s,yp=p[0]*s+p[1]*c;return [xp,p[2]*Math.cos(E)+yp*Math.sin(E)];}
+function fit3(pts,W,H,pad){let a=1e9,b=-1e9,c=1e9,d=-1e9;pts.forEach(p=>{a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);d=Math.max(d,p[1]);});
+ const w=Math.max(b-a,1e-6),h=Math.max(d-c,1e-6),k=Math.min((W-2*pad)/w,(H-2*pad)/h),cx=(a+b)/2,cy=(c+d)/2;
+ return {k:k,X:p=>W/2+(p[0]-cx)*k,Y:p=>H/2-(p[1]-cy)*k};}
+function seg3(ctx,A,B,col,w,dash){ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();ctx.setLineDash([]);}
+function arr3(ctx,A,B,col,w){seg3(ctx,A,B,col,w);const L=Math.hypot(B[0]-A[0],B[1]-A[1]);if(L<8)return;const an=Math.atan2(B[1]-A[1],B[0]-A[0]);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(B[0],B[1]);ctx.lineTo(B[0]-9*Math.cos(an-.4),B[1]-9*Math.sin(an-.4));ctx.lineTo(B[0]-9*Math.cos(an+.4),B[1]-9*Math.sin(an+.4));ctx.closePath();ctx.fill();}
+function lab3(ctx,s,x,y,col,W,H){ctx.font=FONT;ctx.fillStyle=col||INK();ctx.textBaseline='middle';const w=ctx.measureText(s).width;x=Math.min(Math.max(x,4),W-w-4);y=Math.min(Math.max(y,9),H-9);ctx.textAlign='left';ctx.fillText(s,x,y);}
+function triad(ctx,phi,E,W,H){const o=[30,H-30];[['x',[1,0,0]],['y',[0,1,0]],['z',[0,0,1]]].forEach(a=>{const p=P3(a[1],phi,E);const B=[o[0]+p[0]*22,o[1]-p[1]*22];seg3(ctx,o,B,MUT(),1.5);lab3(ctx,a[0],B[0]+3,B[1]-2,MUT(),W,H);});}
+
+const ids=['ax','ay','az','bx','by','bz'].map(k=>$('#mat-vectors-'+k)),view=$('#mat-vectors-view'),mode=$('#mat-vectors-mode'),cv=$('#mat-vectors-cv');
+function draw(){const v=ids.map(s=>+s.value),a=v.slice(0,3),b=v.slice(3),phi=+view.value*Math.PI/180,E=22*Math.PI/180;
+ const T=TB.canvas(cv,Math.min(340,Math.max(280,(cv.clientWidth||400)*0.8))),ctx=T.ctx,W=T.w,H=T.h;
+ const corners=[];[-5.5,5.5].forEach(x=>[-5.5,5.5].forEach(y=>[-5.5,5.5].forEach(z=>corners.push(P3([x,y,z],phi,E)))));
+ const f=fit3(corners,W,H,16),S=p=>{const q=P3(p,phi,E);return [f.X(q),f.Y(q)];};
+ const fl=[[-5.5,-5.5,0],[5.5,-5.5,0],[5.5,5.5,0],[-5.5,5.5,0]].map(S);
+ ctx.strokeStyle=LN();ctx.lineWidth=1;ctx.beginPath();fl.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.stroke();
+ const O=S([0,0,0]);
+ [['x',[5.5,0,0]],['y',[0,5.5,0]],['z',[0,0,5.5]]].forEach(q=>{const e=S(q[1]),m=S(mul3(q[1],-1));seg3(ctx,m,e,MUT(),1.2,[4,3]);lab3(ctx,q[0],e[0]+4,e[1]-3,MUT(),W,H);});
+ const na=nrm3(a),nb=nrm3(b),d=dot3(a,b),cr=cross3(a,b),ncr=nrm3(cr);
+ const th=(na>0&&nb>0)?Math.acos(Math.max(-1,Math.min(1,d/(na*nb)))):NaN;
+ if(mode.value=='cross'){const pg=[[0,0,0],a,add3(a,b),b].map(S);ctx.globalAlpha=.28;ctx.fillStyle=SUB();ctx.beginPath();pg.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=SUB();ctx.lineWidth=1.5;ctx.stroke();
+  if(ncr>1e-9){const n4=mul3(cr,4/ncr);arr3(ctx,O,S(n4),BAD(),3);const t=S(n4);lab3(ctx,'a × b',t[0]+5,t[1]-4,BAD(),W,H);}}
+ else if(nb>0){const p=mul3(b,d/(nb*nb)),Sp=S(p),Sa=S(a);seg3(ctx,Sa,Sp,MUT(),1.5,[4,3]);arr3(ctx,O,Sp,BAD(),4.5);lab3(ctx,'projection',Sp[0]+5,Sp[1]+12,BAD(),W,H);}
+ if(na>0){const t=S(a);arr3(ctx,O,t,PHY(),2.5);lab3(ctx,'a',t[0]+5,t[1]-4,PHY(),W,H);}
+ if(nb>0){const t=S(b);arr3(ctx,O,t,GOOD(),2.5);lab3(ctx,'b',t[0]+5,t[1]-4,GOOD(),W,H);}
+ ctx.fillStyle=INK();ctx.beginPath();ctx.arc(O[0],O[1],3,0,7);ctx.fill();
+ triad(ctx,phi,E,W,H);
+ R('mag',F(na,2)+', '+F(nb,2));R('dot',F(d,2));
+ R('ang',isNaN(th)?'undefined':F(th*180/Math.PI,1)+'°');
+ R('proj',nb>0?F(d/nb,3):'undefined');
+ R('cr',fv(cr,2));R('ar',F(ncr,3));R('tri',F(ncr/2,3));
+ R('rel',na==0||nb==0?'A zero vector':Math.abs(d)<1e-9?'Perpendicular':ncr<1e-9?'Parallel':'Oblique');}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>A drone's flight controller adds vectors all the time. Suppose its velocity through the air is v = (8, 6, 2) m/s (east, north, up) and the wind is w = (−3, 4, 0) m/s. Its velocity over the ground is v + w = (5, 10, 2) m/s, with speed √(25 + 100 + 4) = √129 ≈ 11.36 m/s. It climbs at sin⁻¹(2/11.36) ≈ 10.1° and its ground track is tan⁻¹(5/10) ≈ 26.6° east of north.</p>
+  <p>The dot product shows something neat here: w·v = (−3)(8) + (4)(6) + 0·2 = 0, so the wind is exactly perpendicular to the air-velocity vector and neither helps nor hinders the drone along its heading. The cross product v × w = (6·0 − 2·4, 2·(−3) − 8·0, 8·4 − 6·(−3)) = (−8, −6, 50) points almost straight up, with |v × w| = √(64 + 36 + 2500) ≈ 51.0 the area of the parallelogram the two vectors span.</p></div>
+
+  <div class="quiz"><p class="q">For what value of λ are the vectors i + 2j + 3k and λi − j + k perpendicular?</p><div class="opts"><button data-ok>λ = −1</button><button>λ = 1</button><button>λ = 2</button><button>λ = −2</button></div><p class="why" hidden>Perpendicular means a·b = 0: (1)(λ) + (2)(−1) + (3)(1) = λ − 2 + 3 = λ + 1 = 0, so λ = −1.</p></div>
+</article><div class="pager"><a href="mat-determinants.html"><small>Previous</small>Determinants and inverse</a><a class="next" href="mat-threed.html"><small>Next</small>Three-dimensional geometry</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

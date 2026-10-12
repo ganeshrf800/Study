@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Determinants and inverse - Class 12 Mathematics</title>
+<meta name="description" content="Determinants and inverse: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-determinants" data-title="Determinants and inverse">
+  <header><div class="tag">Determinants and Matrices</div><h3>Determinants, inverse and solving linear equations</h3></header>
+  <p class="lead">The determinant of a square matrix is a single number that says how much the matrix scales area (2 × 2) or volume (3 × 3), and whether it flips orientation. If that number is not zero the matrix can be undone: the inverse A⁻¹ exists, and a system AX = B has the unique solution X = A⁻¹B, which is the same answer that Cramer's rule gives with determinants.</p>
+  <ul class="keypoints">
+    <li>|A| = 0 means the matrix squashes the plane or space onto a lower dimension: it is singular and has no inverse. |A| ≠ 0 means non-singular.</li>
+    <li>Expanding along any row or column gives the same value; a row of zeros, or two equal or proportional rows, makes |A| = 0. Swapping two rows changes the sign.</li>
+    <li>Minor M<sub>ij</sub> is the determinant left after deleting row i and column j; cofactor C<sub>ij</sub> = (−1)<sup>i+j</sup>M<sub>ij</sub>; adj A is the transpose of the cofactor matrix.</li>
+    <li>For AX = B with |A| ≠ 0 there is exactly one solution. If |A| = 0 and (adj A)B ≠ 0 the system is inconsistent; if |A| = 0 and (adj A)B = O it has either infinitely many solutions or none.</li>
+    <li>The area of a triangle with vertices (x₁, y₁), (x₂, y₂), (x₃, y₃) is ½ times the absolute value of a 3 × 3 determinant; three points are collinear exactly when it is 0.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">|a b; c d| = ad − bc<small>2 × 2 determinant; it is the signed area of the parallelogram on the columns</small></div>
+    <div class="eq">A⁻¹ = adj A / |A|, A·adj A = |A|·I<small>For 2 × 2: adj A = [d −b; −c a]</small></div>
+    <div class="eq">|AB| = |A||B|, |kA| = kⁿ|A|, |adj A| = |A|<sup>n−1</sup><small>A is n × n. Also (AB)⁻¹ = B⁻¹A⁻¹ and |A⁻¹| = 1/|A|</small></div>
+    <div class="eq">x = D₁/D, y = D₂/D, z = D₃/D<small>Cramer's rule; D = |A|, and D<sub>i</sub> replaces column i of A by the constants</small></div>
+    <div class="eq">X = A⁻¹B<small>Matrix method; needs |A| ≠ 0</small></div>
+    <div class="eq">Area = ½ |x₁(y₂−y₃) + x₂(y₃−y₁) + x₃(y₁−y₂)|<small>Triangle from vertices; e.g. (2,3), (5,7), (8,5) gives 9 square units</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Determinant, adjoint and inverse of your matrix</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-determinants-size">Order</label><select id="mat-determinants-size"><option value="2">2 × 2</option><option value="3">3 × 3</option></select></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:center;margin-bottom:.6rem">
+      <div><b>A</b><div id="mat-determinants-ga" style="display:grid;gap:.25rem;margin-top:.2rem"></div></div>
+      <div id="mat-determinants-out" style="min-width:0;display:flex;flex-wrap:wrap;gap:.8rem 1.4rem;align-items:center"></div>
+    </div>
+    <canvas class="stage" id="mat-determinants-cv" style="max-width:420px;margin-inline:auto"></canvas>
+    <div class="readouts">
+      <div class="readout">|A| (determinant)<b data-r="det">-</b></div>
+      <div class="readout">Area / volume scale |A|<b data-r="sc">-</b></div>
+      <div class="readout">Inverse<b data-r="inv" style="font-size:.9rem">-</b></div>
+      <div class="readout">A · A⁻¹ = I ?<b data-r="chk" style="font-size:.9rem">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const sz=$('#mat-determinants-size'),gA=$('#mat-determinants-ga'),out=$('#mat-determinants-out'),cv=$('#mat-determinants-cv');
+const def={2:[[2,3],[1,4]],3:[[1,2,3],[0,1,4],[5,6,0]]};const cells=[];
+for(let i=0;i<3;i++){cells[i]=[];for(let j=0;j<3;j++){const e=document.createElement('input');e.type='number';e.step='any';e.id='mat-determinants-a'+i+j;e.style.cssText=inpStyle;e.style.gridRow=i+1;e.style.gridColumn=j+1;e.setAttribute('aria-label','Entry row '+(i+1)+' column '+(j+1));gA.appendChild(e);cells[i][j]=e;}}
+function setSize(n){gA.style.gridTemplateColumns='repeat('+n+',3.4rem)';for(let i=0;i<3;i++)for(let j=0;j<3;j++){cells[i][j].style.display=(i<n&&j<n)?'':'none';if(i<n&&j<n)cells[i][j].value=def[n][i][j];}}
+sz.addEventListener('change',()=>setSize(+sz.value));setSize(2);
+const det3=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+const det=A=>A.length==2?A[0][0]*A[1][1]-A[0][1]*A[1][0]:det3(A);
+function adj(A){if(A.length==2)return [[A[1][1],-A[0][1]],[-A[1][0],A[0][0]]];
+ const C=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)for(let j=0;j<3;j++){const r=[0,1,2].filter(x=>x!=i),s=[0,1,2].filter(x=>x!=j);C[i][j]=((i+j)%2?-1:1)*(A[r[0]][s[0]]*A[r[1]][s[1]]-A[r[0]][s[1]]*A[r[1]][s[0]]);}
+ return C[0].map((_,i)=>C.map(r=>r[i]));}
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+function frac(n,d){if(d<0){n=-n;d=-d;}const g=gcd(n,d)||1;n/=g;d/=g;return d==1?String(n===0?0:n):n+'/'+d;}
+const mul=(A,B)=>A.map((r,i)=>r.map((_,j)=>r.reduce((s,_2,k)=>s+A[i][k]*B[k][j],0)));
+function draw(){const n=+sz.value,A=[];for(let i=0;i<n;i++){A[i]=[];for(let j=0;j<n;j++)A[i][j]=num(cells[i][j]);}
+ const D=det(A),Aj=adj(A),ints=A.every(r=>r.every(v=>Math.abs(v-Math.round(v))<1e-9));
+ R('det',F(D));R('sc',F(Math.abs(D)));
+ let html='<div><div style="color:var(--muted);font-size:.82rem">adj A</div>'+gridHTML(Aj)+'</div>';
+ if(Math.abs(D)<1e-9){html+='<div style="max-width:16rem"><b style="color:var(--bad)">|A| = 0: A is singular, so A⁻¹ does not exist.</b></div>';R('inv','None');R('chk','-');}
+ else{const inv=Aj.map(r=>r.map(v=>v/D));
+  const invF=ints?Aj.map(r=>r.map(v=>frac(Math.round(v),Math.round(D)))):null;
+  html+='<div><div style="color:var(--muted);font-size:.82rem">A⁻¹ = adj A / '+F(D)+'</div>'+(ints?gridHTML(invF,v=>v):gridHTML(inv,v=>F(v,4)))+'</div>';
+  const P=mul(A,inv),ok=P.every((r,i)=>r.every((v,j)=>Math.abs(v-(i==j?1:0))<1e-9));
+  html+='<div><div style="color:var(--muted);font-size:.82rem">A · A⁻¹</div>'+gridHTML(P.map(r=>r.map(v=>Math.abs(v)<1e-9?0:Math.round(v*1e6)/1e6)))+'</div>';
+  R('inv','Exists');R('chk',ok?'Yes':'No');}
+ out.innerHTML=html;
+ if(n==2){
+  const u=[A[0][0],A[1][0]],v=[A[0][1],A[1][1]],w=[u[0]+v[0],u[1]+v[1]];
+  const m=Math.max(2,Math.abs(u[0]),Math.abs(u[1]),Math.abs(v[0]),Math.abs(v[1]),Math.abs(w[0]),Math.abs(w[1]))*1.15;
+  const Q=mkP(cv,-m,m,-m,m,'eq');const st=nice(m/3);axes(Q,st,st);
+  poly(Q,[[0,0],[1,0],[1,1],[0,1]],MUT(),1.5,[5,4]);
+  const col=D<0?BAD():SUB();fill(Q,[[0,0],u,w,v],col,0.3);poly(Q,[[0,0],u,w,v],col,2);
+  arrow2(Q,0,0,u[0],u[1],PHY(),2.5);arrow2(Q,0,0,v[0],v[1],GOOD(),2.5);
+  txt(Q,'columns of A; dashed = unit square',Q.L+6,Q.T+10,MUT());
+  txt(Q,'area = |A| = '+F(Math.abs(D)),Q.L+6,Q.T+26,INK());}
+ else{const T=TB.canvas(cv,96);const c=T.ctx;c.font=FONT;c.fillStyle=INK();c.textAlign='left';c.textBaseline='middle';
+  c.fillText('3 × 3: |A| is the signed volume of the box on the',12,26);c.fillText('three columns. Here volume scale = '+F(Math.abs(D)),12,46);
+  c.fillStyle=MUT();c.fillText(D<0?'Negative sign: orientation is reversed.':Math.abs(D)<1e-9?'Zero: the box is flat, so A is singular.':'Positive sign: orientation is kept.',12,70);}}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Solve three equations: Cramer's rule and the matrix method</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-determinants-pre">System</label><select id="mat-determinants-pre"><option value="1,1,1,6;1,2,1,8;1,1,3,12">CT scan: unique solution</option><option value="1,1,1,1;2,2,2,3;1,-1,0,0">Inconsistent (parallel planes)</option><option value="1,1,1,3;2,2,2,6;1,-1,0,0">Infinitely many solutions</option><option value="2,-1,1,3;1,1,1,6;1,2,-1,2">Another unique system</option></select></div>
+    </div>
+    <div id="mat-determinants-sys" style="display:grid;gap:.4rem;margin-bottom:.6rem"></div>
+    <p id="mat-determinants-say" style="font-family:var(--f-mono);font-size:.88rem;overflow-wrap:anywhere"></p>
+    <div class="readouts">
+      <div class="readout">D = |A|<b data-r="D">-</b></div>
+      <div class="readout">D₁ (x column replaced)<b data-r="D1">-</b></div>
+      <div class="readout">D₂ (y column replaced)<b data-r="D2">-</b></div>
+      <div class="readout">D₃ (z column replaced)<b data-r="D3">-</b></div>
+      <div class="readout">Solution (x, y, z)<b data-r="sol" style="font-size:.9rem">-</b></div>
+      <div class="readout">Verdict<b data-r="ver" style="font-size:.9rem">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+const R=(k,v)=>{const e=root.querySelector('[data-r="'+k+'"]');if(e)e.textContent=v};
+const F=(x,d)=>{if(!isFinite(x))return '-';let v=+(+x).toFixed(d==null?3:d);if(v===0)v=0;return String(v)};
+const num=e=>{const v=parseFloat(e.value);return isFinite(v)?v:0};
+const gridHTML=(M,fmt)=>'<div style="display:inline-grid;grid-template-columns:repeat('+M[0].length+',minmax(2.4rem,auto));gap:.2rem .8rem;padding:.3rem .6rem;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;font-family:var(--f-mono);font-size:.95rem;text-align:right;vertical-align:middle">'+M.map(r=>r.map(v=>'<span>'+(fmt?fmt(v):F(v))+'</span>').join('')).join('')+'</div>';
+function poly(P,pts,col,w,dash,close){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));if(close!==false)c.closePath();c.stroke();c.setLineDash([]);c.restore();}
+function arrow2(P,x0,y0,x1,y1,col,w){const c=P.ctx;clip(P);const X0=P.X(x0),Y0=P.Y(y0),X1=P.X(x1),Y1=P.Y(y1);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.setLineDash([]);c.beginPath();c.moveTo(X0,Y0);c.lineTo(X1,Y1);c.stroke();const L=Math.hypot(X1-X0,Y1-Y0);if(L>8){const an=Math.atan2(Y1-Y0,X1-X0);c.beginPath();c.moveTo(X1,Y1);c.lineTo(X1-9*Math.cos(an-.4),Y1-9*Math.sin(an-.4));c.lineTo(X1-9*Math.cos(an+.4),Y1-9*Math.sin(an+.4));c.closePath();c.fill();}c.restore();}
+const inpStyle='width:3.4rem;font:inherit;padding:.25rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-align:center';
+const SUBS=['₀','₁','₂','₃'];
+const fv=(a,d)=>'('+a.map(x=>F(x,d==null?2:d)).join(', ')+')';
+
+const pre=$('#mat-determinants-pre'),sys=$('#mat-determinants-sys'),say=$('#mat-determinants-say');const c=[];
+const vn=['x','y','z'];
+for(let i=0;i<3;i++){c[i]=[];const row=document.createElement('div');row.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:.3rem';
+ for(let j=0;j<4;j++){const e=document.createElement('input');e.type='number';e.step='any';e.id='mat-determinants-c'+i+j;e.style.cssText=inpStyle;e.setAttribute('aria-label','Equation '+(i+1)+(j<3?' coefficient of '+vn[j]:' constant'));row.appendChild(e);c[i][j]=e;
+  const s=document.createElement('span');s.textContent=j<2?vn[j]+' +':j==2?'z =':'';s.style.marginRight='.3rem';row.appendChild(s);}
+ sys.appendChild(row);}
+function load(){pre.value.split(';').forEach((r,i)=>r.split(',').forEach((v,j)=>c[i][j].value=v));}
+pre.addEventListener('change',load);load();
+const det3=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+function adj(A){const C=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)for(let j=0;j<3;j++){const r=[0,1,2].filter(x=>x!=i),s=[0,1,2].filter(x=>x!=j);C[i][j]=((i+j)%2?-1:1)*(A[r[0]][s[0]]*A[r[1]][s[1]]-A[r[0]][s[1]]*A[r[1]][s[0]]);}return C[0].map((_,i)=>C.map(r=>r[i]));}
+function rank(M){M=M.map(r=>r.slice());let rk=0;const nr=M.length,nc=M[0].length;for(let col=0;col<nc&&rk<nr;col++){let p=rk;for(let i=rk+1;i<nr;i++)if(Math.abs(M[i][col])>Math.abs(M[p][col]))p=i;if(Math.abs(M[p][col])<1e-9)continue;[M[rk],M[p]]=[M[p],M[rk]];for(let i=rk+1;i<nr;i++){const f=M[i][col]/M[rk][col];for(let j=col;j<nc;j++)M[i][j]-=f*M[rk][j];}rk++;}return rk;}
+function draw(){const A=[0,1,2].map(i=>[0,1,2].map(j=>num(c[i][j]))),B=[0,1,2].map(i=>num(c[i][3]));
+ const D=det3(A),Ds=[0,1,2].map(k=>det3(A.map((r,i)=>r.map((v,j)=>j==k?B[i]:v))));
+ R('D',F(D));[1,2,3].forEach((k,i)=>R('D'+k,F(Ds[i])));
+ if(Math.abs(D)>1e-9){const X=Ds.map(v=>v/D),res=A.map((r,i)=>r[0]*X[0]+r[1]*X[1]+r[2]*X[2]-B[i]),ok=res.every(v=>Math.abs(v)<1e-8);
+  R('sol',fv(X,3));R('ver','Unique solution');
+  const ad=adj(A),Xm=ad.map(r=>(r[0]*B[0]+r[1]*B[1]+r[2]*B[2])/D);
+  say.innerHTML='Cramer: x = D₁/D = '+F(Ds[0])+'/'+F(D)+' = '+F(X[0])+', y = D₂/D = '+F(Ds[1])+'/'+F(D)+' = '+F(X[1])+', z = D₃/D = '+F(Ds[2])+'/'+F(D)+' = '+F(X[2])+'.<br>Matrix method: X = (adj A)B / |A| = '+fv(Xm,3)+', the same answer. '+(ok?'It satisfies all three equations.':'');}
+ else{const ab=adj(A).map(r=>r[0]*B[0]+r[1]*B[1]+r[2]*B[2]),nz=ab.some(v=>Math.abs(v)>1e-9),rA=rank(A),rAB=rank(A.map((r,i)=>r.concat([B[i]])));
+  R('sol','None unique');R('ver',rA==rAB?'Infinitely many':'No solution');
+  say.innerHTML='|A| = 0, so there is no unique solution and A⁻¹ does not exist. (adj A)B = '+fv(ab,3)+(nz?', which is not zero, so the system is inconsistent.':', which is zero, so the system is either consistent with infinitely many solutions or inconsistent.')+'<br>Rank check: rank A = '+rA+', rank [A|B] = '+rAB+(rA==rAB?', equal, so it is consistent with '+(3-rA)+' free parameter(s).':', unequal, so it has no solution.');}}
+TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>A CT scanner sends X-ray beams through the body along different paths and measures how much each beam is weakened. For a toy slice with three cells of unknown attenuation x, y, z, three beams give: x + y + z = 6, x + 2y + z = 8 and x + y + 3z = 12 (the coefficients are path lengths through each cell). Here |A| = 1(6 − 1) − 1(3 − 1) + 1(1 − 2) = 2. Replacing a column by the constants gives D₁ = 2, D₂ = 4, D₃ = 6, so x = 1, y = 2, z = 3. Check beam 3: 1 + 2 + 9 = 12.</p>
+  <p>Real scanners solve millions of such equations at once, and when two beams repeat the same path (|A| = 0) the data cannot fix the cells uniquely, which is why scanners use many angles. For the 2 × 2 matrix [2 3; 1 4] in the first widget, |A| = 8 − 3 = 5 and A⁻¹ = ⅕ [4 −3; −1 2].</p></div>
+
+  <div class="quiz"><p class="q">A is a 3 × 3 matrix with |A| = 4. What is |adj A|?</p><div class="opts"><button data-ok>16</button><button>4</button><button>64</button><button>12</button></div><p class="why" hidden>For an n × n matrix |adj A| = |A|<sup>n−1</sup>. With n = 3 that is 4² = 16. (By contrast |2A| = 2³ × 4 = 32.)</p></div>
+</article><div class="pager"><a href="mat-matrices.html"><small>Previous</small>Matrices and transformations</a><a class="next" href="mat-vectors.html"><small>Next</small>Vector algebra</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

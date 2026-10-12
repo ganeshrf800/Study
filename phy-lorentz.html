@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Moving charge in a magnetic field - Class 12 Physics</title>
+<meta name="description" content="Moving charge in a magnetic field: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-lorentz" data-title="Moving charge in a magnetic field">
+  <header><div class="tag">Moving Charges and Magnetism</div><h3>Moving charge in a magnetic field: Lorentz force and cyclotron</h3></header>
+  <p class="lead">A magnetic field pushes a moving charge sideways, never forward or backward. Because the force is always perpendicular to the velocity, it changes the direction of motion but not the speed, so the charge travels in a circle or a helix.</p>
+  <ul class="keypoints">
+    <li>The magnetic force is F = qvB sinθ, directed along v × B (reverse for a negative charge). It is zero if v is parallel to B.</li>
+    <li>Magnetic force does no work: kinetic energy and speed stay constant.</li>
+    <li>If v ⟂ B the path is a circle of radius r = mv/(qB). If v is at an angle θ to B the path is a helix.</li>
+    <li>The time period T = 2πm/(qB) does not depend on speed or radius. This is the principle of the cyclotron.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">F = q(E + v × B)<small>Lorentz force (electric part + magnetic part)</small></div>
+    <div class="eq">F = q v B sinθ<small>magnitude of the magnetic force</small></div>
+    <div class="eq">r = m v sinθ / (q B)<small>radius of the circular part; r = mv/(qB) when θ = 90°</small></div>
+    <div class="eq">T = 2π m / (q B)&emsp;f = qB / (2π m)<small>period and cyclotron frequency, independent of v</small></div>
+    <div class="eq">p = v cosθ × T<small>pitch of the helix (advance along B per turn)</small></div>
+    <div class="eq">K<sub>max</sub> = q²B²R² / (2m)<small>energy gained in a cyclotron of dee radius R</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: charge in a uniform field</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-lorentz-sel">Particle</label><select id="phy-lorentz-sel"><option value="e">Electron</option><option value="p">Proton</option><option value="a">Alpha particle</option></select></div>
+      <div class="ctl"><label for="phy-lorentz-b">Magnetic field B <output></output></label><input type="range" id="phy-lorentz-b" min="1" max="2000" step="1" value="5" data-unit=" mT"></div>
+      <div class="ctl"><label for="phy-lorentz-v">Speed v <output></output></label><input type="range" id="phy-lorentz-v" min="0.1" max="30" step="0.1" value="5" data-unit=" ×10⁶ m/s"></div>
+      <div class="ctl"><label for="phy-lorentz-th">Angle θ between v and B <output></output></label><input type="range" id="phy-lorentz-th" min="10" max="90" step="1" value="60" data-unit="°"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Radius r<b data-r="r">-</b></div>
+      <div class="readout">Period T<b data-r="T">-</b></div>
+      <div class="readout">Cyclotron frequency<b data-r="f">-</b></div>
+      <div class="readout">Pitch p<b data-r="p">-</b></div>
+      <div class="readout">Sense (B into page)<b data-r="dir">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+    const P={e:[9.109e-31,-1.602e-19],p:[1.6726e-27,1.602e-19],a:[6.645e-27,3.204e-19]};
+    function len(m){const a=Math.abs(m);if(a>=1)return TB.fmt(m,2)+' m';if(a>=1e-2)return TB.fmt(m*100,2)+' cm';if(a>=1e-3)return TB.fmt(m*1e3,2)+' mm';return TB.fmt(m*1e6,2)+' µm';}
+    function tm(t){if(t<1e-6)return TB.fmt(t*1e9,2)+' ns';if(t<1e-3)return TB.fmt(t*1e6,2)+' µs';return TB.fmt(t*1e3,2)+' ms';}
+    function fq(f){if(f>=1e9)return TB.fmt(f/1e9,2)+' GHz';if(f>=1e6)return TB.fmt(f/1e6,2)+' MHz';return TB.fmt(f/1e3,2)+' kHz';}
+    function head(ctx,x,y,dx,dy,col){const L=Math.hypot(dx,dy);dx/=L;dy/=L;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+dx*7,y+dy*7);ctx.lineTo(x-dx*4-dy*5,y-dy*4+dx*5);ctx.lineTo(x-dx*4+dy*5,y-dy*4-dx*5);ctx.closePath();ctx.fill();}
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),250);
+      const [m,q]=P[$('select').value];const B=+$('#phy-lorentz-b').value*1e-3,v=+$('#phy-lorentz-v').value*1e6,th=+$('#phy-lorentz-th').value*Math.PI/180;
+      const qa=Math.abs(q),r=m*v*Math.sin(th)/(qa*B),T=2*Math.PI*m/(qa*B),pitch=v*Math.cos(th)*T;
+      TB.set(root,'[data-r=r]',len(r));TB.set(root,'[data-r=T]',tm(T));TB.set(root,'[data-r=f]',fq(1/T));TB.set(root,'[data-r=p]',len(pitch));
+      const ccw=q>0;TB.set(root,'[data-r=dir]',ccw?'anticlockwise':'clockwise');
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),acc=TB.css('--maths');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';
+      const cy=h/2+8,cx=Math.min(90,w*0.24),R0=46;
+      ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('Top view, B into page',8,14);
+      ctx.strokeStyle=mut;ctx.lineWidth=1;
+      for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const x=cx+i*(R0+14)*0.9,y=cy+j*(R0+14)*0.9;ctx.beginPath();ctx.moveTo(x-3,y-3);ctx.lineTo(x+3,y+3);ctx.moveTo(x+3,y-3);ctx.lineTo(x-3,y+3);ctx.stroke();}
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,R0,0,2*Math.PI);ctx.stroke();
+      const ph=Math.PI/4,px=cx+R0*Math.cos(ph),py=cy-R0*Math.sin(ph);let tx=-Math.sin(ph),ty=-Math.cos(ph);if(!ccw){tx=-tx;ty=-ty;}
+      head(ctx,px,py,tx,ty,acc);
+      ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('r',cx,cy);
+      const x0=cx+R0+44,avail=w-12-x0,cot=Math.cos(th)/Math.sin(th);
+      let A=40;if(cot>0.02)A=Math.min(40,avail/(3*2*Math.PI*cot));const p=2*Math.PI*A*cot;
+      ctx.textAlign='left';ctx.fillStyle=ink;ctx.fillText('Side view (B →, not to scale)',x0-20,14);
+      ctx.strokeStyle=mut;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x0-20,cy);ctx.lineTo(w-8,cy);ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();
+      if(p<1){ctx.moveTo(x0,cy-A);ctx.lineTo(x0,cy+A);}
+      else{for(let a=0;a<=6*Math.PI+1e-6;a+=0.05){const x=x0+p*a/(2*Math.PI),y=cy-A*Math.sin(a);a===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}}
+      ctx.stroke();
+      if(p>=1){const ex=x0+3*p;head(ctx,Math.min(ex,w-14),cy,1,0,acc);}
+      if(p>=44){const yy=cy+A+16;ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,yy);ctx.lineTo(x0+p,yy);ctx.stroke();ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('pitch p',x0+p/2,yy+12);}
+      if(th>=89.5){ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('circle seen edge-on',x0+8,cy+A+14);}
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>A cyclotron of the kind run at the Variable Energy Cyclotron Centre (VECC), Kolkata, keeps protons circling between two D-shaped electrodes. Take B = 1.5 T. The frequency is f = qB/(2πm) = (1.602×10⁻¹⁹ × 1.5)/(2π × 1.673×10⁻²⁷) ≈ 2.29×10⁷ Hz = 22.9 MHz, so a 22.9 MHz alternating voltage across the gap pushes the proton at every crossing. With dee radius R = 0.5 m the final speed is v = qBR/m ≈ 7.2×10⁷ m/s, giving K = ½mv² ≈ 4.3×10⁻¹² J ≈ 27 MeV.</p>
+  <p>The same relation sets the size of the LHC at CERN: its 7 TeV protons are bent by superconducting dipoles of about 8.3 T on a radius of roughly 2.8 km, using p ≈ 0.3 B r (p in GeV/c, B in T, r in m). Charged particles from the Sun spiral along Earth's field lines in the same way, which is why satellite designers account for the radiation belts.</p></div>
+  <div class="quiz"><p class="q">A proton and an electron enter the same uniform magnetic field with the same speed, perpendicular to it. Which statement is correct?</p><div class="opts"><button data-ok>The proton moves on a larger circle, about 1836 times the electron's radius.</button><button>Both move on circles of equal radius but in opposite senses.</button><button>The electron moves on a larger circle because it is lighter.</button><button>The proton gains kinetic energy as it circles.</button></div><p class="why" hidden>r = mv/(qB) and the charges have equal magnitude, so r is proportional to mass. The proton is about 1836 times heavier. The magnetic force does no work, so kinetic energy is unchanged for both.</p></div>
+</article><div class="pager"><a href="phy-bfield-currents.html"><small>Previous</small>Magnetic field due to currents</a><a class="next" href="phy-induction.html"><small>Next</small>Electromagnetic induction</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

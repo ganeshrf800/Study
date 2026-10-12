@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Amines and diazonium salts - Class 12 Chemistry</title>
+<meta name="description" content="Amines and diazonium salts: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-amines" data-title="Amines and diazonium salts">
+  <header><div class="tag">Amines (NCERT Chemistry Part II, Ch 9)</div><h3>Basicity, the Hinsberg test, diazonium salts and azo dyes</h3></header>
+  <p class="lead">Amines are derivatives of ammonia in which hydrogens are replaced by alkyl or aryl groups. The lone pair on nitrogen makes them bases and nucleophiles; how available that lone pair is decides the basicity order. Aromatic primary amines also give diazonium salts, the gateway to a huge family of substituted benzenes and to azo dyes.</p>
+  <ul class="keypoints">
+    <li>Aliphatic amines are stronger bases than ammonia because alkyl groups push electron density onto N (+I effect). In water, solvation of the ammonium ion also matters, so the order is 2° &gt; 3° &gt; 1° &gt; NH<sub>3</sub> for ethyl and 2° &gt; 1° &gt; 3° &gt; NH<sub>3</sub> for methyl amines.</li>
+    <li>Aniline is a much weaker base (pK<sub>b</sub> = 9.38) than ammonia (4.75): its lone pair is delocalised into the ring. Electron-donating groups (–CH<sub>3</sub>, –OCH<sub>3</sub>) raise basicity, electron-withdrawing groups (–NO<sub>2</sub>, –Cl) lower it.</li>
+    <li>Hinsberg test with benzenesulphonyl chloride: 1° amines give a sulphonamide soluble in NaOH, 2° give a sulphonamide insoluble in NaOH, 3° do not react.</li>
+    <li>Carbylamine test: only 1° amines (aliphatic or aromatic) on heating with CHCl<sub>3</sub> and alcoholic KOH give a foul-smelling isocyanide.</li>
+    <li>Arenediazonium salts, made from aniline with NaNO<sub>2</sub>/HCl at 273-278 K, are stable only in the cold. They react by replacing N<sub>2</sub> (Sandmeyer, Balz-Schiemann, hydrolysis) or by coupling with phenols and anilines to form coloured azo compounds, Ar–N=N–Ar'.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">RNH<sub>2</sub> + H<sub>2</sub>O ⇌ RNH<sub>3</sub><sup>+</sup> + OH⁻<small>K<sub>b</sub> = [RNH<sub>3</sub><sup>+</sup>][OH⁻]/[RNH<sub>2</sub>]; pK<sub>b</sub> = −log K<sub>b</sub></small></div>
+    <div class="eq">pK<sub>b</sub> + pK<sub>a</sub>(conjugate acid) = 14<small>Smaller pK<sub>b</sub> means stronger base (at 298 K)</small></div>
+    <div class="eq">RCONH<sub>2</sub> + Br<sub>2</sub> + 4NaOH → RNH<sub>2</sub> + Na<sub>2</sub>CO<sub>3</sub> + 2NaBr + 2H<sub>2</sub>O<small>Hoffmann bromamide: amine has one carbon fewer</small></div>
+    <div class="eq">Phthalimide + KOH, R–X, then NaOH → RNH<sub>2</sub><small>Gabriel synthesis: pure 1° amines, not from aryl halides</small></div>
+    <div class="eq">ArNO<sub>2</sub> + 6[H] (Sn/HCl or H<sub>2</sub>/Pd) → ArNH<sub>2</sub> + 2H<sub>2</sub>O<small>Reduction of nitro compounds</small></div>
+    <div class="eq">ArNH<sub>2</sub> + NaNO<sub>2</sub> + 2HCl → ArN<sub>2</sub><sup>+</sup>Cl<sup>−</sup> + NaCl + 2H<sub>2</sub>O<small>Diazotisation, 273-278 K</small></div>
+    <div class="eq">ArN<sub>2</sub><sup>+</sup> + Ar'OH (pH 9-10) → Ar–N=N–Ar'–OH<small>Azo coupling at the para position</small></div>
+    <div class="eq">C<sub>6</sub>H<sub>5</sub>NH<sub>2</sub> + 3Br<sub>2</sub>(aq) → 2,4,6-tribromoaniline↓<small>White precipitate; acetylate NH<sub>2</sub> first to get a mono-bromo product</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: basicity ladder</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-amines-am">Amine (highlighted in chart)</label><select id="che-amines-am"></select></div>
+    </div>
+    <canvas class="stage" id="che-amines-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">pK<sub>b</sub><b id="che-amines-pkb">-</b></div>
+      <div class="readout">K<sub>b</sub><b id="che-amines-kb">-</b></div>
+      <div class="readout">pH of 0.1 M solution<b id="che-amines-ph">-</b></div>
+      <div class="readout">Rank (1 = strongest base)<b id="che-amines-rank">-</b></div>
+    </div>
+    <p id="che-amines-why" style="font-size:.9rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      /* pKb values in water (NCERT for aliphatic and aniline; substituted anilines from pKa of the conjugate acid: pKb = 14 - pKaH) */
+      const D=[['Ammonia, NH₃',4.75,'Reference: no alkyl groups.'],
+        ['Methylamine',3.38,'One +I methyl group raises electron density on N.'],
+        ['Ethylamine',3.29,'Ethyl is a slightly better electron donor than methyl.'],
+        ['Dimethylamine',3.27,'Two alkyl groups: strong +I and good solvation of the cation by H-bonding.'],
+        ['Diethylamine',3.00,'Strongest here: two ethyl groups give the best balance of +I and solvation.'],
+        ['Trimethylamine',4.22,'Three methyls push electron density, but the cation has only one N–H for H-bonding with water, and the groups crowd N: weaker than 1° and 2° methylamines.'],
+        ['Triethylamine',3.25,'In water the bigger ethyl groups still give a stronger base than ethylamine, but less than diethylamine.'],
+        ['Benzylamine',4.70,'The NH₂ is on a CH₂, so its lone pair is not delocalised into the ring; basicity is close to ammonia.'],
+        ['p-Anisidine (p-OCH₃)',8.66,'–OCH₃ donates electrons by resonance towards the ring, making N more basic than in aniline.'],
+        ['p-Toluidine (p-CH₃)',8.92,'–CH₃ is electron-donating, so it is slightly stronger than aniline.'],
+        ['Aniline',9.38,'The N lone pair is delocalised into the benzene ring (resonance), so it is less available for protonation.'],
+        ['p-Chloroaniline',10.02,'–Cl withdraws electron density (–I effect), reducing basicity.'],
+        ['m-Nitroaniline',11.53,'–NO₂ at meta withdraws by the inductive effect only.'],
+        ['p-Nitroaniline',13.0,'–NO₂ at para withdraws by resonance and induction, delocalising the lone pair onto the nitro group.'],
+        ['o-Nitroaniline',14.26,'The ortho nitro group has the strongest effect (close-range –I, resonance and intramolecular H-bonding).']];
+      const sel=$('che-amines-am');D.forEach((d,i)=>sel.add(new Option(d[0],i)));sel.value=10;
+      const order=D.map((d,i)=>i).sort((a,b)=>D[a][1]-D[b][1]);
+      function draw(){
+        const k=+sel.value;
+        const g=TB.canvas($('che-amines-cv'),380),ctx=g.ctx,w=g.w,h=g.h;
+        const lab=Math.min(132,w*.4),L=lab+8,R=w-34,top=22,rh=(h-top-6)/D.length;
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=TB.css('--muted');ctx.textAlign='left';
+        ctx.fillText('Bar = 14 − pKb (longer = stronger base)',8,13);
+        order.forEach((i,r)=>{
+          const y=top+r*rh,len=(14-D[i][1])/11*(R-L),on=i===k,ar=D[i][0].indexOf('anil')>=0||D[i][0].indexOf('idine')>=0||D[i][0].indexOf('toluid')>=0;
+          ctx.fillStyle=on?TB.css('--sub'):(ar?TB.css('--maths'):TB.css('--line'));ctx.globalAlpha=on?1:(ar?.45:1);
+          ctx.fillRect(L,y+2,Math.max(len,2),rh-4);ctx.globalAlpha=1;
+          ctx.fillStyle=TB.css('--ink');ctx.textAlign='right';ctx.font=(on?'600 ':'')+'12px "Source Sans 3", sans-serif';
+          ctx.fillText(D[i][0].replace(/ \(.*\)/,'').replace(', NH₃',''),lab,y+rh/2+4);
+          ctx.textAlign='left';ctx.fillText(D[i][1],L+Math.max(len,2)+4,y+rh/2+4);
+        });
+        const p=D[k][1],kb=Math.pow(10,-p),oh=Math.sqrt(kb*0.1);
+        TB.set(root,'#che-amines-pkb',p);
+        TB.set(root,'#che-amines-kb',kb.toExponential(2).replace('e-','×10⁻'));
+        TB.set(root,'#che-amines-ph',(14+Math.log10(oh)).toFixed(2));
+        TB.set(root,'#che-amines-rank',(order.indexOf(k)+1)+' of '+D.length);
+        $('che-amines-why').textContent=D[k][2];
+      }
+      TB.live(root,draw);
+    })();</script>
+    <p style="font-size:.82rem;color:var(--muted)">Orange-tinted bars are aromatic amines. The pH uses [OH⁻] = √(K<sub>b</sub> × 0.1), valid for weak bases at this concentration.</p>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: Hinsberg test</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-amines-hin">Unknown amine</label><select id="che-amines-hin">
+        <option value="1">Ethylamine, C₂H₅NH₂ (1°)</option><option value="1b">Aniline, C₆H₅NH₂ (1°)</option><option value="2" selected>Diethylamine, (C₂H₅)₂NH (2°)</option><option value="3">Triethylamine, (C₂H₅)₃N (3°)</option></select></div>
+    </div>
+    <div class="readouts">
+      <div class="readout">Step 1: C₆H₅SO₂Cl<b id="che-amines-h1">-</b></div>
+      <div class="readout">Step 2: add NaOH(aq)<b id="che-amines-h2">-</b></div>
+      <div class="readout">Step 3: acidify with HCl<b id="che-amines-h3">-</b></div>
+    </div>
+    <p id="che-amines-hc" style="font-weight:600"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      function draw(){
+        const v=$('che-amines-hin').value,c=v[0];
+        let a,b,d,e;
+        if(c==='1'){a='C₆H₅SO₂NHR formed (N–H present)';b='Dissolves: the N–H is acidic, so the sodium salt forms';d='Sulphonamide precipitates again';e='Primary amine: soluble in alkali.';}
+        else if(c==='2'){a='C₆H₅SO₂NR₂ formed (no N–H)';b='Stays insoluble (precipitate or oil)';d='No change';e='Secondary amine: insoluble in alkali.';}
+        else {a='No reaction (no N–H to lose)';b='Amine stays as an insoluble oil';d='Oil dissolves as the ammonium salt R₃NH⁺Cl⁻';e='Tertiary amine: unreactive to the reagent, dissolves in acid.';}
+        TB.set(root,'#che-amines-h1',a);TB.set(root,'#che-amines-h2',b);TB.set(root,'#che-amines-h3',d);
+        $('che-amines-hc').textContent=e;
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: what can benzenediazonium chloride become?</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-amines-rg">Reagent added to C₆H₅N₂⁺Cl⁻</label><select id="che-amines-rg">
+        <option value="0">CuCl / HCl (Sandmeyer)</option><option value="1">CuBr / HBr (Sandmeyer)</option><option value="2">CuCN / KCN (Sandmeyer)</option><option value="3">KI</option><option value="4">HBF₄, then heat (Balz-Schiemann)</option><option value="5">H₃PO₂ + H₂O</option><option value="6">H₂O, warm</option><option value="7" selected>Phenol, pH 9-10 (coupling)</option><option value="8">Aniline, pH 4-5 (coupling)</option><option value="9">2-Naphthol, alkaline (coupling)</option></select></div>
+      <div class="ctl"><label for="che-amines-tp">Temperature of the diazonium solution <output></output></label><input type="range" id="che-amines-tp" min="0" max="25" step="1" value="3" data-unit=" °C"></div>
+    </div>
+    <div class="readouts">
+      <div class="readout">Product<b id="che-amines-pr">-</b></div>
+      <div class="readout">Reaction type<b id="che-amines-ty">-</b></div>
+      <div class="readout">Colour of product<b id="che-amines-co">-</b></div>
+      <div class="readout">Diazonium stability<b id="che-amines-st">-</b></div>
+    </div>
+    <svg id="che-amines-sw" viewBox="0 0 300 40" width="100%" style="max-height:44px;margin-top:.5rem" role="img" aria-label="Colour swatch of the product"></svg>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const R=[['Chlorobenzene, C₆H₅Cl','Replacement of N₂ (Cu(I) salt)','Colourless liquid',null],
+        ['Bromobenzene, C₆H₅Br','Replacement of N₂ (Cu(I) salt)','Colourless liquid',null],
+        ['Benzonitrile, C₆H₅CN','Replacement of N₂ (Cu(I) salt)','Colourless liquid',null],
+        ['Iodobenzene, C₆H₅I','Replacement of N₂ (no copper needed)','Pale-yellow liquid','#e8d9a0'],
+        ['Fluorobenzene, C₆H₅F','Via the isolated diazonium tetrafluoroborate','Colourless liquid',null],
+        ['Benzene, C₆H₆','Reduction (replace N₂ by H)','Colourless liquid',null],
+        ['Phenol, C₆H₅OH','Hydrolysis, N₂ released','Colourless to pale pink solid',null],
+        ['p-Hydroxyazobenzene, C₆H₅–N=N–C₆H₄–OH','Azo coupling (electrophilic substitution)','Orange','#e87a1c'],
+        ['p-Aminoazobenzene (aniline yellow), C₆H₅–N=N–C₆H₄–NH₂','Azo coupling (electrophilic substitution)','Yellow','#e8c81c'],
+        ['1-Phenylazo-2-naphthol (Sudan I type)','Azo coupling (electrophilic substitution)','Orange-red','#d9461c']];
+      function draw(){
+        const k=+$('che-amines-rg').value,T=+$('che-amines-tp').value,r=R[k];
+        TB.set(root,'#che-amines-pr',r[0]);TB.set(root,'#che-amines-ty',r[1]);TB.set(root,'#che-amines-co',r[2]);
+        let st;
+        if(k===6)st=T>5?'Warming is what drives this hydrolysis':'Cold: hydrolysis is slow';
+        else st=T<=5?'Stable (273-278 K)':'Decomposing to phenol + N₂: keep it below 278 K';
+        TB.set(root,'#che-amines-st',st);
+        const sw=$('che-amines-sw');sw.innerHTML='';
+        const NS='http://www.w3.org/2000/svg';
+        const rect=document.createElementNS(NS,'rect');rect.setAttribute('x',2);rect.setAttribute('y',4);rect.setAttribute('width',296);rect.setAttribute('height',32);rect.setAttribute('rx',5);
+        rect.setAttribute('fill',r[3]||'none');rect.setAttribute('stroke',TB.css('--line'));sw.appendChild(rect);
+        if(!r[3]){const t=document.createElementNS(NS,'text');t.setAttribute('x',150);t.setAttribute('y',25);t.setAttribute('text-anchor','middle');t.setAttribute('font-size',12);t.setAttribute('fill',TB.css('--muted'));t.textContent='No colour: colourless product';sw.appendChild(t);}
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>Azo dyes (more than half of all synthetic dyes) colour cotton and polyester in textile clusters such as Tiruppur, Surat and Ahmedabad; methyl orange, an azo dye, is the indicator used in school titrations. Some azo dyes can split to carcinogenic aromatic amines such as benzidine, so these are restricted by law, and Sudan dyes, which are not permitted in food, are tested for in chilli and turmeric powder by FSSAI. A quantity check: to diazotise 9.3 g aniline (M = 93 g/mol, 0.100 mol) you need 0.100 mol NaNO<sub>2</sub> (M = 69), which is 6.9 g. Coupling 0.100 mol of the diazonium with 0.100 mol phenol can give at most 0.100 × 198 = 19.8 g of p-hydroxyazobenzene. Basicity in numbers: a 0.1 M methylamine solution (pK<sub>b</sub> = 3.38) has [OH⁻] ≈ √(4.17×10⁻⁴ × 0.1) = 6.5×10⁻³ M, pH ≈ 11.8, while 0.1 M aniline (pK<sub>b</sub> = 9.38) has pH ≈ 8.8.</p></div>
+  <div class="quiz"><p class="q">Which is the weakest base?</p>
+    <div class="opts"><button>Ammonia</button><button>Methylamine</button><button data-ok>p-Nitroaniline</button><button>Aniline</button></div>
+    <p class="why" hidden>In p-nitroaniline the lone pair is delocalised both into the ring and onto the nitro group (pK<sub>b</sub> about 13). Aniline is weaker than ammonia (9.38 vs 4.75) but a nitro group makes it far weaker still.</p></div>
+</article><div class="pager"><a href="che-carbonyl.html"><small>Previous</small>Aldehydes and ketones</a><a class="next" href="che-biomol.html"><small>Next</small>Carbohydrates, amino acids, proteins</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

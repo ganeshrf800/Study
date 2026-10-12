@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Current, Ohm&#x27;s law and resistivity - Class 12 Physics</title>
+<meta name="description" content="Current, Ohm&#x27;s law and resistivity: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-current" data-title="Current, Ohm's law and resistivity">
+  <header><div class="tag">Current Electricity</div><h3>Ohm's law, drift velocity and resistivity</h3></header>
+  <p class="lead">A current is charge flowing past a point each second. In a metal, free electrons drift very slowly against the field while colliding with ions; these collisions are the resistance. Resistance depends on the wire's material, length, cross-section and temperature.</p>
+  <ul class="keypoints">
+    <li>I = Q/t. By convention current is drawn in the direction positive charge would move, opposite to electron flow.</li>
+    <li>Ohm's law V = IR holds for metals at constant temperature. R = ρL/A, where the resistivity ρ is a property of the material only.</li>
+    <li>Drift velocity v<sub>d</sub> = I/(nAe) is tiny (fractions of a millimetre per second), yet a bulb lights instantly because the field travels at nearly the speed of light.</li>
+    <li>In metals ρ rises with temperature; in semiconductors it falls. Alloys like manganin and constantan have very small α and are used for standard resistors.</li>
+    <li>Series: R = R₁ + R₂ + … (same current). Parallel: 1/R = 1/R₁ + 1/R₂ + … (same voltage). Power P = VI = I²R = V²/R.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">V = I R<small>Ohm's law</small></div>
+    <div class="eq">R = ρ L / A<small>ρ in Ω m; copper 1.7×10⁻⁸, nichrome 1.1×10⁻⁶</small></div>
+    <div class="eq">I = n e A v<sub>d</sub>, v<sub>d</sub> = (eE/m) τ<small>n = free electron density, τ = mean time between collisions</small></div>
+    <div class="eq">ρ = m / (n e² τ)<small>Why resistivity depends on n and τ</small></div>
+    <div class="eq">ρ<sub>T</sub> = ρ<sub>0</sub> [1 + α (T − T<sub>0</sub>)]<small>Temperature coefficient α; negative for semiconductors</small></div>
+    <div class="eq">P = V I = I² R = V² / R<small>Heat produced per second; energy in kWh = P(kW) × t(h)</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: what is happening inside a wire</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-current-mat">Material</label><select id="phy-current-mat"><option value="cu">Copper</option><option value="al">Aluminium</option><option value="ni">Nichrome (n ≈ 9×10²⁸ m⁻³, approx.)</option></select></div>
+      <div class="ctl"><label for="phy-current-v">Voltage applied V <output></output></label><input type="range" id="phy-current-v" min="0.01" max="2" step="0.01" value="0.1" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-current-l">Length L <output></output></label><input type="range" id="phy-current-l" min="0.5" max="10" step="0.5" value="1" data-unit=" m"></div>
+      <div class="ctl"><label for="phy-current-a">Cross-section A <output></output></label><input type="range" id="phy-current-a" min="0.5" max="4" step="0.1" value="1" data-unit=" mm²"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Resistance R<b data-r="R">-</b></div>
+      <div class="readout">Current I<b data-r="I">-</b></div>
+      <div class="readout">Drift velocity v<sub>d</sub><b data-r="vd">-</b></div>
+      <div class="readout">Time to drift the full length<b data-r="t">-</b></div>
+    </div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      const M={cu:{rho:1.68e-8,n:8.5e28},al:{rho:2.65e-8,n:1.81e29},ni:{rho:1.1e-6,n:9e28}};
+      const e=1.6e-19;
+      const eng=(x,u)=>{if(x===0)return '0 '+u;const t=[[1e6,'M'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'μ'],[1e-9,'n'],[1e-12,'p']];const a=Math.abs(x);let f=t[t.length-1];for(const z of t){if(a>=z[0]*0.9995){f=z;break}}return (x/f[0]).toPrecision(3)+' '+f[1]+u};
+      const dur=s=>s<120?s.toPrecision(3)+' s':s<7200?(s/60).toPrecision(3)+' min':s<172800?(s/3600).toPrecision(3)+' h':(s/86400).toPrecision(3)+' days';
+      function arrow(ctx,x0,y0,x1,y1,hs){ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-0.45),y1-hs*Math.sin(a-0.45));ctx.lineTo(x1-hs*Math.cos(a+0.45),y1-hs*Math.sin(a+0.45));ctx.closePath();ctx.fill()}
+      function draw(){
+        const m=M[$('#phy-current-mat').value],V=+$('#phy-current-v').value,L=+$('#phy-current-l').value,Amm=+$('#phy-current-a').value,A=Amm*1e-6;
+        const R=m.rho*L/A,I=V/R,vd=I/(m.n*A*e);
+        const g=TB.canvas($('canvas'),160),ctx=g.ctx,w=g.w,h=g.h;
+        const sub=TB.css('--sub'),ink=TB.css('--ink'),bad=TB.css('--bad');
+        const lenpx=40+(L-0.5)/9.5*(w-90),x0=(w-lenpx)/2,th=10+(Amm-0.5)/3.5*34,cy=h/2+4;
+        ctx.globalAlpha=.22;ctx.fillStyle=sub;ctx.fillRect(x0,cy-th/2,lenpx,th);ctx.globalAlpha=1;
+        ctx.strokeStyle=sub;ctx.lineWidth=2;ctx.strokeRect(x0,cy-th/2,lenpx,th);
+        const alen=Math.max(2,Math.min(18,3+4*Math.log10(Math.max(vd,1e-9)/1e-6)));
+        const nx=Math.max(1,Math.floor((lenpx-10)/22)),ny=Math.max(1,Math.round(th/9));
+        ctx.strokeStyle=ink;ctx.fillStyle=ink;ctx.lineWidth=1.2;
+        for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){
+          const x=x0+14+i*22+(j%2)*7,y=cy-th/2+(j+0.5)*th/ny;
+          ctx.beginPath();ctx.arc(x,y,2.2,0,7);ctx.fill();arrow(ctx,x,y,x-alen,y,3);
+        }
+        ctx.strokeStyle=bad;ctx.fillStyle=bad;ctx.lineWidth=2;
+        const yc=cy-th/2-20;arrow(ctx,x0+4,yc,Math.min(x0+70,x0+lenpx),yc,6);
+        ctx.fillStyle=ink;ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='left';
+        ctx.fillText('conventional current I',x0+4,yc-6);
+        ctx.textAlign='center';ctx.fillText('electrons drift the other way (tiny arrows)',w/2,h-26);
+        ctx.fillText('L = '+L+' m,  A = '+Amm.toFixed(1)+' mm²',w/2,h-8);
+        TB.set(root,'[data-r=R]',eng(R,'Ω'));TB.set(root,'[data-r=I]',eng(I,'A'));
+        TB.set(root,'[data-r=vd]',eng(vd,'m/s'));TB.set(root,'[data-r=t]',dur(L/vd));
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: resistivity against temperature</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-current-mat2">Highlight</label><select id="phy-current-mat2"><option value="0">Copper (α = 0.0039 /°C)</option><option value="1">Nichrome (α = 0.0004 /°C)</option><option value="2">Manganin (α = 0.00002 /°C)</option><option value="3">Semiconductor (α ≈ −0.07 /°C)</option></select></div>
+      <div class="ctl"><label for="phy-current-t">Temperature T <output></output></label><input type="range" id="phy-current-t" min="0" max="200" step="1" value="100" data-unit=" °C"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">ρ / ρ₂₀<b data-r="f">-</b></div>
+      <div class="readout">A 10 Ω (at 20 °C) element becomes<b data-r="R">-</b></div>
+      <div class="readout">Change from 20 °C<b data-r="p">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Metals use the linear law above. For the semiconductor the curve is the exponential ρ = ρ₂₀ e^(α(T−20)), which matches α = −0.07 /°C at 20 °C (a typical value; it varies between materials).</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      const mats=[{n:'Copper',a:0.0039,c:'--physics'},{n:'Nichrome',a:0.0004,c:'--bad'},{n:'Manganin',a:0.00002,c:'--good'},{n:'Semiconductor',a:-0.07,c:'--maths',sc:1}];
+      const f=(m,T)=>m.sc?Math.exp(m.a*(T-20)):1+m.a*(T-20);
+      function draw(){
+        const sel=+$('#phy-current-mat2').value,T=+$('#phy-current-t').value;
+        const g=TB.canvas($('canvas'),270),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),mut=TB.css('--muted');
+        ctx.font='12px "Source Sans 3", sans-serif';
+        mats.forEach((m,i)=>{const x=8+(i%2)*(w/2),y=14+Math.floor(i/2)*16;ctx.strokeStyle=TB.css(m.c);ctx.lineWidth=i===sel?4:2;ctx.beginPath();ctx.moveTo(x,y-4);ctx.lineTo(x+14,y-4);ctx.stroke();ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText(m.n,x+19,y)});
+        const gx0=40,gx1=w-14,gy0=64,gy1=h-30,ymax=4.2;
+        const X=t=>gx0+t/200*(gx1-gx0),Y=v=>gy1-v/ymax*(gy1-gy0);
+        ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx0,gy0);ctx.lineTo(gx0,gy1);ctx.lineTo(gx1,gy1);ctx.stroke();
+        ctx.fillStyle=ink;ctx.textAlign='right';for(let v=0;v<=4;v++){ctx.fillText(v,gx0-5,Y(v)+4);ctx.beginPath();ctx.moveTo(gx0-3,Y(v));ctx.lineTo(gx0,Y(v));ctx.stroke()}
+        ctx.textAlign='left';ctx.fillText('ρ / ρ₂₀',4,gy0-8);
+        ctx.textAlign='center';for(let t=0;t<=200;t+=50)ctx.fillText(t,X(t),gy1+14);
+        ctx.fillText('temperature (°C)',(gx0+gx1)/2,gy1+27);
+        mats.forEach((m,i)=>{ctx.strokeStyle=TB.css(m.c);ctx.globalAlpha=i===sel?1:0.45;ctx.lineWidth=i===sel?3:1.5;ctx.beginPath();
+          for(let t=0;t<=200;t+=2){const y=Y(f(m,t));t===0?ctx.moveTo(X(t),y):ctx.lineTo(X(t),y)}ctx.stroke()});
+        ctx.globalAlpha=1;
+        const m=mats[sel],fv=f(m,T);
+        ctx.setLineDash([3,3]);ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(T),gy1);ctx.lineTo(X(T),Y(fv));ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=TB.css(m.c);ctx.beginPath();ctx.arc(X(T),Y(fv),5,0,7);ctx.fill();
+        TB.set(root,'[data-r=f]',fv.toFixed(3));
+        TB.set(root,'[data-r=R]',TB.fmt(10*fv,3)+' Ω');
+        TB.set(root,'[data-r=p]',((fv-1)*100>=0?'+':'')+TB.fmt((fv-1)*100,2)+' %');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: two resistors in series or parallel</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-current-r1">R₁ <output></output></label><input type="range" id="phy-current-r1" min="1" max="100" step="1" value="20" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-current-r2">R₂ <output></output></label><input type="range" id="phy-current-r2" min="1" max="100" step="1" value="30" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-current-vs">Battery voltage <output></output></label><input type="range" id="phy-current-vs" min="1" max="24" step="1" value="12" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-current-mode">Connection</label><select id="phy-current-mode"><option value="ser">Series</option><option value="par">Parallel</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Equivalent R<b data-r="Re">-</b></div>
+      <div class="readout">Current from battery<b data-r="It">-</b></div>
+      <div class="readout">Total power<b data-r="Pt">-</b></div>
+    </div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      function draw(){
+        const r1=+$('#phy-current-r1').value,r2=+$('#phy-current-r2').value,V=+$('#phy-current-vs').value,mode=$('#phy-current-mode').value;
+        let Re,rows;
+        if(mode==='ser'){Re=r1+r2;const I=V/Re;rows=[{R:r1,I:I,V:I*r1},{R:r2,I:I,V:I*r2}]}
+        else{Re=r1*r2/(r1+r2);rows=[{R:r1,I:V/r1,V:V},{R:r2,I:V/r2,V:V}]}
+        const g=TB.canvas($('canvas'),mode==='ser'?190:210),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),soft=TB.css('--soft'),sub=TB.css('--sub');
+        const xl=24,xr=w-24,yt=mode==='ser'?50:40,yb=mode==='ser'?150:172,ym=(yt+yb)/2;
+        ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.strokeRect(xl,yt,xr-xl,yb-yt);
+        function hole(x,y,ww,hh){ctx.fillStyle=soft;ctx.fillRect(x-ww/2,y-hh/2,ww,hh)}
+        hole(xl,ym,12,16);ctx.strokeStyle=ink;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(xl-9,ym-3);ctx.lineTo(xl+9,ym-3);ctx.stroke();
+        ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(xl-5,ym+3);ctx.lineTo(xl+5,ym+3);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText(V+' V',xl+12,ym+4);
+        const xs=mode==='ser'?[xl+(xr-xl)*0.34,xl+(xr-xl)*0.74]:[xl+(xr-xl)*0.33,xl+(xr-xl)*0.66];
+        rows.forEach((r,i)=>{
+          const x=xs[i];ctx.strokeStyle=sub;ctx.lineWidth=2;
+          if(mode==='ser'){hole(x,yt,40,16);ctx.strokeRect(x-18,yt-7,36,14);
+            ctx.fillStyle=ink;ctx.textAlign='center';
+            ctx.fillText('R'+(i+1)+' = '+r.R+' Ω',x,yt+30);ctx.fillText('I = '+TB.fmt(r.I,3)+' A',x,yt+45);ctx.fillText('V = '+TB.fmt(r.V,2)+' V',x,yt+60);}
+          else{hole(x,ym,16,40);ctx.strokeRect(x-7,ym-18,14,36);
+            ctx.fillStyle=ink;ctx.textAlign='left';
+            ctx.fillText('R'+(i+1)+' = '+r.R+' Ω',x+12,ym-12);ctx.fillText('I = '+TB.fmt(r.I,3)+' A',x+12,ym+3);ctx.fillText('V = '+TB.fmt(r.V,2)+' V',x+12,ym+18);}
+        });
+        TB.set(root,'[data-r=Re]',TB.fmt(Re,3)+' Ω');TB.set(root,'[data-r=It]',TB.fmt(V/Re,3)+' A');TB.set(root,'[data-r=Pt]',TB.fmt(V*V/Re,2)+' W');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Household wiring and fuses.</b> Appliances in a home are connected in parallel across 230 V, so each gets the full voltage and one can be switched off without affecting the others. But their currents add. A 2000 W geyser draws 2000/230 ≈ 8.7 A, a 1500 W air conditioner 6.5 A and a 1000 W iron 4.3 A: together 19.6 A, which would overload a 16 A circuit. The fuse or MCB is the deliberate weak link: a low-melting wire (or magnetic/thermal trip) opens the circuit before the cable overheats. Heavy loads use thicker wire (larger A, so smaller R = ρL/A and less I²R heating), which is why India wires 5 A circuits for lights and fans and 15/16 A circuits for geysers and ACs.</p>
+    <p><b>Indian power transmission.</b> Power P = VI, and heat lost in the line is I²R. To send 100 kW through a line of resistance 0.5 Ω, a 440 V supply needs I = 227 A and loses 227² × 0.5 ≈ 25.8 kW (26%). At 11 kV, I = 9.1 A and the loss is only about 41 W. This is why the national grid steps voltage up to 400 kV and 765 kV AC, and uses ±800 kV HVDC for long links such as Raigarh to Pugalur, then steps it down near consumers.</p>
+  </div>
+  <div class="quiz"><p class="q">A wire of resistance R is uniformly stretched to twice its length (its volume stays constant). Its new resistance is:</p><div class="opts"><button data-ok>4R</button><button>2R</button><button>R/2</button><button>8R</button></div><p class="why" hidden>Volume LA is constant, so doubling L halves A. R = ρL/A becomes ρ(2L)/(A/2) = 4R.</p></div>
+</article><div class="pager"><a href="phy-cap.html"><small>Previous</small>Capacitors and dielectrics</a><a class="next" href="phy-kirchhoff.html"><small>Next</small>Kirchhoff&#x27;s laws</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

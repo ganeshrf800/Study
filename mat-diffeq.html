@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Differential equations - Class 12 Mathematics</title>
+<meta name="description" content="Differential equations: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-diffeq" data-title="Differential equations">
+  <header><div class="tag">Differential Equations</div><h3>Order, degree, direction fields and growth or decay</h3></header>
+  <p class="lead">A differential equation relates a quantity to its own rate of change. Its solution is a whole family of curves; an initial condition picks out one member. The direction field draws the slope dy/dx at many points, and the solution curve simply follows the arrows.</p>
+  <ul class="keypoints">
+    <li>Order is the highest derivative present. Degree is the power of that highest derivative once the equation is a polynomial in the derivatives.</li>
+    <li>The general solution of an nth-order equation has n arbitrary constants; a particular solution fixes them from initial conditions.</li>
+    <li>Variable separable: write g(y)dy = h(x)dx and integrate both sides.</li>
+    <li>Linear first order: dy/dx + Py = Q, solved with the integrating factor e<sup>∫P dx</sup>.</li>
+    <li>Growth and decay: dy/dt = ky gives y = y₀e<sup>kt</sup>. Newton's law of cooling: dT/dt = −k(T − T<sub>s</sub>).</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">dy/dx = f(x, y)<small>Example: (d²y/dx²)³ + (dy/dx)² + y = 0 has order 2 and degree 3</small></div>
+    <div class="eq">dy/dx + Py = Q; IF = e<sup>∫P dx</sup><small>Solution: y·IF = ∫Q·IF dx + C</small></div>
+    <div class="eq">Homogeneous: dy/dx = F(y/x)<small>Put y = vx, then dy/dx = v + x dv/dx and separate variables</small></div>
+    <div class="eq">dP/dt = kP ⇒ P = P₀e<sup>kt</sup><small>Doubling time = (ln 2)/k</small></div>
+    <div class="eq">dT/dt = −k(T − T<sub>s</sub>) ⇒ T = T<sub>s</sub> + (T₀ − T<sub>s</sub>)e<sup>−kt</sup><small>T<sub>s</sub> is the surrounding temperature</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Direction field and solution through your starting point</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-diffeq-sel">Equation</label><select id="mat-diffeq-sel">
+        <option value="a">dy/dx = y (growth)</option><option value="b">dy/dx = −y (decay)</option><option value="c">dy/dx = x − y</option><option value="d">dy/dx = x</option><option value="e">dy/dx = −x/y (circles)</option><option value="f">dT/dt = −0.05(T − 30) (cooling)</option></select></div>
+      <div class="ctl"><label for="mat-diffeq-x0">Start x₀ <output></output></label><input type="range" id="mat-diffeq-x0" min="-3" max="3" step="0.5" value="0"></div>
+      <div class="ctl"><label for="mat-diffeq-y0">Start y₀ <output></output></label><input type="range" id="mat-diffeq-y0" min="-5" max="5" step="0.5" value="1"></div>
+    </div>
+    <canvas class="stage" id="mat-diffeq-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">General solution<b data-r="gen" style="font-size:.95rem">-</b></div>
+      <div class="readout">Constant from (x₀, y₀)<b data-r="cc" style="font-size:.95rem">-</b></div>
+      <div class="readout">y at right edge (RK4 numeric)<b data-r="num">-</b></div>
+      <div class="readout">y at right edge (exact)<b data-r="ex">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-diffeq-sel'),sx=$('#mat-diffeq-x0'),sy=$('#mat-diffeq-y0'),cv=$('#mat-diffeq-cv');
+const E={
+ a:{w:[-3,3,-6,6],s:[-3,3,.5,0,-5,5,.5,1],f:(x,y)=>y,ex:(x,y0,x0)=>y0*Math.exp(x-x0),gen:'y = C eˣ',C:(x0,y0)=>'C = '+(y0*Math.exp(-x0)).toFixed(4)},
+ b:{w:[-3,3,-6,6],s:[-3,3,.5,0,-5,5,.5,3],f:(x,y)=>-y,ex:(x,y0,x0)=>y0*Math.exp(-(x-x0)),gen:'y = C e⁻ˣ',C:(x0,y0)=>'C = '+(y0*Math.exp(x0)).toFixed(4)},
+ c:{w:[-3,3,-6,6],s:[-3,3,.5,0,-5,5,.5,2],f:(x,y)=>x-y,ex:(x,y0,x0)=>x-1+(y0-x0+1)*Math.exp(-(x-x0)),gen:'y = x − 1 + C e⁻ˣ',C:(x0,y0)=>'C = '+((y0-x0+1)*Math.exp(x0)).toFixed(4)},
+ d:{w:[-3,3,-6,6],s:[-3,3,.5,0,-5,5,.5,0],f:(x,y)=>x,ex:(x,y0,x0)=>y0+(x*x-x0*x0)/2,gen:'y = x²/2 + C',C:(x0,y0)=>'C = '+(y0-x0*x0/2).toFixed(4)},
+ e:{w:[-5,5,-5,5],s:[-5,5,.5,0,-5,5,.5,3],f:(x,y)=>-x/y,ex:(x,y0,x0)=>{const r2=x0*x0+y0*y0-x*x;return r2<0?NaN:Math.sign(y0)*Math.sqrt(r2)},gen:'x² + y² = C',C:(x0,y0)=>'C = '+(x0*x0+y0*y0).toFixed(2)+' (radius '+Math.sqrt(x0*x0+y0*y0).toFixed(2)+')'},
+ f:{w:[0,40,0,100],s:[0,40,1,0,0,100,5,90],f:(x,y)=>-0.05*(y-30),ex:(x,y0,x0)=>30+(y0-30)*Math.exp(-0.05*(x-x0)),gen:'T = 30 + C e⁻⁰·⁰⁵ᵗ',C:(x0,y0)=>'C = '+((y0-30)*Math.exp(0.05*x0)).toFixed(3)}
+};
+function setS(k){const s=E[k].s;sx.min=s[0];sx.max=s[1];sx.step=s[2];sx.value=s[3];sy.min=s[4];sy.max=s[5];sy.step=s[6];sy.value=s[7];[sx,sy].forEach(r=>{r.closest('.ctl').querySelector('output').textContent=(+r.value).toLocaleString('en-IN');});}
+sel.addEventListener('change',()=>setS(sel.value));
+function draw(){const q=E[sel.value],w=q.w,x0=+sx.value,y0=+sy.value,f=q.f;
+ const P=mkP(cv,w[0],w[1],w[2],w[3],sel.value==='e'?'eq':300);
+ axes(P,nice((w[1]-w[0])/6),nice((w[3]-w[2])/6));
+ const c=P.ctx;clip(P);c.strokeStyle=MUT();c.lineWidth=1.2;
+ const nx=Math.max(8,Math.floor((P.W-P.L-P.R)/26)),ny=Math.max(6,Math.floor((P.H-P.T-P.B)/26));
+ const sxp=(P.W-P.L-P.R)/(w[1]-w[0]),syp=(P.H-P.T-P.B)/(w[3]-w[2]);
+ for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const x=w[0]+(i+.5)*(w[1]-w[0])/nx,y=w[2]+(j+.5)*(w[3]-w[2])/ny,m=f(x,y);
+  if(!isFinite(m))continue;let dx=sxp,dy=-m*syp;const L=Math.hypot(dx,dy),u=9/L;dx*=u;dy*=u;
+  c.beginPath();c.moveTo(P.X(x)-dx,P.Y(y)-dy);c.lineTo(P.X(x)+dx,P.Y(y)+dy);c.stroke();}
+ c.restore();
+ const rk=(dir)=>{const pts=[[x0,y0]];let x=x0,y=y0;const hs=dir*(w[1]-w[0])/600;
+  for(let i=0;i<700;i++){const k1=f(x,y),k2=f(x+hs/2,y+hs*k1/2),k3=f(x+hs/2,y+hs*k2/2),k4=f(x+hs,y+hs*k3);const yn=y+hs*(k1+2*k2+2*k3+k4)/6;x+=hs;
+   if(!isFinite(yn)||Math.abs(yn)>1e3||x<w[0]-1e-9||x>w[1]+1e-9)break;
+   if(sel.value==='e'&&Math.abs(yn)<0.08)break;y=yn;pts.push([x,y]);}
+  return pts;};
+ const R=rk(1),Lf=rk(-1);
+ const line=(pts)=>{clip(P);c.strokeStyle=SUB();c.lineWidth=3;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.stroke();c.restore();};
+ line(R);line(Lf);
+ if(sel.value==='e'){const r=Math.hypot(x0,y0);xy(P,200,0,2*Math.PI,t=>r*Math.cos(t),t=>r*Math.sin(t),SUB(),1,[4,4]);}
+ dot(P,x0,y0,BAD(),5.5);
+ txt(P,'start ('+x0+', '+y0+')',Math.min(P.X(x0)+8,P.W-P.R-90),P.Y(y0)-10,BAD());
+ const last=R[R.length-1];
+ const bad=sel.value==='e'&&Math.abs(y0)<0.2;
+ TB.set(root,'[data-r=gen]',q.gen);TB.set(root,'[data-r=cc]',bad?'y₀ = 0 is singular':q.C(x0,y0));
+ TB.set(root,'[data-r=num]',bad?'-':last[1].toFixed(4)+' at x = '+(+last[0].toFixed(2)));
+ TB.set(root,'[data-r=ex]',bad?'-':q.ex(last[0],y0,x0).toFixed(4));
+}
+setS(sel.value);
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Population growth.</b> A town of 1,00,000 people grows at a rate proportional to its size, dP/dt = kP, and doubles in 10 years. Then k = ln 2/10 ≈ 0.0693 per year and P(25) = 1,00,000 × 2<sup>2.5</sup> ≈ 5.66 lakh.</p>
+    <p><b>Chai cooling.</b> Chai at 90 °C sits in a 30 °C room and falls to 78 °C in 5 minutes. With T = 30 + 60e<sup>−kt</sup>: 48 = 60e<sup>−5k</sup>, so e<sup>−5k</sup> = 0.8 and k = ln(1.25)/5 ≈ 0.0446 per minute. It reaches a drinkable 50 °C when 20 = 60e<sup>−kt</sup>, that is t = ln 3/k ≈ 24.6 minutes. Cooling is fastest at the start, when T − T<sub>s</sub> is largest.</p></div>
+  <div class="quiz"><p class="q">What are the order and degree of (d²y/dx²)³ + (dy/dx)² + y = 0?</p><div class="opts"><button data-ok>Order 2, degree 3</button><button>Order 3, degree 2</button><button>Order 2, degree 2</button><button>Order 1, degree 2</button></div><p class="why" hidden>The highest derivative is d²y/dx², so the order is 2. It appears raised to the power 3, so the degree is 3.</p></div>
+</article><div class="pager"><a href="mat-area.html"><small>Previous</small>Area under and between curves</a><a class="next" href="mat-matrices.html"><small>Next</small>Matrices and transformations</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

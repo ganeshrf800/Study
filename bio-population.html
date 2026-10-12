@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Population growth and interactions - Class 12 Biology</title>
+<meta name="description" content="Population growth and interactions: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-population" data-title="Population growth and interactions">
+  <header><div class="tag">Organisms and Populations</div><h3>Exponential and logistic growth, and how species interact</h3></header>
+  <p class="lead">A population grows without limit only while food and space are unlimited. Real populations level off near the carrying capacity K. Species in a community also affect each other, from predation to partnership.</p>
+  <ul class="keypoints">
+    <li>Change in population size: N<sub>t+1</sub> = N<sub>t</sub> + (B + I) &minus; (D + E): births, immigration, deaths, emigration.</li>
+    <li><b>Exponential</b> growth gives a J-shaped curve; <b>logistic</b> growth gives an S-shaped curve that flattens at K. The logistic fits nature better.</li>
+    <li>r is the intrinsic rate of natural increase (per capita births minus deaths). A larger r means a faster rise and a shorter doubling time.</li>
+    <li>Interactions: predation (+/&minus;), competition (&minus;/&minus;), parasitism (+/&minus;), commensalism (+/0), mutualism (+/+), amensalism (&minus;/0).</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">dN/dt = rN<small>Exponential growth</small></div>
+    <div class="eq">N<sub>t</sub> = N<sub>0</sub> e<sup>rt</sup><small>Exponential solution; doubling time = 0.693 / r</small></div>
+    <div class="eq">dN/dt = rN (K &minus; N)/K<small>Logistic (Verhulst-Pearl) growth</small></div>
+    <div class="eq">N<sub>t</sub> = K / [1 + ((K &minus; N<sub>0</sub>)/N<sub>0</sub>) e<sup>&minus;rt</sup>]<small>Logistic solution; fastest growth at N = K/2</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: J-curve vs S-curve</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-population-r">r (per unit time) <output></output></label><input type="range" id="bio-population-r" min="0.02" max="0.3" step="0.01" value="0.1"></div>
+      <div class="ctl"><label for="bio-population-k">Carrying capacity K <output></output></label><input type="range" id="bio-population-k" min="200" max="1000" step="50" value="500"></div>
+      <div class="ctl"><label for="bio-population-n0">Starting size N<sub>0</sub> <output></output></label><input type="range" id="bio-population-n0" min="5" max="150" step="5" value="10"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts"><div class="readout">Doubling time (early)<b data-r="dt">-</b></div><div class="readout">Logistic at t = 100<b data-r="nl">-</b></div><div class="readout">Time to K/2 (fastest growth)<b data-r="half">-</b></div><div class="readout">Exponential hits K at<b data-r="ek">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas'),q=s=>root.querySelector(s);
+    function draw(){
+      const r=+q('#bio-population-r').value,K=+q('#bio-population-k').value,N0=+q('#bio-population-n0').value,TM=100;
+      const lg=t=>K/(1+((K-N0)/N0)*Math.exp(-r*t)),ex=t=>N0*Math.exp(r*t);
+      const g=TB.canvas(cv,270),ctx=g.ctx,W=g.w,H=g.h,L=44,R=12,T=24,B=36,pw=W-L-R,ph=H-T-B,YM=K*1.3;
+      const X=t=>L+t/TM*pw,Y=n=>T+ph-n/YM*ph;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');ctx.lineWidth=1;
+      ctx.textAlign='right';for(let i=0;i<=4;i++){const v=YM*i/4;ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(W-R,Y(v));ctx.stroke();ctx.fillText(Math.round(v),L-5,Y(v)+4);}
+      ctx.textAlign='center';for(let t=0;t<=TM;t+=20)ctx.fillText(t,X(t),H-B+16);
+      ctx.fillStyle=TB.css('--ink');ctx.fillText('Time',L+pw/2,H-6);ctx.textAlign='left';ctx.fillText('Population size N',L,14);
+      ctx.setLineDash([6,4]);ctx.strokeStyle=TB.css('--good');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L,Y(K));ctx.lineTo(W-R,Y(K));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=TB.css('--good');ctx.textAlign='right';ctx.fillText('K = '+K,W-R,Y(K)-5);
+      ctx.lineWidth=2.5;ctx.strokeStyle=TB.css('--bad');ctx.beginPath();let on=false;
+      for(let t=0;t<=TM;t+=.5){const n=ex(t);if(n>YM)break;const x=X(t),y=Y(n);on?ctx.lineTo(x,y):ctx.moveTo(x,y);on=true;}ctx.stroke();
+      ctx.strokeStyle=TB.css('--sub');ctx.beginPath();for(let t=0;t<=TM;t+=.5){const x=X(t),y=Y(lg(t));t?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+      ctx.textAlign='left';ctx.fillStyle=TB.css('--bad');ctx.fillText('Exponential',L+8,T+16);ctx.fillStyle=TB.css('--sub');ctx.fillText('Logistic',L+8,T+32);
+      TB.set(root,'[data-r=dt]',TB.fmt(Math.LN2/r,1));
+      TB.set(root,'[data-r=nl]',TB.fmt(lg(100),0));
+      TB.set(root,'[data-r=half]',N0<K/2?TB.fmt(Math.log((K-N0)/N0)/r,1):'already past');
+      TB.set(root,'[data-r=ek]',TB.fmt(Math.log(K/N0)/r,1));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <h4>Population interactions</h4>
+  <div class="tw"><table class="t"><thead><tr><th>Interaction</th><th>Species A / B</th><th>Indian example</th></tr></thead><tbody>
+    <tr><td>Predation</td><td>+ / &minus;</td><td>Tiger and chital; also keeps prey in check</td></tr>
+    <tr><td>Competition</td><td>&minus; / &minus;</td><td>Flamingoes and resident fish for zooplankton in South Indian lakes</td></tr>
+    <tr><td>Parasitism</td><td>+ / &minus;</td><td>Liver fluke in humans; cuckoo (koel) laying eggs in crow's nest (brood parasitism)</td></tr>
+    <tr><td>Commensalism</td><td>+ / 0</td><td>Orchids on mango branches; cattle egret and grazing cattle</td></tr>
+    <tr><td>Mutualism</td><td>+ / +</td><td>Lichens (fungus + alga); mycorrhiza; fig and fig wasp</td></tr>
+    <tr><td>Amensalism</td><td>&minus; / 0</td><td>Penicillium secreting penicillin that kills bacteria</td></tr>
+  </tbody></table></div>
+  <div class="world"><h4>In the real world</h4><p>India's wild tigers were counted at 1,411 in 2006 and about 3,167 in 2022 under Project Tiger. That is growth by a factor 3167/1411 = 2.24 in 16 years, so r = ln(2.24)/16 = 0.81/16 &approx; 0.05 per year and the doubling time is 0.693/0.05 &approx; 14 years. Tigers cannot grow like this forever: forest area (K) is fixed, so the curve must bend toward the S shape as reserves fill up, and spillover causes human-tiger conflict.</p></div>
+  <div class="quiz"><p class="q">At what population size is the logistic growth rate (dN/dt) the highest?</p><div class="opts"><button>Near N = 0</button><button data-ok>At N = K/2</button><button>At N = K</button></div><p class="why" hidden>dN/dt = rN(K &minus; N)/K is a parabola in N that peaks when N = K/2. At K it falls to zero.</p></div>
+</article><div class="pager"><a href="bio-biotech-applications.html"><small>Previous</small>Biotechnology applications</a><a class="next" href="bio-ecosystem.html"><small>Next</small>Ecosystem energy flow</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

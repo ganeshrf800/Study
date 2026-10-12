@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Refraction and total internal reflection - Class 12 Physics</title>
+<meta name="description" content="Refraction and total internal reflection: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-refraction" data-title="Refraction and total internal reflection">
+  <header><div class="tag">Ray Optics and Optical Instruments</div><h3>Refraction, Snell's law and total internal reflection</h3></header>
+  <p class="lead">When light crosses from one transparent medium into another its speed changes, so the ray bends at the boundary. Going from a denser to a rarer medium, the ray bends away from the normal, and beyond a certain angle it cannot leave at all: it is reflected completely back.</p>
+  <ul class="keypoints">
+    <li>Refractive index n = c/v. A higher n means slower light and a ray that bends towards the normal on entering that medium.</li>
+    <li>Snell's law: n<sub>1</sub> sin i = n<sub>2</sub> sin r, with both angles measured from the normal.</li>
+    <li>Total internal reflection (TIR) needs light travelling from denser to rarer medium with incidence angle greater than the critical angle θ<sub>c</sub>.</li>
+    <li>At TIR no energy is lost to the second medium, which is why optical fibres, prisms in binoculars and diamonds work so well.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">n = c / v<small>c = 3×10<sup>8</sup> m/s in vacuum; n ≥ 1</small></div>
+    <div class="eq">n<sub>1</sub> sin i = n<sub>2</sub> sin r<small>Snell's law of refraction</small></div>
+    <div class="eq">sin θ<sub>c</sub> = n<sub>2</sub> / n<sub>1</sub><small>critical angle, only if n<sub>1</sub> &gt; n<sub>2</sub></small></div>
+    <div class="eq">real depth / apparent depth = n<small>object in a denser medium seen from a rarer one, near-normal viewing</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Ray at a boundary</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-refraction-pre">Preset</label><select id="phy-refraction-pre">
+        <option value="1,1.33">Air to water</option><option value="1.33,1">Water to air</option><option value="1.5,1">Glass to air</option><option value="2.42,1">Diamond to air</option><option value="1.48,1.46">Fibre core to cladding</option><option value="custom">Custom (use sliders)</option></select></div>
+      <div class="ctl"><label for="phy-refraction-n1">Upper medium n<sub>1</sub> <output></output></label><input type="range" id="phy-refraction-n1" min="1" max="2.5" step="0.01" value="1.5"></div>
+      <div class="ctl"><label for="phy-refraction-n2">Lower medium n<sub>2</sub> <output></output></label><input type="range" id="phy-refraction-n2" min="1" max="2.5" step="0.01" value="1"></div>
+      <div class="ctl"><label for="phy-refraction-i">Angle of incidence i <output></output></label><input type="range" id="phy-refraction-i" min="0" max="89" step="1" value="30" data-unit="°"></div>
+    </div>
+    <canvas class="stage" id="phy-refraction-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Angle of refraction r<b id="phy-refraction-r1">-</b></div>
+      <div class="readout">Critical angle θ<sub>c</sub><b id="phy-refraction-r2">-</b></div>
+      <div class="readout">Outcome<b id="phy-refraction-r3">-</b></div>
+      <div class="readout">Speed in lower medium<b id="phy-refraction-r4">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const n1=$('phy-refraction-n1'),n2=$('phy-refraction-n2'),ia=$('phy-refraction-i'),pre=$('phy-refraction-pre'),cv=$('phy-refraction-cv');
+      pre.addEventListener('change',()=>{if(pre.value==='custom')return;const p=pre.value.split(',');n1.value=p[0];n2.value=p[1];
+        n1.dispatchEvent(new Event('input',{bubbles:true}));n2.dispatchEvent(new Event('input',{bubbles:true}));});
+      [n1,n2].forEach(s=>s.addEventListener('input',e=>{if(e.isTrusted)pre.value='custom'}));
+      function arrow(ctx,x1,y1,x2,y2,col,lw,dash){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+        const mx=(x1+x2)/2,my=(y1+y2)/2,a=Math.atan2(y2-y1,x2-x1);
+        ctx.beginPath();ctx.moveTo(mx+7*Math.cos(a),my+7*Math.sin(a));ctx.lineTo(mx-5*Math.cos(a)+5*Math.sin(a),my-5*Math.sin(a)-5*Math.cos(a));ctx.lineTo(mx-5*Math.cos(a)-5*Math.sin(a),my-5*Math.sin(a)+5*Math.cos(a));ctx.fill();}
+      function draw(){
+        const a=+n1.value,b=+n2.value,deg=+ia.value,i=deg*Math.PI/180;
+        const {ctx,w,h}=TB.canvas(cv,300);ctx.clearRect(0,0,w,h);
+        const cx=w/2,cy=h/2,L=Math.min(w/2,h/2)-20;
+        ctx.fillStyle=TB.css('--sub');ctx.globalAlpha=Math.min(.35,.05*a);ctx.fillRect(0,0,w,cy);
+        ctx.globalAlpha=Math.min(.35,.05*b);ctx.fillRect(0,cy,w,h-cy);ctx.globalAlpha=1;
+        ctx.strokeStyle=TB.css('--muted');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(w,cy);ctx.stroke();
+        ctx.strokeStyle=TB.css('--muted');ctx.setLineDash([5,4]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,cy-L-8);ctx.lineTo(cx,cy+L+8);ctx.stroke();ctx.setLineDash([]);
+        const s=a*Math.sin(i)/b,tir=s>1;
+        const sub=TB.css('--sub'),good=TB.css('--good'),bad=TB.css('--bad'),ink=TB.css('--ink');
+        arrow(ctx,cx-L*Math.sin(i),cy-L*Math.cos(i),cx,cy,sub,2.5);
+        ctx.globalAlpha=tir?1:.3;arrow(ctx,cx,cy,cx+L*Math.sin(i),cy-L*Math.cos(i),bad,tir?2.5:1.5);ctx.globalAlpha=1;
+        let r=NaN;
+        if(!tir){r=Math.asin(s);arrow(ctx,cx,cy,cx+L*Math.sin(r),cy+L*Math.cos(r),good,2.5);}
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='left';
+        ctx.fillText('n₁ = '+a.toFixed(2),8,16);ctx.fillText('n₂ = '+b.toFixed(2),8,h-8);
+        ctx.fillText('normal',cx+6,cy-L-2);
+        ctx.strokeStyle=sub;ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(cx,cy,30,-Math.PI/2-i,-Math.PI/2);ctx.stroke();
+        ctx.textAlign='center';ctx.fillStyle=sub;
+        const am=-Math.PI/2-i/2;if(deg>0)ctx.fillText('i',cx+46*Math.cos(am),cy+46*Math.sin(am)+4);
+        if(!tir){ctx.strokeStyle=good;ctx.beginPath();ctx.arc(cx,cy,30,Math.PI/2-r,Math.PI/2);ctx.stroke();ctx.fillStyle=good;
+          const bm=Math.PI/2-r/2;if(r>0.05)ctx.fillText('r',cx+46*Math.cos(bm),cy+46*Math.sin(bm)+4);}
+        else{ctx.fillStyle=bad;ctx.textAlign='right';ctx.fillText('total internal reflection',w-8,cy+22);}
+        const tc=a>b?Math.asin(b/a)*180/Math.PI:null;
+        TB.set(root,'#phy-refraction-r1',tir?'none':(r*180/Math.PI).toFixed(1)+'°');
+        TB.set(root,'#phy-refraction-r2',tc==null?'none (n₁ ≤ n₂)':tc.toFixed(1)+'°');
+        TB.set(root,'#phy-refraction-r3',tir?'TIR':'Refracted');
+        TB.set(root,'#phy-refraction-r4',(3/b).toFixed(2)+'×10⁸ m/s');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Most internet traffic into Indian homes and mobile towers now rides on optical fibre (BharatNet is laying it to gram panchayats). Light is guided inside a glass core of n = 1.48 surrounded by cladding of n = 1.46. The critical angle is sin<sup>-1</sup>(1.46/1.48) = 80.6°, so any ray hitting the core wall at more than 80.6° to the normal is totally reflected, kilometre after kilometre, with almost no loss. The acceptance angle follows from NA = √(1.48² − 1.46²) = √0.0588 = 0.243, i.e. a cone of half-angle sin<sup>-1</sup>(0.243) ≈ 14° at the fibre end. Try the "Fibre core to cladding" preset and push i past 80.6°. A diamond (n = 2.42) has θ<sub>c</sub> = sin<sup>-1</sup>(1/2.42) = 24.4°, so light entering it gets trapped and bounces many times, giving its sparkle.</p></div>
+  <div class="quiz"><p class="q">Light travels from water (n = 1.33) into air. What is the critical angle?</p><div class="opts"><button>41.2°</button><button data-ok>48.8°</button><button>53.1°</button><button>90°</button></div><p class="why" hidden>sin θ<sub>c</sub> = n<sub>2</sub>/n<sub>1</sub> = 1/1.33 = 0.752, so θ<sub>c</sub> = 48.8°. For angles of incidence above this, light in water is totally reflected at the surface.</p></div>
+</article><div class="pager"><a href="phy-em-waves.html"><small>Previous</small>Electromagnetic waves</a><a class="next" href="phy-lenses.html"><small>Next</small>Lenses, mirrors and instruments</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

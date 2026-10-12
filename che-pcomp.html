@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NH3, H2SO4, O3 and Cl2 - Class 12 Chemistry</title>
+<meta name="description" content="NH3, H2SO4, O3 and Cl2: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-pcomp" data-title="NH3, H2SO4, O3 and Cl2">
+  <header><div class="tag">The p-Block Elements (NCERT Chemistry Part II, Ch 7)</div><h3>Four industrial and environmental p-block compounds</h3></header>
+  <p class="lead">Ammonia, sulphuric acid, ozone and chlorine are made, used or regulated on a vast scale. The first two are made by reversible, exothermic gas reactions where Le Chatelier's principle decides the plant conditions; ozone and chlorine are powerful oxidising agents that protect or purify, and harm when mishandled.</p>
+  <ul class="keypoints">
+    <li>Haber process: N<sub>2</sub> + 3H<sub>2</sub> ⇌ 2NH<sub>3</sub>, ΔH = −92.4 kJ mol⁻¹. High pressure (about 200 atm) favours NH<sub>3</sub>; low temperature favours it too but is too slow, so about 700 K with an iron catalyst (K<sub>2</sub>O and Al<sub>2</sub>O<sub>3</sub> promoters) is a compromise.</li>
+    <li>Contact process: 2SO<sub>2</sub> + O<sub>2</sub> ⇌ 2SO<sub>3</sub>, ΔH = −196 kJ mol⁻¹, V<sub>2</sub>O<sub>5</sub> catalyst, about 720 K and only about 2 bar because the yield is already high. SO<sub>3</sub> is absorbed in conc. H<sub>2</sub>SO<sub>4</sub> to give oleum (H<sub>2</sub>S<sub>2</sub>O<sub>7</sub>), which is then diluted.</li>
+    <li>Ozone, O<sub>3</sub>: bent molecule (about 117°), made by a silent electric discharge through O<sub>2</sub>, endothermic and unstable, a strong oxidant. The stratospheric ozone layer absorbs harmful UV; CFCs destroy it.</li>
+    <li>Chlorine: made by electrolysis of brine (chlor-alkali) or the Deacon process. Moist Cl<sub>2</sub> bleaches by oxidation through HOCl, and kills microbes in drinking water.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">K<sub>p</sub> = p²(NH<sub>3</sub>) / [p(N<sub>2</sub>) p³(H<sub>2</sub>)]<small>Haber equilibrium constant, units atm⁻²</small></div>
+    <div class="eq">K<sub>p</sub> = p²(SO<sub>3</sub>) / [p²(SO<sub>2</sub>) p(O<sub>2</sub>)]<small>Contact equilibrium constant, units atm⁻¹</small></div>
+    <div class="eq">ln K = −ΔH/RT + ΔS/R<small>Van't Hoff form with ΔG = ΔH − TΔS; exothermic reactions have K falling as T rises</small></div>
+    <div class="eq">3O<sub>2</sub> ⇌ 2O<sub>3</sub>, ΔH = +142 kJ per mol O<sub>3</sub><small>Silent electric discharge</small></div>
+    <div class="eq">Cl<sub>2</sub> + H<sub>2</sub>O → HCl + HOCl<small>HOCl → HCl + [O]; the nascent oxygen bleaches and disinfects</small></div>
+    <div class="eq">4HCl + O<sub>2</sub> → 2Cl<sub>2</sub> + 2H<sub>2</sub>O<small>Deacon process, CuCl<sub>2</sub> catalyst, about 670 K</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Equilibrium yield: Haber and Contact processes</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-pcomp-rx">Reaction</label><select id="che-pcomp-rx"><option value="h">Haber: N₂ + 3H₂ ⇌ 2NH₃</option><option value="c">Contact: 2SO₂ + O₂ ⇌ 2SO₃</option></select></div>
+      <div class="ctl"><label for="che-pcomp-t">Temperature <output></output></label><input type="range" id="che-pcomp-t" min="300" max="1000" step="10" value="700" data-unit=" K"></div>
+      <div class="ctl"><label for="che-pcomp-p">Pressure <output></output></label><input type="range" id="che-pcomp-p" min="1" max="300" step="1" value="200" data-unit=" atm"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">K<sub>p</sub><b data-r="k">-</b></div>
+      <div class="readout">Conversion of feed<b data-r="x">-</b></div>
+      <div class="readout">Product in mixture<b data-r="y">-</b></div>
+    </div>
+    <p data-r="note" style="margin-top:.6rem"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas');
+    const q=id=>root.querySelector('#che-pcomp-'+id);
+    const R=8.314;
+    const RX={h:{dH:-92400,dS:-198.3,ku:' atm⁻²',prod:'NH₃',def:[700,200],f:(x,P)=>16*x*x*(2-x)*(2-x)/(27*Math.pow(1-x,4)*P*P),y:x=>200*x/(4-2*x)},
+              c:{dH:-196000,dS:-188.1,ku:' atm⁻¹',prod:'SO₃',def:[720,2],f:(x,P)=>x*x*(3-x)/(Math.pow(1-x,3)*P),y:x=>200*x/(3-x)}};
+    const K=(r,T)=>Math.exp(-(r.dH-T*r.dS)/(R*T));
+    function solve(r,T,P){const k=K(r,T);let lo=0,hi=1-1e-12;for(let i=0;i<90;i++){const m=(lo+hi)/2;if(r.f(m,P)<k)lo=m;else hi=m;}return (lo+hi)/2;}
+    function fmtK(k){return k>=100||k<0.01?k.toExponential(2):k.toFixed(3);}
+    q('rx').addEventListener('change',()=>{const r=RX[q('rx').value];q('t').value=r.def[0];q('p').value=r.def[1];q('t').dispatchEvent(new Event('input',{bubbles:true}));q('p').dispatchEvent(new Event('input',{bubbles:true}));});
+    function draw(){
+      const key=q('rx').value,r=RX[key],T=+q('t').value,P=+q('p').value;
+      const {ctx,w,h}=TB.canvas(cv,250);
+      const ink=TB.css('--ink'),sc=TB.css('--sub'),mut=TB.css('--muted'),line=TB.css('--line');
+      const L=44,Rr=14,Tp=24,B=40,pw=w-L-Rr,ph=h-Tp-B;
+      const X=t=>L+pw*(t-300)/700,Y=v=>Tp+ph*(1-v/100);
+      ctx.font='12px "Source Sans 3", sans-serif';
+      ctx.strokeStyle=line;ctx.lineWidth=1;ctx.fillStyle=mut;ctx.textAlign='right';
+      [0,50,100].forEach(v=>{ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(w-Rr,Y(v));ctx.stroke();ctx.fillText(v+'%',L-6,Y(v)+4);});
+      ctx.textAlign='center';[300,500,700,900].forEach(t=>{ctx.fillText(t,X(t),h-22);});
+      ctx.fillStyle=ink;ctx.fillText('Temperature (K)',L+pw/2,h-6);
+      ctx.textAlign='left';ctx.fillText('Equilibrium conversion (%)',L,14);
+      function curve(p,col,dash){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash(dash);ctx.beginPath();
+        for(let t=300;t<=1000;t+=10){const v=solve(r,t,p)*100;t===300?ctx.moveTo(X(t),Y(v)):ctx.lineTo(X(t),Y(v));}ctx.stroke();ctx.setLineDash([]);}
+      curve(1,mut,[5,4]);curve(P,sc,[]);
+      const x=solve(r,T,P)*100;
+      ctx.fillStyle=ink;ctx.beginPath();ctx.arc(X(T),Y(x),5,0,6.283);ctx.fill();
+      ctx.textAlign='right';ctx.fillStyle=sc;ctx.fillText('solid: '+P+' atm',w-Rr-4,Tp+14);ctx.fillStyle=mut;ctx.fillText('dashed: 1 atm',w-Rr-4,Tp+30);
+      TB.set(root,'[data-r=k]',fmtK(K(r,T))+r.ku);
+      TB.set(root,'[data-r=x]',TB.fmt(x,1)+' %');
+      TB.set(root,'[data-r=y]',TB.fmt(r.y(x/100),1)+' mol % '+r.prod);
+      TB.set(root,'p[data-r=note]',(key==='h'?'Haber: ':'Contact: ')+'raise pressure and the curve moves up (fewer gas moles on the right); raise temperature and it falls (the forward reaction is exothermic). '+(key==='h'?'Real plants run near 700 K and 200 atm for speed and get about 15 to 20 % NH₃ per pass, then recycle the unreacted gas. This ideal-gas, constant-ΔH model overestimates a little.':'Because conversion is already near complete at about 2 atm, extra pressure is not worth the cost. Excess air in real plants pushes it to about 99 %.'));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Compound card: preparation, properties, uses</div>
+    <div class="controls"><div class="ctl"><label for="che-pcomp-sel">Compound</label><select id="che-pcomp-sel"><option value="0">Ammonia, NH₃</option><option value="1">Sulphuric acid, H₂SO₄</option><option value="2">Ozone, O₃</option><option value="3">Chlorine, Cl₂</option></select></div></div>
+    <div class="tw"><table class="t"><tbody id="che-pcomp-tb"></tbody></table></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const D=[
+     ['Ammonia, NH₃',['Industry','Haber process: N₂ + 3H₂ ⇌ 2NH₃, Fe catalyst, 200 atm, about 700 K'],['Lab','2NH₄Cl + Ca(OH)₂ → 2NH₃ + CaCl₂ + 2H₂O, dried over quicklime (not conc. H₂SO₄ or CaCl₂, which react with it)'],['Shape','Trigonal pyramidal, sp³, H–N–H angle 107° (one lone pair)'],['Key properties','Colourless, pungent, extremely soluble in water; weak base NH₃ + H₂O ⇌ NH₄⁺ + OH⁻; forms deep blue [Cu(NH₃)₄]²⁺ with Cu²⁺'],['Uses','Urea and ammonium fertilisers, nitric acid (Ostwald process), refrigerant, cleaning solutions']],
+     ['Sulphuric acid, H₂SO₄',['Industry','Contact process: S + O₂ → SO₂; 2SO₂ + O₂ ⇌ 2SO₃ (V₂O₅, 720 K, 2 bar); SO₃ + H₂SO₄ → H₂S₂O₇ (oleum); oleum + H₂O → 2H₂SO₄'],['Why not SO₃ in water','The reaction is so exothermic that a fine acid mist forms and is hard to condense'],['Key properties','Dense oily liquid, strong dibasic acid; powerful dehydrating agent (chars sugar, C₁₂H₂₂O₁₁ → 12C + 11H₂O); hot conc. acid oxidises Cu, C and S'],['Uses','Fertilisers (superphosphate, ammonium sulphate), lead-acid batteries, detergents, paints and pigments, petroleum refining'],['Indian note','Consumption of H₂SO₄ is often taken as a measure of industrial development']],
+     ['Ozone, O₃',['Preparation','Silent electric discharge through dry O₂: 3O₂ → 2O₃, ΔH = +142 kJ per mol O₃ (endothermic, so ozone decomposes back to O₂)'],['Shape','Bent, O–O–O angle about 117°, resonance hybrid; pale blue gas, diamagnetic'],['Key properties','Strong oxidant: PbS + 4O₃ → PbSO₄ + 4O₂; 2I⁻ + H₂O + O₃ → 2OH⁻ + I₂ + O₂ (turns starch-iodide paper blue)'],['Uses','Sterilising drinking water, bleaching oils and waxes, air purification'],['Ozone layer','Found at about 15 to 35 km. Cl atoms from CFCs catalyse O₃ → O₂ destruction. The Montreal Protocol (1987) phases CFCs out; India is a party']],
+     ['Chlorine, Cl₂',['Industry','Electrolysis of brine in the chlor-alkali process (also gives NaOH and H₂); Deacon process 4HCl + O₂ → 2Cl₂ + 2H₂O'],['Lab','MnO₂ + 4HCl → MnCl₂ + Cl₂ + 2H₂O'],['Key properties','Greenish-yellow, pungent, toxic gas; moist Cl₂ bleaches (permanent, by oxidation, unlike SO₂); with excess NH₃ gives NH₄Cl and N₂, with excess Cl₂ gives explosive NCl₃'],['Uses','Disinfecting drinking water at about 0.2 to 0.4 ppm, bleaching paper and cotton, PVC, pesticides, bleaching powder, HCl']]
+    ];
+    const tb=root.querySelector('#che-pcomp-tb'),sel=root.querySelector('#che-pcomp-sel');
+    function draw(){const d=D[+sel.value];tb.textContent='';
+      d.slice(1).forEach(r=>{const tr=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');th.textContent=r[0];th.style.whiteSpace='nowrap';td.textContent=r[1];tr.appendChild(th);tr.appendChild(td);tb.appendChild(tr);});}
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Worked example: ammonia and hydrogen per tonne of urea.</b> Urea is made by 2NH<sub>3</sub> + CO<sub>2</sub> → NH<sub>2</sub>CONH<sub>2</sub> + H<sub>2</sub>O. Molar masses: NH<sub>3</sub> 17, urea 60. NH<sub>3</sub> per tonne urea = 1000 kg × (2×17)/60 = 567 kg. Making 567 kg NH<sub>3</sub> from N<sub>2</sub> + 3H<sub>2</sub> needs 567 × 6/34 = 100 kg H<sub>2</sub>. Urea is 28/60 = 46.7 % nitrogen by mass, which is why it is the most used fertiliser in India's Green Revolution agriculture, with consumption of over 30 million tonnes a year, much of it made by plants fed with natural gas.</p>
+    <p><b>Bhopal, 2 to 3 December 1984.</b> Water entered a storage tank of methyl isocyanate (CH<sub>3</sub>N=C=O), a reactive intermediate used for the pesticide carbaryl. The exothermic reaction pushed the tank's temperature and pressure up, and tens of tonnes of toxic vapour escaped to the sleeping city. Thousands died within days and hundreds of thousands were injured. The chemistry lesson: reactive, volatile intermediates should be stored in small amounts, kept dry and cool, with working safety systems, or avoided by a different synthesis.</p>
+    <p><b>Chlorine in the tap.</b> Municipal water in Indian cities is chlorinated to leave a residual of roughly 0.2 to 0.5 mg/L at the consumer's end, enough to kill bacteria through HOCl without making water unpleasant.</p>
+  </div>
+  <div class="quiz"><p class="q">In the Contact process, why is SO<sub>3</sub> absorbed in conc. H<sub>2</sub>SO<sub>4</sub> instead of being added directly to water?</p><div class="opts"><button data-ok>The direct reaction is violently exothermic and forms a fine acid mist that is difficult to condense.</button><button>SO<sub>3</sub> does not react with water.</button><button>Water would reverse the equilibrium of SO<sub>2</sub> oxidation.</button><button>Conc. H<sub>2</sub>SO<sub>4</sub> acts as the catalyst for the reaction.</button></div><p class="why" hidden>SO<sub>3</sub> dissolves in conc. H<sub>2</sub>SO<sub>4</sub> to give oleum, H<sub>2</sub>S<sub>2</sub>O<sub>7</sub>, which is then diluted with water to the required strength in a controlled way. SO<sub>3</sub> reacts readily with water, and the catalyst is V<sub>2</sub>O<sub>5</sub>.</p></div>
+</article><div class="pager"><a href="che-pblock.html"><small>Previous</small>p-block: groups 15 to 18</a><a class="next" href="che-everyday.html"><small>Next</small>Chemistry in everyday life</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

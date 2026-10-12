@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DNA, RNA and vitamins - Class 12 Chemistry</title>
+<meta name="description" content="DNA, RNA and vitamins: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-nucleic" data-title="DNA, RNA and vitamins">
+  <header><div class="tag">Biomolecules (NCERT Chemistry Part II, Ch 10)</div><h3>Nucleic acids, base pairing and vitamins</h3></header>
+  <p class="lead">DNA and RNA are polymers of nucleotides, each made of a sugar, a phosphate and a nitrogenous base. The order of bases stores genetic information, and hydrogen bonding between specific base pairs lets DNA copy itself and be read. Vitamins are small organic molecules the body needs in tiny amounts but cannot make in enough quantity.</p>
+  <ul class="keypoints">
+    <li>Nucleoside = base + sugar; nucleotide = base + sugar + phosphate. Nucleotides are joined by phosphodiester links between C3' of one sugar and C5' of the next.</li>
+    <li>DNA: sugar is 2-deoxyribose; bases A, G (purines), C, T (pyrimidines); double helix of two antiparallel strands. RNA: sugar is ribose; T is replaced by uracil (U); usually single-stranded (mRNA, rRNA, tRNA).</li>
+    <li>Base pairing: A pairs with T (2 hydrogen bonds), G pairs with C (3 hydrogen bonds). Chargaff's rule: in DNA, A = T and G = C.</li>
+    <li>DNA replicates semi-conservatively; during protein synthesis the code is copied into mRNA, which is read three bases (one codon) at a time.</li>
+    <li>Vitamins: fat-soluble A, D, E, K are stored in the body; water-soluble B-complex and C must be supplied regularly. Each deficiency has its own disease.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">A = T, G = C; A + G = T + C<small>Chargaff's rules for double-stranded DNA</small></div>
+    <div class="eq">H-bonds = 2 × (A–T pairs) + 3 × (G–C pairs)<small>Each G–C pair is stronger than an A–T pair</small></div>
+    <div class="eq">%GC = (G + C) / total bases × 100<small>High GC means a more heat-stable DNA</small></div>
+    <div class="eq">Length = (base pairs) × 0.34 nm<small>10 base pairs per helical turn of 3.4 nm</small></div>
+    <div class="eq">DNA → mRNA: A→U, T→A, G→C, C→G<small>Template strand to RNA (transcription)</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: pair the bases, transcribe, read the codons</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-nucleic-seq">Template strand, written 3' to 5' (letters A, T, G, C)</label>
+        <input type="text" id="che-nucleic-seq" value="TACGGCATGCAATTCACT" maxlength="45" autocomplete="off" spellcheck="false" style="width:100%;font:inherit;font-family:var(--f-mono);padding:.35rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;text-transform:uppercase"></div>
+    </div>
+    <canvas class="stage" id="che-nucleic-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Length<b id="che-nucleic-len">-</b></div>
+      <div class="readout">GC content<b id="che-nucleic-gc">-</b></div>
+      <div class="readout">Hydrogen bonds in the duplex<b id="che-nucleic-hb">-</b></div>
+      <div class="readout">Duplex length<b id="che-nucleic-nm">-</b></div>
+    </div>
+    <p id="che-nucleic-codons" style="font-family:var(--f-mono);font-size:.9rem;word-break:break-word"></p>
+    <p id="che-nucleic-msg" style="font-size:.85rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const TBL='FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG';
+      const B='UCAG';
+      const N3={F:'Phe',L:'Leu',S:'Ser',Y:'Tyr','*':'Stop',C:'Cys',W:'Trp',P:'Pro',H:'His',Q:'Gln',R:'Arg',I:'Ile',M:'Met',T:'Thr',N:'Asn',K:'Lys',V:'Val',A:'Ala',D:'Asp',E:'Glu',G:'Gly'};
+      const comp={A:'T',T:'A',G:'C',C:'G'},rna={A:'U',T:'A',G:'C',C:'G'};
+      function draw(){
+        const raw=$('che-nucleic-seq').value.toUpperCase();
+        const s=raw.replace(/[^ATGC]/g,'');
+        $('che-nucleic-msg').textContent=s.length<raw.length?'Letters other than A, T, G, C were ignored.':'';
+        const c=[...s].map(x=>comp[x]).join('');
+        const m=[...s].map(x=>rna[x]).join('');
+        const gc=[...s].filter(x=>x==='G'||x==='C').length,at=s.length-gc;
+        TB.set(root,'#che-nucleic-len',s.length+' bases');
+        TB.set(root,'#che-nucleic-gc',s.length?(gc/s.length*100).toFixed(0)+' %':'-');
+        TB.set(root,'#che-nucleic-hb',2*at+3*gc);
+        TB.set(root,'#che-nucleic-nm',(s.length*0.34).toFixed(2)+' nm');
+        let cod=[];
+        for(let i=0;i+2<m.length;i+=3){const t=m.substr(i,3),idx=16*B.indexOf(t[0])+4*B.indexOf(t[1])+B.indexOf(t[2]);cod.push(t+' = '+N3[TBL[idx]]);}
+        $('che-nucleic-codons').textContent=cod.length?'Codons: '+cod.join(' | '):'';
+        const g=TB.canvas($('che-nucleic-cv'),170),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),hi=TB.css('--maths');
+        const maxN=Math.max(1,Math.floor((w-70)/17)),n=Math.min(s.length,maxN),sp=(w-70)/Math.max(n,1);
+        ctx.font='600 13px "JetBrains Mono", monospace';ctx.textAlign='center';
+        const y1=40,y2=86,y3=132;
+        ctx.fillStyle=mut;ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='left';
+        ctx.fillText("3'",4,y1+4);ctx.fillText("5'",4,y2+4);ctx.fillText("5'",4,y3+4);
+        ctx.fillText("Template",4,y1-18);ctx.fillText("Complementary DNA",4,y2-18);ctx.fillText("mRNA made on the template (T becomes U)",4,y3-18);
+        ctx.textAlign='right';ctx.fillText("5'",w-4,y1+4);ctx.fillText("3'",w-4,y2+4);ctx.fillText("3'",w-4,y3+4);
+        ctx.textAlign='center';
+        for(let i=0;i<n;i++){
+          const x=30+sp*(i+.5),gcp=s[i]==='G'||s[i]==='C',col=gcp?hi:sub;
+          ctx.font='600 14px "JetBrains Mono", monospace';
+          ctx.fillStyle=col;ctx.fillText(s[i],x,y1+5);ctx.fillText(c[i],x,y2+5);ctx.fillText(m[i],x,y3+5);
+          ctx.strokeStyle=mut;ctx.lineWidth=1.2;
+          const k=gcp?3:2;for(let j=0;j<k;j++){const dx=(j-(k-1)/2)*4;ctx.beginPath();ctx.moveTo(x+dx,y1+12);ctx.lineTo(x+dx,y2-12);ctx.stroke();}
+          ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(x,y2+12);ctx.lineTo(x,y3-12);ctx.stroke();ctx.setLineDash([]);
+        }
+        if(s.length>n){ctx.fillStyle=mut;ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='right';ctx.fillText('first '+n+' of '+s.length+' shown',w-4,h-4);}
+        ctx.fillStyle=mut;ctx.font='11px "Source Sans 3", sans-serif';ctx.textAlign='left';ctx.fillText('Orange: G–C (3 H-bonds)   Green: A–T (2 H-bonds)',4,h-4);
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: vitamin finder</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-nucleic-vit">Vitamin</label><select id="che-nucleic-vit">
+        <option value="0">A (retinol)</option><option value="1">B1 (thiamine)</option><option value="2">B2 (riboflavin)</option><option value="3">B6 (pyridoxine)</option><option value="4">B12 (cyanocobalamin)</option><option value="5" selected>C (ascorbic acid)</option><option value="6">D (calciferol)</option><option value="7">E (tocopherol)</option><option value="8">K (phylloquinone)</option></select></div>
+    </div>
+    <div class="readouts">
+      <div class="readout">Solubility<b id="che-nucleic-vs">-</b></div>
+      <div class="readout">Good sources<b id="che-nucleic-vsrc" style="font-size:.95rem">-</b></div>
+      <div class="readout">Deficiency disease<b id="che-nucleic-vd" style="font-size:.95rem">-</b></div>
+    </div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const V=[['Fat-soluble','Fish liver oil, carrots, butter, milk','Xerophthalmia (hardening of the cornea) and night blindness'],
+        ['Water-soluble','Yeast, milk, green vegetables, cereals','Beri-beri (loss of appetite, retarded growth)'],
+        ['Water-soluble','Milk, egg white, liver, kidney','Cheilosis (cracks at corners of mouth and lips), digestive disorders'],
+        ['Water-soluble','Yeast, milk, egg yolk, cereals, pulses','Convulsions'],
+        ['Water-soluble','Meat, fish, egg, curd','Pernicious anaemia (RBCs lack haemoglobin)'],
+        ['Water-soluble','Citrus fruits, amla, green leafy vegetables','Scurvy (bleeding gums)'],
+        ['Fat-soluble','Sunlight on skin, fish, egg yolk','Rickets (children) and osteomalacia (adults)'],
+        ['Fat-soluble','Vegetable oils such as wheat-germ and sunflower oil','Increased fragility of RBCs, muscular weakness'],
+        ['Fat-soluble','Green leafy vegetables','Increased blood clotting time']];
+      function draw(){const v=V[+$('che-nucleic-vit').value];TB.set(root,'#che-nucleic-vs',v[0]);TB.set(root,'#che-nucleic-vsrc',v[1]);TB.set(root,'#che-nucleic-vd',v[2]);}
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="tw"><table class="t"><thead><tr><th></th><th>DNA</th><th>RNA</th></tr></thead><tbody>
+    <tr><td>Sugar</td><td>2-Deoxyribose</td><td>Ribose</td></tr>
+    <tr><td>Bases</td><td>A, G, C, T</td><td>A, G, C, U</td></tr>
+    <tr><td>Structure</td><td>Double helix</td><td>Single strand (mRNA, rRNA, tRNA)</td></tr>
+    <tr><td>Role</td><td>Stores genetic information; replicates</td><td>Carries and uses it in protein synthesis</td></tr>
+  </tbody></table></div>
+
+  <div class="world"><h4>In the real world</h4><p>A human haploid genome has about 3.1 × 10⁹ base pairs. At 0.34 nm per base pair that is 3.1 × 10⁹ × 0.34 nm = 1.05 × 10⁹ nm, about 1.05 m of DNA, so a diploid cell (two sets) holds roughly 2 m of DNA packed into a nucleus a few micrometres wide. The same base-pair uniqueness is behind DNA fingerprinting used in Indian forensic and paternity cases. A 10-base-pair stretch with 4 G–C and 6 A–T pairs has 4 × 3 + 6 × 2 = 24 hydrogen bonds. Edible oils such as mustard, groundnut and sunflower oil are triglycerides of fatty acids and carry vitamin E; FSSAI-standard fortified oil has vitamins A and D added to help close deficiency gaps, and vitamin D itself is made in our skin on sunlight exposure.</p></div>
+  <div class="quiz"><p class="q">A double-stranded DNA sample has 30 % adenine. What percentage is guanine?</p>
+    <div class="opts"><button>30 %</button><button>40 %</button><button data-ok>20 %</button><button>70 %</button></div>
+    <p class="why" hidden>A = T = 30 %, so A + T = 60 %. The remaining 40 % is G + C, and G = C, so G = 20 %.</p></div>
+</article><div class="pager"><a href="che-biomol.html"><small>Previous</small>Carbohydrates, amino acids, proteins</a><a class="next" href="che-polymers.html"><small>Next</small>Polymers</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

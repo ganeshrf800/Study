@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chemical kinetics - Class 12 Chemistry</title>
+<meta name="description" content="Chemical kinetics: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-kinetics" data-title="Chemical kinetics">
+  <header><div class="tag">Chemical Kinetics (NCERT Chemistry Part I, Ch 3)</div><h3>Rate law, order, half-life and the Arrhenius equation</h3></header>
+  <p class="lead">Kinetics asks how fast a reaction goes. The rate law links rate to concentrations through an order found by experiment, and each order has its own integrated equation and half-life. Temperature matters hugely: the Arrhenius equation shows that the rate constant grows exponentially as the activation energy barrier becomes easier to cross.</p>
+  <ul class="keypoints">
+    <li>Rate = k[A]<sup>x</sup>. The order x is found from experiments and need not match the coefficient in the balanced equation.</li>
+    <li>Zero order: [A] falls linearly. First order: [A] decays exponentially and t<sub>½</sub> is independent of [A]<sub>0</sub>. Second order: t<sub>½</sub> ∝ 1/[A]<sub>0</sub>.</li>
+    <li>Only molecules with energy at least E<sub>a</sub> react. Raising T raises that fraction sharply; a catalyst lowers E<sub>a</sub>.</li>
+    <li>For many reactions near room temperature, a 10 K rise roughly doubles or triples the rate.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Rate = −d[R]/dt = k[A]<sup>x</sup>[B]<sup>y</sup><small>Order = x + y; unit of k: (mol L⁻¹)<sup>1−order</sup> s⁻¹</small></div>
+    <div class="eq">Zero: [A] = [A]<sub>0</sub> − kt;  t<sub>½</sub> = [A]<sub>0</sub>/2k<small>Unit of k: mol L⁻¹ s⁻¹</small></div>
+    <div class="eq">First: ln([A]<sub>0</sub>/[A]) = kt;  t<sub>½</sub> = 0.693/k<small>Unit of k: s⁻¹</small></div>
+    <div class="eq">Second: 1/[A] − 1/[A]<sub>0</sub> = kt;  t<sub>½</sub> = 1/(k[A]<sub>0</sub>)<small>Unit of k: L mol⁻¹ s⁻¹</small></div>
+    <div class="eq">k = A e<sup>−E<sub>a</sub>/RT</sup><small>R = 8.314 J K⁻¹ mol⁻¹</small></div>
+    <div class="eq">log(k<sub>2</sub>/k<sub>1</sub>) = (E<sub>a</sub> / 2.303R) × (T<sub>2</sub> − T<sub>1</sub>)/(T<sub>1</sub>T<sub>2</sub>)<small>Two-temperature form</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: concentration against time</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-kinetics-ord">Order of reaction</label><select id="che-kinetics-ord"><option value="0">Zero order</option><option value="1" selected>First order</option><option value="2">Second order</option></select></div>
+      <div class="ctl"><label for="che-kinetics-k">Rate constant k (units vary with order) <output></output></label><input type="range" id="che-kinetics-k" min="0.01" max="0.2" step="0.005" value="0.05"></div>
+      <div class="ctl"><label for="che-kinetics-a0">Initial [A]₀ <output></output></label><input type="range" id="che-kinetics-a0" min="0.2" max="2" step="0.1" value="1" data-unit=" mol/L"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Half-life t<sub>½</sub> (s)<b data-r="th">-</b></div>
+      <div class="readout">[A] at 25 s (mol/L)<b data-r="a25">-</b></div>
+      <div class="readout">Initial rate (mol L⁻¹ s⁻¹)<b data-r="r0">-</b></div>
+      <div class="readout">Unit of k<b data-r="u">-</b></div>
+      <div class="readout">t<sub>½</sub> and [A]₀<b data-r="dep">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    function draw(){
+      const o=+$('#che-kinetics-ord').value,k=+$('#che-kinetics-k').value,A0=+$('#che-kinetics-a0').value;
+      const A=t=>o===0?Math.max(0,A0-k*t):o===1?A0*Math.exp(-k*t):A0/(1+A0*k*t);
+      const th=o===0?A0/(2*k):o===1?Math.LN2/k:1/(k*A0);
+      const {ctx,w,h}=TB.canvas(cv,250);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),line=TB.css('--line');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const ml=44,mr=14,mt=14,mb=34,X=t=>ml+t/50*(w-ml-mr),Y=a=>h-mb-a/2*(h-mt-mb);
+      ctx.lineWidth=1;
+      for(let a=0;a<=2;a+=0.5){ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(ml,Y(a));ctx.lineTo(w-mr,Y(a));ctx.stroke();T(a.toFixed(1),ml-30,Y(a)+4,mut)}
+      for(let t=0;t<=50;t+=10){T(String(t),X(t),h-mb+16,mut,1)}
+      ctx.strokeStyle=mut;ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,h-mb);ctx.lineTo(w-mr,h-mb);ctx.stroke();
+      T('Time (s)',(ml+w-mr)/2,h-4,ink,1);
+      ctx.save();ctx.translate(11,(mt+h-mb)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('[A] (mol/L)',0,0);ctx.restore();ctx.textAlign='left';
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();
+      for(let t=0;t<=50;t+=0.5){const x=X(t),y=Y(A(t));t?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+      if(th<=50){
+        ctx.setLineDash([4,4]);ctx.lineWidth=1.2;ctx.strokeStyle=ink;
+        ctx.beginPath();ctx.moveTo(ml,Y(A0/2));ctx.lineTo(X(th),Y(A0/2));ctx.lineTo(X(th),h-mb);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=sub;ctx.beginPath();ctx.arc(X(th),Y(A0/2),4,0,6.283);ctx.fill();
+        T('t½ = '+TB.fmt(th,1)+' s',X(th)+8,Y(A0/2)-8,ink);
+      }
+      const u=o===0?'mol L⁻¹ s⁻¹':o===1?'s⁻¹':'L mol⁻¹ s⁻¹';
+      TB.set(root,'[data-r=th]',TB.fmt(th,1));TB.set(root,'[data-r=a25]',A(25).toFixed(3));
+      TB.set(root,'[data-r=r0]',TB.fmt(k*Math.pow(A0,o),4));TB.set(root,'[data-r=u]',u);
+      TB.set(root,'[data-r=dep]',o===0?'proportional':o===1?'independent':'inversely prop.');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: Arrhenius equation</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-kinetics-T">Temperature T <output></output></label><input type="range" id="che-kinetics-T" min="280" max="400" step="1" value="300" data-unit=" K"></div>
+      <div class="ctl"><label for="che-kinetics-ea">Activation energy E<sub>a</sub> <output></output></label><input type="range" id="che-kinetics-ea" min="20" max="120" step="1" value="55" data-unit=" kJ/mol"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">k at T (s⁻¹)<b data-r="k1">-</b></div>
+      <div class="readout">k at T + 10 K (s⁻¹)<b data-r="k2">-</b></div>
+      <div class="readout">k(T+10)/k(T)<b data-r="ratio">-</b></div>
+      <div class="readout">Fraction with E ≥ E<sub>a</sub><b data-r="f">-</b></div>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted)">Assumes a frequency factor A = 10¹⁰ s⁻¹. The vertical axis is log₁₀ k, so a straight-looking rise means exponential growth.</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    const sup=n=>String(n).replace(/-/g,'⁻').replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+    const sci=x=>{const e=Math.floor(Math.log10(x));return (x/Math.pow(10,e)).toFixed(2)+'×10'+sup(e)};
+    function draw(){
+      const T0=+$('#che-kinetics-T').value,Ea=+$('#che-kinetics-ea').value*1000,R=8.314;
+      const lk=T=>10-Ea/(R*T*Math.LN10);
+      const {ctx,w,h}=TB.canvas(cv,230);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),line=TB.css('--line'),bad=TB.css('--bad');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const ml=44,mr=14,mt=14,mb=34,lo=lk(280),hi=lk(400),pad=(hi-lo)*0.08+0.05;
+      const X=t=>ml+(t-280)/120*(w-ml-mr),Y=v=>h-mb-(v-(lo-pad))/((hi+pad)-(lo-pad))*(h-mt-mb);
+      ctx.lineWidth=1;
+      for(let v=Math.ceil(lo-pad);v<=hi+pad;v++){ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(ml,Y(v));ctx.lineTo(w-mr,Y(v));ctx.stroke();T(String(v),ml-22,Y(v)+4,mut)}
+      for(let t=280;t<=400;t+=20)T(String(t),X(t),h-mb+16,mut,1);
+      ctx.strokeStyle=mut;ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,h-mb);ctx.lineTo(w-mr,h-mb);ctx.stroke();
+      T('Temperature (K)',(ml+w-mr)/2,h-4,ink,1);
+      ctx.save();ctx.translate(11,(mt+h-mb)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('log₁₀ k',0,0);ctx.restore();ctx.textAlign='left';
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();
+      for(let t=280;t<=400;t+=2){const x=X(t),y=Y(lk(t));t>280?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+      const T1=Math.min(T0+10,400);
+      ctx.fillStyle=sub;ctx.beginPath();ctx.arc(X(T0),Y(lk(T0)),5,0,6.283);ctx.fill();
+      ctx.strokeStyle=bad;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(T1),Y(lk(T1)),5,0,6.283);ctx.stroke();
+      const k1=Math.pow(10,lk(T0)),k2=Math.pow(10,lk(T0+10));
+      TB.set(root,'[data-r=k1]',sci(k1));TB.set(root,'[data-r=k2]',sci(k2));
+      TB.set(root,'[data-r=ratio]',(k2/k1).toFixed(2));
+      TB.set(root,'[data-r=f]',sci(Math.exp(-Ea/(R*T0))));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Pressure cooker.</b> Inside a cooker the pressure is about 1.5 atm, so water boils near 120 °C instead of 100 °C. With the rule that each 10 K doubles the rate, 20 K gives 2² = 4 times faster reaction, so dal that needs 60 minutes in an open pan is ready in about 15 minutes. (The rule corresponds to E<sub>a</sub> ≈ 53.6 kJ/mol near 300 K: 2.303 × 8.314 × 0.301 × (300 × 310 / 10) ≈ 53.6 × 10³ J.)</p>
+    <p><b>Fridge preserving food.</b> Going from 27 °C to 4 °C is a 23 K drop, so spoilage reactions slow by roughly 2<sup>2.3</sup> ≈ 5 times. Milk that turns sour in about 6 hours at room temperature lasts more than a day in the fridge.</p>
+  </div>
+  <div class="quiz"><p class="q">A first-order reaction has k = 0.0231 min⁻¹. What is its half-life?</p><div class="opts"><button>15 min</button><button data-ok>30 min</button><button>60 min</button><button>It depends on the initial concentration</button></div><p class="why" hidden>t<sub>½</sub> = 0.693 / k = 0.693 / 0.0231 = 30 min. For a first-order reaction the half-life does not depend on the initial concentration.</p></div>
+</article><div class="pager"><a href="che-electrochem.html"><small>Previous</small>Electrochemistry</a><a class="next" href="che-solidstate.html"><small>Next</small>Solid state: unit cells</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

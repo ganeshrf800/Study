@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Coordination compounds - Class 12 Chemistry</title>
+<meta name="description" content="Coordination compounds: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-coordination" data-title="Coordination compounds">
+  <header><div class="tag">Coordination Compounds</div><h3>Werner's theory, ligands, IUPAC naming and isomerism</h3></header>
+  <p class="lead">In a coordination compound a central metal atom or ion is bound to a fixed number of ligands, which donate lone pairs to it through coordinate bonds. The metal plus its ligands form the coordination sphere, written in square brackets, for example [Co(NH<sub>3</sub>)<sub>6</sub>]Cl<sub>3</sub>.</p>
+  <ul class="keypoints">
+    <li>Werner's theory: a metal has primary valence (its oxidation state, satisfied by ions that can ionise) and secondary valence (its coordination number, satisfied by ligands with fixed geometry). In CoCl<sub>3</sub>·6NH<sub>3</sub> all three Cl<sup>−</sup> precipitate with AgNO<sub>3</sub>; in CoCl<sub>3</sub>·5NH<sub>3</sub> only two do.</li>
+    <li>Coordination number (CN) = number of donor atoms attached to the metal. Denticity is the number of donor atoms a ligand uses: Cl<sup>−</sup>, NH<sub>3</sub> unidentate; en and oxalate bidentate (these form chelate rings); EDTA<sup>4−</sup> hexadentate. Ambidentate ligands (NO<sub>2</sub><sup>−</sup>, SCN<sup>−</sup>) can bind through two different atoms.</li>
+    <li>Naming: ligands first in alphabetical order (ignoring prefixes di, tri…), then the metal; anionic complexes end in -ate (ferrate, cuprate, argentate); oxidation state in Roman numerals. Anionic ligands end in -o (chlorido, cyanido), neutral ones keep their names except aqua, ammine, carbonyl.</li>
+    <li>Isomerism: structural (ionisation, linkage, coordination, hydrate) and stereo (geometrical cis/trans, and optical for non-superposable mirror images).</li>
+    <li>Oxidation state of metal = overall charge of complex − sum of ligand charges.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">CN = (number of ligands) × (denticity)<small>[Fe(CN)<sub>6</sub>]³⁻: 6 × 1 = 6; [Cr(en)<sub>3</sub>]³⁺: 3 × 2 = 6</small></div>
+    <div class="eq">charge = x + Σ(ligand charges)<small>Solve for x, the oxidation state of the metal</small></div>
+    <div class="eq">Prefixes: di, tri, tetra, penta, hexa; bis, tris, tetrakis for complex ligand names<small>e.g. bis(ethane-1,2-diamine)</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Build a complex ion and name it</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-coordination-m">Metal</label><select id="che-coordination-m"><option value="Fe">Fe</option><option value="Co">Co</option><option value="Cr">Cr</option><option value="Ni">Ni</option><option value="Cu">Cu</option><option value="Pt">Pt</option></select></div>
+      <div class="ctl"><label for="che-coordination-ox">Oxidation state of metal</label><select id="che-coordination-ox"><option value="0">0</option><option value="1">+1</option><option value="2">+2</option><option value="3" selected>+3</option><option value="4">+4</option></select></div>
+      <div class="ctl"><label for="che-coordination-l">Ligand</label><select id="che-coordination-l"><option value="Cl">Cl⁻ (chlorido)</option><option value="NH3" selected>NH₃ (ammine)</option><option value="H2O">H₂O (aqua)</option><option value="CN">CN⁻ (cyanido)</option><option value="CO">CO (carbonyl)</option><option value="en">en (bidentate, neutral)</option><option value="ox">oxalate (bidentate, 2−)</option></select></div>
+      <div class="ctl"><label for="che-coordination-n">Number of ligands <output></output></label><input type="range" id="che-coordination-n" min="1" max="6" step="1" value="6" data-unit=""></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Formula<b data-r="f" style="font-size:.95rem">-</b></div>
+      <div class="readout">Coordination number<b data-r="cn">-</b></div>
+      <div class="readout">Geometry<b data-r="geo" style="font-size:.85rem">-</b></div>
+    </div>
+    <p style="margin-top:.6rem"><b>IUPAC name:</b> <span data-r="name">-</span></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas');
+    const M={Fe:['iron','ferrate'],Co:['cobalt','cobaltate'],Cr:['chromium','chromate'],Ni:['nickel','nickelate'],Cu:['copper','cuprate'],Pt:['platinum','platinate']};
+    const L={Cl:{s:'Cl',nm:'chlorido',q:-1,d:1,br:false},NH3:{s:'NH₃',nm:'ammine',q:0,d:1,br:true},H2O:{s:'H₂O',nm:'aqua',q:0,d:1,br:true},CN:{s:'CN',nm:'cyanido',q:-1,d:1,br:true},CO:{s:'CO',nm:'carbonyl',q:0,d:1,br:true},en:{s:'en',nm:'ethane-1,2-diamine',q:0,d:2,br:true},ox:{s:'ox',nm:'oxalato',q:-2,d:2,br:true}};
+    const sub='₀₁₂₃₄₅₆₇₈₉',sup='⁰¹²³⁴⁵⁶⁷⁸⁹',rom=['0','I','II','III','IV'];
+    const simple=['','','di','tri','tetra','penta','hexa'],cplx=['','','bis','tris','tetrakis','pentakis','hexakis'];
+    const g=id=>root.querySelector('#che-coordination-'+id);
+    function draw(){
+      const m=g('m').value,ox=+g('ox').value,lg=L[g('l').value],n=+g('n').value;
+      const q=ox+n*lg.q,cn=n*lg.d;
+      let lf=n===1?(lg.br?'('+lg.s+')':lg.s):(lg.br?'('+lg.s+')':lg.s)+sub[n];
+      if(n===1&&!lg.br)lf=lg.s;
+      const ch=q===0?'':(Math.abs(q)>1?String(Math.abs(q)).split('').map(c=>sup[c]).join(''):'')+(q>0?'⁺':'⁻');
+      const formula='['+m+lf+']'+ch;
+      let pre;
+      if(n===1)pre='';else if(lg.nm.indexOf('ethane')===0)pre=cplx[n];else pre=simple[n];
+      const lname=(n>1&&lg.nm.indexOf('ethane')===0)?pre+'('+lg.nm+')':(n===1&&lg.nm.indexOf('ethane')===0?'('+lg.nm+')':pre+lg.nm);
+      const mname=q<0?M[m][1]:M[m][0];
+      const name=lname+mname+'('+rom[ox]+')';
+      const geo={1:'CN 1: not a stable complex',2:'Linear',3:'Trigonal planar',4:'Tetrahedral or square planar',5:'Trigonal bipyramidal / square pyramidal',6:'Octahedral'}[cn]||'CN '+cn+': unusual, rarely seen';
+      TB.set(root,'[data-r=f]',formula);TB.set(root,'[data-r=cn]',cn);TB.set(root,'[data-r=geo]',geo);TB.set(root,'[data-r=name]',name);
+      const {ctx,w,h}=TB.canvas(cv,250);
+      const ink=TB.css('--ink'),sc=TB.css('--sub'),mut=TB.css('--muted'),paper=TB.css('--paper');
+      const cx=w/2,cy=h/2+4,r1=58,r2=92;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      const lab=lg.d===2?(g('l').value==='ox'?'ox':'en'):lg.s;
+      for(let i=0;i<n;i++){
+        const a=-Math.PI/2+2*Math.PI*i/n;
+        if(lg.d===1){
+          const x=cx+Math.cos(a)*r2,y=cy+Math.sin(a)*r2;
+          ctx.strokeStyle=sc;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();
+          ctx.fillStyle=paper;ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,16,0,7);ctx.fill();ctx.stroke();
+          ctx.fillStyle=ink;ctx.fillText(lg.s,x,y);
+        }else{
+          const da=Math.min(0.28,Math.PI/n*0.55);
+          const p1=[cx+Math.cos(a-da)*r1,cy+Math.sin(a-da)*r1],p2=[cx+Math.cos(a+da)*r1,cy+Math.sin(a+da)*r1];
+          const o=[cx+Math.cos(a)*(r2+4),cy+Math.sin(a)*(r2+4)];
+          ctx.strokeStyle=sc;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p1[0],p1[1]);ctx.moveTo(cx,cy);ctx.lineTo(p2[0],p2[1]);ctx.stroke();
+          ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p1[0],p1[1]);ctx.quadraticCurveTo(o[0]*2-(p1[0]+p2[0])/2,o[1]*2-(p1[1]+p2[1])/2,p2[0],p2[1]);ctx.stroke();
+          ctx.fillStyle=sc;[p1,p2].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],4,0,7);ctx.fill()});
+          ctx.fillStyle=ink;ctx.fillText(lab,cx+Math.cos(a)*(r2+8),cy+Math.sin(a)*(r2+8));
+        }
+      }
+      ctx.fillStyle=sc;ctx.beginPath();ctx.arc(cx,cy,22,0,7);ctx.fill();
+      ctx.fillStyle=paper;ctx.font='700 13px "Source Sans 3", sans-serif';ctx.fillText(m,cx,cy-4);
+      ctx.font='11px "Source Sans 3", sans-serif';ctx.fillText((ox>0?'+':'')+ox,cx,cy+9);
+      ctx.textBaseline='alphabetic';ctx.textAlign='left';ctx.fillStyle=mut;ctx.font='11px "Source Sans 3", sans-serif';
+      ctx.fillText('net charge '+(q>0?'+':'')+q,8,h-8);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <h4>Isomerism at a glance</h4>
+  <div class="tw"><table class="t">
+    <tr><th>Type</th><th>What differs</th><th>Example</th></tr>
+    <tr><td>Ionisation</td><td>Which ion is inside vs outside the sphere</td><td>[Co(NH<sub>3</sub>)<sub>5</sub>SO<sub>4</sub>]Br and [Co(NH<sub>3</sub>)<sub>5</sub>Br]SO<sub>4</sub></td></tr>
+    <tr><td>Linkage</td><td>Donor atom of an ambidentate ligand</td><td>[Co(NH<sub>3</sub>)<sub>5</sub>(NO<sub>2</sub>)]²⁺ and [Co(NH<sub>3</sub>)<sub>5</sub>(ONO)]²⁺</td></tr>
+    <tr><td>Coordination</td><td>Ligands swapped between cation and anion</td><td>[Co(NH<sub>3</sub>)<sub>6</sub>][Cr(CN)<sub>6</sub>] and [Cr(NH<sub>3</sub>)<sub>6</sub>][Co(CN)<sub>6</sub>]</td></tr>
+    <tr><td>Hydrate</td><td>Water inside or outside the sphere</td><td>[Cr(H<sub>2</sub>O)<sub>6</sub>]Cl<sub>3</sub> (violet), [Cr(H<sub>2</sub>O)<sub>5</sub>Cl]Cl<sub>2</sub>·H<sub>2</sub>O (grey-green)</td></tr>
+    <tr><td>Geometrical</td><td>cis / trans arrangement</td><td>[Pt(NH<sub>3</sub>)<sub>2</sub>Cl<sub>2</sub>], [Co(NH<sub>3</sub>)<sub>4</sub>Cl<sub>2</sub>]⁺</td></tr>
+    <tr><td>Optical</td><td>Non-superposable mirror images (d and l)</td><td>[Co(en)<sub>3</sub>]³⁺, cis-[CoCl<sub>2</sub>(en)<sub>2</sub>]⁺</td></tr>
+  </table></div>
+
+  <div class="widget"><div class="w-title">Geometrical isomers: cis and trans</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-coordination-cmp">Complex</label><select id="che-coordination-cmp"><option value="sp">[Pt(NH₃)₂Cl₂] square planar</option><option value="oct">[Co(NH₃)₄Cl₂]⁺ octahedral</option></select></div>
+      <div class="ctl"><label for="che-coordination-iso">Isomer</label><select id="che-coordination-iso"><option value="cis">cis (Cl next to Cl)</option><option value="trans">trans (Cl opposite Cl)</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Dipole moment<b data-r="dip" style="font-size:.9rem">-</b></div>
+      <div class="readout">Cl–M–Cl angle<b data-r="ang">-</b></div>
+      <div class="readout">Known as<b data-r="note" style="font-size:.85rem">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#che-coordination-cmp').closest('.widget').querySelector('canvas');
+    const g=id=>root.querySelector('#che-coordination-'+id);
+    function draw(){
+      const t=g('cmp').value,iso=g('iso').value;
+      const {ctx,w,h}=TB.canvas(cv,230);
+      const ink=TB.css('--ink'),sc=TB.css('--sub'),mut=TB.css('--muted'),paper=TB.css('--paper'),bad=TB.css('--bad');
+      const cx=w/2,cy=h/2,s=Math.min(80,w/2-34);
+      let pos,cl;
+      if(t==='sp'){pos=[[s,0],[0,-s],[-s,0],[0,s]];cl=iso==='cis'?[0,1]:[0,2];}
+      else{pos=[[0,-s],[0,s],[-s,0],[s,0],[s*.38,-s*.45],[-s*.38,s*.45]];cl=iso==='cis'?[0,3]:[0,1];}
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      pos.forEach((p,i)=>{const isCl=cl.indexOf(i)>=0;
+        ctx.strokeStyle=mut;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+p[0],cy+p[1]);ctx.stroke();
+        ctx.fillStyle=isCl?sc:paper;ctx.strokeStyle=isCl?sc:mut;ctx.beginPath();ctx.arc(cx+p[0],cy+p[1],16,0,7);ctx.fill();ctx.stroke();
+        ctx.fillStyle=isCl?paper:ink;ctx.fillText(isCl?'Cl':'NH₃',cx+p[0],cy+p[1]);});
+      ctx.fillStyle=ink;ctx.beginPath();ctx.arc(cx,cy,15,0,7);ctx.fill();ctx.fillStyle=paper;ctx.fillText(t==='sp'?'Pt':'Co',cx,cy);
+      const cis=iso==='cis';
+      TB.set(root,'[data-r=dip]',cis?'Non-zero (polar)':'Zero (symmetric)');
+      TB.set(root,'[data-r=ang]',cis?'90°':'180°');
+      TB.set(root,'[data-r=note]',t==='sp'?(cis?'Cisplatin: anticancer drug':'Transplatin: inactive'):(cis?'violet salt':'green salt'));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Haemoglobin and chlorophyll.</b> Haem is Fe<sup>2+</sup> held by four nitrogen atoms of a porphyrin ring, with a histidine nitrogen in a fifth site and O<sub>2</sub> reversibly in the sixth: CN = 6, octahedral. Chlorophyll is the same idea with Mg<sup>2+</sup> at the centre of a chlorin ring (CN = 4). Vitamin B<sub>12</sub> has Co<sup>3+</sup>.</p>
+    <p><b>Cisplatin.</b> cis-[Pt(NH<sub>3</sub>)<sub>2</sub>Cl<sub>2</sub>] binds to guanine bases in DNA and blocks division of cancer cells; trans-[Pt(NH<sub>3</sub>)<sub>2</sub>Cl<sub>2</sub>] has no such effect. Same formula, different geometry, different medicine.</p>
+    <p><b>Worked example.</b> In K<sub>3</sub>[Fe(CN)<sub>6</sub>] the complex ion carries 3− (three K<sup>+</sup> outside). Six CN<sup>−</sup> give −6, so x + (−6) = −3 and x = +3. Name: potassium hexacyanidoferrate(III). In [Co(NH<sub>3</sub>)<sub>5</sub>Cl]Cl<sub>2</sub>: NH<sub>3</sub> is neutral, Cl<sup>−</sup> is −1 and the complex is 2+, so x − 1 = +2, x = +3: pentaamminechloridocobalt(III) chloride. Adding AgNO<sub>3</sub> precipitates only 2 of the 3 Cl<sup>−</sup>.</p>
+    <p><b>EDTA</b> is used as a chelating agent in the treatment of lead poisoning and for estimating hardness of water.</p>
+  </div>
+  <div class="quiz"><p class="q">What is the oxidation state of Ni in [Ni(CO)<sub>4</sub>]?</p><div class="opts"><button data-ok>0</button><button>+2</button><button>+4</button><button>−4</button></div><p class="why" hidden>CO is a neutral ligand and the complex has no net charge, so x + 4(0) = 0, giving x = 0. The name is tetracarbonylnickel(0).</p></div>
+</article><div class="pager"><a href="che-dfblock.html"><small>Previous</small>d- and f-block elements</a><a class="next" href="che-cft.html"><small>Next</small>Crystal field theory and colour</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

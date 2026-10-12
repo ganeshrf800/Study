@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Solutions and colligative properties - Class 12 Chemistry</title>
+<meta name="description" content="Solutions and colligative properties: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-solutions" data-title="Solutions and colligative properties">
+  <header><div class="tag">Solutions (NCERT Chemistry Part I, Ch 1)</div><h3>Concentration, Raoult's law and colligative properties</h3></header>
+  <p class="lead">A solution is a homogeneous mixture, and its concentration can be stated in several ways. Dissolving a non-volatile solute changes the solvent's behaviour in a predictable way: vapour pressure falls, the boiling point rises, the freezing point drops and osmotic pressure appears. These colligative properties depend only on the number of solute particles, not on what they are.</p>
+  <ul class="keypoints">
+    <li>Molarity (mol per litre of solution) changes with temperature; molality (mol per kg of solvent) and mole fraction do not.</li>
+    <li>Raoult's law: the vapour pressure of a volatile component is its mole fraction times its pure vapour pressure. For a non-volatile solute, the relative lowering of vapour pressure equals the mole fraction of the solute.</li>
+    <li>Colligative properties: relative lowering of vapour pressure, elevation of boiling point, depression of freezing point, osmotic pressure.</li>
+    <li>The van't Hoff factor i corrects for dissociation (i &gt; 1) or association (i &lt; 1). Ionic solutes like NaCl give i close to 2 in dilute solution.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">M = n<sub>solute</sub> / V(litre)<small>Molarity, mol L⁻¹</small></div>
+    <div class="eq">m = n<sub>solute</sub> / w<sub>solvent</sub>(kg)<small>Molality, mol kg⁻¹</small></div>
+    <div class="eq">x<sub>1</sub> = n<sub>1</sub> / (n<sub>1</sub> + n<sub>2</sub>)<small>Mole fraction; x<sub>1</sub> + x<sub>2</sub> = 1</small></div>
+    <div class="eq">p<sub>1</sub> = x<sub>1</sub> p<sub>1</sub>°<small>Raoult's law</small></div>
+    <div class="eq">(p° − p) / p° = x<sub>2</sub> = n<sub>2</sub> / (n<sub>1</sub> + n<sub>2</sub>)<small>Relative lowering, non-volatile solute</small></div>
+    <div class="eq">ΔT<sub>b</sub> = i K<sub>b</sub> m<small>Water: K<sub>b</sub> = 0.52 K kg mol⁻¹</small></div>
+    <div class="eq">ΔT<sub>f</sub> = i K<sub>f</sub> m<small>Water: K<sub>f</sub> = 1.86 K kg mol⁻¹</small></div>
+    <div class="eq">π = i C R T<small>R = 0.0821 L atm K⁻¹ mol⁻¹</small></div>
+    <div class="eq">i = normal molar mass / observed molar mass<small>Also i = 1 + α(n − 1) for dissociation into n ions</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: what a solute does to water</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-solutions-m">Molality m <output></output></label><input type="range" id="che-solutions-m" min="0" max="4" step="0.05" value="1" data-unit=" mol/kg"></div>
+      <div class="ctl"><label for="che-solutions-i">Solute</label><select id="che-solutions-i">
+        <option value="1">Glucose (i = 1)</option><option value="2" selected>NaCl (i = 2)</option><option value="3">CaCl₂ (i = 3)</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">ΔT<sub>b</sub> (K)<b data-r="dtb">-</b></div>
+      <div class="readout">ΔT<sub>f</sub> (K)<b data-r="dtf">-</b></div>
+      <div class="readout">Freezes at (°C)<b data-r="tf">-</b></div>
+      <div class="readout">Boils at (°C)<b data-r="tb">-</b></div>
+      <div class="readout">p / p° of water<b data-r="p">-</b></div>
+      <div class="readout">π at 298 K (atm)<b data-r="pi">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    function draw(){
+      const m=+$('#che-solutions-m').value,i=+$('#che-solutions-i').value;
+      const dTf=i*1.86*m,dTb=i*0.52*m,x1=55.51/(55.51+i*m),pi=i*m*0.0821*298;
+      const {ctx,w,h}=TB.canvas(cv,230);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),bad=TB.css('--bad'),line=TB.css('--line');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const L=24,R=w-24,X=t=>L+(t+25)/135*(R-L);
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      T('Temperature scale (°C)',L,16,mut);
+      ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L,60);ctx.lineTo(R,60);ctx.stroke();
+      ctx.lineWidth=3;ctx.strokeStyle=sub;ctx.beginPath();ctx.moveTo(X(0),60);ctx.lineTo(X(-dTf),60);ctx.stroke();
+      ctx.strokeStyle=bad;ctx.beginPath();ctx.moveTo(X(100),60);ctx.lineTo(X(100+dTb),60);ctx.stroke();
+      ctx.lineWidth=1.5;
+      [0,100].forEach(t=>{ctx.strokeStyle=mut;ctx.beginPath();ctx.moveTo(X(t),46);ctx.lineTo(X(t),60);ctx.stroke();T('pure '+t+'°C',X(t),40,mut,1)});
+      ctx.strokeStyle=sub;ctx.beginPath();ctx.moveTo(X(-dTf),60);ctx.lineTo(X(-dTf),76);ctx.stroke();
+      ctx.strokeStyle=bad;ctx.beginPath();ctx.moveTo(X(100+dTb),60);ctx.lineTo(X(100+dTb),76);ctx.stroke();
+      T('f.p. '+TB.fmt(-dTf,2)+'°C',X(-dTf),92,sub,1);
+      T('b.p. '+TB.fmt(100+dTb,2)+'°C',X(100+dTb),92,bad,1);
+      T('Vapour pressure of solvent, p / p° = '+x1.toFixed(3),L,128,ink);
+      ctx.fillStyle=line;ctx.fillRect(L,136,R-L,14);ctx.fillStyle=sub;ctx.fillRect(L,136,(R-L)*x1,14);
+      T('Osmotic pressure π = '+TB.fmt(pi,1)+' atm',L,184,ink);
+      ctx.fillStyle=line;ctx.fillRect(L,192,R-L,14);ctx.fillStyle=bad;ctx.fillRect(L,192,(R-L)*Math.min(1,pi/300),14);
+      T('scale: 0 to 300 atm',L,224,mut);
+      TB.set(root,'[data-r=dtb]',TB.fmt(dTb,2));TB.set(root,'[data-r=dtf]',TB.fmt(dTf,2));
+      TB.set(root,'[data-r=tf]',TB.fmt(-dTf,2));TB.set(root,'[data-r=tb]',TB.fmt(100+dTb,2));
+      TB.set(root,'[data-r=p]',x1.toFixed(3));TB.set(root,'[data-r=pi]',TB.fmt(pi,1));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Antifreeze in a radiator.</b> Suppose 1.24 kg of ethylene glycol (M = 62 g/mol) is mixed into 5 kg of water. Moles = 1240 / 62 = 20 mol, so m = 20 / 5 = 4 mol/kg. Glycol does not ionise, so i = 1: ΔT<sub>f</sub> = 1.86 × 4 = 7.44 K, and the coolant freezes at about −7.4 °C instead of 0 °C. ΔT<sub>b</sub> = 0.52 × 4 = 2.08 K, so it also boils near 102 °C, which helps in Delhi summers.</p>
+    <p><b>Salt on roads.</b> A 1 mol/kg NaCl solution (i ≈ 2) freezes at about −3.7 °C, so spreading salt melts ice on hill roads in Kashmir and Himachal, until it gets too cold for the brine.</p>
+    <p><b>Desalination by reverse osmosis.</b> Seawater is roughly 0.6 M NaCl, so π = 2 × 0.6 × 0.0821 × 298 ≈ 29 atm. An RO plant, such as those used at coastal towns in Tamil Nadu, must push water against more than this pressure (about 3 MPa) to force pure water out through the membrane.</p>
+  </div>
+  <div class="quiz"><p class="q">Which 0.1 mol/kg aqueous solution has the lowest freezing point?</p><div class="opts"><button>Glucose</button><button>Urea</button><button data-ok>Calcium chloride</button><button>Sucrose</button></div><p class="why" hidden>CaCl₂ gives three particles per formula unit (i ≈ 3), so ΔT<sub>f</sub> = iK<sub>f</sub>m is largest. The other three are non-electrolytes with i = 1.</p></div>
+</article><div class="pager"><span></span><a class="next" href="che-electrochem.html"><small>Next</small>Electrochemistry</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

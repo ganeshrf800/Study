@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Continuity and differentiability - Class 12 Mathematics</title>
+<meta name="description" content="Continuity and differentiability: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-calculus" data-title="Continuity and differentiability">
+  <header><div class="tag">Continuity and Differentiability</div><h3>Limits, continuity and the derivative as a slope</h3></header>
+  <p class="lead">A function is continuous at a point if you can draw it through that point without lifting the pen: the limit exists and equals the value. It is differentiable there if, on zooming in far enough, the curve looks like a straight line, and the slope of that line is the derivative.</p>
+  <ul class="keypoints">
+    <li>f is continuous at a when LHL = RHL = f(a), that is lim f(x) as x → a equals f(a).</li>
+    <li>The derivative is the limit of the difference quotient: f′(a) = lim<sub>h→0</sub> [f(a+h) − f(a)]/h. It exists only if the left and right limits agree.</li>
+    <li>Differentiable implies continuous, but not the other way round: |x| is continuous at 0 and has a corner there, so no derivative.</li>
+    <li>The chain rule differentiates a composite from outside to inside: d/dx f(g(x)) = f′(g(x))·g′(x).</li>
+    <li>Rolle's theorem and the Mean Value Theorem guarantee a point where the tangent is parallel to the chord.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">f′(x) = lim<sub>h→0</sub> [f(x + h) − f(x)] / h<small>First principle; must agree from both sides</small></div>
+    <div class="eq">d/dx[f(g(x))] = f′(g(x))·g′(x)<small>Chain rule; with y = f(u), u = g(x): dy/dx = (dy/du)(du/dx)</small></div>
+    <div class="eq">dy/dx = (dy/dt) / (dx/dt)<small>Parametric form, dx/dt ≠ 0</small></div>
+    <div class="eq">d/dx(x<sup>x</sup>) = x<sup>x</sup>(1 + ln x)<small>Logarithmic differentiation: take ln of both sides first</small></div>
+    <div class="eq">d/dx(sin⁻¹x) = 1/√(1 − x²)<small>cos⁻¹x gives the negative; d/dx(tan⁻¹x) = 1/(1 + x²)</small></div>
+    <div class="eq">MVT: f′(c) = [f(b) − f(a)]/(b − a)<small>f continuous on [a, b], differentiable on (a, b)</small></div>
+  </div>
+  <h4>Chain rule table</h4>
+  <div class="tw"><table class="t"><tr><th>y</th><th>Outer, inner</th><th>dy/dx</th></tr>
+    <tr><td>sin(x²)</td><td>sin u, u = x²</td><td>2x cos(x²)</td></tr>
+    <tr><td>e<sup>3x</sup></td><td>e<sup>u</sup>, u = 3x</td><td>3e<sup>3x</sup></td></tr>
+    <tr><td>(2x + 1)⁵</td><td>u⁵, u = 2x + 1</td><td>10(2x + 1)⁴</td></tr>
+    <tr><td>ln(sin x)</td><td>ln u, u = sin x</td><td>cot x</td></tr>
+    <tr><td>√(1 + x²)</td><td>√u, u = 1 + x²</td><td>x/√(1 + x²)</td></tr>
+    <tr><td>tan⁻¹(x²)</td><td>tan⁻¹u, u = x²</td><td>2x/(1 + x⁴)</td></tr>
+    <tr><td>a<sup>x</sup></td><td>e<sup>x ln a</sup></td><td>a<sup>x</sup> ln a</td></tr></table></div>
+  <div class="widget"><div class="w-title">Zoom in on a point: secant slopes as h shrinks</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-calculus-fn">Function</label><select id="mat-calculus-fn"><option value="sq">f(x) = x²</option><option value="sin">f(x) = sin x</option><option value="abs">f(x) = |x|</option><option value="cube">f(x) = x³</option></select></div>
+      <div class="ctl"><label for="mat-calculus-a">Point a <output></output></label><input type="range" id="mat-calculus-a" min="-2" max="2" step="0.1" value="1"></div>
+      <div class="ctl"><label for="mat-calculus-p">Zoom: h = 10<sup>−p</sup>, p = <output></output></label><input type="range" id="mat-calculus-p" min="0" max="4" step="0.1" value="0"></div>
+    </div>
+    <canvas class="stage" id="mat-calculus-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">h<b data-r="h">-</b></div>
+      <div class="readout">Right slope [f(a+h)−f(a)]/h<b data-r="r">-</b></div>
+      <div class="readout">Left slope [f(a)−f(a−h)]/h<b data-r="l">-</b></div>
+      <div class="readout">Exact f′(a)<b data-r="d">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-calculus-fn'),sa=$('#mat-calculus-a'),sp=$('#mat-calculus-p'),cv=$('#mat-calculus-cv');
+const FN={sq:{f:x=>x*x,d:x=>2*x},sin:{f:Math.sin,d:Math.cos},abs:{f:Math.abs,d:x=>Math.abs(x)<1e-9?NaN:Math.sign(x)},cube:{f:x=>x*x*x,d:x=>3*x*x}};
+function draw(){const k=FN[sel.value],a=Math.abs(+sa.value)<1e-9?0:+sa.value,p=+sp.value,h=Math.pow(10,-p);
+ const hgt=250,pw=(cv.clientWidth||600)-50,ph=hgt-38,fa=k.f(a),half=2*h*ph/pw;
+ const P=mkP(cv,a-2*h,a+2*h,fa-half,fa+half,hgt);
+ const c=P.ctx;c.strokeStyle=LN();c.lineWidth=1;c.strokeRect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);
+ xy(P,2,P.x0,P.x1,t=>t,t=>fa,LN(),1,[]);
+ c.beginPath();c.strokeStyle=LN();c.moveTo(P.X(a),P.T);c.lineTo(P.X(a),P.H-P.B);c.stroke();
+ const mR=(k.f(a+h)-fa)/h,mL=(fa-k.f(a-h))/h,d=k.d(a);
+ fn(P,k.f,SUB(),3,null,600);
+ xy(P,2,P.x0,P.x1,t=>t,t=>fa+mR*(t-a),BAD(),1.6);
+ xy(P,2,P.x0,P.x1,t=>t,t=>fa+mL*(t-a),GOOD(),1.6);
+ if(isFinite(d))xy(P,2,P.x0,P.x1,t=>t,t=>fa+d*(t-a),INK(),1.2,[5,4]);
+ dot(P,a,fa,INK(),4.5);dot(P,a+h,k.f(a+h),BAD(),4);dot(P,a-h,k.f(a-h),GOOD(),4);
+ txt(P,'a − 2h',P.L,P.H-P.B+14,INK(),'left');txt(P,'a',P.X(a),P.H-P.B+14,INK(),'center');txt(P,'a + 2h',P.W-P.R,P.H-P.B+14,INK(),'right');
+ txt(P,'red: right, green: left secant',P.L+6,P.T+10);
+ TB.set(root,'[data-r=h]',h>=0.01?h.toFixed(3):h.toExponential(0));
+ TB.set(root,'[data-r=r]',mR.toFixed(5));TB.set(root,'[data-r=l]',mL.toFixed(5));
+ TB.set(root,'[data-r=d]',isFinite(d)?d.toFixed(5):'does not exist');
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Making a piecewise function continuous</div>
+    <p style="margin:0 0 .6rem">f(x) = kx² for x ≤ 2, and f(x) = 3 for x &gt; 2. Find k so that f is continuous at x = 2.</p>
+    <div class="controls"><div class="ctl"><label for="mat-calculus-k">k <output></output></label><input type="range" id="mat-calculus-k" min="0" max="2" step="0.05" value="1"></div></div>
+    <canvas class="stage" id="mat-calculus-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">LHL = 4k<b data-r="lhl">-</b></div>
+      <div class="readout">RHL<b data-r="rhl">3</b></div>
+      <div class="readout">f(2) = 4k<b data-r="fv">-</b></div>
+      <div class="readout">Continuous at 2?<b data-r="ok">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const ks=$('#mat-calculus-k'),cv=$('#mat-calculus-cv2');
+function draw(){const k=+ks.value,L=4*k;
+ const P=mkP(cv,0,4,0,8.5,240);axes(P,1,1);
+ fn(P,x=>k*x*x,SUB(),3,null,300,0,2);
+ xy(P,2,2,4,t=>t,t=>3,SUB(),3);
+ dot(P,2,L,SUB(),5);dot(P,2,3,SUB(),5,true);
+ txt(P,'x',P.W-P.R-4,P.Y(0)-10,INK(),'right');
+ const ok=Math.abs(L-3)<1e-6;
+ TB.set(root,'[data-r=lhl]',L.toFixed(2));TB.set(root,'[data-r=fv]',L.toFixed(2));
+ TB.set(root,'[data-r=ok]',ok?'Yes (k = 3/4)':'No, jump of '+Math.abs(L-3).toFixed(2));
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>A Delhi Metro train leaves a platform with position s = 2t² + 5t metres after t seconds. Its instantaneous speed at t = 3 s is the derivative s′(t) = 4t + 5, which at t = 3 is 17 m/s. Check with the first-principles quotient and h = 0.01 s: s(3.01) = 2(9.0601) + 15.05 = 33.1702 m and s(3) = 33 m, so the average speed over that interval is 0.1702/0.01 = 17.02 m/s, already close to 17. A speedometer is a device that estimates this limit.</p></div>
+  <div class="quiz"><p class="q">The function f(x) = |x| at x = 0 is</p><div class="opts"><button data-ok>continuous but not differentiable</button><button>differentiable but not continuous</button><button>both continuous and differentiable</button><button>neither continuous nor differentiable</button></div><p class="why" hidden>The limit from both sides is 0 = f(0), so it is continuous. The left difference quotient is −1 and the right one is +1, so the derivative does not exist: the graph has a corner.</p></div>
+</article><div class="pager"><a href="mat-invtrig.html"><small>Previous</small>Inverse trigonometric functions</a><a class="next" href="mat-applderiv.html"><small>Next</small>Applications of derivatives</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

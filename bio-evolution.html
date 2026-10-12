@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Evolution and natural selection - Class 12 Biology</title>
+<meta name="description" content="Evolution and natural selection: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-evolution" data-title="Evolution and natural selection">
+  <header><div class="tag">Evolution</div><h3>Darwin, natural selection and the evidence for evolution</h3></header>
+  <p class="lead">Populations carry heritable variation. Individuals whose traits suit the environment leave more offspring, so those traits become more common in the next generation. Darwin called this natural selection, and over long times it builds new adaptations and new species.</p>
+  <ul class="keypoints">
+    <li><b>Darwin's argument</b>: variation exists; more offspring are born than can survive (struggle for existence); the fitter survive and reproduce (survival of the fittest); useful variations accumulate. Lamarck's use and disuse (giraffe's neck) is not inherited. De Vries proposed saltation by large mutations.</li>
+    <li><b>Evidence</b>: fossils (<i>Archaeopteryx</i> links reptiles and birds); comparative anatomy; embryology (vertebrate embryos look alike early); biochemical similarity (same genetic code, cytochrome c); biogeography; and observed natural selection.</li>
+    <li><b>Homologous organs</b> (same structure, different function) show <i>divergent</i> evolution: forelimbs of human, whale, bat and cheetah. <b>Analogous organs</b> (different structure, same function) show <i>convergent</i> evolution: wings of insect and bird, flippers of penguin and dolphin.</li>
+    <li><b>Adaptive radiation</b>: one ancestor spreads into many niches, as in Darwin's finches on Galápagos and Australian marsupials.</li>
+    <li><b>Origin of life</b>: Oparin and Haldane proposed chemical evolution in a reducing atmosphere; Miller (1953) made amino acids from CH<sub>4</sub>, NH<sub>3</sub>, H<sub>2</sub> and water vapour with electric sparks. Human lineage: <i>Homo habilis</i> (about 650 to 800 cc brain), <i>H. erectus</i> (about 900 cc), Neanderthal (about 1400 cc) and <i>H. sapiens</i> (about 1350 to 1400 cc).</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Relative fitness w = survival (or offspring) of a type ÷ that of the best type<small>Fittest type has w = 1; selection coefficient s = 1 − w</small></div>
+    <div class="eq">q′ = (pq·w<sub>D</sub> + q²·w<sub>r</sub>) / w̄<small>Next-generation recessive allele frequency, w̄ = (p² + 2pq)·w<sub>D</sub> + q²·w<sub>r</sub></small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: peppered moth, industrial melanism</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-evolution-env">Tree bark and air</label><select id="bio-evolution-env"><option value="p">Polluted (soot-darkened bark)</option><option value="c">Clean air (pale, lichen-covered bark)</option></select></div>
+      <div class="ctl"><label for="bio-evolution-f0">Dark moths at the start <output></output></label><input type="range" id="bio-evolution-f0" min="1" max="99" step="1" value="2" data-unit="%"></div>
+      <div class="ctl"><label for="bio-evolution-k">Selection strength <output></output></label><input type="range" id="bio-evolution-k" min="5" max="100" step="5" value="45" data-unit="%"></div>
+      <div class="ctl"><label for="bio-evolution-g">Generation (years) <output></output></label><input type="range" id="bio-evolution-g" min="0" max="100" step="1" value="40"></div>
+    </div>
+    <canvas class="stage" id="bio-evolution-cv"></canvas>
+    <div class="readouts"><div class="readout">Dark moths now<b data-r="now">-</b></div><div class="readout">Relative survival, dark : light<b data-r="w" style="font-size:.95rem">-</b></div><div class="readout">Generations to reach 50% dark<b data-r="half">-</b></div></div>
+    <p style="font-size:.85rem;color:var(--muted)">Model: dark colour (C) is dominant over light (c). Survival values come from Kettlewell's 1955 recapture experiment (polluted woods: 53% of dark and 25% of light moths recaptured, a ratio of 0.47; clean woods: 6.3% of dark and 12.5% of light, a ratio of 0.51). At 100% strength those full differences act every year. Recaptures also reflect dispersal and one season's predation, so the default is set lower, which makes the rise from 2% to 98% take about 50 years, as in Manchester. Random mating, one generation per year.</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-evolution-cv'),q=s=>root.querySelector(s);
+    function sim(env,f0,G,k){const wD=env==='p'?1:1-0.494*k,wL=env==='p'?1-0.528*k:1;let qq=Math.sqrt(1-f0/100);const out=[1-qq*qq];
+      for(let g=0;g<G;g++){const p=1-qq,wb=(p*p+2*p*qq)*wD+qq*qq*wL;qq=(p*qq*wD+qq*qq*wL)/wb;out.push(1-qq*qq);}return out;}
+    function draw(){
+      const env=q('#bio-evolution-env').value,f0=+q('#bio-evolution-f0').value,g=+q('#bio-evolution-g').value,k=+q('#bio-evolution-k').value/100;
+      const f=sim(env,f0,100,k),gr=TB.canvas(cv,320),ctx=gr.ctx,W=gr.w,H=gr.h;
+      ctx.font='12px "Source Sans 3", sans-serif';
+      const L=38,R=12,T=28,ph=130,pw=W-L-R,X=t=>L+t/100*pw,Y=v=>T+ph-v*ph;
+      ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');ctx.lineWidth=1;ctx.textAlign='right';
+      [0,.5,1].forEach(v=>{ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(W-R,Y(v));ctx.stroke();ctx.fillText(Math.round(v*100)+'%',L-5,Y(v)+4);});
+      ctx.textAlign='center';[0,25,50,75,100].forEach(t=>ctx.fillText(t,X(t),T+ph+15));
+      ctx.fillStyle=TB.css('--ink');ctx.fillText('Generation',L+pw/2,T+ph+30);ctx.textAlign='left';ctx.fillText('Dark moths (phenotype)',L,T-12);
+      ctx.strokeStyle=TB.css('--sub');ctx.lineWidth=2.5;ctx.beginPath();f.forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));ctx.stroke();
+      ctx.setLineDash([4,3]);ctx.lineWidth=1.2;ctx.strokeStyle=TB.css('--muted');ctx.beginPath();ctx.moveTo(X(g),T);ctx.lineTo(X(g),T+ph);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=TB.css('--sub');ctx.beginPath();ctx.arc(X(g),Y(f[g]),5,0,7);ctx.fill();
+      /* bark panel */
+      const by=T+ph+56,bh=H-by-6,bw=W-L-R;
+      ctx.fillStyle=env==='p'?'#4a4540':'#d8d3c0';ctx.fillRect(L,by,bw,bh);
+      const nd=Math.round(f[g]*100),cols=20,rows=5,cw=bw/cols,rh=bh/rows;
+      let seed=7;const idx=[...Array(100).keys()];for(let i=99;i>0;i--){seed=(seed*1103515245+12345)&0x7fffffff;const j=seed%(i+1);[idx[i],idx[j]]=[idx[j],idx[i]];}
+      idx.forEach((slot,k)=>{const c=slot%cols,r=Math.floor(slot/cols),dark=k<nd;ctx.fillStyle=dark?'#14110f':'#f4efe2';
+        ctx.beginPath();ctx.ellipse(L+c*cw+cw/2,by+r*rh+rh/2,Math.min(cw,rh*1.4)*.36,Math.min(cw,rh*1.4)*.2,0,0,7);ctx.fill();});
+      ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('Generation '+g+': '+nd+' dark, '+(100-nd)+' light (of 100 moths)',L,by-8);
+      TB.set(root,'[data-r=now]',nd+'%');
+      TB.set(root,'[data-r=w]',env==='p'?'1 : '+(1-0.528*k).toFixed(2):(1-0.494*k).toFixed(2)+' : 1');
+      let h=f.findIndex(v=>v>=.5);const start=f[0]>=.5;TB.set(root,'[data-r=half]',start?'Already above 50%':(h<0?'More than 100':h));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="tw"><table class="t"><tr><th>Evidence</th><th>Example</th><th>What it shows</th></tr>
+    <tr><td>Homologous organs</td><td>Forelimb bones of human, whale, bat, cheetah</td><td>Common ancestor, divergent evolution</td></tr>
+    <tr><td>Analogous organs</td><td>Wings of butterfly and bird; eyes of octopus and mammals</td><td>Similar environment, convergent evolution</td></tr>
+    <tr><td>Fossils</td><td><i>Archaeopteryx</i>; horse and elephant series; coelacanth</td><td>Changes in form through time</td></tr>
+    <tr><td>Adaptive radiation</td><td>Darwin's finches; Australian marsupials</td><td>One ancestor, many niches</td></tr>
+    <tr><td>Natural selection today</td><td>Peppered moth; antibiotic-resistant bacteria; herbicide-resistant weeds</td><td>Change can be seen in decades or days</td></tr></table></div>
+
+  <div class="world"><h4>In the real world</h4><p>Antibiotic resistance is natural selection at fast-forward. Suppose 1 in 10<sup>7</sup> bacteria carries a resistance mutation. In an infection of 10<sup>9</sup> cells that is 10<sup>9</sup> / 10<sup>7</sup> = 100 resistant cells. The antibiotic kills the other cells, the 100 survivors divide every 20 minutes or so, and in 24 hours (72 generations) they refill the body. Skipping doses or stopping early selects exactly these survivors. New Delhi metallo-β-lactamase 1 (NDM-1), first described in 2008 in a patient treated in India and Sweden, spread worldwide on plasmids, and India's Chennai Declaration (2012) and National Action Plan on Antimicrobial Resistance (2017) aim to limit misuse. In the moth widget, dark moths reached about 98% of the Manchester population within roughly 50 years of the first dark specimen (1848).</p></div>
+  <div class="quiz"><p class="q">The wings of a butterfly and the wings of a bird are an example of:</p><div class="opts"><button>Homologous organs and divergent evolution</button><button data-ok>Analogous organs and convergent evolution</button><button>Vestigial organs</button><button>Homologous organs and convergent evolution</button></div><p class="why" hidden>Both do the same job (flight) but have different structure and origin, so they are analogous. Unrelated groups adapting to a similar way of life is convergent evolution.</p></div>
+</article><div class="pager"><a href="bio-gene-expression.html"><small>Previous</small>Transcription, translation, lac operon</a><a class="next" href="bio-hardy-weinberg.html"><small>Next</small>Hardy-Weinberg principle</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

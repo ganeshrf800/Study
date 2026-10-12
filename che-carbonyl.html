@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aldehydes and ketones - Class 12 Chemistry</title>
+<meta name="description" content="Aldehydes and ketones: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-carbonyl" data-title="Aldehydes and ketones">
+  <header><div class="tag">Aldehydes, Ketones and Carboxylic Acids (NCERT Chemistry Part II, Ch 8)</div><h3>Nucleophilic addition, aldol, Cannizzaro and the test-tube tests</h3></header>
+  <p class="lead">The carbonyl carbon (C=O) is partly positive, so nucleophiles add to it and the C=O π bond becomes a single bond. Aldehydes are more reactive than ketones because they have less steric crowding and less electron donation to the carbon. Simple tests with a few reagents separate aldehydes, ketones and methyl ketones.</p>
+  <ul class="keypoints">
+    <li>Reactivity towards nucleophilic addition: HCHO &gt; RCHO &gt; R<sub>2</sub>C=O &gt; ArCHO &gt; ArCOR (aromatic ones are stabilised by resonance with the ring).</li>
+    <li>Aldol condensation: aldehydes/ketones with at least one α-hydrogen, in dilute NaOH, give β-hydroxy carbonyl compounds, which lose water on heating to give α,β-unsaturated carbonyls.</li>
+    <li>Cannizzaro reaction: aldehydes with no α-hydrogen (HCHO, ArCHO) in conc. NaOH disproportionate: one molecule is oxidised to the carboxylate, another reduced to the alcohol.</li>
+    <li>Tollens' and Fehling's reagents oxidise aldehydes but not ketones. Fehling's does not oxidise aromatic aldehydes. Both 2,4-DNP and NaHSO<sub>3</sub> react with the carbonyl group itself.</li>
+    <li>Iodoform test: positive for CH<sub>3</sub>CO–R and CH<sub>3</sub>CH(OH)–R (so ethanal, propanone, ethanol, but not methanal or propanal).</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">&gt;C=O + HCN → &gt;C(OH)CN<small>Cyanohydrin; also NaHSO<sub>3</sub> gives the bisulphite adduct</small></div>
+    <div class="eq">&gt;C=O + NH<sub>2</sub>–G → &gt;C=N–G + H<sub>2</sub>O<small>G = OH (oxime), NHNH<sub>2</sub> (hydrazone), NH–C<sub>6</sub>H<sub>3</sub>(NO<sub>2</sub>)<sub>2</sub> (2,4-DNP derivative)</small></div>
+    <div class="eq">2 CH<sub>3</sub>CHO → CH<sub>3</sub>CH(OH)CH<sub>2</sub>CHO → CH<sub>3</sub>CH=CHCHO<small>Aldol, then dehydration (but-2-enal)</small></div>
+    <div class="eq">2 HCHO + NaOH → CH<sub>3</sub>OH + HCOONa<small>Cannizzaro</small></div>
+    <div class="eq">RCHO + 2[Ag(NH<sub>3</sub>)<sub>2</sub>]⁺ + 3OH⁻ → RCOO⁻ + 2Ag↓ + 4NH<sub>3</sub> + 2H<sub>2</sub>O<small>Tollens: silver mirror</small></div>
+    <div class="eq">RCHO + 2Cu²⁺ + 5OH⁻ → RCOO⁻ + Cu<sub>2</sub>O↓ + 3H<sub>2</sub>O<small>Fehling: red-brown precipitate</small></div>
+    <div class="eq">CH<sub>3</sub>COR + 3I<sub>2</sub> + 4NaOH → CHI<sub>3</sub>↓ + RCOONa + 3NaI + 3H<sub>2</sub>O<small>Iodoform, yellow solid</small></div>
+    <div class="eq">&gt;C=O → &gt;CH<sub>2</sub><small>Clemmensen (Zn-Hg, conc. HCl) or Wolff-Kishner (NH<sub>2</sub>NH<sub>2</sub>, KOH, glycol, heat)</small></div>
+    <div class="eq">RCOCl + H<sub>2</sub> (Pd-BaSO<sub>4</sub>) → RCHO + HCl<small>Rosenmund reduction</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: the test lab</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-carbonyl-smp">Sample</label><select id="che-carbonyl-smp"></select></div>
+      <div class="ctl"><label for="che-carbonyl-rg">Reagent</label><select id="che-carbonyl-rg">
+        <option value="0">2,4-DNP (Brady's reagent)</option><option value="1">Tollens' reagent, warm</option><option value="2">Fehling's solution, heat</option><option value="3">I₂ / NaOH (iodoform)</option><option value="4">Saturated NaHSO₃</option></select></div>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
+      <button class="btn" id="che-carbonyl-run" type="button">Add reagent to sample</button>
+      <button class="btn" id="che-carbonyl-myst" type="button">Hide the sample (mystery mode)</button>
+      <button class="btn" id="che-carbonyl-clr" type="button">Clear notebook</button>
+    </div>
+    <svg id="che-carbonyl-svg" viewBox="0 0 300 170" width="100%" style="max-height:200px;background:var(--soft);border-radius:6px" role="img" aria-label="Test tube showing the result of the chosen test"></svg>
+    <div class="readouts">
+      <div class="readout">Sample<b id="che-carbonyl-name">-</b></div>
+      <div class="readout">Observation<b id="che-carbonyl-obs" style="font-size:.95rem">-</b></div>
+      <div class="readout">Meaning<b id="che-carbonyl-mean" style="font-size:.95rem">-</b></div>
+    </div>
+    <div id="che-carbonyl-guess" hidden style="margin-top:.6rem">
+      <div class="ctl"><label for="che-carbonyl-gs">Which sample is it?</label><select id="che-carbonyl-gs"></select></div>
+      <button class="btn" id="che-carbonyl-chk" type="button" style="margin-top:.4rem">Check my answer</button>
+      <p id="che-carbonyl-gres" style="font-weight:600"></p>
+    </div>
+    <h4>Lab notebook</h4>
+    <div class="tw"><table class="t" id="che-carbonyl-nb"><thead><tr><th>Sample</th><th>Test</th><th>Result</th></tr></thead><tbody></tbody></table></div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const S=[['Methanal, HCHO',[1,1,1,0,1]],['Ethanal, CH₃CHO',[1,1,1,1,1]],['Propanal, CH₃CH₂CHO',[1,1,1,0,1]],['Benzaldehyde, C₆H₅CHO',[1,1,0,0,1]],
+        ['Propanone, CH₃COCH₃',[1,0,0,1,1]],['Pentan-3-one, (C₂H₅)₂CO',[1,0,0,0,0]],['Acetophenone, C₆H₅COCH₃',[1,0,0,1,0]],['Ethanol, CH₃CH₂OH (no C=O)',[0,0,0,1,0]]];
+      const T=['2,4-DNP','Tollens','Fehling','Iodoform','NaHSO₃'];
+      const POS=['Orange-yellow crystalline precipitate','Silver mirror on the tube wall','Red-brown precipitate of Cu₂O','Pale-yellow precipitate of CHI₃, antiseptic smell','White crystalline adduct'];
+      const NEG=['No precipitate; clear orange solution','No mirror; solution stays clear','Solution stays deep blue','No yellow precipitate','No crystals'];
+      const MEAN=['Has a C=O group (aldehyde or ketone)','Aldehyde (reducing agent)','Aliphatic aldehyde','CH₃CO– or CH₃CH(OH)– group present','Aldehyde or unhindered methyl ketone'];
+      const NMEAN=['No C=O group in the sample','Not an aldehyde','Ketone, aromatic aldehyde or no C=O','No CH₃CO– / CH₃CH(OH)– group','No reaction (hindered ketone, aryl ketone or no C=O)'];
+      const sel=$('che-carbonyl-smp'),gs=$('che-carbonyl-gs');
+      function fillSel(){sel.innerHTML='';S.forEach((s,i)=>sel.add(new Option(s[0],i)));}
+      fillSel();S.forEach((s,i)=>gs.add(new Option(s[0],i)));
+      sel.value=1;
+      let mystery=-1,last=null;
+      const NS='http://www.w3.org/2000/svg';
+      function el(p,n,a){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+      function render(){
+        const svg=$('che-carbonyl-svg');svg.innerHTML='';
+        const ink=TB.css('--ink'),sub=TB.css('--sub');
+        const defs=el(svg,'defs',{});const cp=el(defs,'clipPath',{id:'che-carbonyl-clip'});
+        el(cp,'path',{d:'M117 40 V112 a33 33 0 0 0 66 0 V40 Z'});
+        el(svg,'text',{x:150,y:16,'text-anchor':'middle','font-size':12,fill:ink}).textContent=last?T[last.t]+' test':'Choose a sample and a reagent';
+        const g=el(svg,'g',{'clip-path':'url(#che-carbonyl-clip)'});
+        let liq=null,ppt=null,mirror=false,pa=1;
+        if(last){const t=last.t,p=last.p;
+          if(t===0){liq='#f0a030';if(p)ppt='#e0701a';}
+          if(t===1){liq='#9fb8c8';pa=.18;mirror=p;}
+          if(t===2){liq='#2a6fd6';pa=p?.25:.7;if(p)ppt='#b5391c';}
+          if(t===3){liq='#d8a040';pa=.3;if(p)ppt='#e8d44a';}
+          if(t===4){liq='#9fb8c8';pa=.15;if(p)ppt='#f2f2f2';}
+        }
+        if(liq)el(g,'rect',{x:100,y:66,width:100,height:100,fill:liq,opacity:pa});
+        if(ppt){let sd=11;const r=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+          for(let i=0;i<70;i++){el(g,'circle',{cx:117+r()*66,cy:90+r()*(i<40?60:30),r:1.6+r()*2.4,fill:ppt,opacity:.85,stroke:ink,'stroke-opacity':.2});}}
+        if(mirror){el(g,'rect',{x:117,y:44,width:5,height:100,fill:'#c8cdd2',opacity:.95});el(g,'rect',{x:178,y:44,width:5,height:100,fill:'#c8cdd2',opacity:.95});el(g,'path',{d:'M122 140 Q150 160 178 140 L178 150 Q150 170 122 150Z',fill:'#c8cdd2',opacity:.9});}
+        el(svg,'path',{d:'M117 30 V112 a33 33 0 0 0 66 0 V30',fill:'none',stroke:ink,'stroke-width':2.5});
+      }
+      function sampleName(i){return (mystery>=0&&i===mystery)?'Unknown sample':S[i][0];}
+      function runTest(){
+        const i=+sel.value,t=+$('che-carbonyl-rg').value,p=!!S[i][1][t];
+        last={i:i,t:t,p:p};
+        $('che-carbonyl-name').textContent=sampleName(i);
+        $('che-carbonyl-obs').textContent=(p?'Positive: ':'Negative: ')+(p?POS[t]:NEG[t]);
+        $('che-carbonyl-mean').textContent=p?MEAN[t]:NMEAN[t];
+        const tb=$('che-carbonyl-nb').querySelector('tbody'),tr=tb.insertRow(0);
+        tr.insertCell().textContent=sampleName(i);tr.insertCell().textContent=T[t];tr.insertCell().textContent=p?'Positive: '+POS[t]:'Negative';
+        render();
+      }
+      $('che-carbonyl-run').addEventListener('click',runTest);
+      $('che-carbonyl-clr').addEventListener('click',()=>{$('che-carbonyl-nb').querySelector('tbody').innerHTML='';});
+      $('che-carbonyl-myst').addEventListener('click',()=>{
+        mystery=Math.floor(Math.random()*S.length);sel.innerHTML='';sel.add(new Option('Unknown sample',mystery));sel.value=mystery;
+        $('che-carbonyl-guess').hidden=false;$('che-carbonyl-gres').textContent='';
+        $('che-carbonyl-name').textContent='Unknown sample';
+        $('che-carbonyl-obs').textContent='Run tests on the sample, then guess.';
+        $('che-carbonyl-nb').querySelector('tbody').innerHTML='';
+        $('che-carbonyl-myst').textContent='New mystery sample';
+        sel.disabled=true;last=null;render();
+      });
+      $('che-carbonyl-chk').addEventListener('click',()=>{
+        if(mystery<0)return;const ok=+gs.value===mystery,r=$('che-carbonyl-gres');
+        // several samples can share a test profile; accept an answer only if exact
+        r.textContent=ok?'Correct. It was '+S[mystery][0]+'.':'Not quite. Compare your notebook with the profiles; the answer is not revealed yet, so try more tests.';
+        if(ok){const m=mystery;mystery=-1;fillSel();sel.value=m;sel.disabled=false;$('che-carbonyl-myst').textContent='Hide the sample (mystery mode)';}
+      });
+      TB.live(root,render);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: aldol or Cannizzaro?</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-carbonyl-cmp">Carbonyl compound</label><select id="che-carbonyl-cmp">
+        <option value="0">Methanal, HCHO</option><option value="1" selected>Ethanal, CH₃CHO</option><option value="2">Propanal, CH₃CH₂CHO</option><option value="3">Benzaldehyde, C₆H₅CHO</option><option value="4">Propanone, CH₃COCH₃</option><option value="5">2,2-Dimethylpropanal, (CH₃)₃CCHO</option></select></div>
+    </div>
+    <div class="readouts">
+      <div class="readout">α-Hydrogens<b id="che-carbonyl-ah">-</b></div>
+      <div class="readout">Dilute NaOH: aldol?<b id="che-carbonyl-al">-</b></div>
+      <div class="readout">Conc. NaOH: Cannizzaro?<b id="che-carbonyl-ca">-</b></div>
+    </div>
+    <p id="che-carbonyl-prod" style="font-weight:600"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const D=[[0,'2 HCHO + NaOH → CH₃OH + HCOONa (methanol + sodium methanoate)'],
+        [3,'2 CH₃CHO → CH₃CH(OH)CH₂CHO (3-hydroxybutanal), then on heating CH₃CH=CHCHO (but-2-enal)'],
+        [2,'2 CH₃CH₂CHO → CH₃CH₂CH(OH)CH(CH₃)CHO (3-hydroxy-2-methylpentanal)'],
+        [0,'2 C₆H₅CHO + NaOH → C₆H₅CH₂OH + C₆H₅COONa (benzyl alcohol + sodium benzoate)'],
+        [6,'2 CH₃COCH₃ → (CH₃)₂C(OH)CH₂COCH₃ (4-hydroxy-4-methylpentan-2-one); equilibrium favours ketone, so yield is low unless water or product is removed'],
+        [0,'2 (CH₃)₃CCHO + NaOH → (CH₃)₃CCH₂OH + (CH₃)₃CCOONa']];
+      function draw(){
+        const k=+$('che-carbonyl-cmp').value,d=D[k];
+        TB.set(root,'#che-carbonyl-ah',d[0]);
+        TB.set(root,'#che-carbonyl-al',d[0]>0?'Yes':'No (needs an α-H)');
+        TB.set(root,'#che-carbonyl-ca',d[0]===0?'Yes':'No (enolises instead)');
+        $('che-carbonyl-prod').textContent=d[1];
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>The original silvering of glass mirrors used Tollens' reaction, and hospitals once tested urine sugar with Benedict's/Fehling's solution. Quantitatively: 0.100 mol ethanal reduces Tollens' reagent to 2 × 0.100 = 0.200 mol Ag, which is 0.200 × 107.9 = 21.6 g of silver. Formalin, a 37-41 % solution of methanal, preserves biology specimens in school labs; the same methanal with phenol makes Bakelite. Propanone (acetone) is the solvent in nail-polish remover and is a by-product of the cumene process for phenol, which is why Indian refineries and chemical plants produce both.</p></div>
+  <div class="quiz"><p class="q">Which compound gives a positive Fehling's test but a negative iodoform test?</p>
+    <div class="opts"><button>Benzaldehyde</button><button>Ethanal</button><button data-ok>Propanal</button><button>Propanone</button></div>
+    <p class="why" hidden>Propanal is an aliphatic aldehyde (reduces Fehling's) with no CH₃CO– group (no iodoform). Benzaldehyde fails Fehling's, ethanal gives both tests, propanone gives only iodoform.</p></div>
+</article><div class="pager"><a href="che-alcohols.html"><small>Previous</small>Alcohols, phenols and ethers</a><a class="next" href="che-amines.html"><small>Next</small>Amines and diazonium salts</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

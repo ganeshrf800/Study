@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Electromagnetic induction - Class 12 Physics</title>
+<meta name="description" content="Electromagnetic induction: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-induction" data-title="Electromagnetic induction">
+  <header><div class="tag">Electromagnetic Induction</div><h3>Faraday's law, Lenz's law, motional emf and eddy currents</h3></header>
+  <p class="lead">A changing magnetic flux through a loop creates an emf in it. The faster the flux changes, the larger the emf, and the induced current always flows so as to oppose the change that caused it. This is the principle behind generators, transformers, induction cooktops and regenerative brakes.</p>
+  <ul class="keypoints">
+    <li>Magnetic flux Φ = BA cosθ. An emf appears whenever B, A or θ changes with time.</li>
+    <li>Faraday: ε = −N dΦ/dt. The minus sign is Lenz's law: the induced current opposes the change in flux (conservation of energy).</li>
+    <li>A conductor of length l moving at speed v across a field B develops motional emf ε = Blv.</li>
+    <li>Eddy currents are induced loops of current in bulk metal. They heat the metal (induction cooktop) or produce braking force (magnetic brakes).</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Φ = B A cosθ<small>unit: weber (Wb) = T m²</small></div>
+    <div class="eq">ε = −N dΦ/dt<small>Faraday-Lenz law</small></div>
+    <div class="eq">ε = B l v<small>motional emf of a rod moving perpendicular to B</small></div>
+    <div class="eq">I = Blv/R&emsp;F = B²l²v/R<small>current and magnetic drag on the rod</small></div>
+    <div class="eq">ε = ½ B ω l²<small>rod of length l rotating about one end</small></div>
+    <div class="eq">ε = −L dI/dt<small>self-induction; L in henry</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: rod sliding on rails</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-induction-b">Field B <output></output></label><input type="range" id="phy-induction-b" min="0.1" max="2" step="0.1" value="0.5" data-unit=" T"></div>
+      <div class="ctl"><label for="phy-induction-l">Rod length l <output></output></label><input type="range" id="phy-induction-l" min="0.1" max="1" step="0.05" value="0.4" data-unit=" m"></div>
+      <div class="ctl"><label for="phy-induction-v">Speed v <output></output></label><input type="range" id="phy-induction-v" min="0.5" max="20" step="0.5" value="5" data-unit=" m/s"></div>
+      <div class="ctl"><label for="phy-induction-r">Circuit resistance R <output></output></label><input type="range" id="phy-induction-r" min="0.5" max="10" step="0.5" value="2" data-unit=" Ω"></div>
+      <div class="ctl"><button class="btn" type="button" id="phy-induction-play">Pause</button></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Induced emf<b data-r="e">-</b></div>
+      <div class="readout">Current I<b data-r="i">-</b></div>
+      <div class="readout">Magnetic drag F<b data-r="f">-</b></div>
+      <div class="readout">Power P = Fv<b data-r="p">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+    let pos=0,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches,last=null;
+    const btn=$('#phy-induction-play');btn.textContent=playing?'Pause':'Play';
+    btn.addEventListener('click',()=>{playing=!playing;btn.textContent=playing?'Pause':'Play';last=null;});
+    function vals(){return{B:+$('#phy-induction-b').value,l:+$('#phy-induction-l').value,v:+$('#phy-induction-v').value,R:+$('#phy-induction-r').value};}
+    function arr(ctx,x,y,dx,dy,col){const L=Math.hypot(dx,dy);const ux=dx/L,uy=dy/L;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+ux*6,y+uy*6);ctx.lineTo(x-ux*4-uy*5,y-uy*4+ux*5);ctx.lineTo(x-ux*4+uy*5,y-uy*4-ux*5);ctx.closePath();ctx.fill();}
+    let span=100;
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),240);const {B,l,v,R}=vals();
+      const e=B*l*v,I=e/R,F=B*I*l,P=F*v;
+      TB.set(root,'[data-r=e]',TB.fmt(e,3)+' V');TB.set(root,'[data-r=i]',TB.fmt(I,3)+' A');TB.set(root,'[data-r=f]',TB.fmt(F,3)+' N');TB.set(root,'[data-r=p]',TB.fmt(P,3)+' W');
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),acc=TB.css('--maths'),bad=TB.css('--bad');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';ctx.textAlign='center';
+      const gap=60+l*140,cy=h/2+4,y1=cy-gap/2,y2=cy+gap/2,x0=44,xr=w-40;span=Math.max(40,xr-x0-70);
+      const rx=x0+34+pos;
+      ctx.strokeStyle=mut;ctx.lineWidth=1;
+      for(let x=x0+18;x<xr;x+=28)for(let y=y1+14;y<y2-6;y+=28){ctx.beginPath();ctx.moveTo(x-3,y-3);ctx.lineTo(x+3,y+3);ctx.moveTo(x+3,y-3);ctx.lineTo(x-3,y+3);ctx.stroke();}
+      ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xr,y1);ctx.lineTo(x0,y1);ctx.lineTo(x0,y1+gap/2-22);ctx.moveTo(x0,y1+gap/2+22);ctx.lineTo(x0,y2);ctx.lineTo(xr,y2);ctx.stroke();
+      ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,cy-22);ctx.lineTo(x0-6,cy-17);ctx.lineTo(x0+6,cy-9);ctx.lineTo(x0-6,cy-1);ctx.lineTo(x0+6,cy+7);ctx.lineTo(x0-6,cy+15);ctx.lineTo(x0,cy+22);ctx.stroke();
+      ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('R',x0+10,cy);
+      ctx.strokeStyle=sub;ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(rx,y1);ctx.lineTo(rx,y2);ctx.stroke();ctx.lineCap='butt';
+      const vl=14+v*3;ctx.strokeStyle=acc;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(rx+8,cy);ctx.lineTo(rx+8+vl,cy);ctx.stroke();arr(ctx,rx+8+vl,cy,1,0,acc);
+      ctx.fillStyle=acc;ctx.textAlign='center';ctx.fillText('v',rx+8+vl/2,cy-10);
+      const mx=Math.min(rx,(x0+rx)/2);ctx.fillStyle=bad;
+      arr(ctx,rx,cy-gap/4,0,-1,bad);arr(ctx,(x0+rx)/2,y1,-1,0,bad);arr(ctx,x0,y1+gap/4,0,1,bad);arr(ctx,(x0+rx)/2,y2,1,0,bad);
+      ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('B into page',8,12);ctx.fillStyle=bad;ctx.fillText('induced current: anticlockwise',w-190,12);
+      ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText('l',rx-12,cy-gap/2+12);
+    }
+    TB.live(root,draw);
+    function tick(ts){if(!root.isConnected)return;if(playing){if(last!=null){const dt=Math.min(0.05,(ts-last)/1000);const {v}=vals();pos+=v*10*dt;if(pos>span)pos=0;draw();}last=ts;}requestAnimationFrame(tick);}
+    requestAnimationFrame(tick);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>Take B = 0.5 T, l = 0.4 m, v = 5 m/s and R = 2 Ω. Then ε = Blv = 0.5 × 0.4 × 5 = 1.0 V, I = 1.0/2 = 0.5 A, and the magnetic drag is F = BIl = 0.5 × 0.5 × 0.4 = 0.1 N. The power you must supply is Fv = 0.1 × 5 = 0.5 W, exactly equal to I²R = 0.25 × 2 = 0.5 W dissipated as heat. The energy comes from whoever pushes the rod, which is Lenz's law in energy terms.</p>
+  <p>An induction cooktop runs an alternating current of tens of kilohertz in a coil under the glass. The changing flux drives eddy currents in the steel base of the pan, which heats directly while the glass stays cool; that is why aluminium-free, magnetic steel or iron utensils work best. Metro trains such as the Delhi Metro use the reverse: during braking the traction motors act as generators, the train's kinetic energy becomes electrical energy and a good part of it is fed back into the overhead line for other trains to use.</p></div>
+  <div class="quiz"><p class="q">In the rod-on-rails setup the rod's speed is doubled with everything else unchanged. The magnetic drag force on the rod becomes</p><div class="opts"><button data-ok>2 times</button><button>4 times</button><button>unchanged</button><button>half</button></div><p class="why" hidden>F = B²l²v/R is proportional to v, so it doubles. The emf and the current also double, and the power Fv grows 4 times.</p></div>
+</article><div class="pager"><a href="phy-lorentz.html"><small>Previous</small>Moving charge in a magnetic field</a><a class="next" href="phy-ac-lcr.html"><small>Next</small>Alternating current and LCR circuits</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

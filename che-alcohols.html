@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Alcohols, phenols and ethers - Class 12 Chemistry</title>
+<meta name="description" content="Alcohols, phenols and ethers: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-alcohols" data-title="Alcohols, phenols and ethers">
+  <header><div class="tag">Alcohols, Phenols and Ethers (NCERT Chemistry Part II, Ch 7)</div><h3>Preparation, acidity, dehydration and the Lucas test</h3></header>
+  <p class="lead">Alcohols (R–OH) and phenols (Ar–OH) contain the hydroxyl group; ethers (R–O–R') have an oxygen bridging two carbons. The O–H bond makes alcohols and phenols weakly acidic and strongly hydrogen-bonded, which is why they boil far higher than ethers of similar mass.</p>
+  <ul class="keypoints">
+    <li>Alcohols are made by hydration of alkenes (Markovnikov), hydroboration-oxidation (anti-Markovnikov), reduction of aldehydes, ketones and acids, and by Grignard reagents: HCHO gives a 1° alcohol, other aldehydes 2°, ketones 3°.</li>
+    <li>Phenol is made industrially by the cumene process (benzene + propene gives cumene, which is oxidised and cleaved to phenol + acetone), and in the lab from benzenediazonium chloride.</li>
+    <li>Acidity: carboxylic acids &gt; phenols &gt; water &gt; 1° &gt; 2° &gt; 3° alcohols. The phenoxide ion is stabilised by resonance; electron-withdrawing groups (–NO<sub>2</sub>) at o/p positions increase acidity, electron-donating groups (–CH<sub>3</sub>) decrease it.</li>
+    <li>Dehydration with acid: ease 3° &gt; 2° &gt; 1°, following carbocation stability. Ethanol with conc. H<sub>2</sub>SO<sub>4</sub> gives ethoxyethane at 413 K (excess alcohol) and ethene at 443 K (excess acid).</li>
+    <li>Lucas reagent (anhydrous ZnCl<sub>2</sub> in conc. HCl) separates the three classes by how fast the insoluble alkyl chloride makes the solution turbid: 3° at once, 2° in about 5 minutes, 1° not at room temperature.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">CH<sub>3</sub>CH=CH<sub>2</sub> + H<sub>2</sub>O (H⁺) → CH<sub>3</sub>CH(OH)CH<sub>3</sub><small>Hydration, Markovnikov addition</small></div>
+    <div class="eq">RCHO + H<sub>2</sub> (NaBH<sub>4</sub> or LiAlH<sub>4</sub>) → RCH<sub>2</sub>OH<small>Reduction; ketones give 2° alcohols</small></div>
+    <div class="eq">C<sub>6</sub>H<sub>5</sub>ONa + R–X → C<sub>6</sub>H<sub>5</sub>–O–R + NaX<small>Williamson ether synthesis (use a 1° halide; 3° gives alkene)</small></div>
+    <div class="eq">R–O–R' + HI → R–I + R'–OH<small>Ether cleavage; with excess HI both groups become iodides</small></div>
+    <div class="eq">C<sub>6</sub>H<sub>5</sub>OH + CHCl<sub>3</sub> + NaOH → salicylaldehyde<small>Reimer-Tiemann; Kolbe: C<sub>6</sub>H<sub>5</sub>ONa + CO<sub>2</sub> (400 K, 4-7 atm) → salicylic acid</small></div>
+    <div class="eq">C<sub>6</sub>H<sub>5</sub>OH + 3 Br<sub>2</sub>(aq) → 2,4,6-tribromophenol↓ + 3 HBr<small>White precipitate; test for phenol</small></div>
+    <div class="eq">pK<sub>a</sub>: phenol 10.0, ethanol 16, water 15.7<small>Smaller pK<sub>a</sub> means stronger acid; K<sub>a</sub> = 10<sup>−pKa</sup></small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: the Lucas test</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-alcohols-alc">Alcohol in the test tube</label><select id="che-alcohols-alc">
+        <option value="1">Ethanol (1°)</option><option value="1">Butan-1-ol (1°)</option><option value="2" selected>Propan-2-ol (2°)</option><option value="2">Butan-2-ol (2°)</option><option value="3">2-Methylpropan-2-ol (3°)</option></select></div>
+      <div class="ctl"><label for="che-alcohols-t">Time after adding Lucas reagent <output></output></label><input type="range" id="che-alcohols-t" min="0" max="10" step="0.1" value="0" data-unit=" min"></div>
+    </div>
+    <canvas class="stage" id="che-alcohols-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Class<b id="che-alcohols-cls">-</b></div>
+      <div class="readout">Turbidity<b id="che-alcohols-tur">-</b></div>
+      <div class="readout">Observation<b id="che-alcohols-obs">-</b></div>
+    </div>
+    <p style="font-size:.9rem;color:var(--muted)">Reaction: R–OH + HCl (ZnCl₂) → R–Cl + H₂O. The alkyl chloride is insoluble in the acidic water layer, so it appears as cloudiness. Allylic and benzylic alcohols also react at once because their carbocations are resonance stabilised.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      function turb(c,t){ if(c===3)return 1-Math.exp(-t/0.08); if(c===2)return 1/(1+Math.exp(-(t-3)/0.7)); return 0; }
+      function draw(){
+        const c=+$('che-alcohols-alc').value,t=+$('che-alcohols-t').value,tu=turb(c,t);
+        const g=TB.canvas($('che-alcohols-cv'),230),ctx=g.ctx,w=g.w,h=g.h;
+        const cx=w/2,tw=46,top=16,bot=h-26,liq=top+50;
+        ctx.lineWidth=2;ctx.strokeStyle=TB.css('--ink');
+        ctx.beginPath();ctx.moveTo(cx-tw,top);ctx.lineTo(cx-tw,bot-tw);ctx.arc(cx,bot-tw,tw,Math.PI,0,true);ctx.lineTo(cx+tw,top);ctx.stroke();
+        ctx.save();ctx.beginPath();ctx.moveTo(cx-tw+1,liq);ctx.lineTo(cx+tw-1,liq);ctx.lineTo(cx+tw-1,bot-tw);ctx.arc(cx,bot-tw,tw-1,0,Math.PI);ctx.closePath();
+        ctx.fillStyle=TB.css('--sub');ctx.globalAlpha=.14;ctx.fill();ctx.globalAlpha=1;ctx.clip();
+        let sd=7;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+        ctx.fillStyle=TB.css('--ink');
+        for(let i=0;i<260;i++){const x=cx-tw+rnd()*2*tw,y=liq+rnd()*(bot-liq),r=1+rnd()*2.2;ctx.globalAlpha=tu*(.25+.45*rnd());ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();}
+        ctx.restore();ctx.globalAlpha=1;
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';
+        ctx.fillText('Lucas reagent + alcohol',10,top+8);
+        ctx.fillText('t = '+t.toFixed(1)+' min',10,top+26);
+        ctx.textAlign='right';ctx.fillText('R–Cl droplets: cloudy layer',w-10,bot-4);
+        const cl={1:'Primary (1°)',2:'Secondary (2°)',3:'Tertiary (3°)'}[c];
+        TB.set(root,'#che-alcohols-cls',cl);
+        TB.set(root,'#che-alcohols-tur',Math.round(tu*100)+' %');
+        TB.set(root,'#che-alcohols-obs',tu>.85?'Turbid':(tu>.3?'Turning cloudy':'Clear'));
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: how acidic is the O–H?</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-alcohols-cmp">Compound</label><select id="che-alcohols-cmp">
+        <option value="0">2-Methylpropan-2-ol (3° alcohol)</option><option value="1">Ethanol</option><option value="2">Methanol</option><option value="3">Water</option><option value="4" selected>Phenol</option><option value="5">p-Cresol</option><option value="6">m-Nitrophenol</option><option value="7">p-Nitrophenol</option><option value="8">2,4-Dinitrophenol</option><option value="9">2,4,6-Trinitrophenol (picric acid)</option><option value="10">Acetic acid (reference)</option></select></div>
+    </div>
+    <canvas class="stage" id="che-alcohols-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">pK<sub>a</sub><b id="che-alcohols-pka">-</b></div>
+      <div class="readout">K<sub>a</sub><b id="che-alcohols-ka">-</b></div>
+      <div class="readout">Times stronger than ethanol<b id="che-alcohols-rel">-</b></div>
+    </div>
+    <p id="che-alcohols-why" style="font-size:.9rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const D=[['tert-Butanol',18,'Three +I methyl groups push electron density onto O, destabilising the alkoxide: the weakest acid here.'],
+        ['Ethanol',16,'The alkoxide ion has its negative charge localised on O, and the +I ethyl group destabilises it.'],
+        ['Methanol',15.5,'Slightly stronger than water and ethanol; one alkyl group only.'],
+        ['Water',15.7,'Reference. Alcohols are weaker acids than water (they do not turn litmus), apart from methanol which is comparable.'],
+        ['Phenol',10,'The phenoxide ion delocalises its charge into the ring (resonance), so phenol is about a million times more acidic than ethanol.'],
+        ['p-Cresol',10.3,'The electron-donating –CH₃ pushes density towards the O⁻, making phenoxide less stable: weaker than phenol.'],
+        ['m-Nitrophenol',8.4,'–NO₂ is electron-withdrawing; at the meta position it acts by the inductive effect only.'],
+        ['p-Nitrophenol',7.2,'At the para position –NO₂ also withdraws by resonance, delocalising the charge onto the nitro group.'],
+        ['2,4-Dinitrophenol',4.1,'Two nitro groups at o and p positions: acidity close to acetic acid.'],
+        ['Picric acid',0.4,'Three nitro groups: as strong as a mineral acid in water; it is a genuine acid in name too.'],
+        ['Acetic acid',4.76,'Reference: the carboxylate ion shares the charge equally over two oxygens.']];
+      function draw(){
+        const k=+$('che-alcohols-cmp').value;
+        const g=TB.canvas($('che-alcohols-cv2'),300),ctx=g.ctx,w=g.w,h=g.h;
+        const idx=D.map((d,i)=>i).sort((a,b)=>D[b][1]-D[a][1]);
+        const lab=Math.min(120,w*.36),L=lab+8,R=w-44,top=22,rh=(h-top-6)/D.length;
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=TB.css('--muted');ctx.textAlign='left';
+        ctx.fillText('Weaker acid  →  stronger acid (bar = 20 − pKa)',8,12);
+        idx.forEach((i,r)=>{
+          const y=top+r*rh,len=(20-D[i][1])/20*(R-L),on=i===k;
+          ctx.fillStyle=on?TB.css('--sub'):TB.css('--line');ctx.fillRect(L,y+2,Math.max(len,2),rh-4);
+          ctx.fillStyle=TB.css('--ink');ctx.textAlign='right';ctx.font=(on?'600 ':'')+'12px "Source Sans 3", sans-serif';ctx.fillText(D[i][0],lab,y+rh/2+4);
+          ctx.textAlign='left';ctx.fillText(D[i][1],L+Math.max(len,2)+4,y+rh/2+4);
+        });
+        const p=D[k][1],ka=Math.pow(10,-p);
+        TB.set(root,'#che-alcohols-pka',p);
+        TB.set(root,'#che-alcohols-ka',ka.toExponential(1).replace('e-','×10⁻').replace('e+','×10'));
+        TB.set(root,'#che-alcohols-rel',TB.fmt(Math.pow(10,16-p),1));
+        $('che-alcohols-why').textContent=D[k][2];
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: dehydration of alcohols</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-alcohols-dal">Alcohol</label><select id="che-alcohols-dal">
+        <option value="1" selected>Ethanol (1°)</option><option value="2">Butan-2-ol (2°)</option><option value="3">2-Methylpropan-2-ol (3°)</option></select></div>
+      <div class="ctl"><label for="che-alcohols-dt">Temperature <output></output></label><input type="range" id="che-alcohols-dt" min="340" max="470" step="1" value="413" data-unit=" K"></div>
+    </div>
+    <div class="readouts">
+      <div class="readout">Acid used<b id="che-alcohols-dacid">-</b></div>
+      <div class="readout">Main product at this temperature<b id="che-alcohols-dprod">-</b></div>
+      <div class="readout">Mechanism<b id="che-alcohols-dmech">-</b></div>
+    </div>
+    <p id="che-alcohols-dnote" style="font-size:.9rem;color:var(--muted)"></p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      function draw(){
+        const c=+$('che-alcohols-dal').value,T=+$('che-alcohols-dt').value;
+        let acid,prod,note;
+        if(c===1){acid='Conc. H₂SO₄ (95-98 %), onset about 443 K';
+          if(T<400){prod='Ethyl hydrogen sulphate, C₂H₅OSO₃H';note='At lower temperature the alcohol is only esterified by the acid.';}
+          else if(T<=425){prod='Ethoxyethane (diethyl ether)';note='Excess alcohol at about 413 K: two molecules combine by SN2 attack of ROH on the protonated alcohol.';}
+          else if(T<436){prod='Mixture of ether and ethene';note='Between 413 K and 443 K the two pathways overlap.';}
+          else {prod='Ethene, CH₂=CH₂';note='Excess acid at 443 K: elimination of water (E1/E2-like) wins over ether formation.';}}
+        else if(c===2){acid='85 % H₃PO₄, about 440 K';
+          if(T<430){prod='Little reaction';note='Secondary alcohols need roughly 440 K.';}
+          else {prod='But-2-ene (major) + but-1-ene (minor)';note='Saytzeff rule: the more substituted alkene is the major product.';}}
+        else {acid='20 % H₃PO₄, about 358 K';
+          if(T<350){prod='Little reaction';note='Tertiary alcohols dehydrate under the mildest conditions.';}
+          else {prod='2-Methylpropene, (CH₃)₂C=CH₂';note='Fast because the tertiary carbocation (CH₃)₃C⁺ is the most stable. At higher temperature the product is the same.';}}
+        TB.set(root,'#che-alcohols-dacid',acid);TB.set(root,'#che-alcohols-dprod',prod);
+        TB.set(root,'#che-alcohols-dmech','Protonate OH, lose H₂O, then lose H⁺ (E1 for 2°/3°)');
+        $('che-alcohols-dnote').textContent=note+' Ease of dehydration: 3° > 2° > 1°.';
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>India's E20 programme blends 20 % ethanol (made by fermenting sugarcane juice, molasses and grain) into petrol. In 1000 L of E20 there are 200 L ethanol and 800 L petrol. With energy contents of roughly 32 MJ/L for petrol and 21 MJ/L for ethanol, the blend carries 0.8 × 32 + 0.2 × 21 = 29.8 MJ/L, about 7 % less than pure petrol, which is why fuel economy dips slightly. Aspirin is a phenol derivative: salicylic acid (M = 138 g/mol; made by the Kolbe reaction) is acetylated with acetic anhydride to give aspirin (M = 180 g/mol). 13.8 g (0.100 mol) of salicylic acid can give at most 0.100 × 180 = 18.0 g aspirin. Methanol is toxic (it is oxidised to methanal and methanoic acid in the body), which is why illicit liquor contaminated with it causes tragedies, and why industrial ethanol is denatured.</p></div>
+  <div class="quiz"><p class="q">In the Lucas test, which alcohol gives turbidity within about 5 minutes at room temperature?</p>
+    <div class="opts"><button>2-Methylpropan-2-ol</button><button data-ok>Propan-2-ol</button><button>Ethanol</button><button>Methanol</button></div>
+    <p class="why" hidden>Propan-2-ol is a secondary alcohol: turbidity appears in about 5 minutes. The tertiary alcohol turns turbid immediately, while primary alcohols (ethanol, methanol) show no turbidity at room temperature.</p></div>
+</article><div class="pager"><a href="che-haloalkanes.html"><small>Previous</small>Haloalkanes: SN1 vs SN2</a><a class="next" href="che-carbonyl.html"><small>Next</small>Aldehydes and ketones</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

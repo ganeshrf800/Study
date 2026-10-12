@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Principles of inheritance - Class 12 Biology</title>
+<meta name="description" content="Principles of inheritance: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-inheritance" data-title="Principles of inheritance">
+  <header><div class="tag">Principles of Inheritance and Variation</div><h3>Mendel's laws, crosses, blood groups and sex determination</h3></header>
+  <p class="lead">Mendel crossed pea plants and counted the offspring. He found that traits are carried by paired factors (genes) that separate when gametes form, and that different pairs are inherited independently. A Punnett square turns these rules into predictable ratios.</p>
+  <ul class="keypoints">
+    <li><b>Law of dominance</b>: in a heterozygote, the dominant allele hides the recessive one. <b>Law of segregation</b>: the two alleles of a gene separate during gamete formation, so each gamete gets one. <b>Law of independent assortment</b>: genes on different chromosomes separate independently, giving the dihybrid ratio 9:3:3:1.</li>
+    <li><b>Test cross</b>: cross an unknown dominant-phenotype plant with the homozygous recessive. A 1:1 result shows the unknown was heterozygous; all dominant shows it was homozygous.</li>
+    <li><b>Incomplete dominance</b>: the heterozygote is intermediate (red × white snapdragon gives pink; F<sub>2</sub> is 1:2:1 for both genotype and phenotype). <b>Co-dominance</b>: both alleles show fully, as I<sup>A</sup> and I<sup>B</sup> do in the AB blood group.</li>
+    <li><b>ABO blood groups</b>: one gene, three alleles (I<sup>A</sup>, I<sup>B</sup>, i), six genotypes, four phenotypes. I<sup>A</sup> and I<sup>B</sup> are each dominant over i.</li>
+    <li><b>Sex determination</b>: humans XX (female) and XY (male); the sperm decides the sex of the child. Birds have ZW females and ZZ males. Grasshopper males are XO. Linked genes (Morgan, <i>Drosophila</i>) do not assort independently; the closer they are on a chromosome, the less often they recombine.</li>
+    <li><b>Disorders</b>: Mendelian (sickle-cell anaemia, thalassaemia, phenylketonuria are autosomal recessive; haemophilia and red-green colour blindness are X-linked recessive) and chromosomal (Down syndrome is trisomy 21; Turner XO; Klinefelter XXY).</li>
+  </ul>
+  <svg viewBox="0 0 260 150" role="img" aria-label="Pedigree of an autosomal recessive trait" style="width:100%;max-width:340px;display:block;margin:.6rem 0">
+    <g style="stroke:var(--ink);stroke-width:1.6;fill:none"><path d="M92 25H148M120 25V70M60 70H200M60 70V84M130 70V84M200 70V84"/></g>
+    <rect x="68" y="13" width="24" height="24" style="fill:var(--paper);stroke:var(--ink);stroke-width:1.6"/>
+    <circle cx="160" cy="25" r="12" style="fill:var(--paper);stroke:var(--ink);stroke-width:1.6"/>
+    <circle cx="60" cy="96" r="12" style="fill:var(--ink);stroke:var(--ink);stroke-width:1.6"/>
+    <rect x="118" y="84" width="24" height="24" style="fill:var(--paper);stroke:var(--ink);stroke-width:1.6"/>
+    <rect x="188" y="84" width="24" height="24" style="fill:var(--paper);stroke:var(--ink);stroke-width:1.6"/>
+    <g font-size="11" style="fill:var(--ink)" text-anchor="middle"><text x="80" y="52">Aa</text><text x="160" y="52">Aa</text><text x="60" y="124">aa (affected)</text><text x="130" y="124">A_</text><text x="200" y="124">A_</text><text x="130" y="142" style="fill:var(--muted)">Square = male, circle = female, filled = affected</text></g>
+  </svg>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Monohybrid F<sub>2</sub>: 3 : 1 (phenotype), 1 : 2 : 1 (genotype)<small>Aa × Aa</small></div>
+    <div class="eq">Dihybrid F<sub>2</sub>: 9 : 3 : 3 : 1<small>AaBb × AaBb; 16 combinations, 4 phenotypes, 9 genotypes</small></div>
+    <div class="eq">Gamete types = 2<sup>n</sup>; F<sub>2</sub> genotypes = 3<sup>n</sup>; phenotypes = 2<sup>n</sup><small>n = number of heterozygous gene pairs (complete dominance)</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: Punnett square builder</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-inheritance-mode">Cross type</label><select id="bio-inheritance-mode"><option value="mono">Monohybrid (complete dominance)</option><option value="inc">Monohybrid (incomplete dominance)</option><option value="di">Dihybrid (complete dominance)</option></select></div>
+      <div class="ctl"><label for="bio-inheritance-p1">Parent 1 genotype</label><select id="bio-inheritance-p1"></select></div>
+      <div class="ctl"><label for="bio-inheritance-p2">Parent 2 genotype</label><select id="bio-inheritance-p2"></select></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem"><button type="button" class="btn" id="bio-inheritance-b1">F<sub>2</sub> cross (Aa × Aa)</button><button type="button" class="btn" id="bio-inheritance-b2">Test cross (Aa × aa)</button><button type="button" class="btn" id="bio-inheritance-b3">Dihybrid F<sub>2</sub></button></div>
+    <p id="bio-inheritance-trait" style="font-size:.9rem;color:var(--muted);margin:.2rem 0"></p>
+    <div class="tw" id="bio-inheritance-sq"></div>
+    <div class="readouts" style="grid-template-columns:1fr"><div class="readout">Genotypic ratio<b data-r="gr" style="font-size:.9rem;font-weight:600"></b></div><div class="readout">Phenotypic ratio<b data-r="pr" style="font-size:.9rem;font-weight:600"></b></div></div>
+    <div id="bio-inheritance-leg" style="display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin-top:.6rem;font-size:.88rem"></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const q=s=>root.querySelector(s);
+    const MONO=['AA','Aa','aa'],DI=['AABB','AABb','AAbb','AaBB','AaBb','Aabb','aaBB','aaBb','aabb'];
+    const COL=['--bio','--chem','--maths','--physics'];
+    const gcd=(a,b)=>b?gcd(b,a%b):a;
+    const mode=q('#bio-inheritance-mode'),p1=q('#bio-inheritance-p1'),p2=q('#bio-inheritance-p2');
+    let last='';
+    function fill(sel,arr,val){sel.innerHTML=arr.map(g=>'<option'+(g===val?' selected':'')+'>'+g+'</option>').join('');}
+    function setup(m,a,b){const arr=m==='di'?DI:MONO;fill(p1,arr,a);fill(p2,arr,b);}
+    function gam(g){const loci=g.length/2;let out=[''];for(let i=0;i<loci;i++){const x=g[2*i],y=g[2*i+1],al=x===y?[x]:[x,y];const n=[];out.forEach(s=>al.forEach(c=>n.push(s+c)));out=n;}return out;}
+    function comb(a,b){let s='';for(let i=0;i<a.length;i++)s+=[a[i],b[i]].sort().join('');return s;}
+    function cls(g,m){
+      if(m==='inc')return g==='AA'?'Red':g==='Aa'?'Pink':'White';
+      if(m==='mono')return /A/.test(g)?'Dominant':'Recessive';
+      const a=/A/.test(g.slice(0,2)),b=/B/.test(g.slice(2));return (a?'Round':'Wrinkled')+' '+(b?'yellow':'green');}
+    const ORD={mono:['Dominant','Recessive'],inc:['Red','Pink','White'],di:['Round yellow','Round green','Wrinkled yellow','Wrinkled green']};
+    const NAMES={mono:{Dominant:'Dominant phenotype (A_)',Recessive:'Recessive phenotype (aa)'},inc:{Red:'Red (AA)',Pink:'Pink (Aa)',White:'White (aa)'},di:{}};
+    const ratio=(counts)=>{const nz=counts.filter(c=>c>0);const g=nz.reduce(gcd,0)||1;return counts.filter(c=>c>0).map(c=>c/g);};
+    function draw(){
+      const m=mode.value;
+      if(m!==last){const wasDi=last==='di',isDi=m==='di';if(last===''||wasDi!==isDi)setup(m,isDi?'AaBb':'Aa',isDi?'AaBb':'Aa');last=m;}
+      const A=p1.value,B=p2.value,ga=gam(A),gb=gam(B),N=ga.length*gb.length;
+      q('#bio-inheritance-trait').textContent=m==='di'?'A = round, a = wrinkled seed; B = yellow, b = green seed (garden pea).':m==='inc'?'Flower colour in snapdragon: AA red, Aa pink, aa white.':'A = dominant allele, a = recessive allele (for example tall and dwarf pea plants).';
+      const phs=ORD[m],gC={},pC={};phs.forEach(p=>pC[p]=0);
+      let h='<table class="t" style="text-align:center"><tr><th>'+A+' ↓ / '+B+' →</th>'+gb.map(g=>'<th>'+g+'</th>').join('')+'</tr>';
+      ga.forEach(x=>{h+='<tr><th>'+x+'</th>';gb.forEach(y=>{const g=comb(x,y),c=cls(g,m);gC[g]=(gC[g]||0)+1;pC[c]++;
+        h+='<td style="background:color-mix(in srgb,var('+COL[phs.indexOf(c)]+') 28%,var(--paper));font-family:var(--f-mono);font-size:'+(m==='di'?'.8':'.95')+'rem">'+g+'</td>';});h+='</tr>';});
+      h+='</table>';q('#bio-inheritance-sq').innerHTML=h;
+      const gk=Object.keys(gC).sort(),gcs=gk.map(k=>gC[k]),gg=gcs.reduce(gcd,0);
+      TB.set(root,'[data-r=gr]',gk.map(k=>(gC[k]/gg)+' '+k).join(' : ')+'   (out of '+N+')');
+      const pcs=phs.map(p=>pC[p]),pg=pcs.filter(c=>c>0).reduce(gcd,0)||1;
+      TB.set(root,'[data-r=pr]',phs.filter(p=>pC[p]>0).map(p=>pC[p]/pg).join(' : '));
+      q('#bio-inheritance-leg').innerHTML=phs.map((p,i)=>'<span><span style="display:inline-block;width:.8em;height:.8em;border-radius:2px;background:color-mix(in srgb,var('+COL[i]+') 45%,var(--paper));border:1px solid var(--muted);margin-right:.3em"></span>'+(NAMES[m][p]||p)+': '+pC[p]+'/'+N+'</span>').join('');
+    }
+    const go=(m,a,b)=>{mode.value=m;last='';setup(m,a,b);last=m;draw();};
+    q('#bio-inheritance-b1').addEventListener('click',()=>go('mono','Aa','Aa'));
+    q('#bio-inheritance-b2').addEventListener('click',()=>go('mono','Aa','aa'));
+    q('#bio-inheritance-b3').addEventListener('click',()=>go('di','AaBb','AaBb'));
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: ABO blood group of the children</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-inheritance-m">Mother</label><select id="bio-inheritance-m"><option value="AA">Group A (I^A I^A)</option><option value="Ai" selected>Group A (I^A i)</option><option value="BB">Group B (I^B I^B)</option><option value="Bi">Group B (I^B i)</option><option value="AB">Group AB (I^A I^B)</option><option value="ii">Group O (ii)</option></select></div>
+      <div class="ctl"><label for="bio-inheritance-f">Father</label><select id="bio-inheritance-f"><option value="AA">Group A (I^A I^A)</option><option value="Ai">Group A (I^A i)</option><option value="BB">Group B (I^B I^B)</option><option value="Bi" selected>Group B (I^B i)</option><option value="AB">Group AB (I^A I^B)</option><option value="ii">Group O (ii)</option></select></div>
+    </div>
+    <div class="tw" id="bio-inheritance-abo"></div>
+    <div id="bio-inheritance-bars" style="margin-top:.7rem"></div>
+    <p id="bio-inheritance-note" style="font-size:.92rem" aria-live="polite"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const q=s=>root.querySelector(s);
+    const ph=g=>{const a=g.includes('A'),b=g.includes('B');return a&&b?'AB':a?'A':b?'B':'O';};
+    const nm=g=>g.split('').map(c=>c==='i'?'i':'I<sup>'+c+'</sup>').join('');
+    const srt=(x,y)=>[x,y].sort((a,b)=>(a==='i')-(b==='i')||a.localeCompare(b)).join('');
+    function draw(){
+      const m=q('#bio-inheritance-m').value.split(''),f=q('#bio-inheritance-f').value.split('');
+      const cnt={},gen={};
+      let h='<table class="t" style="text-align:center"><tr><th>Mother ↓ / Father →</th>'+f.map(x=>'<th>'+nm(x)+'</th>').join('')+'</tr>';
+      m.forEach(a=>{h+='<tr><th>'+nm(a)+'</th>';f.forEach(b=>{const g=srt(a,b),p=ph(g);cnt[p]=(cnt[p]||0)+1;gen[g]=(gen[g]||0)+1;h+='<td>'+nm(g)+' <small>(group '+p+')</small></td>';});h+='</tr>';});
+      q('#bio-inheritance-abo').innerHTML=h+'</table>';
+      q('#bio-inheritance-bars').innerHTML=['A','B','AB','O'].map(p=>{const v=(cnt[p]||0)*25;return '<div style="display:flex;align-items:center;gap:.5rem;margin:.2rem 0;font-size:.9rem"><span style="width:2.6rem">Group '+p+'</span><span style="flex:1;background:var(--soft);border-radius:4px;height:1rem;overflow:hidden"><span style="display:block;height:100%;width:'+v+'%;background:var(--sub)"></span></span><span style="width:3rem;text-align:right;font-family:var(--f-mono)">'+v+'%</span></div>';}).join('');
+      const poss=Object.keys(cnt).sort();
+      q('#bio-inheritance-note').textContent='Possible groups: '+poss.join(', ')+'. '+(cnt.O?'A child of group O is possible, which needs an i from each parent.':'A child of group O is not possible here, because at least one parent has no i allele.');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>Blood grouping is used to exclude (never to prove) parentage. Worked example: a mother of group A (I<sup>A</sup>i) and a father of group B (I<sup>B</sup>i) can have children of all four groups, each with probability 1/4 (I<sup>A</sup>I<sup>B</sup>, I<sup>A</sup>i, I<sup>B</sup>i, ii). A group AB mother and a group O father cannot have an AB or O child. Sickle-cell anaemia follows the same square: if both parents are carriers (HbA HbS), each child has a 1/4 chance of HbS HbS (disease), 1/2 of being a carrier and 1/4 of being unaffected. The trait is common in parts of Odisha, Chhattisgarh, Madhya Pradesh, Maharashtra and the Nilgiris, and India launched the National Sickle Cell Anaemia Elimination Mission in 2023, built on screening and counselling of carriers before marriage.</p></div>
+  <div class="quiz"><p class="q">A heterozygous tall plant (Aa) is crossed with a dwarf plant (aa). What are the offspring?</p><div class="opts"><button>All tall</button><button>3 tall : 1 dwarf</button><button data-ok>1 tall : 1 dwarf</button><button>1 tall : 2 intermediate : 1 dwarf</button></div><p class="why" hidden>Aa makes gametes A and a in equal numbers; aa makes only a. So offspring are Aa (tall) and aa (dwarf) in the ratio 1:1. This is the test cross.</p></div>
+</article><div class="pager"><a href="bio-human-repro.html"><small>Previous</small>Human reproduction</a><a class="next" href="bio-dna-replication.html"><small>Next</small>DNA structure and replication</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

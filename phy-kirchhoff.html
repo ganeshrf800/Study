@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kirchhoff&#x27;s laws - Class 12 Physics</title>
+<meta name="description" content="Kirchhoff&#x27;s laws: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-kirchhoff" data-title="Kirchhoff's laws">
+  <header><div class="tag">Current Electricity</div><h3>Kirchhoff's laws and cells in a network</h3></header>
+  <p class="lead">Series and parallel rules are not enough once a circuit has several batteries or loops. Kirchhoff's two laws, which are just conservation of charge and conservation of energy, let you write equations for any network and solve for every current.</p>
+  <ul class="keypoints">
+    <li>Junction rule (KCL): the sum of currents entering a junction equals the sum leaving, because charge does not pile up at a point.</li>
+    <li>Loop rule (KVL): around any closed loop the algebraic sum of potential changes is zero, because the electric force is conservative.</li>
+    <li>Sign convention: going across a resistor in the direction of current is a drop (−IR); going through a cell from − to + is a rise (+E).</li>
+    <li>Choose current directions freely. A negative answer just means the current really flows the other way.</li>
+    <li>A real cell has internal resistance r, so its terminal voltage is V = E − Ir while it supplies current.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Σ I<sub>in</sub> = Σ I<sub>out</sub><small>Kirchhoff's junction rule</small></div>
+    <div class="eq">Σ E − Σ I R = 0 (around a loop)<small>Kirchhoff's loop rule</small></div>
+    <div class="eq">V = E − I r<small>Terminal voltage of a cell delivering current; V = E + Ir while charging</small></div>
+    <div class="eq">I<sub>3</sub> = (E<sub>1</sub>/R<sub>1</sub> + E<sub>2</sub>/R<sub>2</sub>) / (1 + R<sub>3</sub>/R<sub>1</sub> + R<sub>3</sub>/R<sub>2</sub>)<small>Two cells feeding a common resistor R<sub>3</sub> (the circuit below); then I<sub>1</sub> = (E<sub>1</sub> − I<sub>3</sub>R<sub>3</sub>)/R<sub>1</sub>, I<sub>2</sub> = (E<sub>2</sub> − I<sub>3</sub>R<sub>3</sub>)/R<sub>2</sub></small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: two cells sharing a resistor</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-kirchhoff-e1">E₁ <output></output></label><input type="range" id="phy-kirchhoff-e1" min="1" max="20" step="1" value="12" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-kirchhoff-e2">E₂ <output></output></label><input type="range" id="phy-kirchhoff-e2" min="1" max="20" step="1" value="6" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-kirchhoff-r1">R₁ <output></output></label><input type="range" id="phy-kirchhoff-r1" min="1" max="10" step="1" value="2" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-kirchhoff-r2">R₂ <output></output></label><input type="range" id="phy-kirchhoff-r2" min="1" max="10" step="1" value="3" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-kirchhoff-r3">R₃ <output></output></label><input type="range" id="phy-kirchhoff-r3" min="1" max="10" step="1" value="4" data-unit=" Ω"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">I₁ (left cell)<b data-r="i1">-</b></div>
+      <div class="readout">I₂ (right cell)<b data-r="i2">-</b></div>
+      <div class="readout">I₃ (through R₃)<b data-r="i3">-</b></div>
+      <div class="readout">KCL check I₁ + I₂ − I₃<b data-r="kcl">-</b></div>
+      <div class="readout">KVL check (outer loop)<b data-r="kvl">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Positive I₁, I₂ mean upward in the side branches (cell discharging); positive I₃ is downward. Make E₂ much smaller than E₁ and watch I₂ reverse: the weaker cell gets charged.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      function arrow(ctx,x0,y0,x1,y1,hs){ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-0.45),y1-hs*Math.sin(a-0.45));ctx.lineTo(x1-hs*Math.cos(a+0.45),y1-hs*Math.sin(a+0.45));ctx.closePath();ctx.fill()}
+      function draw(){
+        const E1=+$('#phy-kirchhoff-e1').value,E2=+$('#phy-kirchhoff-e2').value,R1=+$('#phy-kirchhoff-r1').value,R2=+$('#phy-kirchhoff-r2').value,R3=+$('#phy-kirchhoff-r3').value;
+        const I3=(E1/R1+E2/R2)/(1+R3/R1+R3/R2),I1=(E1-I3*R3)/R1,I2=(E2-I3*R3)/R2;
+        const g=TB.canvas($('canvas'),245),ctx=g.ctx,w=g.w,h=g.h;
+        const ink=TB.css('--ink'),soft=TB.css('--soft'),sub=TB.css('--sub'),bad=TB.css('--bad'),good=TB.css('--good');
+        const xa=Math.round(w*0.15),xb=Math.round(w*0.5),xc=Math.round(w*0.8),yt=40,yb=170;
+        ctx.strokeStyle=ink;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(xa,yt);ctx.lineTo(xc,yt);ctx.moveTo(xa,yb);ctx.lineTo(xc,yb);
+        [xa,xb,xc].forEach(x=>{ctx.moveTo(x,yt);ctx.lineTo(x,yb)});ctx.stroke();
+        ctx.fillStyle=ink;[[xb,yt],[xb,yb]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5,0,7);ctx.fill()});
+        function res(x,y){ctx.fillStyle=soft;ctx.fillRect(x-8,y-16,16,32);ctx.strokeStyle=sub;ctx.lineWidth=2;ctx.strokeRect(x-6,y-13,12,26)}
+        function cell(x,y){ctx.fillStyle=soft;ctx.fillRect(x-12,y-8,24,16);ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-11,y-3);ctx.lineTo(x+11,y-3);ctx.stroke();ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(x-6,y+3);ctx.lineTo(x+6,y+3);ctx.stroke()}
+        res(xa,84);cell(xa,138);res(xb,108);res(xc,84);cell(xc,138);
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;
+        ctx.textAlign='left';ctx.fillText('R₁ = '+R1+' Ω',xa+13,88);ctx.fillText('E₁ = '+E1+' V',xa+16,142);ctx.fillText('R₃ = '+R3+' Ω',xb+12,112);
+        ctx.textAlign='right';ctx.fillText('R₂ = '+R2+' Ω',xc-13,88);ctx.fillText('E₂ = '+E2+' V',xc-16,142);
+        ctx.lineWidth=2.4;
+        function cur(x,y0,y1,I,col){ctx.strokeStyle=ctx.fillStyle=col;if(Math.abs(I)<1e-9)return;const up=I>0;(y1>y0)===up?arrow(ctx,x,y0,x,y1,6):arrow(ctx,x,y1,x,y0,6)}
+        // side branches: positive = upward; arrow drawn between resistor and cell
+        function side(x,I){ctx.strokeStyle=ctx.fillStyle=bad;ctx.lineWidth=2.4;if(Math.abs(I)<1e-9)return;I>0?arrow(ctx,x,120,x,104,6):arrow(ctx,x,104,x,120,6)}
+        side(xa,I1);side(xc,I2);
+        ctx.strokeStyle=ctx.fillStyle=good;if(Math.abs(I3)>1e-9){I3>0?arrow(ctx,xb,54,xb,80,6):arrow(ctx,xb,80,xb,54,6)}
+        ctx.fillStyle=ink;ctx.textAlign='center';
+        const lab=(x,nm,I,a,b)=>{ctx.fillText(nm+' = '+TB.fmt(I,2)+' A',x,yb+22);ctx.fillText(I>=0?a:b,x,yb+37)};
+        lab(xa,'I₁',I1,'discharging','charging');lab(xb,'I₃',I3,'down','up');lab(xc,'I₂',I2,'discharging','charging');
+        TB.set(root,'[data-r=i1]',TB.fmt(I1,3)+' A');TB.set(root,'[data-r=i2]',TB.fmt(I2,3)+' A');TB.set(root,'[data-r=i3]',TB.fmt(I3,3)+' A');
+        TB.set(root,'[data-r=kcl]',(I1+I2-I3).toFixed(3)+' A');
+        TB.set(root,'[data-r=kvl]',((E1-I1*R1)-(E2-I2*R2)).toFixed(3)+' V');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Suppose a 12 V and a 6 V battery are wrongly connected in parallel across a 4 Ω load, with 2 Ω and 3 Ω of internal resistance. With the circuit above (E₁ = 12 V, R₁ = 2 Ω, E₂ = 6 V, R₂ = 3 Ω, R₃ = 4 Ω): I₃ = (12/2 + 6/3) / (1 + 4/2 + 4/3) = 8 / 4.33 ≈ 1.85 A. Then I₁ = (12 − 1.85×4)/2 ≈ 2.31 A, but I₂ = (6 − 7.38)/3 ≈ −0.46 A. The negative sign means the 6 V battery is being forced backwards, charged by the stronger one. Check: 2.31 − 0.46 = 1.85 A, as the junction rule requires.</p>
+    <p>This is why mismatched cells and batteries should never be paralleled, for example in a solar-park battery bank or an inverter battery pair: the stronger one drives large currents through the weaker one and heats it. Matching emf keeps both I₁ and I₂ positive.</p>
+  </div>
+  <div class="quiz"><p class="q">At a junction, currents of 3 A and 2 A flow in, and 4 A flows out along one wire. The remaining wire at the junction carries:</p><div class="opts"><button data-ok>1 A, out of the junction</button><button>1 A, into the junction</button><button>9 A, out of the junction</button><button>0 A</button></div><p class="why" hidden>Current in = 3 + 2 = 5 A, current out so far = 4 A. By the junction rule 1 A must also leave through the remaining wire.</p></div>
+</article><div class="pager"><a href="phy-current.html"><small>Previous</small>Current, Ohm&#x27;s law and resistivity</a><a class="next" href="phy-bridges.html"><small>Next</small>Wheatstone bridge, metre bridge, potentiometer</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Electromagnetic waves - Class 12 Physics</title>
+<meta name="description" content="Electromagnetic waves: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-em-waves" data-title="Electromagnetic waves">
+  <header><div class="tag">Electromagnetic Waves</div><h3>Electromagnetic waves: spectrum, E and B oscillation, speed c</h3></header>
+  <p class="lead">A changing electric field produces a magnetic field, and a changing magnetic field produces an electric field. Together they can sustain each other and travel through empty space as an electromagnetic wave. Radio, microwaves, light and X-rays are the same kind of wave at different frequencies.</p>
+  <ul class="keypoints">
+    <li>Maxwell's displacement current, I<sub>d</sub> = ε₀ dΦ<sub>E</sub>/dt, completes Ampere's law and predicts the waves.</li>
+    <li>E and B are perpendicular to each other and to the direction of travel (transverse), oscillate in phase, and E₀/B₀ = c.</li>
+    <li>In vacuum c = 1/√(μ₀ε₀) ≈ 3×10⁸ m/s for all frequencies. In a medium the speed is lower.</li>
+    <li>The spectrum in order of increasing frequency: radio, microwave, infrared, visible, ultraviolet, X-ray, gamma. Higher frequency means shorter wavelength and larger photon energy.</li>
+    <li>The wave carries energy: average energy density u = ½ε₀E₀², intensity I = ½ε₀cE₀².</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">c = 1/√(μ₀ε₀) = 2.998×10⁸ m/s<small>speed in vacuum</small></div>
+    <div class="eq">c = f λ<small>wave relation; k = 2π/λ, ω = 2πf</small></div>
+    <div class="eq">E = E₀ sin(kx − ωt),&emsp;B = B₀ sin(kx − ωt)<small>E along y, B along z, travel along x</small></div>
+    <div class="eq">E₀/B₀ = c<small>ratio of amplitudes</small></div>
+    <div class="eq">I = ½ ε₀ c E₀²<small>intensity; average energy density u = ½ ε₀ E₀²</small></div>
+    <div class="eq">E<sub>photon</sub> = h f<small>h = 6.626×10⁻³⁴ J s; 1 eV = 1.602×10⁻¹⁹ J</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: slide along the spectrum</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-em-waves-lf">log₁₀ of frequency (Hz) <output></output></label><input type="range" id="phy-em-waves-lf" min="3" max="21" step="0.01" value="9.39"></div>
+      <div class="ctl"><label for="phy-em-waves-pre">Jump to</label><select id="phy-em-waves-pre"><option value="">Choose a source</option><option value="6">AM radio, 1 MHz</option><option value="8">FM radio, 100 MHz</option><option value="8.929">4G LTE, 850 MHz</option><option value="9.255">4G LTE, 1800 MHz</option><option value="9.39">Microwave oven / Wi-Fi, 2.45 GHz</option><option value="9.544">5G mid-band, 3.5 GHz</option><option value="10.415">5G mmWave, 26 GHz</option><option value="14.74">Green light, 550 nm</option><option value="18.5">Medical X-ray</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Frequency<b data-r="f">-</b></div>
+      <div class="readout">Wavelength λ = c/f<b data-r="l">-</b></div>
+      <div class="readout">Photon energy hf<b data-r="e">-</b></div>
+      <div class="readout">Region<b data-r="band">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const c=2.998e8;
+    const bands=[['Radio',3,8.477],['Microwave',8.477,11.477],['Infrared',11.477,14.633],['Visible',14.633,14.875],['UV',14.875,17.477],['X-ray',17.477,20.477],['Gamma',20.477,21]];
+    const marks=[[6,'AM radio'],[8,'FM radio'],[8.929,'4G 850 MHz'],[9.255,'4G 1800 MHz'],[9.39,'Microwave oven / Wi-Fi'],[9.544,'5G 3.5 GHz'],[10.415,'5G 26 GHz'],[14.74,'green light'],[18.5,'X-ray imaging']];
+    function ff(f){if(f>=1e9)return TB.fmt(f/1e9,3)+' GHz';if(f>=1e6)return TB.fmt(f/1e6,3)+' MHz';if(f>=1e3)return TB.fmt(f/1e3,2)+' kHz';return TB.fmt(f,0)+' Hz';}
+    function wl(m){if(m>=1e3)return TB.fmt(m/1e3,2)+' km';if(m>=1)return TB.fmt(m,2)+' m';if(m>=1e-2)return TB.fmt(m*100,2)+' cm';if(m>=1e-3)return TB.fmt(m*1e3,2)+' mm';if(m>=1e-6)return TB.fmt(m*1e6,2)+' µm';if(m>=1e-9)return TB.fmt(m*1e9,2)+' nm';return TB.fmt(m*1e12,2)+' pm';}
+    function en(e){if(e<1e-3)return TB.fmt(e*1e6,2)+' µeV';if(e<1)return TB.fmt(e*1e3,2)+' meV';if(e<1e3)return TB.fmt(e,2)+' eV';if(e<1e6)return TB.fmt(e/1e3,2)+' keV';return TB.fmt(e/1e6,2)+' MeV';}
+    $('#phy-em-waves-pre').addEventListener('change',e=>{if(e.target.value){const s=$('#phy-em-waves-lf');s.value=e.target.value;s.dispatchEvent(new Event('input',{bubbles:true}));}});
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),190);
+      const lf=+$('#phy-em-waves-lf').value,f=Math.pow(10,lf),lam=c/f,E=f*6.62607e-34/1.602177e-19;
+      let b=bands[0];for(const x of bands)if(lf>=x[1]&&lf<x[2])b=x;
+      TB.set(root,'[data-r=f]',ff(f));TB.set(root,'[data-r=l]',wl(lam));TB.set(root,'[data-r=e]',en(E));TB.set(root,'[data-r=band]',b[0]);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),acc=TB.css('--maths');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';
+      const ml=14,pw=w-2*ml,X=l=>ml+(l-3)/18*pw,by=52,bh=34;
+      const cols=['210,60%,55%','170,55%,45%','25,80%,55%',null,'270,55%,55%','330,60%,55%','0,0%,50%'];
+      bands.forEach((x,i)=>{const x0=X(x[1]),x1=X(x[2]);
+        if(x[0]==='Visible'){const g=ctx.createLinearGradient(x0,0,x1,0);g.addColorStop(0,'hsl(0,85%,50%)');g.addColorStop(0.33,'hsl(60,85%,50%)');g.addColorStop(0.66,'hsl(150,80%,40%)');g.addColorStop(1,'hsl(270,80%,55%)');ctx.fillStyle=g;ctx.globalAlpha=1;}
+        else{ctx.fillStyle='hsl('+cols[i]+')';ctx.globalAlpha=0.55;}
+        ctx.fillRect(x0,by,Math.max(2,x1-x0),bh);ctx.globalAlpha=1;});
+      ctx.fillStyle=ink;ctx.textAlign='center';
+      bands.forEach((x,i)=>{const cx=(X(x[1])+X(x[2]))/2;const row=(x[0]==='Visible'||x[0]==='Gamma')?by+bh+30:by+bh+13;ctx.fillText(x[0],Math.min(Math.max(cx,24),w-24),row);});
+      ctx.fillStyle=mut;[3,6,9,12,15,18,21].forEach(n=>{ctx.fillText('10'+({3:'³',6:'⁶',9:'⁹',12:'¹²',15:'¹⁵',18:'¹⁸',21:'²¹'})[n],Math.min(Math.max(X(n),14),w-14),by+bh+48);});
+      ctx.strokeStyle=mut;ctx.lineWidth=1;marks.forEach(m=>{ctx.beginPath();ctx.moveTo(X(m[0]),by-6);ctx.lineTo(X(m[0]),by);ctx.stroke();});
+      const mx=X(lf);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx,by-4);ctx.lineTo(mx,by+bh+2);ctx.stroke();
+      ctx.fillStyle=acc;ctx.beginPath();ctx.moveTo(mx,by-2);ctx.lineTo(mx-6,by-12);ctx.lineTo(mx+6,by-12);ctx.closePath();ctx.fill();
+      let near=null,nd=1e9;marks.forEach(m=>{const d=Math.abs(m[0]-lf);if(d<nd){nd=d;near=m;}});
+      ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText(nd<0.2?'near: '+near[1]:'f = '+ff(f),w/2,12);
+      ctx.fillText('frequency in Hz, log scale (ticks above the bar mark common sources)',w/2,h-8);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: E and B in a travelling wave</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-em-waves-e0">Electric amplitude E₀ <output></output></label><input type="range" id="phy-em-waves-e0" min="1" max="1000" step="1" value="100" data-unit=" V/m"></div>
+      <div class="ctl"><label for="phy-em-waves-ph">Snapshot at phase ωt <output></output></label><input type="range" id="phy-em-waves-ph" min="0" max="360" step="1" value="0" data-unit="°"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">B₀ = E₀/c<b data-r="b">-</b></div>
+      <div class="readout">Intensity ½ε₀cE₀²<b data-r="i">-</b></div>
+      <div class="readout">Avg energy density<b data-r="u">-</b></div>
+      <div class="readout">1/√(μ₀ε₀)<b data-r="c">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const mu0=4*Math.PI*1e-7,eps0=8.8541878e-12;
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),230);
+      const E0=+$('#phy-em-waves-e0').value,ph=+$('#phy-em-waves-ph').value*Math.PI/180,c=1/Math.sqrt(mu0*eps0),B0=E0/c;
+      const I=0.5*eps0*c*E0*E0,u=0.5*eps0*E0*E0;
+      TB.set(root,'[data-r=b]',(B0*1e9>=1000?TB.fmt(B0*1e6,2)+' µT':TB.fmt(B0*1e9,1)+' nT'));TB.set(root,'[data-r=i]',TB.fmt(I,2)+' W/m²');
+      TB.set(root,'[data-r=u]',TB.fmt(u*1e9,2)+' nJ/m³');TB.set(root,'[data-r=c]',TB.fmt(c/1e8,4)+' ×10⁸ m/s');
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),colE=TB.css('--sub'),colB=TB.css('--maths');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';
+      const cy=h/2+10,x0=24,x1=w-24,A=62*(0.25+0.75*Math.sqrt(E0/1000)),Bam=A*0.8,k=2*Math.PI*1.5/(x1-x0);
+      const ux=-0.7,uy=0.7;
+      ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,cy);ctx.lineTo(x1,cy);ctx.stroke();
+      ctx.fillStyle=mut;ctx.beginPath();ctx.moveTo(x1+2,cy);ctx.lineTo(x1-8,cy-4);ctx.lineTo(x1-8,cy+4);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(x0,cy);ctx.lineTo(x0+ux*46,cy+uy*46);ctx.strokeStyle=mut;ctx.stroke();
+      ctx.lineWidth=1;
+      for(let x=x0+6;x<x1-8;x+=9){const s=Math.sin(k*(x-x0)-ph);
+        ctx.strokeStyle=colE;ctx.globalAlpha=0.55;ctx.beginPath();ctx.moveTo(x,cy);ctx.lineTo(x,cy-A*s);ctx.stroke();
+        ctx.strokeStyle=colB;ctx.beginPath();ctx.moveTo(x,cy);ctx.lineTo(x+ux*Bam*s,cy+uy*Bam*s);ctx.stroke();ctx.globalAlpha=1;}
+      ctx.lineWidth=2.5;ctx.strokeStyle=colE;ctx.beginPath();for(let x=x0;x<=x1-8;x+=2){const y=cy-A*Math.sin(k*(x-x0)-ph);x===x0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+      ctx.strokeStyle=colB;ctx.beginPath();for(let x=x0;x<=x1-8;x+=2){const s=Math.sin(k*(x-x0)-ph);const px=x+ux*Bam*s,py=cy+uy*Bam*s;x===x0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();
+      ctx.fillStyle=colE;ctx.textAlign='left';ctx.fillText('E (along y)',x0,14);
+      ctx.fillStyle=colB;ctx.fillText('B (along z, drawn oblique)',x0+82,14);
+      ctx.fillStyle=ink;ctx.textAlign='right';ctx.fillText('c →',w-8,cy+18);
+      ctx.textAlign='center';ctx.fillText('E and B reach their maxima together; amplitudes drawn at equal height for clarity',w/2,h-8);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>A microwave oven works at 2.45 GHz, so λ = c/f = 3×10⁸ / 2.45×10⁹ ≈ 0.122 m = 12.2 cm. Inside the cavity the waves form a standing pattern with hot spots half a wavelength (about 6.1 cm) apart, which is why a turntable is used and why a chocolate bar left still melts in separated patches. Indian 4G networks use bands such as 850, 1800, 2100 and 2300 MHz, while 5G uses the 3.3 to 3.67 GHz mid-band (λ ≈ 8.6 cm at 3.5 GHz) and a 26 GHz millimetre-wave band (λ ≈ 1.15 cm). A 3.5 GHz photon has energy hf = 6.626×10⁻³⁴ × 3.5×10⁹ ≈ 2.3×10⁻²⁴ J ≈ 1.4×10⁻⁵ eV, far below the few eV needed to break chemical bonds, so these waves heat but cannot ionise.</p>
+  <p>Sunlight at Earth carries roughly 1000 W/m². Using I = ½ε₀cE₀², E₀ = √(2I/(ε₀c)) = √(2000 / (8.85×10⁻¹² × 3×10⁸)) ≈ 870 V/m, and B₀ = E₀/c ≈ 2.9×10⁻⁶ T.</p></div>
+  <div class="quiz"><p class="q">For a plane electromagnetic wave travelling in vacuum, which statement is correct?</p><div class="opts"><button data-ok>E and B are perpendicular to each other and to the direction of travel, and E₀/B₀ = c.</button><button>E is along the direction of travel and B is perpendicular to it.</button><button>E and B are 90° out of phase, so energy alternates between them.</button><button>Higher-frequency waves travel faster in vacuum.</button></div><p class="why" hidden>EM waves are transverse. E and B oscillate in phase, with E₀ = cB₀ and the direction of travel along E × B. All frequencies travel at the same speed c = 1/√(μ₀ε₀) in vacuum.</p></div>
+</article><div class="pager"><a href="phy-ac-lcr.html"><small>Previous</small>Alternating current and LCR circuits</a><a class="next" href="phy-refraction.html"><small>Next</small>Refraction and total internal reflection</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

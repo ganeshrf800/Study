@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Area under and between curves - Class 12 Mathematics</title>
+<meta name="description" content="Area under and between curves: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-area" data-title="Area under and between curves">
+  <header><div class="tag">Application of Integrals</div><h3>Area under curves and between curves</h3></header>
+  <p class="lead">The definite integral already measures area under a curve. To find the area trapped between two curves, integrate the gap between them: upper curve minus lower curve, over the interval where they enclose the region. The limits come from where the curves meet.</p>
+  <ul class="keypoints">
+    <li>Area under y = f(x) from x = a to b (f ≥ 0) is ∫<sub>a</sub><sup>b</sup> f(x)dx. Where f is negative, take the absolute value of that piece.</li>
+    <li>Between two curves with f(x) ≥ g(x): Area = ∫<sub>a</sub><sup>b</sup> [f(x) − g(x)]dx.</li>
+    <li>First solve f(x) = g(x) for the points of intersection; these usually give a and b.</li>
+    <li>Sketch the region first. Use symmetry (circle, ellipse, even functions) to compute a quarter or half and multiply.</li>
+    <li>Sometimes it is easier to integrate along y: Area = ∫ x dy.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">A = ∫<sub>a</sub><sup>b</sup> |y| dx<small>Area between a curve and the x-axis</small></div>
+    <div class="eq">A = ∫<sub>a</sub><sup>b</sup> [f(x) − g(x)] dx<small>f is the upper curve, g the lower</small></div>
+    <div class="eq">Circle x² + y² = r²: A = πr²<small>Ellipse x²/a² + y²/b² = 1: A = πab</small></div>
+    <div class="eq">Parabola y² = 4ax and line y = x<small>meet at (0, 0) and (4a, 4a); area between them = 8a²/3</small></div>
+    <div class="eq">Area between y² = 4ax and x² = 4ay = 16a²/3<small>The two parabolas meet at (0, 0) and (4a, 4a)</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Select the curves, then compare numerical and exact area</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-area-sel">Region</label><select id="mat-area-sel">
+        <option value="0">y = x and y = x²</option><option value="1">y = √x and y = x²</option><option value="2">y = 4 − x² and the x-axis</option><option value="3">y² = 4x and y = x</option><option value="4">y = sin x and y = cos x</option><option value="5">Ellipse x²/9 + y²/4 = 1</option></select></div>
+      <div class="ctl"><label for="mat-area-s">Share of the interval used <output></output></label><input type="range" id="mat-area-s" min="5" max="100" step="5" value="100" data-unit="%"></div>
+    </div>
+    <canvas class="stage" id="mat-area-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Limits a to b<b data-r="lim">-</b></div>
+      <div class="readout">Numerical (Simpson, 1000 strips)<b data-r="num">-</b></div>
+      <div class="readout">Exact (antiderivative)<b data-r="ex">-</b></div>
+      <div class="readout">Full-interval exact value<b data-r="full">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-area-sel'),ss=$('#mat-area-s'),cv=$('#mat-area-cv'),PI=Math.PI;
+const R=[
+ {top:x=>x,bot:x=>x*x,a:0,b:1,G:x=>x*x/2-x*x*x/3,t:'1/6',v:1/6},
+ {top:Math.sqrt,bot:x=>x*x,a:0,b:1,G:x=>2/3*Math.pow(x,1.5)-x*x*x/3,t:'1/3',v:1/3},
+ {top:x=>4-x*x,bot:x=>0,a:-2,b:2,G:x=>4*x-x*x*x/3,t:'32/3',v:32/3},
+ {top:x=>2*Math.sqrt(x),bot:x=>x,a:0,b:4,G:x=>4/3*Math.pow(x,1.5)-x*x/2,t:'8/3',v:8/3},
+ {top:Math.sin,bot:Math.cos,a:PI/4,b:5*PI/4,G:x=>-Math.cos(x)-Math.sin(x),t:'2√2',v:2*Math.SQRT2},
+ {top:x=>2*Math.sqrt(Math.max(0,1-x*x/9)),bot:x=>-2*Math.sqrt(Math.max(0,1-x*x/9)),a:-3,b:3,G:x=>4/3*(x/2*Math.sqrt(Math.max(0,9-x*x))+4.5*Math.asin(Math.max(-1,Math.min(1,x/3)))),t:'6π',v:6*PI}
+];
+const pl=v=>Math.abs(v-PI/4)<1e-9?'π/4':Math.abs(v-5*PI/4)<1e-9?'5π/4':+v.toFixed(3)+'';
+function draw(){const r=R[+sel.value],s=+ss.value/100,a=r.a,b=r.b,e=a+s*(b-a);
+ let lo=1e9,hi=-1e9;for(let i=0;i<=200;i++){const x=a+(b-a)*i/200;lo=Math.min(lo,r.top(x),r.bot(x));hi=Math.max(hi,r.top(x),r.bot(x));}
+ const my=(hi-lo)*0.12,mx=(b-a)*0.08;
+ const P=mkP(cv,a-mx,b+mx,Math.min(lo,0)-my,Math.max(hi,0)+my,'eq');
+ const hh=Math.min(Math.max(P.H,200),320);
+ const Q=mkP(cv,a-mx,b+mx,Math.min(lo,0)-my,Math.max(hi,0)+my,hh);
+ axes(Q,nice((b-a)/5),nice((hi-lo)/4),pl);
+ const pts=[];const N=120;for(let i=0;i<=N;i++){const x=a+(e-a)*i/N;pts.push([x,r.top(x)]);}for(let i=N;i>=0;i--){const x=a+(e-a)*i/N;pts.push([x,r.bot(x)]);}
+ fill(Q,pts,SUB(),0.35);
+ fn(Q,r.top,INK(),2.4,null,400,a,b);fn(Q,r.bot,BAD(),2.4,null,400,a,b);
+ const c=Q.ctx;clip(Q);c.setLineDash([4,3]);c.strokeStyle=MUT();c.lineWidth=1.2;c.beginPath();c.moveTo(Q.X(e),Q.Y(r.bot(e)));c.lineTo(Q.X(e),Q.Y(r.top(e)));c.stroke();c.setLineDash([]);c.restore();
+ txt(Q,'black: upper, red: lower',Q.L+6,Q.T+8);
+ const num=simpson(x=>r.top(x)-r.bot(x),a,e,1000),ex=r.G(e)-r.G(a);
+ TB.set(root,'[data-r=lim]',pl(a)+' to '+(s===1?pl(b):(+e.toFixed(3))));
+ TB.set(root,'[data-r=num]',num.toFixed(5));TB.set(root,'[data-r=ex]',ex.toFixed(5));
+ TB.set(root,'[data-r=full]',r.t+' = '+r.v.toFixed(5));
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>A surveyor must find the area of a field plot that has a straight road on one side (the x-axis, 100 m long) and a curved canal bank on the other, modelled by y = 0.01x(100 − x), which bulges 25 m at x = 50. Area = ∫₀¹⁰⁰ 0.01(100x − x²)dx = 0.01[50x² − x³/3]₀¹⁰⁰ = 0.01(500000 − 333333.33) = 1666.67 m², about 0.167 hectare. Check by Simpson's rule with ordinates 0, 18.75, 25, 18.75, 0 at spacing 25 m: (25/3)(0 + 4×18.75 + 2×25 + 4×18.75 + 0) = (25/3)(200) = 1666.67 m². The two methods agree because Simpson's rule is exact for parabolas.</p></div>
+  <div class="quiz"><p class="q">Area enclosed between y = x² and y = x is</p><div class="opts"><button data-ok>1/6</button><button>1/3</button><button>1/2</button><button>1/12</button></div><p class="why" hidden>The curves meet where x² = x, at x = 0 and 1. On (0, 1) the line is above the parabola, so the area is ∫₀¹ (x − x²)dx = 1/2 − 1/3 = 1/6.</p></div>
+</article><div class="pager"><a href="mat-integrals.html"><small>Previous</small>Integrals</a><a class="next" href="mat-diffeq.html"><small>Next</small>Differential equations</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

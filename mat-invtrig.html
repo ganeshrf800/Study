@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Inverse trigonometric functions - Class 12 Mathematics</title>
+<meta name="description" content="Inverse trigonometric functions: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-invtrig" data-title="Inverse trigonometric functions">
+  <header><div class="tag">Inverse Trigonometric Functions</div><h3>Principal value branches and key identities</h3></header>
+  <p class="lead">Sine, cosine and the rest repeat forever, so none of them is one-one on R. To define an inverse we keep one stretch where the function is one-one and covers its whole range: the principal value branch. Each inverse trigonometric function then returns a single, agreed angle.</p>
+  <ul class="keypoints">
+    <li>sin⁻¹x is the angle in [−π/2, π/2] whose sine is x; cos⁻¹x lies in [0, π]; tan⁻¹x lies in (−π/2, π/2).</li>
+    <li>cot⁻¹x lies in (0, π); sec⁻¹x lies in [0, π] except π/2; cosec⁻¹x lies in [−π/2, π/2] except 0.</li>
+    <li>sin⁻¹x is not 1/sin x. The −1 is a notation for the inverse function, not a power.</li>
+    <li>sin(sin⁻¹x) = x for x in [−1, 1], but sin⁻¹(sin x) = x only when x is in [−π/2, π/2].</li>
+    <li>Every inverse graph is the mirror image of the restricted parent graph in y = x.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="tw"><table class="t"><tr><th>Function</th><th>Domain</th><th>Principal range</th></tr>
+    <tr><td>sin⁻¹x</td><td>[−1, 1]</td><td>[−π/2, π/2]</td></tr>
+    <tr><td>cos⁻¹x</td><td>[−1, 1]</td><td>[0, π]</td></tr>
+    <tr><td>tan⁻¹x</td><td>R</td><td>(−π/2, π/2)</td></tr>
+    <tr><td>cot⁻¹x</td><td>R</td><td>(0, π)</td></tr>
+    <tr><td>sec⁻¹x</td><td>R − (−1, 1)</td><td>[0, π] − {π/2}</td></tr>
+    <tr><td>cosec⁻¹x</td><td>R − (−1, 1)</td><td>[−π/2, π/2] − {0}</td></tr></table></div>
+  <div class="formulas" style="margin-top:.6rem">
+    <div class="eq">sin⁻¹x + cos⁻¹x = π/2<small>for x in [−1, 1]; similarly tan⁻¹x + cot⁻¹x = π/2 (all x) and sec⁻¹x + cosec⁻¹x = π/2 (|x| ≥ 1)</small></div>
+    <div class="eq">sin⁻¹(−x) = −sin⁻¹x; tan⁻¹(−x) = −tan⁻¹x<small>cos⁻¹(−x) = π − cos⁻¹x</small></div>
+    <div class="eq">tan⁻¹x + tan⁻¹y = tan⁻¹[(x + y)/(1 − xy)]<small>valid for xy &lt; 1; tan⁻¹x − tan⁻¹y = tan⁻¹[(x − y)/(1 + xy)], xy &gt; −1</small></div>
+    <div class="eq">2 tan⁻¹x = sin⁻¹[2x/(1 + x²)]<small>|x| ≤ 1; also = cos⁻¹[(1 − x²)/(1 + x²)] for x ≥ 0 and tan⁻¹[2x/(1 − x²)] for |x| &lt; 1</small></div>
+    <div class="eq">sec⁻¹x = cos⁻¹(1/x); cosec⁻¹x = sin⁻¹(1/x)<small>for |x| ≥ 1</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Branch explorer</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-invtrig-fn">Inverse function</label><select id="mat-invtrig-fn">
+        <option value="sin">sin⁻¹ x</option><option value="cos">cos⁻¹ x</option><option value="tan">tan⁻¹ x</option><option value="cot">cot⁻¹ x</option><option value="sec">sec⁻¹ x</option><option value="csc">cosec⁻¹ x</option></select></div>
+      <div class="ctl"><label for="mat-invtrig-x">Input x <output></output></label><input type="range" id="mat-invtrig-x" min="-4" max="4" step="0.05" value="0.5"></div>
+    </div>
+    <canvas class="stage" id="mat-invtrig-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Value (radians)<b data-r="rad">-</b></div>
+      <div class="readout">Value (degrees)<b data-r="deg">-</b></div>
+      <div class="readout">sin⁻¹x + cos⁻¹x<b data-r="s1">-</b></div>
+      <div class="readout">tan⁻¹x + cot⁻¹x<b data-r="s2">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-invtrig-fn'),xs=$('#mat-invtrig-x'),cv=$('#mat-invtrig-cv'),PI=Math.PI;
+const cot=t=>1/Math.tan(t);
+const B={
+ sin:{dom:x=>Math.abs(x)<=1+1e-9,f:x=>Math.asin(Math.max(-1,Math.min(1,x))),lo:-PI/2,hi:PI/2,par:Math.sin},
+ cos:{dom:x=>Math.abs(x)<=1+1e-9,f:x=>Math.acos(Math.max(-1,Math.min(1,x))),lo:0,hi:PI,par:Math.cos},
+ tan:{dom:x=>true,f:Math.atan,lo:-PI/2+.001,hi:PI/2-.001,par:Math.tan},
+ cot:{dom:x=>true,f:x=>PI/2-Math.atan(x),lo:.001,hi:PI-.001,par:cot},
+ sec:{dom:x=>Math.abs(x)>=1-1e-9,f:x=>Math.acos(Math.max(-1,Math.min(1,1/x))),lo:0,hi:PI,par:t=>1/Math.cos(t)},
+ csc:{dom:x=>Math.abs(x)>=1-1e-9,f:x=>Math.asin(Math.max(-1,Math.min(1,1/x))),lo:-PI/2,hi:PI/2,par:t=>1/Math.sin(t)}
+};
+const lab=v=>{const k=Math.round(v/(PI/2));return k===0?'0':k===1?'π/2':k===-1?'−π/2':k===2?'π':k+'·π/2'};
+function draw(){const d=B[sel.value],x=+xs.value;
+ const P=mkP(cv,-4,4,-2.2,3.6,'eq');axes(P,1,PI/2,null,lab);
+ xy(P,2,-4,4,t=>t,t=>t,MUT(),1,[6,4]);
+ xy(P,400,d.lo,d.hi,t=>t,d.par,MUT(),1.5,[3,4]);
+ xy(P,800,-4,4,t=>t,t=>d.dom(t)?d.f(t):NaN,SUB(),2.8);
+ const ok=d.dom(x);
+ if(ok){const y=d.f(x);const c=P.ctx;clip(P);c.strokeStyle=BAD();c.setLineDash([4,3]);c.lineWidth=1.2;c.beginPath();c.moveTo(P.X(x),P.Y(0));c.lineTo(P.X(x),P.Y(y));c.lineTo(P.X(0),P.Y(y));c.stroke();c.setLineDash([]);c.restore();dot(P,x,y,BAD(),5);}
+ else txt(P,'x is outside the domain',P.W/2,P.T+12,BAD(),'center');
+ txt(P,'dashed: parent on its branch',P.L+6,P.H-P.B-8);
+ const s1=Math.abs(x)<=1,y1=ok?d.f(x):null;
+ TB.set(root,'[data-r=rad]',ok?y1.toFixed(4):'undefined');
+ TB.set(root,'[data-r=deg]',ok?(y1*180/PI).toFixed(2)+'°':'undefined');
+ TB.set(root,'[data-r=s1]',s1?(Math.asin(x)+Math.acos(x)).toFixed(4)+' = π/2':'undefined');
+ TB.set(root,'[data-r=s2]',(Math.atan(x)+(PI/2-Math.atan(x))).toFixed(4)+' = π/2');
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>The Qutub Minar in Delhi is about 72.5 m tall. A visitor standing 100 m from its base sees the top at an angle of elevation θ with tan θ = 72.5/100 = 0.725, so θ = tan⁻¹(0.725) ≈ 35.94°. Surveyors, camera lenses and robot arms all use inverse trigonometry to turn measured lengths back into angles. Moving to 50 m away gives tan⁻¹(1.45) ≈ 55.4°.</p></div>
+  <div class="quiz"><p class="q">What is the principal value of sin⁻¹(sin 2π/3)?</p><div class="opts"><button data-ok>π/3</button><button>2π/3</button><button>−π/3</button><button>π/6</button></div><p class="why" hidden>2π/3 is outside [−π/2, π/2]. Since sin(2π/3) = sin(π − 2π/3) = sin(π/3) and π/3 lies in the principal range, the answer is π/3.</p></div>
+</article><div class="pager"><a href="mat-functions.html"><small>Previous</small>Relations and functions</a><a class="next" href="mat-calculus.html"><small>Next</small>Continuity and differentiability</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

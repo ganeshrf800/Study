@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Electrochemistry - Class 12 Chemistry</title>
+<meta name="description" content="Electrochemistry: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-electrochem" data-title="Electrochemistry">
+  <header><div class="tag">Electrochemistry (NCERT Chemistry Part I, Ch 2)</div><h3>Galvanic cells, Nernst equation and electrolysis</h3></header>
+  <p class="lead">A galvanic cell turns the energy of a spontaneous redox reaction into electrical work. Its voltage depends on the electrode materials and on the concentrations of the ions. Electrolysis does the reverse: an external voltage forces a non-spontaneous reaction, and Faraday's laws tell you how much substance is produced per coulomb.</p>
+  <ul class="keypoints">
+    <li>Oxidation happens at the anode, reduction at the cathode. In a galvanic cell the anode is negative, the cathode positive; electrons flow through the wire from anode to cathode.</li>
+    <li>E°<sub>cell</sub> = E°<sub>cathode</sub> − E°<sub>anode</sub>, using standard reduction potentials (SHE = 0 V).</li>
+    <li>The Nernst equation gives E at any concentration. At equilibrium E<sub>cell</sub> = 0 and Q = K.</li>
+    <li>ΔG = −nFE connects voltage to spontaneity: E &gt; 0 means ΔG &lt; 0.</li>
+    <li>Faraday: mass deposited is proportional to the charge passed, and to M/n for the substance.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">E°<sub>cell</sub> = E°<sub>cathode</sub> − E°<sub>anode</sub><small>Daniell cell: 0.34 − (−0.76) = 1.10 V</small></div>
+    <div class="eq">E = E° − (0.0592 / n) log Q<small>Nernst equation at 298 K</small></div>
+    <div class="eq">ΔG° = −nFE°<small>F = 96485 C mol⁻¹</small></div>
+    <div class="eq">log K = nE° / 0.0592<small>At 298 K</small></div>
+    <div class="eq">m = M I t / (n F)<small>Faraday's laws; Q = I t</small></div>
+    <div class="eq">Λ<sub>m</sub> = κ × 1000 / C<small>Molar conductivity, S cm² mol⁻¹, κ in S cm⁻¹, C in mol L⁻¹</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: Daniell cell, Zn | Zn²⁺ || Cu²⁺ | Cu</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-electrochem-zn">log₁₀ [Zn²⁺] <output></output></label><input type="range" id="che-electrochem-zn" min="-3" max="0" step="0.1" value="0"></div>
+      <div class="ctl"><label for="che-electrochem-cu">log₁₀ [Cu²⁺] <output></output></label><input type="range" id="che-electrochem-cu" min="-3" max="0" step="0.1" value="0"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">E<sub>cell</sub> (V)<b data-r="e">-</b></div>
+      <div class="readout">Q = [Zn²⁺]/[Cu²⁺]<b data-r="q">-</b></div>
+      <div class="readout">ΔG (kJ/mol)<b data-r="g">-</b></div>
+      <div class="readout">ΔG° (kJ/mol)<b data-r="g0">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    const zs=$('#che-electrochem-zn'),cs=$('#che-electrochem-cu');
+    function draw(){
+      const lz=+zs.value,lc=+cs.value;
+      const E=1.10-0.0296*(lz-lc),Q=Math.pow(10,lz-lc),G=-2*96485*E/1000,G0=-2*96485*1.10/1000;
+      const {ctx,w,h}=TB.canvas(cv,250);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),bad=TB.css('--bad'),phy=TB.css('--physics'),line=TB.css('--line');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const cx=w/2,bw=Math.min(110,(w-60)/2.4);
+      const bx=[cx-25-bw,cx+25],cols=[bad,phy],lg=[lz,lc];
+      for(let b=0;b<2;b++){
+        const x0=bx[b],x1=x0+bw,mid=x0+bw/2;
+        ctx.globalAlpha=0.14;ctx.fillStyle=cols[b];ctx.fillRect(x0,100,bw,105);ctx.globalAlpha=1;
+        ctx.strokeStyle=mut;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,70);ctx.lineTo(x0,205);ctx.lineTo(x1,205);ctx.lineTo(x1,70);ctx.stroke();
+        ctx.fillStyle=b?'#b87333':'#8a93a6';ctx.fillRect(mid-6,38,12,150);
+        const n=2+Math.round((lg[b]+3)*4);
+        ctx.fillStyle=cols[b];
+        for(let k=0;k<n;k++){
+          const a=Math.sin((k+1+b*40)*12.9898)*43758.5453,c=Math.sin((k+1+b*40)*78.233)*12543.1;
+          const px=x0+10+(a-Math.floor(a))*(bw-20),py=108+(c-Math.floor(c))*88;
+          if(Math.abs(px-mid)<9)continue;
+          ctx.beginPath();ctx.arc(px,py,3.2,0,6.283);ctx.fill();
+        }
+        T(b?'Cu cathode (+)':'Zn anode (−)',mid,224,ink,1);
+        T((b?'[Cu²⁺] = ':'[Zn²⁺] = ')+TB.fmt(Math.pow(10,lg[b]),3)+' M',mid,242,cols[b],1);
+      }
+      ctx.strokeStyle=line;ctx.lineWidth=7;ctx.lineJoin='round';ctx.beginPath();
+      ctx.moveTo(bx[0]+bw*0.8,120);ctx.lineTo(bx[0]+bw*0.8,88);ctx.lineTo(bx[1]+bw*0.2,88);ctx.lineTo(bx[1]+bw*0.2,120);ctx.stroke();
+      T('salt bridge',cx,84,mut,1);
+      ctx.strokeStyle=ink;ctx.lineWidth=1.5;
+      const vw=64;
+      ctx.beginPath();ctx.moveTo(bx[0]+bw/2,38);ctx.lineTo(bx[0]+bw/2,26);ctx.lineTo(cx-vw/2,26);ctx.moveTo(cx+vw/2,26);ctx.lineTo(bx[1]+bw/2,26);ctx.lineTo(bx[1]+bw/2,38);ctx.stroke();
+      ctx.fillStyle=TB.css('--soft');ctx.fillRect(cx-vw/2,12,vw,28);ctx.strokeRect(cx-vw/2,12,vw,28);
+      T(E.toFixed(3)+' V',cx,31,ink,1);
+      T('e⁻ flow →',cx,58,sub,1);
+      TB.set(root,'[data-r=e]',E.toFixed(3));
+      TB.set(root,'[data-r=q]',Q>=0.01&&Q<100?TB.fmt(Q,3):Q.toExponential(1));
+      TB.set(root,'[data-r=g]',TB.fmt(G,1));TB.set(root,'[data-r=g0]',TB.fmt(G0,1));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: Faraday's laws of electrolysis</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-electrochem-metal">Metal deposited</label><select id="che-electrochem-metal">
+        <option value="63.5,2">Copper, Cu²⁺ (M = 63.5)</option><option value="107.9,1">Silver, Ag⁺ (M = 107.9)</option><option value="58.7,2">Nickel, Ni²⁺ (M = 58.7)</option><option value="27,3">Aluminium, Al³⁺ (M = 27)</option></select></div>
+      <div class="ctl"><label for="che-electrochem-i">Current I <output></output></label><input type="range" id="che-electrochem-i" min="0.5" max="10" step="0.5" value="2" data-unit=" A"></div>
+      <div class="ctl"><label for="che-electrochem-t">Time t <output></output></label><input type="range" id="che-electrochem-t" min="1" max="120" step="1" value="30" data-unit=" min"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Charge Q (C)<b data-r="q">-</b></div>
+      <div class="readout">Moles of e⁻<b data-r="ne">-</b></div>
+      <div class="readout">Mass deposited (g)<b data-r="m">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    function draw(){
+      const [M,n]=$('#che-electrochem-metal').value.split(',').map(Number),I=+$('#che-electrochem-i').value,t=+$('#che-electrochem-t').value*60;
+      const Q=I*t,ne=Q/96485,m=ne*M/n;
+      const {ctx,w,h}=TB.canvas(cv,150);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),line=TB.css('--line');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const th=2+22*Math.sqrt(m/80);
+      ctx.fillStyle=mut;ctx.fillRect(24,30,12,90);
+      ctx.fillStyle=sub;ctx.fillRect(36,30,th,90);
+      T('Cathode with deposit',16,20,ink);
+      T('m = M I t / (n F)',16,142,mut);
+      const bx=Math.max(110,th+60),bwid=w-bx-20;
+      T('Mass deposited (bar full scale = 80 g)',bx,50,ink);
+      ctx.fillStyle=line;ctx.fillRect(bx,60,bwid,20);ctx.fillStyle=sub;ctx.fillRect(bx,60,bwid*Math.min(1,m/80),20);
+      T(TB.fmt(m,2)+' g',bx,104,ink);
+      TB.set(root,'[data-r=q]',TB.fmt(Q,0));TB.set(root,'[data-r=ne]',TB.fmt(ne,3));TB.set(root,'[data-r=m]',TB.fmt(m,2));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Lithium-ion batteries and EVs.</b> Charging pushes Li⁺ into the graphite anode (electrolysis); discharging lets it return to the cathode (galvanic cell). One mole of Li⁺ carries 96485 C = 26.8 Ah. A phone battery rated 5000 mAh = 5 Ah therefore shifts 5 / 26.8 = 0.187 mol of lithium, which is 0.187 × 6.94 ≈ 1.3 g. At 3.85 V its energy is 5 × 3.85 ≈ 19 Wh (about 69 kJ). EV packs, such as those in Indian electric buses and scooters, are thousands of such cells in series and parallel.</p>
+    <p><b>Electroplating.</b> Passing 2 A through CuSO₄ for 30 minutes: Q = 2 × 1800 = 3600 C, moles of e⁻ = 3600 / 96485 = 0.0373, and mass = 0.0373 × 63.5 / 2 = 1.18 g of copper. This is what the widget above computes.</p>
+  </div>
+  <div class="quiz"><p class="q">In the Daniell cell, what happens to E<sub>cell</sub> if [Zn²⁺] is increased while [Cu²⁺] is kept fixed?</p><div class="opts"><button>It increases</button><button data-ok>It decreases</button><button>It stays at 1.10 V</button><button>It becomes negative immediately</button></div><p class="why" hidden>Q = [Zn²⁺]/[Cu²⁺] rises, so log Q rises and E = E° − (0.0592/2) log Q falls. The reaction is pushed towards equilibrium but E stays positive until Q = K ≈ 10³⁷.</p></div>
+</article><div class="pager"><a href="che-solutions.html"><small>Previous</small>Solutions and colligative properties</a><a class="next" href="che-kinetics.html"><small>Next</small>Chemical kinetics</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

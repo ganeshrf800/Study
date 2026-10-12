@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Interference: Young&#x27;s double slit - Class 12 Physics</title>
+<meta name="description" content="Interference: Young&#x27;s double slit: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-yds" data-title="Interference: Young's double slit">
+  <header><div class="tag">Wave Optics</div><h3>Interference and Young's double slit experiment</h3></header>
+  <p class="lead">Light from two narrow slits overlaps on a screen. Where the waves arrive in step they add and make a bright fringe; where they arrive half a wavelength apart they cancel and leave a dark fringe. The evenly spaced stripes are direct proof that light is a wave.</p>
+  <ul class="keypoints">
+    <li>Interference needs coherent sources: a constant phase difference, which is why both slits are lit by the same wavefront.</li>
+    <li>Path difference Δ = d sin θ ≈ d y / D for small angles. Bright fringe when Δ = nλ, dark when Δ = (n + ½)λ.</li>
+    <li>Fringes are equally spaced with width β = λD/d. Red light (larger λ) gives wider fringes than blue.</li>
+    <li>Intensity varies as I = 4I<sub>0</sub> cos²(φ/2), where the phase difference φ = 2πΔ/λ. The maximum is 4I<sub>0</sub>, not 2I<sub>0</sub>: energy is redistributed, not created.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Δ = d y / D<small>path difference at height y on the screen</small></div>
+    <div class="eq">y<sub>n</sub> = n λ D / d &emsp; (bright)<small>n = 0, ±1, ±2 ...</small></div>
+    <div class="eq">y<sub>n</sub> = (n + ½) λ D / d &emsp; (dark)<small>midway between bright fringes</small></div>
+    <div class="eq">β = λ D / d<small>fringe width; d = slit separation, D = slit to screen</small></div>
+    <div class="eq">I = 4 I<sub>0</sub> cos²(π Δ / λ)<small>intensity pattern for two equal slits</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Double-slit pattern on the screen</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-yds-l">Wavelength λ <output></output></label><input type="range" id="phy-yds-l" min="400" max="700" step="5" value="600" data-unit=" nm"></div>
+      <div class="ctl"><label for="phy-yds-d">Slit separation d <output></output></label><input type="range" id="phy-yds-d" min="0.1" max="1" step="0.05" value="0.5" data-unit=" mm"></div>
+      <div class="ctl"><label for="phy-yds-D">Screen distance D <output></output></label><input type="range" id="phy-yds-D" min="0.5" max="3" step="0.1" value="1.5" data-unit=" m"></div>
+      <div class="ctl"><label for="phy-yds-y">Point P at y <output></output></label><input type="range" id="phy-yds-y" min="-10" max="10" step="0.1" value="3" data-unit=" mm"></div>
+    </div>
+    <canvas class="stage" id="phy-yds-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Fringe width β<b id="phy-yds-r1">-</b></div>
+      <div class="readout">Path difference at P<b id="phy-yds-r2">-</b></div>
+      <div class="readout">Δ in wavelengths<b id="phy-yds-r3">-</b></div>
+      <div class="readout">P is<b id="phy-yds-r4">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const cv=$('phy-yds-cv');
+      function wl(l){let r=0,g=0,b=0;
+        if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else{r=1}
+        const f=l<420?.3+.7*(l-380)/40:l>700?.3+.7*(780-l)/80:1;
+        return [r,g,b].map(x=>Math.round(255*Math.pow(Math.max(0,x*f),.8)));}
+      function draw(){
+        const lam=+$('phy-yds-l').value*1e-9,d=+$('phy-yds-d').value*1e-3,D=+$('phy-yds-D').value,yP=+$('phy-yds-y').value;
+        const {ctx,w,h}=TB.canvas(cv,250);ctx.clearRect(0,0,w,h);
+        const rgb=wl(+$('phy-yds-l').value),ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted');
+        const sh=80,pl=10,pr=10,pw=w-pl-pr;
+        const Y=px=>((px-pl)/pw-.5)*20; // mm
+        ctx.fillStyle=ink;ctx.globalAlpha=.9;ctx.fillRect(pl,8,pw,sh);ctx.globalAlpha=1;
+        // fringes: black screen with coloured light
+        ctx.fillStyle='rgb(10,10,14)';ctx.fillRect(pl,8,pw,sh);
+        for(let px=0;px<pw;px++){const y=Y(pl+px+.5)*1e-3,I=Math.pow(Math.cos(Math.PI*d*y/(D*lam)),2);
+          ctx.fillStyle='rgb('+Math.round(rgb[0]*I)+','+Math.round(rgb[1]*I)+','+Math.round(rgb[2]*I)+')';ctx.fillRect(pl+px,8,1,sh);}
+        // plot
+        const top=8+sh+26,bot=h-26,ph=bot-top;
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pl,bot);ctx.lineTo(w-pr,bot);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(pl+pw/2,top-4);ctx.lineTo(pl+pw/2,bot);ctx.stroke();
+        ctx.strokeStyle=sub;ctx.lineWidth=1.6;ctx.beginPath();
+        for(let px=0;px<=pw;px++){const y=Y(pl+px)*1e-3,I=Math.pow(Math.cos(Math.PI*d*y/(D*lam)),2);
+          const yy=bot-I*ph;if(px===0)ctx.moveTo(pl+px,yy);else ctx.lineTo(pl+px,yy);}
+        ctx.stroke();
+        const xp=pl+pw*(yP/20+.5);
+        ctx.strokeStyle=TB.css('--bad');ctx.setLineDash([4,3]);ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(xp,8);ctx.lineTo(xp,bot+4);ctx.stroke();ctx.setLineDash([]);
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='left';
+        ctx.fillText('Screen (colour = λ)',pl+4,8+sh+14);
+        ctx.fillStyle=TB.css('--bad');ctx.textAlign=xp>w-40?'right':'left';ctx.fillText('P',xp+(xp>w-40?-4:4),bot-4);
+        ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('-10 mm',pl,h-8);ctx.textAlign='center';ctx.fillText('0',pl+pw/2,h-8);ctx.textAlign='right';ctx.fillText('+10 mm',w-pr,h-8);
+        ctx.textAlign='right';ctx.fillText('Intensity',w-pr,top+4);
+        const beta=lam*D/d,delta=d*yP*1e-3/D,nn=delta/lam,fr=Math.abs(nn-Math.round(nn));
+        TB.set(root,'#phy-yds-r1',TB.fmt(beta*1e3,3)+' mm');
+        TB.set(root,'#phy-yds-r2',TB.fmt(delta*1e9,0)+' nm');
+        TB.set(root,'#phy-yds-r3',TB.fmt(nn,2)+' λ');
+        TB.set(root,'#phy-yds-r4',fr<0.06?'bright (order '+Math.abs(Math.round(nn))+')':Math.abs(fr-.5)<0.06?'dark':'between');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Interference is why spectacle and camera lenses have a faint purple-green tint. An anti-reflection coating of magnesium fluoride (n = 1.38) is made one quarter-wavelength thick, so light reflected from its top and bottom surfaces is half a wavelength out of step and cancels. For λ = 550 nm (green, where the eye is most sensitive) the thickness is t = λ/(4n) = 550/(4 × 1.38) = 99.6 nm ≈ 100 nm. The same idea gives the rainbow colours on a soap film or a CD. For the double slit itself, take sodium light λ = 589 nm, d = 1 mm, D = 1 m: β = λD/d = 589×10<sup>-9</sup> × 1 / 10<sup>-3</sup> = 0.589 mm, so about 17 bright fringes fit in 1 cm of screen, close enough to count with a magnifier.</p></div>
+  <div class="quiz"><p class="q">In Young's experiment the slit separation d is halved and the screen distance D is doubled. The fringe width becomes</p><div class="opts"><button>unchanged</button><button>2 times</button><button data-ok>4 times</button><button>1/4 times</button></div><p class="why" hidden>β = λD/d. Halving d doubles β and doubling D doubles it again, so β becomes 4 times larger.</p></div>
+</article><div class="pager"><a href="phy-lenses.html"><small>Previous</small>Lenses, mirrors and instruments</a><a class="next" href="phy-photoelectric.html"><small>Next</small>Photoelectric effect and matter waves</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

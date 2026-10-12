@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Photoelectric effect and matter waves - Class 12 Physics</title>
+<meta name="description" content="Photoelectric effect and matter waves: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-photoelectric" data-title="Photoelectric effect and matter waves">
+  <header><div class="tag">Dual Nature of Radiation and Matter</div><h3>Photoelectric effect and de Broglie waves</h3></header>
+  <p class="lead">Light shone on a metal can knock electrons out, but only if its frequency is high enough. Einstein explained this by treating light as packets called photons, each of energy E = hν. De Broglie then turned the idea around: if waves can behave as particles, particles such as electrons should have a wavelength.</p>
+  <ul class="keypoints">
+    <li>Below the threshold frequency ν<sub>0</sub> there is no emission, however bright the light. Above it, emission is instantaneous.</li>
+    <li>Intensity decides how many photons arrive, so the saturation current is proportional to intensity. Frequency decides the maximum kinetic energy, so the stopping potential depends on frequency only.</li>
+    <li>Einstein's equation: hν = φ + K<sub>max</sub>, where φ = hν<sub>0</sub> is the work function. The graph of V<sub>0</sub> against ν is a straight line with slope h/e.</li>
+    <li>Every moving particle has a wavelength λ = h/p. It is measurable for electrons and invisible for a cricket ball.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">E = hν = hc/λ<small>photon energy; hc = 1240 eV nm; h = 6.626×10<sup>-34</sup> J s</small></div>
+    <div class="eq">hν = φ + K<sub>max</sub><small>Einstein's photoelectric equation; K<sub>max</sub> = eV<sub>0</sub></small></div>
+    <div class="eq">V<sub>0</sub> = (h/e) ν − φ/e<small>h/e = 4.14×10<sup>-15</sup> V s</small></div>
+    <div class="eq">λ = h/p = h/(mv)<small>de Broglie wavelength</small></div>
+    <div class="eq">λ = 1.227/√V nm<small>electron accelerated through V volts</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Photoelectric effect: current and stopping potential</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-photoelectric-m">Metal (work function)</label><select id="phy-photoelectric-m"><option value="2.14">Caesium 2.14 eV</option><option value="2.30" selected>Potassium 2.30 eV</option><option value="2.75">Sodium 2.75 eV</option><option value="4.30">Zinc 4.30 eV</option><option value="4.65">Copper 4.65 eV</option></select></div>
+      <div class="ctl"><label for="phy-photoelectric-nu">Frequency ν <output></output></label><input type="range" id="phy-photoelectric-nu" min="2" max="16" step="0.1" value="8" data-unit=" ×10¹⁴ Hz"></div>
+      <div class="ctl"><label for="phy-photoelectric-int">Intensity <output></output></label><input type="range" id="phy-photoelectric-int" min="0" max="100" step="5" value="50" data-unit=" %"></div>
+      <div class="ctl"><label for="phy-photoelectric-v">Applied voltage V <output></output></label><input type="range" id="phy-photoelectric-v" min="-5" max="5" step="0.1" value="1" data-unit=" V"></div>
+    </div>
+    <canvas class="stage" id="phy-photoelectric-cv1"></canvas>
+    <canvas class="stage" id="phy-photoelectric-cv2" style="margin-top:.6rem"></canvas>
+    <div class="readouts">
+      <div class="readout">Photon energy hν<b id="phy-photoelectric-r1">-</b></div>
+      <div class="readout">Threshold frequency ν<sub>0</sub><b id="phy-photoelectric-r2">-</b></div>
+      <div class="readout">K<sub>max</sub><b id="phy-photoelectric-r3">-</b></div>
+      <div class="readout">Stopping potential V<sub>0</sub><b id="phy-photoelectric-r4">-</b></div>
+      <div class="readout">Photocurrent at V<b id="phy-photoelectric-r5">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const c1=$('phy-photoelectric-cv1'),c2=$('phy-photoelectric-cv2'),HE=0.41357;
+      function axes(ctx,x0,y0,x1,y1,col){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,y1);ctx.lineTo(x0,y0);ctx.moveTo(x0,y1);ctx.lineTo(x1,y1);ctx.stroke();}
+      function draw(){
+        const phi=+$('phy-photoelectric-m').value,nu=+$('phy-photoelectric-nu').value,inten=+$('phy-photoelectric-int').value,V=+$('phy-photoelectric-v').value;
+        const E=HE*nu,K=E-phi,emit=K>0,V0=emit?K:0,Is=inten/100*8,tau=1.2;
+        const ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted'),bad=TB.css('--bad'),good=TB.css('--good');
+        const cur=Vv=>(emit&&Vv>=-V0)?Is*(1-Math.exp(-(Vv+V0)/tau)):0;
+        // graph 1: I-V
+        let o=TB.canvas(c1,230),ctx=o.ctx,w=o.w,h=o.h;ctx.clearRect(0,0,w,h);
+        const L=36,R=w-12,T=14,B=h-30;
+        const gx=v=>L+(v+5)/10*(R-L),gy=i=>B-i/10*(B-T);
+        axes(ctx,L,T,R,B,muted);
+        ctx.strokeStyle=muted;ctx.beginPath();ctx.moveTo(gx(0),T);ctx.lineTo(gx(0),B);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='center';
+        [-4,-2,0,2,4].forEach(v=>ctx.fillText(v,gx(v),B+14));
+        ctx.fillText('Applied voltage V (volt)',(L+R)/2,h-6);
+        ctx.textAlign='left';ctx.fillText('I',L+4,T+8);
+        ctx.strokeStyle=sub;ctx.lineWidth=2.2;ctx.beginPath();
+        for(let k=0;k<=200;k++){const v=-5+k*0.05;const x=gx(v),y=gy(cur(v));if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+        ctx.stroke();
+        if(emit){ctx.strokeStyle=bad;ctx.setLineDash([4,3]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(gx(-V0),B);ctx.lineTo(gx(-V0),gy(1.5));ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle=bad;ctx.textAlign=gx(-V0)<L+40?'left':'center';ctx.fillText('-V₀ = -'+V0.toFixed(2)+' V',gx(-V0),gy(1.5)-4);
+          ctx.fillStyle=ink;ctx.textAlign='right';ctx.fillText('saturation',R-2,gy(Is)-5);}
+        else{ctx.fillStyle=bad;ctx.textAlign='center';ctx.fillText('ν below threshold: no photoelectrons',(L+R)/2,T+30);}
+        const ic=cur(V);ctx.fillStyle=good;ctx.beginPath();ctx.arc(gx(V),gy(ic),5,0,7);ctx.fill();
+        // graph 2: V0 vs nu
+        o=TB.canvas(c2,210);ctx=o.ctx;w=o.w;h=o.h;ctx.clearRect(0,0,w,h);
+        const L2=36,R2=w-12,T2=14,B2=h-30;
+        const hx=n=>L2+n/16*(R2-L2),hy=v=>T2+(5-v)/10*(B2-T2);
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L2,T2);ctx.lineTo(L2,B2);ctx.moveTo(L2,hy(0));ctx.lineTo(R2,hy(0));ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='center';
+        [0,4,8,12,16].forEach(n=>ctx.fillText(n,hx(n),B2+14+0));
+        ctx.fillText('Frequency ν (×10¹⁴ Hz)',(L2+R2)/2,h-6);
+        ctx.textAlign='right';[-4,0,4].forEach(v=>ctx.fillText(v,L2-4,hy(v)+4));
+        ctx.save();ctx.beginPath();ctx.rect(L2,T2,R2-L2,B2-T2);ctx.clip();
+        ctx.strokeStyle=sub;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(hx(0),hy(-phi));ctx.lineTo(hx(16),hy(HE*16-phi));ctx.stroke();ctx.restore();
+        const n0=phi/HE;ctx.fillStyle=bad;ctx.beginPath();ctx.arc(hx(n0),hy(0),4,0,7);ctx.fill();
+        ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('ν₀ = '+n0.toFixed(2),Math.min(hx(n0)+6,R2-70),hy(0)-6);
+        ctx.fillText('V₀ (volt)',L2+4,T2+8);
+        ctx.textAlign='left';ctx.fillText('intercept = -φ/e = -'+phi.toFixed(2)+' V',L2+8,B2-6);
+        const px=hx(nu),py=hy(Math.max(-5,Math.min(5,K)));
+        ctx.fillStyle=emit?good:muted;ctx.beginPath();ctx.arc(px,py,5,0,7);ctx.fill();
+        TB.set(root,'#phy-photoelectric-r1',E.toFixed(2)+' eV');
+        TB.set(root,'#phy-photoelectric-r2',n0.toFixed(2)+'×10¹⁴ Hz');
+        TB.set(root,'#phy-photoelectric-r3',emit?K.toFixed(2)+' eV':'0 (no emission)');
+        TB.set(root,'#phy-photoelectric-r4',emit?V0.toFixed(2)+' V':'-');
+        TB.set(root,'#phy-photoelectric-r5',ic.toFixed(2)+' (arb. units)');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">de Broglie wavelength on a log scale</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-photoelectric-p">Particle</label><select id="phy-photoelectric-p"><option value="9.109e-31">Electron</option><option value="1.673e-27">Proton</option><option value="6.645e-27">Alpha particle</option><option value="0.15">Cricket ball (150 g)</option></select></div>
+      <div class="ctl"><label for="phy-photoelectric-sp">Speed = 10<sup>x</sup> m/s, x = <output></output></label><input type="range" id="phy-photoelectric-sp" min="0" max="7" step="0.1" value="6"></div>
+    </div>
+    <canvas class="stage" id="phy-photoelectric-cv3"></canvas>
+    <div class="readouts">
+      <div class="readout">Speed<b id="phy-photoelectric-s1">-</b></div>
+      <div class="readout">Momentum p<b id="phy-photoelectric-s2">-</b></div>
+      <div class="readout">Wavelength λ<b id="phy-photoelectric-s3">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const cv=$('phy-photoelectric-cv3'),H=6.626e-34;
+      function sci(x){const e=Math.floor(Math.log10(x)),m=x/Math.pow(10,e);return m.toFixed(2)+'×10'+String(e).replace(/-/g,'⁻').replace(/\d/g,c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[c]);}
+      function draw(){
+        const m=+$('phy-photoelectric-p').value,v=Math.pow(10,+$('phy-photoelectric-sp').value),p=m*v,lam=H/p,ll=Math.log10(lam);
+        const {ctx,w,h}=TB.canvas(cv,190);ctx.clearRect(0,0,w,h);
+        const ink=TB.css('--ink'),sub=TB.css('--sub'),muted=TB.css('--muted'),bad=TB.css('--bad');
+        const L=14,R=w-14,ax=h-40,lo=-36,hi=-2,gx=e=>L+(e-lo)/(hi-lo)*(R-L);
+        ctx.strokeStyle=muted;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L,ax);ctx.lineTo(R,ax);ctx.stroke();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='center';
+        for(let e=-35;e<=-5;e+=10){ctx.fillRect(gx(e)-.5,ax,1,5);ctx.fillText('10'+String(e).replace('-','⁻').replace(/\d/g,c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[c]),gx(e),ax+17);}
+        ctx.fillText('λ (metre), log scale',(L+R)/2,h-5);
+        const refs=[[-15,'nucleus',14],[-10,'atom',30],[-6.3,'visible light',46],[-3,'1 mm',62]];
+        refs.forEach(r=>{const x=gx(r[0]);ctx.strokeStyle=muted;ctx.setLineDash([3,3]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,r[2]+4);ctx.lineTo(x,ax);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle=ink;ctx.textAlign=x>w*.7?'right':'left';ctx.fillText(r[1],x+(x>w*.7?4:-2),r[2]);});
+        const x=Math.max(L+2,Math.min(R-2,gx(ll)));
+        ctx.fillStyle=bad;ctx.beginPath();ctx.moveTo(x,ax-1);ctx.lineTo(x-7,ax-13);ctx.lineTo(x+7,ax-13);ctx.fill();
+        ctx.strokeStyle=bad;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,ax-13);ctx.lineTo(x,ax-30);ctx.stroke();
+        ctx.fillStyle=bad;ctx.textAlign=x<70?'left':x>w-70?'right':'center';ctx.fillText('λ',x,ax-34);
+        TB.set(root,'#phy-photoelectric-s1',sci(v)+' m/s');TB.set(root,'#phy-photoelectric-s2',sci(p)+' kg m/s');TB.set(root,'#phy-photoelectric-s3',sci(lam)+' m');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Photocells in automatic street lights and door sensors, and the light meter that sets exposure in a camera, rely on the photoelectric effect. Worked case: violet light of λ = 400 nm falls on potassium (φ = 2.30 eV). Photon energy = 1240/400 = 3.10 eV, so K<sub>max</sub> = 3.10 − 2.30 = 0.80 eV and V<sub>0</sub> = 0.80 V; the threshold wavelength is 1240/2.30 = 539 nm, so red light does nothing. Matter waves are used in electron microscopes at Indian labs such as IISc and AIIMS: electrons accelerated through 100 V have λ = 1.227/√100 = 0.123 nm, about 4000 times shorter than visible light, so they resolve details of atomic size. A 150 g cricket ball at 30 m/s has λ = 6.63×10<sup>-34</sup>/(0.15 × 30) = 1.5×10<sup>-34</sup> m, far too small to detect, which is why we never see cricket balls diffract.</p></div>
+  <div class="quiz"><p class="q">The intensity of light falling on a metal surface is doubled, with frequency kept above the threshold. Which statement is correct?</p><div class="opts"><button>The stopping potential doubles</button><button data-ok>The saturation current doubles; the stopping potential is unchanged</button><button>The maximum kinetic energy of electrons doubles</button><button>Both the current and the stopping potential are unchanged</button></div><p class="why" hidden>Doubling intensity doubles the number of photons per second and so the number of electrons per second (saturation current). Each photon still has energy hν, so K<sub>max</sub> and V<sub>0</sub> are unchanged.</p></div>
+</article><div class="pager"><a href="phy-yds.html"><small>Previous</small>Interference: Young&#x27;s double slit</a><a class="next" href="phy-bohr.html"><small>Next</small>Bohr model and hydrogen spectrum</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

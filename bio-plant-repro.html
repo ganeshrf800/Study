@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flowering plant reproduction - Class 12 Biology</title>
+<meta name="description" content="Flowering plant reproduction: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-plant-repro" data-title="Flowering plant reproduction">
+  <header><div class="tag">Sexual Reproduction in Flowering Plants</div><h3>Flower, pollination and double fertilisation</h3></header>
+  <p class="lead">A flower is the reproductive organ of an angiosperm. Pollen from the anther reaches the stigma (pollination), a pollen tube carries two male gametes to the ovule, and both are used: one fuses with the egg and one with the two polar nuclei. This double fertilisation is found only in flowering plants.</p>
+  <ul class="keypoints">
+    <li><b>Four whorls</b>: calyx (sepals), corolla (petals), androecium (stamens, male), gynoecium (carpels, female). A pistil = stigma + style + ovary.</li>
+    <li><b>Pollination</b>: autogamy (same flower), geitonogamy (another flower, same plant), xenogamy (different plant, brings genetic variation). Agents: wind, water, insects, birds, bats.</li>
+    <li>A mature <b>embryo sac</b> (female gametophyte) is 7-celled and 8-nucleate: egg + 2 synergids (egg apparatus), 3 antipodals, and a large central cell with 2 polar nuclei. A mature <b>pollen grain</b> has a vegetative cell and a generative cell; the generative cell divides to give 2 male gametes.</li>
+    <li><b>Double fertilisation</b>: syngamy (male gamete + egg gives zygote, 2n) and triple fusion (male gamete + 2 polar nuclei gives primary endosperm nucleus, 3n).</li>
+    <li><b>After fertilisation</b>: zygote becomes embryo, PEN becomes endosperm, ovule becomes seed, ovary becomes fruit, ovary wall becomes pericarp. Apple and strawberry are false fruits because the thalamus also contributes.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">egg (n) + male gamete (n) → zygote (2n)<small>Syngamy</small></div>
+    <div class="eq">polar nuclei (n + n) + male gamete (n) → PEN (3n)<small>Triple fusion</small></div>
+    <div class="eq">MMC (2n) → 4 megaspores (n) → 1 functional → 8 nuclei<small>Three mitoses after meiosis give the 8-nucleate embryo sac</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: click a part of the flower</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:1rem;align-items:start">
+    <svg id="bio-plant-repro-svg" viewBox="0 0 320 360" role="img" aria-label="Longitudinal section of a flower with clickable parts" style="width:100%;max-width:380px;margin:auto;display:block;background:var(--soft);border-radius:6px">
+      <g data-p="receptacle" tabindex="0" style="cursor:pointer;outline:none"><rect class="sh" x="150" y="300" width="20" height="58" style="fill:color-mix(in srgb,var(--good) 45%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><ellipse class="sh" cx="160" cy="298" rx="36" ry="10" style="fill:color-mix(in srgb,var(--good) 45%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path d="M196 300L240 322" style="stroke:var(--muted)"/><text x="316" y="330" text-anchor="end" font-size="14" style="fill:var(--ink)">Receptacle</text></g>
+      <g data-p="sepal" tabindex="0" style="cursor:pointer;outline:none"><path class="sh" d="M128 298Q88 272 98 232Q128 258 150 290Z" style="fill:color-mix(in srgb,var(--good) 65%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path class="sh" d="M192 298Q232 272 222 232Q192 258 170 290Z" style="fill:color-mix(in srgb,var(--good) 65%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path d="M60 300L106 266" style="stroke:var(--muted)"/><text x="4" y="312" font-size="14" style="fill:var(--ink)">Sepal</text></g>
+      <g data-p="petal" tabindex="0" style="cursor:pointer;outline:none"><path class="sh" d="M138 286Q62 232 72 132Q122 172 150 272Z" style="fill:color-mix(in srgb,var(--bio) 35%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path class="sh" d="M182 286Q258 232 248 132Q198 172 170 272Z" style="fill:color-mix(in srgb,var(--bio) 35%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path d="M40 196L88 190" style="stroke:var(--muted)"/><text x="4" y="212" font-size="14" style="fill:var(--ink)">Petal</text></g>
+      <g data-p="filament" tabindex="0" style="cursor:pointer;outline:none"><path class="sh" d="M140 288L120 176M180 288L200 176" style="fill:none;stroke:var(--maths);stroke-width:4;stroke-linecap:round"/><path d="M68 262L128 232" style="stroke:var(--muted)"/><text x="4" y="266" font-size="14" style="fill:var(--ink)">Filament</text></g>
+      <g data-p="anther" tabindex="0" style="cursor:pointer;outline:none"><ellipse class="sh" cx="118" cy="160" rx="10" ry="17" style="fill:var(--maths);stroke:var(--muted);stroke-width:1.5"/><ellipse class="sh" cx="202" cy="160" rx="10" ry="17" style="fill:var(--maths);stroke:var(--muted);stroke-width:1.5"/><path d="M52 116L112 148" style="stroke:var(--muted)"/><text x="4" y="112" font-size="14" style="fill:var(--ink)">Anther</text></g>
+      <g data-p="stigma" tabindex="0" style="cursor:pointer;outline:none"><ellipse class="sh" cx="160" cy="142" rx="17" ry="9" style="fill:var(--bio);stroke:var(--muted);stroke-width:1.5"/><path d="M176 140L232 100" style="stroke:var(--muted)"/><text x="316" y="96" text-anchor="end" font-size="14" style="fill:var(--ink)">Stigma</text></g>
+      <g data-p="style" tabindex="0" style="cursor:pointer;outline:none"><rect class="sh" x="156" y="150" width="8" height="90" style="fill:color-mix(in srgb,var(--bio) 60%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path d="M166 196L246 184" style="stroke:var(--muted)"/><text x="316" y="180" text-anchor="end" font-size="14" style="fill:var(--ink)">Style</text></g>
+      <g data-p="ovary" tabindex="0" style="cursor:pointer;outline:none"><ellipse class="sh" cx="160" cy="266" rx="26" ry="30" style="fill:color-mix(in srgb,var(--chem) 28%,var(--paper));stroke:var(--muted);stroke-width:1.5"/><path d="M186 262L244 258" style="stroke:var(--muted)"/><text x="316" y="254" text-anchor="end" font-size="14" style="fill:var(--ink)">Ovary</text></g>
+      <g data-p="ovule" tabindex="0" style="cursor:pointer;outline:none"><circle class="sh" cx="150" cy="260" r="7" style="fill:var(--chem);stroke:var(--muted);stroke-width:1.5"/><circle class="sh" cx="170" cy="260" r="7" style="fill:var(--chem);stroke:var(--muted);stroke-width:1.5"/><circle class="sh" cx="160" cy="280" r="7" style="fill:var(--chem);stroke:var(--muted);stroke-width:1.5"/><path d="M176 282L236 296" style="stroke:var(--muted)"/><text x="316" y="294" text-anchor="end" font-size="14" style="fill:var(--ink)">Ovule</text></g>
+    </svg>
+    <div>
+      <div class="tabs" id="bio-plant-repro-btns" role="group" aria-label="Flower parts"></div>
+      <div id="bio-plant-repro-info" aria-live="polite" style="background:var(--soft);border-radius:6px;padding:.7rem .9rem;min-height:9rem"><b>Choose a part</b><br>Click any part of the flower, or use the buttons, to see what it is and what it becomes.</div>
+    </div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const q=s=>root.querySelector(s),qa=s=>[...root.querySelectorAll(s)];
+    const P={
+     sepal:['Sepal (calyx)','Green, leaf-like; protects the flower bud. Together the sepals form the calyx.','Usually falls off or persists under the fruit (brinjal, tomato).'],
+     petal:['Petal (corolla)','Coloured or scented to attract insects, birds or bats. Wind-pollinated flowers have small dull petals.','Withers after fertilisation.'],
+     filament:['Filament','Stalk of the stamen; holds the anther up where wind or an insect can reach it.','Withers.'],
+     anther:['Anther','Bilobed with four pollen sacs. Microspore mother cells (2n) divide by meiosis to form pollen grains (n). Pollen grain wall: exine (sporopollenin) and intine.','Splits open (dehisces) to release pollen.'],
+     stigma:['Stigma','Landing surface for pollen, often sticky or feathery. The pistil recognises compatible pollen here.','Withers after pollination.'],
+     style:['Style','The tube that links stigma and ovary. The pollen tube grows down through it.','Withers.'],
+     ovary:['Ovary','Swollen base of the carpel that encloses the ovules (one in mango and paddy, many in tomato).','Becomes the fruit; the ovary wall becomes the pericarp.'],
+     ovule:['Ovule','Has integuments, a micropyle at the tip and the embryo sac inside. The embryo sac is the female gametophyte.','Becomes the seed; the integuments become the seed coat.'],
+     receptacle:['Receptacle (thalamus)','The swollen top of the flower stalk that carries all four whorls.','In apple and strawberry it grows into the fleshy part, giving a false fruit.']};
+    const info=q('#bio-plant-repro-info'),btns=q('#bio-plant-repro-btns');
+    function show(k){const d=P[k];info.innerHTML='<b>'+d[0]+'</b><br>'+d[1]+'<br><span style="color:var(--muted)">After fertilisation: '+d[2]+'</span>';
+      qa('#bio-plant-repro-svg [data-p]').forEach(g=>g.querySelectorAll('.sh').forEach(s=>{s.style.strokeWidth=g.dataset.p===k?'4':'1.5';s.style.stroke=g.dataset.p===k?'var(--ink)':'var(--muted)'}));
+      [...btns.children].forEach(b=>b.classList.toggle('on',b.dataset.p===k));}
+    Object.keys(P).forEach(k=>{const b=document.createElement('button');b.type='button';b.dataset.p=k;b.textContent=P[k][0].split(' (')[0];b.addEventListener('click',()=>show(k));btns.appendChild(b);});
+    qa('#bio-plant-repro-svg [data-p]').forEach(g=>{g.addEventListener('click',()=>show(g.dataset.p));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show(g.dataset.p)}});});
+    })();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: from pollen grain to seed, step by step</div>
+    <div class="controls"><div class="ctl"><label for="bio-plant-repro-step">Step <output></output></label><input type="range" id="bio-plant-repro-step" min="1" max="7" step="1" value="1"></div></div>
+    <svg id="bio-plant-repro-fsvg" viewBox="0 0 320 300" role="img" aria-label="Pollen tube growth and double fertilisation" style="width:100%;max-width:420px;margin:auto;display:block;background:var(--soft);border-radius:6px">
+      <rect x="150" y="30" width="20" height="82" style="fill:color-mix(in srgb,var(--bio) 22%,var(--paper));stroke:var(--muted)"/>
+      <rect x="64" y="108" width="192" height="188" rx="40" style="fill:color-mix(in srgb,var(--chem) 18%,var(--paper));stroke:var(--muted);stroke-width:1.5"/>
+      <ellipse id="bio-plant-repro-ov" cx="160" cy="212" rx="58" ry="64" style="fill:color-mix(in srgb,var(--maths) 18%,var(--paper));stroke:var(--muted);stroke-width:1.5"/>
+      <ellipse id="bio-plant-repro-es" cx="160" cy="214" rx="30" ry="48" style="fill:var(--paper);stroke:var(--muted);stroke-width:1.5"/>
+      <ellipse cx="160" cy="22" rx="36" ry="10" style="fill:var(--bio)"/>
+      <circle id="bio-plant-repro-pg" cx="172" cy="14" r="7" style="fill:var(--maths);stroke:var(--ink)"/>
+      <path id="bio-plant-repro-pt" d="M170 18L170 20L160 24V168" pathLength="144" style="fill:none;stroke:var(--maths);stroke-width:3" stroke-dasharray="144" stroke-dashoffset="144"/>
+      <g style="fill:var(--chem)"><circle id="bio-plant-repro-eg" cx="160" cy="182" r="8"/><circle cx="147" cy="176" r="5" class="bio-plant-repro-syn"/><circle cx="173" cy="176" r="5" class="bio-plant-repro-syn"/>
+      <circle id="bio-plant-repro-p1" cx="154" cy="214" r="5" style="fill:var(--bio)"/><circle id="bio-plant-repro-p2" cx="166" cy="214" r="5" style="fill:var(--bio)"/>
+      <circle cx="150" cy="258" r="4" class="bio-plant-repro-ant"/><circle cx="160" cy="262" r="4" class="bio-plant-repro-ant"/><circle cx="170" cy="258" r="4" class="bio-plant-repro-ant"/></g>
+      <circle id="bio-plant-repro-m1" cx="156" cy="162" r="3.5" style="fill:var(--ink)"/><circle id="bio-plant-repro-m2" cx="164" cy="164" r="3.5" style="fill:var(--ink)"/>
+      <circle id="bio-plant-repro-end" cx="160" cy="214" r="26" style="fill:color-mix(in srgb,var(--good) 30%,var(--paper));stroke:none" opacity="0"/>
+      <g font-size="11" style="fill:var(--ink)"><text x="4" y="26">Stigma</text><text x="4" y="70">Style</text><text x="4" y="130">Ovary</text><text id="bio-plant-repro-lb1" x="206" y="176">Egg apparatus</text><text id="bio-plant-repro-lb2" x="206" y="217">Polar nuclei</text><text x="206" y="262">Antipodals</text><text x="206" y="140">Micropyle</text></g>
+      <text id="bio-plant-repro-tag" x="160" y="290" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--ink)"></text>
+    </svg>
+    <p id="bio-plant-repro-cap" aria-live="polite" style="min-height:4.5em"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const q=s=>root.querySelector(s);
+    const C=['Pollination: a pollen grain (n) lands on a compatible stigma. The pistil accepts or rejects it by chemical recognition.',
+     'Germination: the vegetative cell grows out as a pollen tube. The generative cell has divided into two male gametes (n each).',
+     'The tube grows down the style toward the ovary, guided by chemicals from the synergids and the ovule.',
+     'The tube enters the ovule through the micropyle, bursts in a synergid and releases the two male gametes.',
+     'Syngamy: one male gamete (n) fuses with the egg (n). The result is the zygote (2n).',
+     'Triple fusion: the second male gamete (n) fuses with the two polar nuclei (n + n). The result is the primary endosperm nucleus (3n).',
+     'After fertilisation: zygote grows into the embryo, PEN into the nutritive endosperm, ovule into the seed and ovary into the fruit. Synergids and antipodals degenerate.'];
+    const T=['n pollen grain','n pollen tube','n tube in style','2 male gametes (n each) released','Zygote 2n','PEN 3n and zygote 2n','Seed: embryo 2n + endosperm 3n'];
+    const set=(id,a)=>{const e=q('#bio-plant-repro-'+id);for(const k in a)e.setAttribute(k,a[k]);};
+    function draw(){const s=+q('#bio-plant-repro-step').value;
+      const len=[0,24,100,144,144,144,144][s-1];
+      q('#bio-plant-repro-pt').setAttribute('stroke-dashoffset',144-len);
+      set('m1',{opacity:s===4?1:0});set('m2',{opacity:s===4?1:0});
+      q('#bio-plant-repro-eg').setAttribute('r',s>=5?10:8);
+      q('#bio-plant-repro-eg').style.fill=s>=5?'var(--bio)':'var(--chem)';
+      set('p1',{cx:s>=6?160:154,r:s>=6?9:5,opacity:s>=7?0:1});set('p2',{opacity:s>=6?0:1});
+      q('#bio-plant-repro-p1').style.fill=s>=6?'var(--maths)':'var(--bio)';
+      root.querySelectorAll('.bio-plant-repro-syn').forEach(e=>e.setAttribute('opacity',s>=7?0.25:1));
+      root.querySelectorAll('.bio-plant-repro-ant').forEach(e=>e.setAttribute('opacity',s>=7?0.25:1));
+      q('#bio-plant-repro-end').setAttribute('opacity',s>=7?1:0);
+      q('#bio-plant-repro-pg').setAttribute('opacity',1);
+      q('#bio-plant-repro-pg').setAttribute('cy',s>=2?20:14);
+      q('#bio-plant-repro-cap').textContent='Step '+s+' of 7. '+C[s-1];
+      q('#bio-plant-repro-tag').textContent=['Pollen grain (n) on stigma','Pollen tube emerges','Pollen tube in style','Two male gametes released','Zygote (2n)','Primary endosperm nucleus (3n)','Seed: embryo 2n, endosperm 3n'][s-1];
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>Rice is self-pollinated, so Indian breeders at IARI and other institutes make hybrids by hand: they emasculate the bud of the female parent, bag it, dust it with pollen from the chosen male parent and bag it again. Rice has 2n = 24. Pollen grain n = 12, egg n = 12, so the zygote has 12 + 12 = 24 and the endosperm (the white grain we cook) has 12 + 12 + 12 = 36 chromosomes. Mango is cross-pollinated, and the varieties Amrapali (Dashehari × Neelum) and Mallika (Neelum × Dashehari) were produced by the same hand-pollination method.</p></div>
+  <div class="quiz"><p class="q">A plant has pollen grains with n = 10 chromosomes. What is the chromosome number in its primary endosperm nucleus?</p><div class="opts"><button>20</button><button data-ok>30</button><button>10</button><button>40</button></div><p class="why" hidden>PEN forms by triple fusion: two polar nuclei (n each) + one male gamete (n) = 3n = 30. The zygote is 2n = 20.</p></div>
+</article><div class="pager"><span></span><a class="next" href="bio-human-repro.html"><small>Next</small>Human reproduction</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

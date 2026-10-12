@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Relations and functions - Class 12 Mathematics</title>
+<meta name="description" content="Relations and functions: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-functions" data-title="Relations and functions">
+  <header><div class="tag">Relations and Functions</div><h3>Functions: one-one, onto and inverse</h3></header>
+  <p class="lead">A function assigns each input exactly one output. Two questions decide how well-behaved it is: does every output come from only one input (one-one), and does every possible output actually get used (onto)? If both hold, the function can be run backwards, and the graph of the inverse is the mirror image of the original in the line y = x.</p>
+  <ul class="keypoints">
+    <li>A relation from A to B is any subset of A × B. It can be reflexive, symmetric, transitive; all three together make an equivalence relation.</li>
+    <li>One-one (injective): f(x₁) = f(x₂) implies x₁ = x₂. On a graph, every horizontal line meets the curve at most once.</li>
+    <li>Onto (surjective): range = codomain. Changing the codomain can change whether a function is onto.</li>
+    <li>Bijective means one-one and onto. Only bijections have an inverse f⁻¹, and (f⁻¹ ∘ f)(x) = x.</li>
+    <li>Restricting the domain, for example x² on x ≥ 0, can make a function one-one so that it gains an inverse.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">f one-one ⇔ f(x₁) = f(x₂) ⇒ x₁ = x₂<small>Equivalent test: f′(x) &gt; 0 for all x, or f′(x) &lt; 0 for all x, on an interval</small></div>
+    <div class="eq">f onto ⇔ range of f = codomain<small>For every y in B there is some x in A with f(x) = y</small></div>
+    <div class="eq">(g ∘ f)(x) = g(f(x))<small>Composition is associative but not commutative in general</small></div>
+    <div class="eq">(g ∘ f)⁻¹ = f⁻¹ ∘ g⁻¹<small>Reverse the order when inverting a composition</small></div>
+    <div class="eq">n(A) = m, n(B) = n<small>Number of relations from A to B: 2<sup>mn</sup>. One-one maps (m ≤ n): n!/(n−m)!. All functions: n<sup>m</sup></small></div>
+    <div class="eq">Graph of f⁻¹ = reflection of graph of f in y = x<small>The point (a, b) on f becomes (b, a) on f⁻¹</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Function picker: horizontal line test and the mirror image</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-functions-fn">Function f: R → R</label><select id="mat-functions-fn">
+        <option value="cube">f(x) = x³</option><option value="lin">f(x) = 2x + 3</option><option value="exp">f(x) = eˣ</option><option value="sq">f(x) = x²</option><option value="sqr">f(x) = x², domain x ≥ 0</option><option value="sin">f(x) = sin x</option><option value="cub3">f(x) = x³ − 3x</option></select></div>
+      <div class="ctl"><label for="mat-functions-c">Horizontal line y = c <output></output></label><input type="range" id="mat-functions-c" min="-5" max="5" step="0.1" value="1"></div>
+    </div>
+    <canvas class="stage" id="mat-functions-cv" style="max-width:440px;margin-inline:auto"></canvas>
+    <div class="readouts">
+      <div class="readout">Intersections of y = c with f<b data-r="cnt">-</b></div>
+      <div class="readout">One-one?<b data-r="one">-</b></div>
+      <div class="readout">Onto R?<b data-r="onto">-</b></div>
+      <div class="readout">Inverse<b data-r="inv">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sel=$('#mat-functions-fn'),cs=$('#mat-functions-c'),cv=$('#mat-functions-cv');
+const F={
+ cube:{f:x=>x*x*x,dom:[-5,5],inv:'f⁻¹(y) = ∛y',onto:'Yes, onto R'},
+ lin:{f:x=>2*x+3,dom:[-5,5],inv:'f⁻¹(y) = (y − 3)/2',onto:'Yes, onto R'},
+ exp:{f:Math.exp,dom:[-5,5],inv:'f⁻¹(y) = ln y, y > 0',onto:'No: range is (0, ∞)'},
+ sq:{f:x=>x*x,dom:[-5,5],inv:'None (not one-one)',onto:'No: range is [0, ∞)'},
+ sqr:{f:x=>x*x,dom:[0,5],inv:'f⁻¹(y) = √y, y ≥ 0',onto:'No onto R; onto [0, ∞)'},
+ sin:{f:Math.sin,dom:[-5,5],inv:'None (not one-one)',onto:'No: range is [−1, 1]'},
+ cub3:{f:x=>x*x*x-3*x,dom:[-5,5],inv:'None (not one-one)',onto:'Yes, onto R'}
+};
+function draw(){const d=F[sel.value],c=+cs.value,f=d.f,a=d.dom[0],b=d.dom[1];
+ const P=mkP(cv,-5,5,-5,5,'eq');axes(P,1,1);
+ xy(P,2,-5,5,t=>t,t=>t,MUT(),1.5,[6,4]);
+ const N=2000;let inc=true,dec=true,roots=0,xs=[],prev=null,pv=null;
+ for(let i=0;i<=N;i++){const x=a+(b-a)*i/N,y=f(x);
+  if(prev!==null){if(y<=prev)inc=false;if(y>=prev)dec=false;}
+  let v=y-c;if(Math.abs(v)<1e-9)v=0;
+  if(v===0){roots++;xs.push(x);}else if(pv!==null&&pv!==0&&pv*v<0){roots++;xs.push(x-(b-a)/N*v/(v-pv));}
+  prev=y;pv=v;}
+ const one=inc||dec;
+ xy(P,2,-5,5,t=>t,t=>c,PHY(),1.5,[]);
+ fn(P,f,SUB(),2.6,null,800,a,b);
+ xy(P,500,a,b,t=>f(t),t=>t,one?GOOD():BAD(),2.2,one?[]:[5,4]);
+ xs.forEach(x=>dot(P,x,c,PHY(),4));
+ const lx=P.L+8,ly=P.T+10;
+ [[SUB(),'f',[]],[one?GOOD():BAD(),one?'f⁻¹ (mirror)':'mirror (no inverse)',one?[]:[5,4]],[MUT(),'y = x',[6,4]],[PHY(),'y = c',[]]].forEach((e,i)=>{
+  const c2=P.ctx;c2.strokeStyle=e[0];c2.lineWidth=2;c2.setLineDash(e[2]);c2.beginPath();c2.moveTo(lx,ly+i*15);c2.lineTo(lx+18,ly+i*15);c2.stroke();c2.setLineDash([]);txt(P,e[1],lx+24,ly+i*15);});
+ TB.set(root,'[data-r=cnt]',roots+(roots===1?' point':' points'));
+ TB.set(root,'[data-r=one]',one?'Yes':'No');
+ TB.set(root,'[data-r=onto]',d.onto);
+ TB.set(root,'[data-r=inv]',d.inv);
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Converting temperature is a bijection R → R: F = 9C/5 + 32. Its inverse is C = 5(F − 32)/9. A forecast of 45 °C in Nagpur is 9×45/5 + 32 = 81 + 32 = 113 °F; going back, 5(113 − 32)/9 = 5×81/9 = 45 °C. Because the function is one-one, no two Celsius values share a Fahrenheit value, so the conversion can always be undone.</p>
+    <p>Counting: a one-one function from A = {1, 2, 3} to B with 5 elements can be built in 5×4×3 = 60 ways (each element needs a new image). The number of onto functions from a 4-element set to a 3-element set is 3⁴ − 3×2⁴ + 3 = 81 − 48 + 3 = 36.</p></div>
+  <div class="quiz"><p class="q">Which statement about f: R → R, f(x) = x², is correct?</p><div class="opts"><button data-ok>Neither one-one nor onto</button><button>One-one but not onto</button><button>Onto but not one-one</button><button>Bijective</button></div><p class="why" hidden>f(2) = f(−2) = 4, so it is not one-one. Negative numbers are never outputs, so the range [0, ∞) is smaller than R, and it is not onto. Restricting to [0, ∞) → [0, ∞) makes it bijective.</p></div>
+</article><div class="pager"><span></span><a class="next" href="mat-invtrig.html"><small>Next</small>Inverse trigonometric functions</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

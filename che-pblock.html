@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>p-block: groups 15 to 18 - Class 12 Chemistry</title>
+<meta name="description" content="p-block: groups 15 to 18: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-pblock" data-title="p-block: groups 15 to 18">
+  <header><div class="tag">The p-Block Elements</div><h3>Group 15, 16, 17 and 18: trends and anomalies</h3></header>
+  <p class="lead">In p-block elements the last electron enters a p orbital. Groups 15 to 18 (the pnictogens, chalcogens, halogens and noble gases) show clear trends down each group, but the first member of each group (N, O, F) is anomalous because it is small, highly electronegative and has no d orbitals.</p>
+  <ul class="keypoints">
+    <li>Valence configurations: group 15 ns²np³, group 16 ns²np⁴, group 17 ns²np⁵, group 18 ns²np⁶ (He is 1s²).</li>
+    <li>Inert pair effect: down the group the lower oxidation state (two units below the group maximum) becomes more stable. In group 15, +3 is more stable than +5 for Bi; in group 16, +4 is more stable than +6 for Te and Po.</li>
+    <li>Hydrides of groups 15 and 16: bond angle falls and stability falls down the group (NH<sub>3</sub> 107°, PH<sub>3</sub> 93.5°; H<sub>2</sub>O 104.5°, H<sub>2</sub>S 92°). Acidity rises: HF &lt; HCl &lt; HBr &lt; HI, and H<sub>2</sub>O &lt; H<sub>2</sub>S &lt; H<sub>2</sub>Se &lt; H<sub>2</sub>Te.</li>
+    <li>Halogens: F<sub>2</sub> is the strongest oxidising agent; Cl<sub>2</sub> displaces Br<sup>−</sup> and I<sup>−</sup>. Fluorine shows only −1; others show +1, +3, +5, +7 in compounds with more electronegative atoms (oxoacids, interhalogens).</li>
+    <li>Noble gases have closed shells, very high ionisation enthalpy and positive electron gain enthalpy. Neil Bartlett (1962) made Xe<sup>+</sup>[PtF<sub>6</sub>]<sup>−</sup>; XeF<sub>2</sub>, XeF<sub>4</sub>, XeF<sub>6</sub> are now well known.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">N<sub>2</sub> + 3H<sub>2</sub> ⇌ 2NH<sub>3</sub><small>Group 15 hydride (Haber process, next topic)</small></div>
+    <div class="eq">Xe + F<sub>2</sub> → XeF<sub>2</sub>; Xe + 2F<sub>2</sub> → XeF<sub>4</sub>; Xe + 3F<sub>2</sub> → XeF<sub>6</sub><small>Fluorides of xenon (heat, excess F₂ and pressure favour higher fluorides)</small></div>
+    <div class="eq">Cl<sub>2</sub> + 2Br<sup>−</sup> → 2Cl<sup>−</sup> + Br<sub>2</sub><small>Oxidising power: F<sub>2</sub> &gt; Cl<sub>2</sub> &gt; Br<sub>2</sub> &gt; I<sub>2</sub></small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Periodic-trend explorer</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-pblock-g">Group</label><select id="che-pblock-g"><option value="15">15 (N, P, As, Sb, Bi)</option><option value="16">16 (O, S, Se, Te, Po)</option><option value="17" selected>17 (F, Cl, Br, I, At)</option><option value="18">18 (He, Ne, Ar, Kr, Xe)</option></select></div>
+      <div class="ctl"><label for="che-pblock-p">Property</label><select id="che-pblock-p"><option value="rad">Atomic radius (pm)</option><option value="ie">First ionisation enthalpy (kJ/mol)</option><option value="en">Electronegativity (Pauling)</option><option value="eg" selected>Electron gain enthalpy (kJ/mol)</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Top of group<b data-r="a">-</b></div>
+      <div class="readout">Bottom of group<b data-r="b">-</b></div>
+      <div class="readout">Overall trend down<b data-r="tr" style="font-size:.9rem">-</b></div>
+    </div>
+    <p data-r="note" style="margin-top:.6rem"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas');
+    const g=id=>root.querySelector('#che-pblock-'+id);
+    const E={15:['N','P','As','Sb','Bi'],16:['O','S','Se','Te','Po'],17:['F','Cl','Br','I','At'],18:['He','Ne','Ar','Kr','Xe']};
+    const D={
+      rad:{u:' pm',15:[70,110,121,141,148],16:[66,104,117,137,146],17:[64,99,114,133,140],18:[140,154,188,202,216]},
+      ie:{u:' kJ/mol',15:[1402,1012,947,834,703],16:[1314,1000,941,869,812],17:[1681,1256,1142,1008,920],18:[2372,2081,1521,1351,1170]},
+      en:{u:'',15:[3.0,2.1,2.0,1.9,1.9],16:[3.5,2.5,2.4,2.1,2.0],17:[4.0,3.0,2.8,2.5,2.2],18:[null,null,null,3.0,2.6]},
+      eg:{u:' kJ/mol',15:[0,-74,-77,-101,-100],16:[-141,-200,-195,-190,-174],17:[-333,-349,-325,-296,-270],18:[48,116,96,96,77]}};
+    const N={
+      rad:{15:'Radius grows down the group because each element adds a new shell.',16:'Radius grows down the group because each element adds a new shell.',17:'Radius grows down the group because each element adds a new shell.',18:'Noble gases are shown with van der Waals radii (no bonds form), so do not compare them with covalent radii of other groups.'},
+      ie:{15:'Falls down the group. N is high because of its small size and the extra stability of half-filled 2p³.',16:'Falls down the group. O is a little below the value you might expect from N because the paired 2p electron is easier to remove.',17:'Falls down the group but stays very high, which is why halogens prefer to gain an electron rather than lose one.',18:'Highest in every period. He has the highest first ionisation enthalpy of any element; Xe is low enough to be oxidised by F₂.'},
+      en:{15:'Falls from N (3.0) to Bi (1.9); Sb and Bi are nearly metallic.',16:'Falls down the group; O is second only to F.',17:'F is the most electronegative element of all (4.0).',18:'He, Ne and Ar have no stable compounds, so no value is given. Kr and Xe, which form fluorides and oxides, have estimated values.'},
+      eg:{15:'N has about zero electron gain enthalpy (adding a 4th p electron to the half-filled 2p³ is not favourable); P to Sb become more negative.',16:'O (−141) is less negative than S (−200): its small 2p subshell is crowded and repels the incoming electron. This is why sulphur, not oxygen, has the most negative value in the group.',17:'Cl (−349) is more negative than F (−333) for the same reason: F is so small that the added electron meets strong repulsion. Cl has the most negative electron gain enthalpy of all elements.',18:'All positive: the shells are full, so the added electron must go into a new shell and energy must be supplied.'}};
+    function draw(){
+      const grp=g('g').value,pr=g('p').value,vals=D[pr][grp],names=E[grp],u=D[pr].u;
+      const {ctx,w,h}=TB.canvas(cv,230);
+      const ink=TB.css('--ink'),sc=TB.css('--sub'),mut=TB.css('--muted'),line=TB.css('--line');
+      const L=16,R=16,T=30,B=34,pw=w-L-R,ph=h-T-B;
+      const nums=vals.filter(v=>v!==null);
+      const mx=Math.max(0,...nums),mn=Math.min(0,...nums),span=(mx-mn)||1;
+      const Y=v=>T+ph*(mx-v)/span;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';
+      ctx.strokeStyle=line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,Y(0));ctx.lineTo(w-R,Y(0));ctx.stroke();
+      const slot=pw/5,bw=Math.min(46,slot*.6);
+      vals.forEach((v,i)=>{const x=L+slot*i+slot/2;
+        if(v===null){ctx.fillStyle=mut;ctx.fillText('n/a',x,Y(0)-6);}
+        else{ctx.fillStyle=sc;const y0=Y(0),y1=Y(v);ctx.fillRect(x-bw/2,Math.min(y0,y1),bw,Math.max(Math.abs(y1-y0),1.5));
+          ctx.fillStyle=ink;ctx.fillText(TB.fmt(v,1),x,v>=0?y1-6:y1+14);}
+        ctx.fillStyle=ink;ctx.font='700 13px "Source Sans 3", sans-serif';ctx.fillText(names[i],x,h-12);ctx.font='12px "Source Sans 3", sans-serif';});
+      ctx.fillStyle=mut;ctx.textAlign='left';ctx.fillText(({rad:'Atomic radius',ie:'First ionisation enthalpy',en:'Electronegativity',eg:'Electron gain enthalpy'})[pr]+u+'   (down the group →)',L,16);
+      const f=nums[0],l=nums[nums.length-1];
+      const fi=vals.findIndex(v=>v!==null);
+      TB.set(root,'[data-r=a]',names[fi]+': '+TB.fmt(f,1)+u);TB.set(root,'[data-r=b]',names[4]+': '+TB.fmt(l,1)+u);
+      const ch=l-f;
+      TB.set(root,'[data-r=tr]',Math.abs(ch)<1e-9?'No change':(pr==='eg'&&grp!=='18'?'Not regular (see note)':(ch>0?'Increases':'Decreases')));
+      TB.set(root,'p[data-r=note]',N[pr][grp]);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Worked example: what does −349 kJ/mol mean for one atom?</b> Chlorine releases 349 kJ when one mole of gaseous atoms each gains an electron. Per atom: 349 000 J ÷ 6.022×10<sup>23</sup> = 5.80×10<sup>−19</sup> J, and 5.80×10<sup>−19</sup> ÷ 1.602×10<sup>−19</sup> J/eV ≈ 3.6 eV. Compare I<sup>−</sup> formation at −296 kJ/mol ≈ 3.1 eV, the reason Cl<sub>2</sub> oxidises iodide.</p>
+    <p><b>Group 17 in daily Indian life.</b> Fluoride in toothpaste and in water-fluoridation limits (above 1.5 mg/L causes fluorosis in parts of Rajasthan and Andhra Pradesh); chlorine to disinfect municipal water; iodised salt (KIO<sub>3</sub>) against goitre; bromides in photography and medicines.</p>
+    <p><b>Group 18.</b> Argon fills incandescent bulbs, helium is mixed with oxygen for deep-sea divers and used to cool MRI magnets, and neon lights glow red-orange.</p>
+  </div>
+  <div class="quiz"><p class="q">Which statement about electron gain enthalpy of halogens is correct?</p><div class="opts"><button data-ok>Cl is more negative than F because F's small 2p subshell resists an extra electron.</button><button>F is the most negative because it is the most electronegative, so no exceptions.</button><button>I is the most negative because it is the largest atom.</button><button>All halogens have positive electron gain enthalpy.</button></div><p class="why" hidden>Cl (−349 kJ/mol) beats F (−333 kJ/mol). F's 2p subshell is so compact that the new electron is repelled strongly. Electronegativity and electron gain enthalpy are related but not the same property.</p></div>
+</article><div class="pager"><a href="che-cft.html"><small>Previous</small>Crystal field theory and colour</a><a class="next" href="che-pcomp.html"><small>Next</small>NH3, H2SO4, O3 and Cl2</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

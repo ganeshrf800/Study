@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Applications of derivatives - Class 12 Mathematics</title>
+<meta name="description" content="Applications of derivatives: Class 12 Mathematics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--maths)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="maths.html">Mathematics</a></div><div style="height:.8rem"></div><article class="topic" id="mat-applderiv" data-title="Applications of derivatives">
+  <header><div class="tag">Application of Derivatives</div><h3>Rates, tangents, monotonicity and optimisation</h3></header>
+  <p class="lead">The derivative tells you how fast a quantity changes and which way. Where it is positive the function rises, where negative it falls, and where it passes through zero the function may peak or dip. That is how engineers find the cheapest tin or the biggest box.</p>
+  <ul class="keypoints">
+    <li>dy/dx is the rate of change of y with respect to x. With related rates, differentiate with respect to time t using the chain rule.</li>
+    <li>The tangent at (x₁, y₁) has slope f′(x₁); the normal is perpendicular, with slope −1/f′(x₁).</li>
+    <li>f′ &gt; 0 on an interval means strictly increasing; f′ &lt; 0 means strictly decreasing.</li>
+    <li>Critical points satisfy f′(c) = 0. The second-derivative test: f″(c) &lt; 0 is a local maximum, f″(c) &gt; 0 a local minimum.</li>
+    <li>For the absolute maximum or minimum on [a, b], compare values at critical points and at the end points.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Tangent: y − y₁ = f′(x₁)(x − x₁)<small>Normal: y − y₁ = −(x − x₁)/f′(x₁)</small></div>
+    <div class="eq">dA/dt = 2πr·dr/dt<small>Area of a circle; sphere: dV/dt = 4πr²·dr/dt</small></div>
+    <div class="eq">f′(c) = 0, f″(c) &lt; 0 ⇒ local max<small>f″(c) &gt; 0 ⇒ local min; if f″(c) = 0, use the first-derivative test</small></div>
+    <div class="eq">Square sheet of side a, corners of side x cut: V = x(a − 2x)²<small>V′ = (a − 2x)(a − 6x); maximum at x = a/6, V<sub>max</sub> = 2a³/27</small></div>
+    <div class="eq">Closed cylinder, fixed volume: S = 2πr² + 2V/r<small>Minimum S when h = 2r (height equals diameter)</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Optimise a box: cut squares from a square sheet and fold</div>
+    <div class="controls">
+      <div class="ctl"><label for="mat-applderiv-a">Sheet side a <output></output></label><input type="range" id="mat-applderiv-a" min="12" max="36" step="2" value="24" data-unit=" cm"></div>
+      <div class="ctl"><label for="mat-applderiv-x">Cut size x <output></output></label><input type="range" id="mat-applderiv-x" min="0.1" max="12" step="0.1" value="2" data-unit=" cm"></div>
+    </div>
+    <canvas class="stage" id="mat-applderiv-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">V(x) = x(a − 2x)²<b data-r="v">-</b></div>
+      <div class="readout">dV/dx<b data-r="dv">-</b></div>
+      <div class="readout">Behaviour<b data-r="st">-</b></div>
+      <div class="readout">Maximum<b data-r="mx">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sa=$('#mat-applderiv-a'),sx=$('#mat-applderiv-x'),cv=$('#mat-applderiv-cv');
+function draw(){const a=+sa.value;sx.max=a/2;if(+sx.value>a/2)sx.value=a/2;const x=+sx.value;
+ sx.closest('.ctl').querySelector('output').textContent=x.toLocaleString('en-IN',{maximumFractionDigits:3})+' cm';
+ const V=t=>t*(a-2*t)*(a-2*t),D=t=>(a-2*t)*(a-6*t),vm=2*a*a*a/27;
+ const P=mkP(cv,0,a/2,0,vm*1.18,260);
+ axes(P,nice(a/2/5),nice(vm*1.18/5));
+ fn(P,V,SUB(),3,null,300,0,a/2);
+ const m=D(x),v=V(x),w=a/8;
+ xy(P,2,Math.max(0,x-w),Math.min(a/2,x+w),t=>t,t=>v+m*(t-x),BAD(),1.8);
+ const c=P.ctx;clip(P);c.setLineDash([3,4]);c.strokeStyle=MUT();c.lineWidth=1;c.beginPath();c.moveTo(P.X(a/6),P.Y(0));c.lineTo(P.X(a/6),P.Y(vm));c.stroke();c.setLineDash([]);c.restore();
+ dot(P,a/6,vm,GOOD(),4.5);dot(P,x,v,BAD(),5.5);
+ txt(P,'V (cm³)',P.L+6,P.T+8);txt(P,'x (cm)',P.W-P.R-2,P.H-P.B-9,INK(),'right');
+ txt(P,'max at x = a/6',Math.min(P.X(a/6)+8,P.W-P.R-90),P.Y(vm)-2);
+ TB.set(root,'[data-r=v]',TB.fmt(v,1)+' cm³');
+ TB.set(root,'[data-r=dv]',TB.fmt(m,2));
+ TB.set(root,'[data-r=st]',Math.abs(m)<0.05?'stationary (max)':m>0?'increasing':'decreasing');
+ TB.set(root,'[data-r=mx]',TB.fmt(vm,1)+' cm³ at x = '+TB.fmt(a/6,2));
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Optimise a fence: 200 m of wire along a river</div>
+    <p style="margin:0 0 .6rem">A rectangular field uses the river as one side, so fencing covers two widths x and one length (200 − 2x). Area A(x) = x(200 − 2x).</p>
+    <div class="controls"><div class="ctl"><label for="mat-applderiv-w">Width x <output></output></label><input type="range" id="mat-applderiv-w" min="1" max="99" step="1" value="20" data-unit=" m"></div></div>
+    <canvas class="stage" id="mat-applderiv-cv2"></canvas>
+    <div class="readouts">
+      <div class="readout">Length 200 − 2x<b data-r="len">-</b></div>
+      <div class="readout">Area A<b data-r="ar">-</b></div>
+      <div class="readout">dA/dx = 200 − 4x<b data-r="da">-</b></div>
+      <div class="readout">Best<b data-r="best">x = 50 m, A = 5000 m²</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+const $=s=>root.querySelector(s);
+const INK=()=>TB.css('--ink'),SUB=()=>TB.css('--sub'),MUT=()=>TB.css('--muted'),LN=()=>TB.css('--line'),GOOD=()=>TB.css('--good'),BAD=()=>TB.css('--bad'),PHY=()=>TB.css('--physics');
+const FONT='12px "Source Sans 3", sans-serif';
+function mkP(cv,x0,x1,y0,y1,h){const L=38,R=12,Tp=12,B=26,w0=cv.clientWidth||600;
+ if(h==='eq')h=Math.round((w0-L-R)*(y1-y0)/(x1-x0)+Tp+B);
+ const T=TB.canvas(cv,h),W=T.w,H=T.h;
+ return {ctx:T.ctx,W,H,L,R,T:Tp,B,x0,x1,y0,y1,X:x=>L+(x-x0)/(x1-x0)*(W-L-R),Y:y=>H-B-(y-y0)/(y1-y0)*(H-Tp-B)};}
+function clip(P){const c=P.ctx;c.save();c.beginPath();c.rect(P.L,P.T,P.W-P.L-P.R,P.H-P.T-P.B);c.clip();}
+function nice(r){const e=Math.pow(10,Math.floor(Math.log10(r)));const m=r/e;return (m<1.5?1:m<3?2:m<7?5:10)*e;}
+function axes(P,sx,sy,fx,fy){const c=P.ctx;fx=fx||(v=>Math.abs(v)<1e-9?'0':(+v.toFixed(2))+'');fy=fy||fx;
+ c.font=FONT;c.lineWidth=1;c.strokeStyle=LN();c.fillStyle=INK();c.textBaseline='middle';c.setLineDash([]);
+ c.textAlign='center';
+ for(let k=Math.ceil(P.x0/sx-1e-9);k<=Math.floor(P.x1/sx+1e-9);k++){const v=k*sx;c.beginPath();c.moveTo(P.X(v),P.T);c.lineTo(P.X(v),P.H-P.B);c.stroke();c.fillText(fx(v),P.X(v),P.H-P.B+13);}
+ c.textAlign='right';
+ for(let k=Math.ceil(P.y0/sy-1e-9);k<=Math.floor(P.y1/sy+1e-9);k++){const v=k*sy;c.beginPath();c.moveTo(P.L,P.Y(v));c.lineTo(P.W-P.R,P.Y(v));c.stroke();c.fillText(fy(v),P.L-4,P.Y(v));}
+ c.strokeStyle=MUT();c.lineWidth=1.5;
+ if(P.y0<0&&P.y1>0){c.beginPath();c.moveTo(P.L,P.Y(0));c.lineTo(P.W-P.R,P.Y(0));c.stroke();}
+ if(P.x0<0&&P.x1>0){c.beginPath();c.moveTo(P.X(0),P.T);c.lineTo(P.X(0),P.H-P.B);c.stroke();}
+}
+function xy(P,N,t0,t1,gx,gy,col,w,dash){const c=P.ctx;clip(P);c.strokeStyle=col;c.lineWidth=w||2;c.setLineDash(dash||[]);c.beginPath();let pen=false,py=0;
+ for(let i=0;i<=N;i++){const t=t0+(t1-t0)*i/N,x=gx(t),y=gy(t);
+  if(!isFinite(x)||!isFinite(y)){pen=false;continue}
+  const sx=P.X(x),sy=P.Y(y);
+  if(pen&&Math.abs(sy-py)>P.H*1.5)pen=false;
+  if(pen)c.lineTo(sx,sy);else c.moveTo(sx,sy);pen=true;py=sy;}
+ c.stroke();c.setLineDash([]);c.restore();}
+const fn=(P,f,col,w,dash,N,a,b)=>xy(P,N||600,a==null?P.x0:a,b==null?P.x1:b,t=>t,f,col,w,dash);
+function dot(P,x,y,col,r,open){const c=P.ctx;c.beginPath();c.arc(P.X(x),P.Y(y),r||4,0,7);if(open){c.fillStyle=TB.css('--paper');c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();}else{c.fillStyle=col;c.fill();}}
+function txt(P,s,x,y,col,al){const c=P.ctx;c.font=FONT;c.fillStyle=col||INK();c.textAlign=al||'left';c.textBaseline='middle';c.fillText(s,x,y);}
+function simpson(f,a,b,n){n=n||1000;const h=(b-a)/n;let s=f(a)+f(b);for(let i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3;}
+function fill(P,pts,col,al){const c=P.ctx;clip(P);c.globalAlpha=al==null?0.3:al;c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(P.X(p[0]),P.Y(p[1])):c.moveTo(P.X(p[0]),P.Y(p[1])));c.closePath();c.fill();c.globalAlpha=1;c.restore();}
+
+const sw=$('#mat-applderiv-w'),cv=$('#mat-applderiv-cv2');
+function draw(){const x=+sw.value,A=t=>t*(200-2*t);
+ const P=mkP(cv,0,100,0,5400,240);axes(P,20,1000);
+ fn(P,A,SUB(),3,null,200,0,100);
+ const m=200-4*x;
+ xy(P,2,Math.max(0,x-12),Math.min(100,x+12),t=>t,t=>A(x)+m*(t-x),BAD(),1.8);
+ dot(P,50,5000,GOOD(),4.5);dot(P,x,A(x),BAD(),5.5);
+ txt(P,'A (m²)',P.L+6,P.T+8);txt(P,'x (m)',P.W-P.R-2,P.H-P.B-9,INK(),'right');
+ TB.set(root,'[data-r=len]',(200-2*x)+' m');TB.set(root,'[data-r=ar]',TB.fmt(A(x),0)+' m²');TB.set(root,'[data-r=da]',m);
+}
+TB.live(root,draw);
+})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>A packaging unit wants a closed cylindrical tin holding 1 litre (1000 cm³) using the least metal. With V = πr²h = 1000, h = 1000/(πr²) and the surface area is S = 2πr² + 2000/r. Setting S′ = 4πr − 2000/r² = 0 gives r³ = 500/π, so r ≈ 5.42 cm and h = 2r ≈ 10.84 cm. Then S ≈ 553.6 cm². S″ = 4π + 4000/r³ &gt; 0, so this is a minimum. Compare a thinner tin with r = 4 cm: h ≈ 19.9 cm and S = 2π(16) + 500 ≈ 600.5 cm², about 8.5% more metal. Real tins are often taller than h = 2r for shelf-fit and handling, which costs a little extra material.</p></div>
+  <div class="quiz"><p class="q">For the 200 m fence along a river, A(x) = x(200 − 2x). What maximises the area?</p><div class="opts"><button data-ok>x = 50 m, length 100 m</button><button>x = 100 m, length 0</button><button>x = 40 m, length 120 m</button><button>x = 25 m, length 150 m</button></div><p class="why" hidden>A′(x) = 200 − 4x = 0 gives x = 50 and A″ = −4 &lt; 0 (maximum). Length = 200 − 100 = 100 m and A = 5000 m². The other options give smaller areas: x = 100 gives 0, x = 40 gives 40 × 120 = 4800 and x = 25 gives 25 × 150 = 3750.</p></div>
+</article><div class="pager"><a href="mat-calculus.html"><small>Previous</small>Continuity and differentiability</a><a class="next" href="mat-integrals.html"><small>Next</small>Integrals</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

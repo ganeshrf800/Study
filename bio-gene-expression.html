@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Transcription, translation, lac operon - Class 12 Biology</title>
+<meta name="description" content="Transcription, translation, lac operon: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-gene-expression" data-title="Transcription, translation, lac operon">
+  <header><div class="tag">Molecular Basis of Inheritance</div><h3>From gene to protein, and how genes are switched</h3></header>
+  <p class="lead">A gene is read in two steps. In transcription, RNA polymerase copies the template strand of DNA into mRNA. In translation, ribosomes read the mRNA three bases (one codon) at a time and tRNAs bring the matching amino acids. Bacteria switch whole groups of genes on or off with operons such as the lac operon.</p>
+  <ul class="keypoints">
+    <li><b>Transcription</b>: RNA polymerase binds a promoter, reads the template strand 3'→5' and builds RNA 5'→3' (A→U, T→A, G→C, C→G), and stops at a terminator. The coding strand has the same sequence as the RNA, with T in place of U. In eukaryotes the primary transcript is processed: introns removed (splicing), a cap added at 5' and a poly-A tail at 3'.</li>
+    <li><b>Genetic code</b>: triplet, 64 codons. 61 code for amino acids and 3 are stop codons (UAA, UAG, UGA). AUG codes for methionine and is the start codon. The code is degenerate (several codons per amino acid), unambiguous, non-overlapping and nearly universal.</li>
+    <li><b>Translation</b>: amino acids are attached to tRNA (charging); the small ribosomal subunit binds mRNA at the start codon; tRNAs with the matching anticodon enter; peptide bonds form (peptidyl transferase, an rRNA activity); at a stop codon release factors free the chain.</li>
+    <li><b>Mutation</b>: a point mutation changes one base (silent, missense or nonsense); an insertion or deletion of 1 or 2 bases causes a frame-shift. Sickle-cell anaemia is a missense mutation, GAG → GUG, replacing glutamic acid by valine at position 6 of the β-globin chain.</li>
+    <li><b>Lac operon</b> (Jacob and Monod): regulator gene <i>i</i> makes a repressor; promoter, operator and the structural genes <i>z</i> (β-galactosidase), <i>y</i> (permease) and <i>a</i> (transacetylase). Lactose is the inducer. It is an example of negative regulation.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Coding bases = 3 × (amino acids) + 3 for the stop codon<small>Triplet code, 3 nucleotides per codon</small></div>
+    <div class="eq">4<sup>3</sup> = 64 codons = 61 sense + 3 stop<small>Only 20 amino acids, so the code is degenerate</small></div>
+    <div class="eq">Template 3'-TAC-5' → mRNA 5'-AUG-3' → Met<small>tRNA anticodon is 3'-UAC-5'</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: DNA template to mRNA to protein</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-gene-expression-pre">Pick a gene</label><select id="bio-gene-expression-pre"><option value="0">Beta-globin start (normal)</option><option value="1">Beta-globin start (sickle-cell)</option><option value="2">Short demo peptide</option><option value="3">Your own strand</option></select></div>
+      <div class="ctl"><label for="bio-gene-expression-dna">Template strand 3'→5' (letters A, T, G, C)</label><input type="text" id="bio-gene-expression-dna" value="" spellcheck="false" autocomplete="off" style="width:100%;font:inherit;font-family:var(--f-mono);padding:.3rem;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px"></div>
+    </div>
+    <div id="bio-gene-expression-out" class="tw" style="font-family:var(--f-mono);font-size:.85rem"></div>
+    <div class="readouts"><div class="readout">mRNA length<b data-r="len">-</b></div><div class="readout">Amino acids made<b data-r="aa">-</b></div><div class="readout">Ended by<b data-r="end" style="font-size:.9rem">-</b></div></div>
+    <p id="bio-gene-expression-chain" aria-live="polite" style="word-break:break-word"></p>
+    <h4 style="margin-top:1rem">Genetic code (codons on mRNA; used ones are highlighted)</h4>
+    <div class="tw" id="bio-gene-expression-tab"></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const q=s=>root.querySelector(s);
+    const B='UCAG',AA='FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG';
+    const N={F:'Phe',L:'Leu',S:'Ser',Y:'Tyr',C:'Cys',W:'Trp',P:'Pro',H:'His',Q:'Gln',R:'Arg',I:'Ile',M:'Met',T:'Thr',N:'Asn',K:'Lys',V:'Val',A:'Ala',D:'Asp',E:'Glu',G:'Gly','*':'Stop'};
+    const codonAA=c=>AA[B.indexOf(c[0])*16+B.indexOf(c[1])*4+B.indexOf(c[2])];
+    const CMP={A:'T',T:'A',G:'C',C:'G'},TOR={A:'U',T:'A',G:'C',C:'G'};
+    const coding=['ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCTAA','ATGGTGCATCTGACTCCTGTGGAGAAGTCTGCCTAA','ATGGGTTCTAAACTGTGGTAA'];
+    const tmpl=s=>s.split('').map(c=>CMP[c]).join('');
+    const dna=q('#bio-gene-expression-dna'),pre=q('#bio-gene-expression-pre');
+    dna.value=tmpl(coding[0]);
+    pre.addEventListener('change',()=>{const i=+pre.value;if(i<3)dna.value=tmpl(coding[i]);});
+    dna.addEventListener('input',()=>{const t=dna.value.toUpperCase().replace(/[^ATGC]/g,'');const k=coding.map(tmpl).indexOf(t);pre.value=k<0?3:k;});
+    function draw(){
+      const t=dna.value.toUpperCase().replace(/[^ATGC]/g,'').slice(0,150);
+      const mrna=t.split('').map(c=>TOR[c]).join(''),st=mrna.indexOf('AUG');
+      const used={};let aas=[],tiles='',endBy='No stop codon';
+      if(!t){q('#bio-gene-expression-out').innerHTML='<p>Type a template strand.</p>';q('#bio-gene-expression-chain').textContent='';TB.set(root,'[data-r=len]','0');TB.set(root,'[data-r=aa]','0');TB.set(root,'[data-r=end]','-');}
+      else{
+        if(st<0)endBy='No AUG start codon';
+        else{
+          let i=st;
+          for(;i+3<=mrna.length;i+=3){const c=mrna.slice(i,i+3),a=codonAA(c);used[c]=1;
+            const stop=a==='*';
+            tiles+='<div style="border:1px solid '+(stop?'var(--bad)':'var(--line)')+';border-radius:5px;padding:.2rem .35rem;text-align:center;background:'+(stop?'color-mix(in srgb,var(--bad) 14%,var(--paper))':'var(--soft)')+'"><div style="color:var(--muted)">'+t.slice(i,i+3)+'</div><div>'+c+'</div><b>'+N[a]+'</b></div>';
+            if(stop){endBy='Stop codon '+c;break;}aas.push(N[a]);}
+          if(endBy==='No stop codon'&&i+3>mrna.length&&mrna.length>st)endBy=(mrna.length-st)%3?'Runs out of bases':'No stop codon';
+        }
+        const pretxt=st>0?'<div style="margin-bottom:.4rem;color:var(--muted)">Before the start codon (not translated): '+mrna.slice(0,st)+'</div>':'';
+        q('#bio-gene-expression-out').innerHTML='<div style="margin-bottom:.3rem;color:var(--muted)">Top row: template 3\'→5\'. Middle: mRNA 5\'→3\'. Bottom: amino acid.</div>'+pretxt+'<div style="display:flex;flex-wrap:wrap;gap:.3rem">'+tiles+'</div>';
+        q('#bio-gene-expression-chain').innerHTML=aas.length?'<b>Polypeptide:</b> '+aas.join(' – '):'<b>No protein made.</b>';
+        TB.set(root,'[data-r=len]',mrna.length+' nt');TB.set(root,'[data-r=aa]',aas.length);TB.set(root,'[data-r=end]',endBy);
+      }
+      let h='<table class="t" style="text-align:center;font-size:.74rem;white-space:nowrap"><tr><th>1st</th>'+[...B].map(b=>'<th>2nd '+b+'</th>').join('')+'<th>3rd</th></tr>';
+      for(let f=0;f<4;f++){h+='<tr><th rowspan="1">'+B[f]+'</th>';
+        for(let s=0;s<4;s++){h+='<td style="padding:.2rem .3rem;text-align:left;font-family:var(--f-mono)">';
+          for(let th=0;th<4;th++){const c=B[f]+B[s]+B[th],a=AA[f*16+s*4+th];h+='<div style="'+(used[c]?'background:var(--sub);color:var(--paper);border-radius:3px;padding:0 .2rem':'padding:0 .2rem')+'">'+c+' '+N[a]+'</div>';}
+          h+='</td>';}
+        h+='<td style="font-family:var(--f-mono)">'+[...B].join('<br>')+'</td></tr>';}
+      q('#bio-gene-expression-tab').innerHTML=h+'</table>';
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: the lac operon</div>
+    <div class="controls"><div class="ctl"><label for="bio-gene-expression-lac">Lactose in the medium</label><select id="bio-gene-expression-lac"><option value="0">Absent</option><option value="1">Present</option></select></div></div>
+    <svg viewBox="0 0 340 230" role="img" aria-label="Lac operon diagram" style="width:100%;max-width:520px;margin:auto;display:block;background:var(--soft);border-radius:6px">
+      <path d="M4 110H336" style="stroke:var(--muted);stroke-width:3;fill:none"/>
+      <g font-size="12" text-anchor="middle" style="fill:var(--ink)">
+        <rect x="10" y="96" width="50" height="28" rx="3" style="fill:color-mix(in srgb,var(--physics) 40%,var(--paper));stroke:var(--muted)"/><text x="35" y="115">i</text>
+        <rect x="78" y="96" width="34" height="28" rx="3" style="fill:color-mix(in srgb,var(--maths) 40%,var(--paper));stroke:var(--muted)"/><text x="95" y="115">P</text>
+        <rect x="114" y="96" width="26" height="28" rx="3" style="fill:color-mix(in srgb,var(--bad) 35%,var(--paper));stroke:var(--muted)"/><text x="127" y="115">O</text>
+        <rect x="146" y="96" width="56" height="28" rx="3" style="fill:color-mix(in srgb,var(--chem) 40%,var(--paper));stroke:var(--muted)"/><text x="174" y="115">z</text>
+        <rect x="206" y="96" width="56" height="28" rx="3" style="fill:color-mix(in srgb,var(--chem) 40%,var(--paper));stroke:var(--muted)"/><text x="234" y="115">y</text>
+        <rect x="266" y="96" width="56" height="28" rx="3" style="fill:color-mix(in srgb,var(--chem) 40%,var(--paper));stroke:var(--muted)"/><text x="294" y="115">a</text>
+      </g>
+      <g font-size="11" text-anchor="middle" style="fill:var(--muted)"><text x="35" y="140">regulator</text><text x="95" y="140">promoter</text><text x="127" y="152">operator</text></g>
+      <path d="M35 90V64" style="stroke:var(--physics);stroke-width:2;fill:none" marker-end="url(#bio-gene-expression-ar)"/>
+      <defs><marker id="bio-gene-expression-ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" style="fill:var(--physics)"/></marker></defs>
+      <g id="bio-gene-expression-repOff"><polygon points="122,56 148,56 154,68 148,82 122,82 116,68" style="fill:var(--bad);stroke:var(--ink)"/><text x="135" y="73" font-size="11" text-anchor="middle" style="fill:var(--paper)">R</text></g>
+      <g id="bio-gene-expression-repOn"><polygon points="198,26 224,26 230,38 224,52 198,52 192,38" style="fill:var(--muted);stroke:var(--ink)"/><text x="211" y="43" font-size="11" text-anchor="middle" style="fill:var(--paper)">R</text><circle cx="237" cy="36" r="6" style="fill:var(--maths);stroke:var(--ink)"/><text x="248" y="30" font-size="10" style="fill:var(--ink)">inducer</text></g>
+      <text x="45" y="52" font-size="10" style="fill:var(--ink)">repressor made all the time</text>
+      <ellipse id="bio-gene-expression-pol" cx="92" cy="84" rx="16" ry="11" style="fill:var(--maths);stroke:var(--ink)"/><text id="bio-gene-expression-polt" x="92" y="88" font-size="10" text-anchor="middle" style="fill:var(--paper)">RNAP</text>
+      <path id="bio-gene-expression-block" d="M104 68L112 82M112 68L104 82" style="stroke:var(--bad);stroke-width:3"/>
+      <path id="bio-gene-expression-mrna" d="M148 168q7-9 14 0t14 0t14 0t14 0t14 0t14 0t14 0t14 0t14 0t14 0t14 0t14 0t14 0" pathLength="1" style="fill:none;stroke:var(--sub);stroke-width:2.5"/>
+      <g id="bio-gene-expression-enz" font-size="10" text-anchor="middle" style="fill:var(--ink)"><circle cx="174" cy="204" r="14" style="fill:color-mix(in srgb,var(--chem) 50%,var(--paper))"/><text x="174" y="207">β-gal</text><circle cx="234" cy="204" r="14" style="fill:color-mix(in srgb,var(--chem) 50%,var(--paper))"/><text x="234" y="207">perm</text><circle cx="294" cy="204" r="14" style="fill:color-mix(in srgb,var(--chem) 50%,var(--paper))"/><text x="294" y="207">acet</text></g>
+      <text id="bio-gene-expression-mt" x="148" y="184" font-size="10" style="fill:var(--muted)">one polycistronic mRNA</text>
+    </svg>
+    <div class="readouts"><div class="readout">Repressor<b data-r="rep" style="font-size:.85rem">-</b></div><div class="readout">Transcription of z, y, a<b data-r="tr" style="font-size:.85rem">-</b></div><div class="readout">Enzymes<b data-r="en" style="font-size:.85rem">-</b></div></div>
+    <p id="bio-gene-expression-lactxt" aria-live="polite"></p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const q=s=>root.querySelector(s),sh=(id,on)=>{q('#bio-gene-expression-'+id).style.display=on?'':'none'};
+    function draw(){
+      const on=q('#bio-gene-expression-lac').value==='1';
+      sh('repOff',!on);sh('repOn',on);sh('block',!on);sh('mrna',on);sh('enz',on);sh('mt',on);
+      const p=q('#bio-gene-expression-pol');p.setAttribute('cx',on?172:92);q('#bio-gene-expression-polt').setAttribute('x',on?172:92);
+      q('#bio-gene-expression-polt').setAttribute('y',on?88:88);p.setAttribute('cy',on?84:84);
+      TB.set(root,'[data-r=rep]',on?'Inactivated by inducer':'Bound to operator');
+      TB.set(root,'[data-r=tr]',on?'Active':'Blocked');
+      TB.set(root,'[data-r=en]',on?'3 enzymes made':'None (only a trickle)');
+      q('#bio-gene-expression-lactxt').textContent=on?'Lactose (as allolactose) binds the repressor and changes its shape, so it cannot stay on the operator. RNA polymerase moves from the promoter along z, y and a, making one mRNA that is translated into β-galactosidase (splits lactose into glucose and galactose), permease (lets lactose in) and transacetylase.':'With no lactose the repressor binds the operator and RNA polymerase cannot move on from the promoter. The genes z, y and a are not transcribed, so the cell does not waste energy making enzymes it does not need.';
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>A single letter change is enough to cause sickle-cell anaemia. In the normal β-globin gene the sixth codon after the start is GAG (mRNA), coding for glutamic acid; in the sickle allele it is GUG, coding for valine, and haemoglobin S clumps into fibres when oxygen is low. Pick the two β-globin options in the first widget to see the one-residue difference. Worked example on length: β-globin has 146 amino acids after the start methionine is removed, so the coding sequence is 147 codons plus 1 stop codon = 148 × 3 = 444 nucleotides. Beta-thalassaemia, carried by roughly 3 to 4 percent of Indians, is caused by mutations that reduce β-globin output.</p></div>
+  <div class="quiz"><p class="q">A template strand reads 3'-TAC CCT-5'. What are the mRNA and the polypeptide?</p><div class="opts"><button>5'-UAC CCU-3', Tyr-Pro</button><button data-ok>5'-AUG GGA-3', Met-Gly</button><button>5'-ATG GGA-3', Met-Gly</button><button>5'-AUG CCU-3', Met-Pro</button></div><p class="why" hidden>Pair each template base: T→A, A→U, C→G gives AUG; C→G, C→G, T→A gives GGA. AUG is Met and GGA is Gly. RNA has U, not T, so option 3 is wrong.</p></div>
+</article><div class="pager"><a href="bio-dna-replication.html"><small>Previous</small>DNA structure and replication</a><a class="next" href="bio-evolution.html"><small>Next</small>Evolution and natural selection</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

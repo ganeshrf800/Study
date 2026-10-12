@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Alternating current and LCR circuits - Class 12 Physics</title>
+<meta name="description" content="Alternating current and LCR circuits: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-ac-lcr" data-title="Alternating current and LCR circuits">
+  <header><div class="tag">Alternating Current</div><h3>Series LCR circuit, resonance, power factor and the transformer</h3></header>
+  <p class="lead">Mains electricity is an alternating voltage. In an ac circuit a resistor, inductor and capacitor each respond differently, so the current is generally out of step with the voltage. At one special frequency, resonance, the inductor and capacitor cancel and the current is largest.</p>
+  <ul class="keypoints">
+    <li>rms values: V<sub>rms</sub> = V₀/√2. Indian mains is 230 V rms at 50 Hz, a peak of about 325 V.</li>
+    <li>Reactances X<sub>L</sub> = ωL grows with frequency, X<sub>C</sub> = 1/(ωC) falls. The impedance Z = √(R² + (X<sub>L</sub> − X<sub>C</sub>)²).</li>
+    <li>At resonance ω₀ = 1/√(LC): X<sub>L</sub> = X<sub>C</sub>, Z = R, current is maximum and in phase with the voltage. A sharper peak means a higher Q = ω₀L/R.</li>
+    <li>Average power P = V<sub>rms</sub> I<sub>rms</sub> cosφ, where cosφ = R/Z is the power factor. A pure L or C absorbs no average power.</li>
+    <li>A transformer changes ac voltage using mutual induction: V<sub>s</sub>/V<sub>p</sub> = N<sub>s</sub>/N<sub>p</sub>, and (ideally) V<sub>p</sub>I<sub>p</sub> = V<sub>s</sub>I<sub>s</sub>.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Z = √[R² + (ωL − 1/ωC)²]<small>impedance of the series LCR circuit</small></div>
+    <div class="eq">tanφ = (X<sub>L</sub> − X<sub>C</sub>) / R<small>φ &gt; 0: current lags voltage; φ &lt; 0: current leads</small></div>
+    <div class="eq">ω₀ = 1/√(LC),&emsp;f₀ = 1/(2π√(LC))<small>resonant frequency</small></div>
+    <div class="eq">Q = ω₀L/R = (1/R)√(L/C)<small>quality factor; bandwidth Δω = R/L</small></div>
+    <div class="eq">P = V<sub>rms</sub> I<sub>rms</sub> cosφ = I²<sub>rms</sub> R<small>average power, cosφ = R/Z</small></div>
+    <div class="eq">V<sub>s</sub>/V<sub>p</sub> = N<sub>s</sub>/N<sub>p</sub> = I<sub>p</sub>/I<sub>s</sub><small>ideal transformer</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: series LCR on a 230 V supply</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-ac-lcr-r">Resistance R <output></output></label><input type="range" id="phy-ac-lcr-r" min="1" max="100" step="1" value="10" data-unit=" Ω"></div>
+      <div class="ctl"><label for="phy-ac-lcr-l">Inductance L <output></output></label><input type="range" id="phy-ac-lcr-l" min="1" max="100" step="1" value="10" data-unit=" mH"></div>
+      <div class="ctl"><label for="phy-ac-lcr-c">Capacitance C <output></output></label><input type="range" id="phy-ac-lcr-c" min="1" max="100" step="1" value="10" data-unit=" µF"></div>
+      <div class="ctl"><label for="phy-ac-lcr-f">Source frequency f <output></output></label><input type="range" id="phy-ac-lcr-f" min="10" max="2000" step="5" value="300" data-unit=" Hz"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Impedance Z<b data-r="z">-</b></div>
+      <div class="readout">I rms<b data-r="i">-</b></div>
+      <div class="readout">Phase φ<b data-r="phi">-</b></div>
+      <div class="readout">Power factor cosφ<b data-r="pf">-</b></div>
+      <div class="readout">Average power<b data-r="p">-</b></div>
+      <div class="readout">Resonant f₀ / Q<b data-r="f0">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const V=230;
+    function calc(R,L,C,f){const wv=2*Math.PI*f,XL=wv*L,XC=1/(wv*C),X=XL-XC,Z=Math.hypot(R,X);return{XL,XC,X,Z,I:V/Z};}
+    function seg(ctx,x0,y0,x1,y1,col,lab,lx,ly){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+      const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy);if(L>8){const ux=dx/L,uy=dy/L;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-ux*8-uy*4,y1-uy*8+ux*4);ctx.lineTo(x1-ux*8+uy*4,y1-uy*8-ux*4);ctx.closePath();ctx.fill();}
+      ctx.textAlign='left';ctx.fillText(lab,lx,ly);}
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),340);
+      const R=+$('#phy-ac-lcr-r').value,L=+$('#phy-ac-lcr-l').value*1e-3,C=+$('#phy-ac-lcr-c').value*1e-6,f=+$('#phy-ac-lcr-f').value;
+      const c=calc(R,L,C,f),phi=Math.atan2(c.X,R),pf=R/c.Z,P=V*c.I*pf,f0=1/(2*Math.PI*Math.sqrt(L*C)),Q=Math.sqrt(L/C)/R;
+      TB.set(root,'[data-r=z]',TB.fmt(c.Z,2)+' Ω');TB.set(root,'[data-r=i]',TB.fmt(c.I,2)+' A');
+      TB.set(root,'[data-r=phi]',TB.fmt(phi*180/Math.PI,1)+'°');TB.set(root,'[data-r=pf]',TB.fmt(pf,3));TB.set(root,'[data-r=p]',TB.fmt(P,0)+' W');
+      TB.set(root,'[data-r=f0]',TB.fmt(f0,0)+' Hz / '+TB.fmt(Q,2));
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),acc=TB.css('--maths'),good=TB.css('--good'),bad=TB.css('--bad');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';
+      const ml=44,mr=12,mt=22,pw=w-ml-mr,ph=140,fmin=10,fmax=2000;
+      let ym=0;const N=160;const ys=[];for(let i=0;i<=N;i++){const ff=fmin+(fmax-fmin)*i/N;const y=calc(R,L,C,ff).I;ys.push(y);ym=Math.max(ym,y);}ym*=1.1;
+      const X=ff=>ml+(ff-fmin)/(fmax-fmin)*pw,Y=y=>mt+ph-y/ym*ph;
+      ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('Resonance curve: I rms vs frequency',ml,10);
+      ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,mt+ph);ctx.lineTo(ml+pw,mt+ph);ctx.stroke();
+      ctx.fillStyle=ink;ctx.textAlign='right';ctx.fillText(TB.fmt(ym,1)+' A',ml-4,mt+4);ctx.fillText('0',ml-4,mt+ph);
+      ctx.textAlign='center';[10,1000,2000].forEach(t=>ctx.fillText(t+' Hz',Math.min(Math.max(X(t),ml+12),w-22),mt+ph+12));
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();ys.forEach((y,i)=>{const px=X(fmin+(fmax-fmin)*i/N);i?ctx.lineTo(px,Y(y)):ctx.moveTo(px,Y(y));});ctx.stroke();
+      if(f0>=fmin&&f0<=fmax){ctx.strokeStyle=good;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(f0),mt);ctx.lineTo(X(f0),mt+ph);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=good;ctx.textAlign='center';ctx.fillText('f₀',X(f0),mt-6);}
+      ctx.fillStyle=acc;ctx.beginPath();ctx.arc(X(f),Y(c.I),5,0,2*Math.PI);ctx.fill();
+      const oy=mt+ph+88,ox=64,half=58;ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('Phasors (rms voltages, current along the x-axis)',ml,mt+ph+30);
+      const VR=c.I*R,VL=c.I*c.XL,VC=c.I*c.XC,VT=V;
+      const s=Math.min(half/Math.max(VL,VC,Math.abs(VL-VC),1e-9),(w-ox-90)/Math.max(VR,1e-9));
+      ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(w-10,oy);ctx.stroke();
+      seg(ctx,ox,oy,ox+VR*s,oy,ink,'VR',ox+VR*s+4,oy+(VR*s<30?12:-0));
+      seg(ctx,ox,oy,ox,oy-VL*s,bad,'VL',ox+6,oy-VL*s+4);
+      seg(ctx,ox,oy,ox,oy+VC*s,acc,'VC',ox+6,oy+VC*s-2);
+      seg(ctx,ox,oy,ox+VR*s,oy-(VL-VC)*s,sub,'V = '+V+' V',ox+VR*s+6,oy-(VL-VC)*s-(VL>=VC?6:-8));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: transformer (substation)</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-ac-lcr-tvp">Primary voltage V<sub>p</sub> <output></output></label><input type="range" id="phy-ac-lcr-tvp" min="100" max="33000" step="100" value="11000" data-unit=" V"></div>
+      <div class="ctl"><label for="phy-ac-lcr-tnp">Primary turns N<sub>p</sub> <output></output></label><input type="range" id="phy-ac-lcr-tnp" min="100" max="5000" step="50" value="2650"></div>
+      <div class="ctl"><label for="phy-ac-lcr-tns">Secondary turns N<sub>s</sub> <output></output></label><input type="range" id="phy-ac-lcr-tns" min="10" max="2000" step="10" value="100"></div>
+      <div class="ctl"><label for="phy-ac-lcr-tp">Load power <output></output></label><input type="range" id="phy-ac-lcr-tp" min="1" max="500" step="1" value="100" data-unit=" kW"></div>
+      <div class="ctl"><label for="phy-ac-lcr-te">Efficiency <output></output></label><input type="range" id="phy-ac-lcr-te" min="80" max="100" step="0.5" value="98" data-unit=" %"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Secondary voltage V<sub>s</sub><b data-r="vs">-</b></div>
+      <div class="readout">Secondary current I<sub>s</sub><b data-r="is">-</b></div>
+      <div class="readout">Primary current I<sub>p</sub><b data-r="ip">-</b></div>
+      <div class="readout">Power lost<b data-r="loss">-</b></div>
+      <div class="readout">Type<b data-r="type">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+    function volt(v){return v>=1000?TB.fmt(v/1000,2)+' kV':TB.fmt(v,1)+' V';}
+    function draw(){const {ctx,w,h}=TB.canvas($('canvas'),180);
+      const Vp=+$('#phy-ac-lcr-tvp').value,Np=+$('#phy-ac-lcr-tnp').value,Ns=+$('#phy-ac-lcr-tns').value,Pl=+$('#phy-ac-lcr-tp').value*1000,eta=+$('#phy-ac-lcr-te').value/100;
+      const Vs=Vp*Ns/Np,Is=Pl/Vs,Pin=Pl/eta,Ip=Pin/Vp;
+      TB.set(root,'[data-r=vs]',volt(Vs));TB.set(root,'[data-r=is]',TB.fmt(Is,1)+' A');TB.set(root,'[data-r=ip]',TB.fmt(Ip,2)+' A');TB.set(root,'[data-r=loss]',TB.fmt((Pin-Pl)/1000,2)+' kW');
+      TB.set(root,'[data-r=type]',Ns<Np?'step-down':(Ns>Np?'step-up':'1 : 1'));
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),acc=TB.css('--maths');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='middle';
+      const x1=Math.max(100,w*0.3),x2=w-x1,yt=34,yb=150,t=18;
+      ctx.fillStyle=mut;ctx.globalAlpha=0.35;ctx.fillRect(x1,yt,x2-x1,yb-yt);ctx.globalAlpha=1;
+      ctx.fillStyle=TB.css('--soft');ctx.fillRect(x1+t,yt+t,x2-x1-2*t,yb-yt-2*t);
+      ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.strokeRect(x1,yt,x2-x1,yb-yt);
+      function coil(xc,n,col){const cnt=Math.round(Math.max(2,Math.min(16,n/150)));ctx.strokeStyle=col;ctx.lineWidth=2.5;const y0=yt+14,y1=yb-14;
+        for(let i=0;i<cnt;i++){const y=y0+(y1-y0)*(i+0.5)/cnt;ctx.beginPath();ctx.moveTo(xc-t/2-8,y);ctx.lineTo(xc+t/2+8,y);ctx.stroke();}}
+      coil(x1+t/2,Np,sub);coil(x2-t/2,Ns,acc);
+      ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('Primary',6,14);ctx.fillText('N = '+Np,6,32);ctx.fillText(volt(Vp),6,50);ctx.fillText('I = '+TB.fmt(Ip,2)+' A',6,68);
+      ctx.textAlign='right';ctx.fillText('Secondary',w-6,14);ctx.fillText('N = '+Ns,w-6,32);ctx.fillText(volt(Vs),w-6,50);ctx.fillText('I = '+TB.fmt(Is,1)+' A',w-6,68);
+      ctx.textAlign='center';ctx.fillStyle=mut;ctx.fillText('iron core, flux links both coils',(x1+x2)/2,(yt+yb)/2);
+      ctx.fillStyle=ink;ctx.fillText('Ns/Np = '+TB.fmt(Ns/Np,4)+'   (coil line counts are only indicative)',w/2,h-10);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>Radio tuning is resonance. To receive an FM station at 100 MHz with a coil of L = 1 µH, the tuning capacitor must be C = 1/(ω²L) with ω = 2π × 10⁸ = 6.28×10⁸ rad/s, so C = 1/(3.95×10¹⁷ × 10⁻⁶) ≈ 2.5 pF. Turning the knob of an old radio changes C so that f₀ = 1/(2π√LC) matches the station and the circuit responds strongly only in a narrow band around it.</p>
+  <p>At an Indian 11 kV/415 V distribution substation, a 100 kVA transformer has Ns/Np ≈ 415/11000. Ideally it supplies Is = 100000/415 ≈ 241 A while drawing only Ip = 100000/11000 ≈ 9.1 A from the line. High-voltage transmission keeps the current small and therefore the I²R loss small. Power factor matters to industry for the same reason: a motor with cosφ = 0.7 needs 1/0.7 ≈ 1.43 times more current than at cosφ = 1 for the same real power, so utilities penalise low power factor and factories add capacitor banks.</p></div>
+  <div class="quiz"><p class="q">In a series LCR circuit driven exactly at its resonant frequency, which is true?</p><div class="opts"><button data-ok>Z = R, the current is maximum and in phase with the supply voltage.</button><button>Z is maximum and the current is minimum.</button><button>The voltage across L is zero.</button><button>The power factor is zero.</button></div><p class="why" hidden>At ω₀ the reactances X<sub>L</sub> and X<sub>C</sub> are equal and cancel, so Z = R (its minimum), I = V/R is the maximum, φ = 0 and cosφ = 1. The voltages across L and C are individually large (Q times the supply voltage) but opposite in phase.</p></div>
+</article><div class="pager"><a href="phy-induction.html"><small>Previous</small>Electromagnetic induction</a><a class="next" href="phy-em-waves.html"><small>Next</small>Electromagnetic waves</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Solid state: unit cells - Class 12 Chemistry</title>
+<meta name="description" content="Solid state: unit cells: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-solidstate" data-title="Solid state: unit cells">
+  <header><div class="tag">The Solid State (NCERT Chemistry Part I, Ch 1 in older editions)</div><h3>Unit cells, packing efficiency and density</h3></header>
+  <p class="lead">A crystalline solid is built by repeating a small box, the unit cell, in three dimensions. Counting how many atoms belong to one cell, and how much of the cell they fill, lets you predict density from the edge length. The three cubic cells are simple (primitive), body-centred (bcc) and face-centred (fcc).</p>
+  <ul class="keypoints">
+    <li>An atom at a corner is shared by 8 cells (contributes 1/8), on a face by 2 (1/2), on an edge by 4 (1/4), inside the cell fully (1).</li>
+    <li>Atoms per cell Z: simple cubic 1, bcc 2, fcc 4.</li>
+    <li>Atoms touch along the edge (simple cubic), the body diagonal (bcc) or the face diagonal (fcc), which fixes r in terms of a.</li>
+    <li>Packing efficiency: simple cubic 52.4%, bcc 68%, fcc (and hcp) 74%. Coordination numbers: 6, 8, 12.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Z = N<sub>corner</sub>/8 + N<sub>face</sub>/2 + N<sub>edge</sub>/4 + N<sub>body</sub><small>Atoms per unit cell</small></div>
+    <div class="eq">sc: r = a/2;  bcc: r = √3 a/4;  fcc: r = a/(2√2)<small>Touching condition</small></div>
+    <div class="eq">Packing efficiency = Z (4/3)π r³ / a³ × 100<small>74.05% for fcc</small></div>
+    <div class="eq">ρ = Z M / (a³ N<sub>A</sub>)<small>a in cm, M in g/mol, N<sub>A</sub> = 6.022×10²³; 1 pm = 10⁻¹⁰ cm</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: cubic cells and density</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-solidstate-el">Element (loads its structure)</label><select id="che-solidstate-el">
+        <option value="sc,335,209">Polonium (simple cubic)</option>
+        <option value="bcc,287,55.85">Iron (bcc)</option>
+        <option value="bcc,429,22.99">Sodium (bcc)</option>
+        <option value="fcc,361,63.5" selected>Copper (fcc)</option>
+        <option value="fcc,405,26.98">Aluminium (fcc)</option></select></div>
+      <div class="ctl"><label for="che-solidstate-a">Edge length a <output></output></label><input type="range" id="che-solidstate-a" min="250" max="500" step="1" value="361" data-unit=" pm"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Atoms per cell Z<b data-r="z">-</b></div>
+      <div class="readout">Coordination number<b data-r="cn">-</b></div>
+      <div class="readout">Atomic radius r (pm)<b data-r="r">-</b></div>
+      <div class="readout">Packing efficiency (%)<b data-r="pe">-</b></div>
+      <div class="readout">Density (g/cm³)<b data-r="rho">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    const sel=$('#che-solidstate-el'),sl=$('#che-solidstate-a');
+    sel.addEventListener('change',()=>{sl.value=sel.value.split(',')[1];sl.dispatchEvent(new Event('input',{bubbles:true}))});
+    const D={sc:{z:1,cn:6,k:0.5,pe:52.4,nm:'Simple cubic'},bcc:{z:2,cn:8,k:Math.sqrt(3)/4,pe:68.0,nm:'Body-centred cubic'},fcc:{z:4,cn:12,k:1/(2*Math.SQRT2),pe:74.05,nm:'Face-centred cubic'}};
+    function draw(){
+      const p=sel.value.split(','),d=D[p[0]],M=+p[2],a=+sl.value;
+      const r=d.k*a,pe=d.z*4/3*Math.PI*Math.pow(r,3)/Math.pow(a,3)*100;
+      const rho=d.z*M/(Math.pow(a*1e-10,3)*6.022e23);
+      const {ctx,w,h}=TB.canvas(cv,230);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),bad=TB.css('--bad');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const S=Math.min(160,w*0.44),x0=16,y0=(h-S)/2+6,rp=S*d.k;
+      const circ=(cx,cy,fill,alpha,dash)=>{ctx.globalAlpha=alpha;ctx.fillStyle=fill;ctx.beginPath();ctx.arc(cx,cy,rp,0,6.283);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.setLineDash(dash?[4,3]:[]);ctx.stroke();ctx.setLineDash([])};
+      ctx.save();ctx.beginPath();ctx.rect(x0,y0,S,S);ctx.clip();
+      if(p[0]==='bcc')circ(x0+S/2,y0+S/2,bad,0.25,true);
+      [[0,0],[S,0],[0,S],[S,S]].forEach(c=>circ(x0+c[0],y0+c[1],sub,0.45,false));
+      if(p[0]==='fcc')circ(x0+S/2,y0+S/2,sub,0.45,false);
+      ctx.restore();
+      ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(x0,y0,S,S);
+      T('a',x0+S/2,y0+S+14,mut,1);
+      T('Face view of cell',x0,y0-8,mut);
+      const tx=x0+S+16;
+      T(d.nm,tx,y0+16,ink);
+      T('Z = '+d.z,tx,y0+38,sub);
+      T('CN = '+d.cn,tx,y0+56,sub);
+      T('Packing '+d.pe+'%',tx,y0+74,sub);
+      T('Void '+(100-d.pe).toFixed(1)+'%',tx,y0+92,mut);
+      if(p[0]==='bcc')T('dashed = body-centre',tx,y0+116,bad);
+      TB.set(root,'[data-r=z]',d.z);TB.set(root,'[data-r=cn]',d.cn);TB.set(root,'[data-r=r]',TB.fmt(r,1));
+      TB.set(root,'[data-r=pe]',pe.toFixed(1));TB.set(root,'[data-r=rho]',rho.toFixed(2));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Aluminium in cookware and coaches.</b> Aluminium is fcc with a = 405 pm and M = 26.98 g/mol. Z = 4, a = 4.05×10⁻⁸ cm, so a³ = 6.64×10⁻²³ cm³. ρ = 4 × 26.98 / (6.64×10⁻²³ × 6.022×10²³) = 107.9 / 40.0 = 2.70 g/cm³, matching the measured value. This low density is why aluminium is used for lightweight railway coaches and pressure cookers.</p>
+    <p><b>Why steel can be hardened.</b> Iron is bcc (68% packed) at room temperature but turns fcc (74% packed) above about 912 °C. Carbon atoms dissolve in the larger gaps of the fcc form, and quenching traps them, which is the basis of hardening.</p>
+  </div>
+  <div class="quiz"><p class="q">How many atoms belong to one face-centred cubic unit cell?</p><div class="opts"><button>2</button><button data-ok>4</button><button>6</button><button>14</button></div><p class="why" hidden>8 corners × 1/8 = 1, plus 6 face centres × 1/2 = 3, giving 4 atoms. (14 is the number of lattice points you can see, not the number owned by the cell.)</p></div>
+</article><div class="pager"><a href="che-kinetics.html"><small>Previous</small>Chemical kinetics</a><a class="next" href="che-surface.html"><small>Next</small>Surface chemistry: adsorption and colloids</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

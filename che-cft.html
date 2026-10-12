@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Crystal field theory and colour - Class 12 Chemistry</title>
+<meta name="description" content="Crystal field theory and colour: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-cft" data-title="Crystal field theory and colour">
+  <header><div class="tag">Coordination Compounds</div><h3>Crystal field theory: splitting, spin state and colour</h3></header>
+  <p class="lead">Crystal field theory treats ligands as negative point charges that repel the metal's d electrons. In an octahedral complex the five d orbitals split into a lower t<sub>2g</sub> set (3 orbitals) and an upper e<sub>g</sub> set (2 orbitals) separated by Δ<sub>o</sub>. How electrons occupy these levels decides the magnetism and the colour.</p>
+  <ul class="keypoints">
+    <li>The e<sub>g</sub> orbitals (d<sub>z²</sub>, d<sub>x²−y²</sub>) point at the ligands and are raised; the t<sub>2g</sub> orbitals (d<sub>xy</sub>, d<sub>yz</sub>, d<sub>zx</sub>) point between them and are lowered. Relative to the average, t<sub>2g</sub> sits at −0.4 Δ<sub>o</sub> and e<sub>g</sub> at +0.6 Δ<sub>o</sub>.</li>
+    <li>For d<sup>4</sup> to d<sup>7</sup> there is a choice. If Δ<sub>o</sub> &lt; P (pairing energy), electrons occupy e<sub>g</sub> before pairing: weak-field, high-spin. If Δ<sub>o</sub> &gt; P they pair in t<sub>2g</sub> first: strong-field, low-spin. d<sup>1</sup>–d<sup>3</sup> and d<sup>8</sup>–d<sup>10</sup> have only one arrangement.</li>
+    <li>Spectrochemical series (increasing Δ): I<sup>−</sup> &lt; Br<sup>−</sup> &lt; SCN<sup>−</sup> &lt; Cl<sup>−</sup> &lt; S<sup>2−</sup> &lt; F<sup>−</sup> &lt; OH<sup>−</sup> &lt; C<sub>2</sub>O<sub>4</sub><sup>2−</sup> &lt; H<sub>2</sub>O &lt; NCS<sup>−</sup> &lt; edta<sup>4−</sup> &lt; NH<sub>3</sub> &lt; en &lt; CN<sup>−</sup> &lt; CO.</li>
+    <li>Tetrahedral splitting is smaller: Δ<sub>t</sub> = (4/9)Δ<sub>o</sub>, always less than P in practice, so tetrahedral complexes are high-spin.</li>
+    <li>Colour: the complex absorbs light whose energy equals Δ (a d–d transition) and appears in the complementary colour. d<sup>0</sup> and d<sup>10</sup> have no d–d transition and are colourless.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">CFSE = (−0.4 n<sub>t2g</sub> + 0.6 n<sub>eg</sub>) Δ<sub>o</sub> (+ pairing terms)<small>Crystal field stabilisation energy</small></div>
+    <div class="eq">Δ<sub>t</sub> = (4/9) Δ<sub>o</sub><small>Tetrahedral vs octahedral splitting</small></div>
+    <div class="eq">λ (nm) = 10<sup>7</sup> / Δ (cm⁻¹)<small>Wavelength absorbed for a splitting Δ; 1 cm⁻¹ = 0.01196 kJ mol⁻¹</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Octahedral d-orbital filling</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-cft-n">d electrons (n) <output></output></label><input type="range" id="che-cft-n" min="0" max="10" step="1" value="6" data-unit=""></div>
+      <div class="ctl"><label for="che-cft-l">Ligand (illustrative Δ<sub>o</sub>, P = 20)</label><select id="che-cft-l">
+        <option value="10">I⁻ (Δo = 10)</option><option value="12">Cl⁻ (Δo = 12)</option><option value="14">F⁻ (Δo = 14)</option><option value="17">H₂O (Δo = 17)</option><option value="22" selected>NH₃ (Δo = 22)</option><option value="23">en (Δo = 23)</option><option value="32">CN⁻ (Δo = 32)</option><option value="36">CO (Δo = 36)</option></select></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Spin state<b data-r="spin" style="font-size:.9rem">-</b></div>
+      <div class="readout">t<sub>2g</sub> / e<sub>g</sub> electrons<b data-r="te">-</b></div>
+      <div class="readout">Unpaired, μ<b data-r="mu" style="font-size:.9rem">-</b></div>
+      <div class="readout">CFSE (excl. pairing)<b data-r="cfse" style="font-size:.9rem">-</b></div>
+      <div class="readout">Absorbs, colour seen<b data-r="col" style="font-size:.8rem">-</b></div>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted)">Δ values are in units of 1000 cm⁻¹ and are illustrative (real Δ<sub>o</sub> depends on the metal ion as well as the ligand). P is held at 20.</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('canvas');
+    const g=id=>root.querySelector('#che-cft-'+id);
+    const P=20;
+    const bins=[[400,435,'violet','yellow-green'],[435,480,'blue','yellow'],[480,490,'greenish blue','orange'],[490,500,'bluish green','red'],[500,560,'green','purple'],[560,580,'yellow-green','violet'],[580,595,'yellow','blue'],[595,605,'orange','greenish blue'],[605,700,'red','blue-green']];
+    function fill(k,m){const a=new Array(m).fill(0);for(let i=0;i<k;i++){if(i<m)a[i]=1;else a[i-m]=2;}return a;}
+    function arrow(ctx,x,y,up,len){const t=up?y-len/2:y+len/2,b=up?y+len/2:y-len/2,s=up?1:-1;
+      ctx.beginPath();ctx.moveTo(x,b);ctx.lineTo(x,t);ctx.moveTo(x-3.5,t+s*6);ctx.lineTo(x,t);ctx.lineTo(x+3.5,t+s*6);ctx.stroke();}
+    function draw(){
+      const n=+g('n').value,D=+g('l').value,high=D<P;
+      let t,e;
+      if(high){if(n<=3){t=n;e=0}else if(n<=5){t=3;e=n-3}else if(n<=8){t=n-2;e=2}else{t=6;e=n-6}}
+      else{t=Math.min(n,6);e=n-t;}
+      const ot=fill(t,3),oe=fill(e,2);
+      const unp=ot.concat(oe).filter(x=>x===1).length;
+      const {ctx,w,h}=TB.canvas(cv,230);
+      const ink=TB.css('--ink'),sc=TB.css('--sub'),mut=TB.css('--muted');
+      const bs=38,gap=8,cx=w/2+14,yE=64,yT=162,bh=34;
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.lineWidth=1.5;
+      function row(arr,y,label){const tot=arr.length*bs+(arr.length-1)*gap,x0=cx-tot/2;
+        arr.forEach((c,i)=>{const x=x0+i*(bs+gap);ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.strokeRect(x,y,bs,bh);
+          ctx.strokeStyle=sc;ctx.lineWidth=2;
+          if(c>=1)arrow(ctx,x+(c===2?bs*.32:bs/2),y+bh/2,true,24);
+          if(c===2)arrow(ctx,x+bs*.68,y+bh/2,false,24);});
+        ctx.fillStyle=ink;ctx.textAlign='right';ctx.fillText(label,x0-8,y+bh/2+4);ctx.textAlign='center';}
+      row(oe,yE,'eg');row(ot,yT,'t2g');
+      const ax=cx-3*bs/2-gap-44;
+      ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(ax,yT+bh/2);ctx.lineTo(ax,yE+bh/2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(ax-4,yE+bh/2+7);ctx.lineTo(ax,yE+bh/2);ctx.lineTo(ax+4,yE+bh/2+7);ctx.moveTo(ax-4,yT+bh/2-7);ctx.lineTo(ax,yT+bh/2);ctx.lineTo(ax+4,yT+bh/2-7);ctx.stroke();
+      ctx.fillStyle=ink;ctx.textAlign='left';ctx.fillText('Δo = '+D,Math.max(ax-18,4),(yT+yE)/2+bh/2+4);
+      ctx.fillStyle=high?TB.css('--bad'):TB.css('--good');ctx.textAlign='center';
+      ctx.fillText(n>=4&&n<=7?(high?'Δo < P  →  high spin':'Δo > P  →  low spin'):'Only one arrangement possible for d'+n,w/2,22);
+      const cf=-0.4*t+0.6*e;
+      const lam=1e4/D; // nm for D in 1000 cm-1
+      let col='-';
+      if(n===0||n===10)col='No d–d: colourless';
+      else if(lam>=700)col=Math.round(lam)+' nm (IR): pale/colourless';
+      else if(lam<400)col=Math.round(lam)+' nm (UV): colourless';
+      else{const b=bins.find(x=>lam>=x[0]&&lam<x[1]);col=Math.round(lam)+' nm ('+b[2]+') → '+b[3];}
+      if(n===5&&high)col+=' (spin-forbidden: very pale)';
+      TB.set(root,'[data-r=spin]',n>=4&&n<=7?(high?'High spin':'Low spin'):'Same either way');
+      TB.set(root,'[data-r=te]',t+' / '+e);
+      TB.set(root,'[data-r=mu]',unp+', '+TB.fmt(Math.sqrt(unp*(unp+2)),2)+' BM');
+      TB.set(root,'[data-r=cfse]',TB.fmt(cf,1)+' Δo');
+      TB.set(root,'[data-r=col]',col);
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Worked example, [Ti(H<sub>2</sub>O)<sub>6</sub>]<sup>3+</sup>.</b> Ti<sup>3+</sup> is d<sup>1</sup>, with its electron in t<sub>2g</sub>. Absorption peaks at about 20 300 cm⁻¹, so λ = 10<sup>7</sup> / 20 300 ≈ 493 nm (blue-green). The ion transmits the rest and looks violet. Δ<sub>o</sub> = 20 300 × 0.01196 ≈ 243 kJ mol⁻¹. CFSE = −0.4 Δ<sub>o</sub> ≈ −97 kJ mol⁻¹.</p>
+    <p><b>Ruby and emerald.</b> Both get their colour from Cr<sup>3+</sup> (d<sup>3</sup>) in an octahedral oxygen environment. In ruby (Al<sub>2</sub>O<sub>3</sub> host) the Cr–O distance is shorter, so Δ<sub>o</sub> is larger; it absorbs yellow-green and blue-violet and the stone looks red. In emerald (beryl host, Be<sub>3</sub>Al<sub>2</sub>Si<sub>6</sub>O<sub>18</sub>) Δ<sub>o</sub> is a little smaller; it absorbs red and violet and looks green.</p>
+    <p><b>Oxygen transport.</b> Deoxyhaemoglobin has high-spin Fe<sup>2+</sup> (d<sup>6</sup>, four unpaired electrons); when O<sub>2</sub> binds, the field gets stronger and the iron becomes low-spin (no unpaired electrons) and slightly smaller. That small change triggers the shape change that lets haemoglobin bind oxygen cooperatively.</p>
+  </div>
+  <div class="quiz"><p class="q">How many unpaired electrons are in [Fe(CN)<sub>6</sub>]<sup>4−</sup>?</p><div class="opts"><button data-ok>0</button><button>2</button><button>4</button><button>6</button></div><p class="why" hidden>Fe is +2 here, d⁶. CN⁻ is a strong-field ligand (Δo &gt; P), so all six electrons pair up in t₂g: t₂g⁶ e_g⁰, diamagnetic. With a weak-field ligand like H₂O, [Fe(H₂O)₆]²⁺ is t₂g⁴e_g² with 4 unpaired electrons.</p></div>
+</article><div class="pager"><a href="che-coordination.html"><small>Previous</small>Coordination compounds</a><a class="next" href="che-pblock.html"><small>Next</small>p-block: groups 15 to 18</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

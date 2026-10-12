@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Surface chemistry: adsorption and colloids - Class 12 Chemistry</title>
+<meta name="description" content="Surface chemistry: adsorption and colloids: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-surface" data-title="Surface chemistry: adsorption and colloids">
+  <header><div class="tag">Surface Chemistry (NCERT Chemistry Part II, older editions)</div><h3>Adsorption, catalysis and colloids</h3></header>
+  <p class="lead">Atoms at a surface have unbalanced forces, so surfaces attract and hold molecules of gases or dissolved substances. This is adsorption, and it underlies filters, catalysts and the behaviour of colloids, mixtures whose particles are 1 to 1000 nm across.</p>
+  <ul class="keypoints">
+    <li>Adsorption is a surface phenomenon (absorption is throughout the bulk). Physisorption is weak, reversible, exothermic and falls with rising temperature; chemisorption is strong, specific and forms bonds.</li>
+    <li>Freundlich isotherm: x/m = kP<sup>1/n</sup>, an empirical power law. Langmuir isotherm: monolayer coverage θ = KP/(1 + KP), which saturates at high pressure.</li>
+    <li>A catalyst changes the rate by giving a path with lower activation energy and is unchanged at the end. Enzymes are highly specific biological catalysts.</li>
+    <li>Colloids scatter light (Tyndall effect), show Brownian motion, and carry charge. Electrolytes can coagulate them (Hardy-Schulze rule). Types include sol, gel, emulsion and aerosol.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">x/m = k P<sup>1/n</sup><small>Freundlich; log(x/m) = log k + (1/n) log P, n &gt; 1</small></div>
+    <div class="eq">θ = K P / (1 + K P)<small>Langmuir; low P: θ ≈ KP, high P: θ → 1</small></div>
+    <div class="eq">1 nm ≤ d ≤ 1000 nm<small>Size range of colloidal particles</small></div>
+    <div class="eq">I<sub>scattered</sub> ∝ d<sup>6</sup> / λ<sup>4</sup><small>Rayleigh scattering, particles much smaller than λ</small></div>
+  </div>
+    <div class="widget"><div class="w-title">Try it: adsorption isotherm</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-surface-model">Model</label><select id="che-surface-model"><option value="F">Freundlich</option><option value="L" selected>Langmuir</option></select></div>
+      <div class="ctl" data-m="F"><label for="che-surface-kf">k <output></output></label><input type="range" id="che-surface-kf" min="0.5" max="3" step="0.1" value="1.5"></div>
+      <div class="ctl" data-m="F"><label for="che-surface-n">n <output></output></label><input type="range" id="che-surface-n" min="1" max="5" step="0.1" value="2"></div>
+      <div class="ctl" data-m="L"><label for="che-surface-kl">K <output></output></label><input type="range" id="che-surface-kl" min="0.5" max="20" step="0.5" value="5" data-unit=" bar⁻¹"></div>
+      <div class="ctl"><label for="che-surface-p">Pressure P <output></output></label><input type="range" id="che-surface-p" min="0.02" max="1" step="0.01" value="0.3" data-unit=" bar"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Adsorbed amount<b data-r="y">-</b></div>
+      <div class="readout">Regime<b data-r="reg">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    function draw(){
+      const mod=$('#che-surface-model').value,kf=+$('#che-surface-kf').value,n=+$('#che-surface-n').value,kl=+$('#che-surface-kl').value,P=+$('#che-surface-p').value;
+      root.querySelectorAll('[data-m]').forEach(e=>e.style.display=e.dataset.m===mod?'':'none');
+      const F=mod==='F',f=p=>F?kf*Math.pow(p,1/n):kl*p/(1+kl*p),ym=F?3.2:1;
+      const {ctx,w,h}=TB.canvas(cv,240);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub'),line=TB.css('--line');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const ml=44,mr=14,mt=14,mb=34,X=p=>ml+p*(w-ml-mr),Y=v=>h-mb-v/ym*(h-mt-mb);
+      ctx.lineWidth=1;
+      for(let i=0;i<=4;i++){const v=ym*i/4;ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(ml,Y(v));ctx.lineTo(w-mr,Y(v));ctx.stroke();T(v.toFixed(F?1:2),ml-30,Y(v)+4,mut)}
+      for(let i=0;i<=5;i++)T((i/5).toFixed(1),X(i/5),h-mb+16,mut,1);
+      ctx.strokeStyle=mut;ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,h-mb);ctx.lineTo(w-mr,h-mb);ctx.stroke();
+      T('Pressure P (bar)',(ml+w-mr)/2,h-4,ink,1);
+      ctx.save();ctx.translate(11,(mt+h-mb)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle=ink;ctx.textAlign='center';ctx.fillText(F?'x/m (adsorbed per g)':'coverage θ',0,0);ctx.restore();ctx.textAlign='left';
+      if(!F){ctx.setLineDash([4,4]);ctx.strokeStyle=mut;ctx.beginPath();ctx.moveTo(ml,Y(1));ctx.lineTo(w-mr,Y(1));ctx.stroke();ctx.setLineDash([]);T('monolayer complete',w-mr-100,Y(1)+14,mut)}
+      ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();
+      for(let i=0;i<=120;i++){const p=0.001+i/120*0.999,x=X(p),y=Y(f(p));i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+      ctx.fillStyle=sub;ctx.beginPath();ctx.arc(X(P),Y(f(P)),5,0,6.283);ctx.fill();
+      TB.set(root,'[data-r=y]',(F?'x/m = ':'θ = ')+f(P).toFixed(3));
+      TB.set(root,'[data-r=reg]',F?'log-log slope = '+(1/n).toFixed(2):(kl*P<0.3?'near-linear, θ ≈ KP':kl*P>5?'saturating, θ → 1':'curving over'));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: particle size and the Tyndall effect</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-surface-d">log₁₀ of particle diameter in nm <output></output></label><input type="range" id="che-surface-d" min="-0.5" max="3.5" step="0.05" value="1.5"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Diameter (nm)<b data-r="d">-</b></div>
+      <div class="readout">Type of mixture<b data-r="type">-</b></div>
+      <div class="readout">Beam visible?<b data-r="ty">-</b></div>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted)">Brightness of the beam is scaled for display. In reality scattering grows very steeply with size (as d⁶ for small particles).</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);const cv=$('canvas');
+    function draw(){
+      const lg=+$('#che-surface-d').value,d=Math.pow(10,lg);
+      const br=Math.max(0,Math.min(1,(lg-0.1)/1.6));
+      const type=d<1?'True solution':d<=1000?'Colloid':'Suspension';
+      const {ctx,w,h}=TB.canvas(cv,170);
+      const ink=TB.css('--ink'),mut=TB.css('--muted'),sub=TB.css('--sub');
+      ctx.font='12px "Source Sans 3", sans-serif';ctx.textBaseline='alphabetic';
+      const T=(s,x,y,col,c)=>{ctx.fillStyle=col||ink;const wd=ctx.measureText(s).width;let xx=c?x-wd/2:x;xx=Math.max(4,Math.min(w-4-wd,xx));ctx.fillText(s,xx,y)};
+      const vx=w*0.3,vw=w*0.62,vy=30,vh=100,by=vy+vh/2;
+      ctx.strokeStyle=mut;ctx.lineWidth=2;ctx.strokeRect(vx,vy,vw,vh);
+      ctx.fillStyle='rgb(255,200,60)';ctx.globalAlpha=0.9;ctx.fillRect(8,by-3,vx-8,6);
+      ctx.globalAlpha=0.15+0.8*br;ctx.fillRect(vx,by-5,vw,10);ctx.globalAlpha=1;
+      T('light',8,by-10,mut);
+      const r=Math.max(0.8,Math.min(5,0.8+(lg+0.5)*1.05));
+      for(let k=0;k<38;k++){
+        const a=Math.sin((k+3)*12.9898)*43758.5453,c=Math.sin((k+3)*78.233)*12543.1;
+        const px=vx+8+(a-Math.floor(a))*(vw-16),py=vy+8+(c-Math.floor(c))*(vh-16);
+        ctx.fillStyle=sub;ctx.beginPath();ctx.arc(px,py,r,0,6.283);ctx.fill();
+        if(br>0.3&&Math.abs(py-by)<8){ctx.strokeStyle='rgb(255,200,60)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+(py>by?14:-14));ctx.stroke()}
+      }
+      T(type+', d = '+TB.fmt(d,d<10?2:0)+' nm',vx,vy+vh+22,ink);
+      TB.set(root,'[data-r=d]',TB.fmt(d,d<10?2:0));TB.set(root,'[data-r=type]',type);
+      TB.set(root,'[data-r=ty]',d<1?'No (too small)':d<=1000?'Yes, Tyndall cone':'Cloudy, settles');
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p><b>Activated charcoal water filters.</b> Activated carbon has an internal surface of around 1000 m² per gram. A 10 g cartridge therefore offers about 10,000 m², roughly 1.4 football fields (7140 m² each), on which chlorine, dissolved organics and bad taste molecules stick by physisorption. It saturates like a Langmuir surface, which is why cartridges must be replaced.</p>
+    <p><b>Milk and rubber as colloids.</b> Amul milk is an emulsion: fat globules of roughly 1 to 10 micrometres, stabilised by casein, dispersed in water. Adding lactic acid (curd bacteria) or lemon juice coagulates the casein. Natural rubber latex from trees in Kerala is also a colloid; adding acid coagulates it into rubber sheets for balls and tyres.</p>
+  </div>
+  <div class="quiz"><p class="q">In the Langmuir isotherm, what happens to the amount adsorbed at very high pressure?</p><div class="opts"><button>It keeps rising in proportion to P</button><button data-ok>It levels off at monolayer coverage</button><button>It falls to zero</button><button>It rises as P<sup>1/n</sup> without limit</button></div><p class="why" hidden>At high P, KP ≫ 1, so θ = KP/(1 + KP) → 1: every site is occupied and further pressure adds nothing. The unbounded power law is the empirical Freundlich form.</p></div>
+</article><div class="pager"><a href="che-solidstate.html"><small>Previous</small>Solid state: unit cells</a><a class="next" href="che-haloalkanes.html"><small>Next</small>Haloalkanes: SN1 vs SN2</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

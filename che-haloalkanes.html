@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Haloalkanes: SN1 vs SN2 - Class 12 Chemistry</title>
+<meta name="description" content="Haloalkanes: SN1 vs SN2: Class 12 Chemistry lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--chem)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="chemistry.html">Chemistry</a></div><div style="height:.8rem"></div><article class="topic" id="che-haloalkanes" data-title="Haloalkanes: SN1 vs SN2">
+  <header><div class="tag">Haloalkanes and Haloarenes (NCERT Chemistry Part II, Ch 6)</div><h3>Nucleophilic substitution: SN1 versus SN2</h3></header>
+  <p class="lead">In a haloalkane the carbon bonded to the halogen is electron-poor, so nucleophiles attack it and push the halide out. Whether this happens in one concerted step (SN2) or in two steps through a carbocation (SN1) depends on the substrate, the nucleophile and the solvent.</p>
+  <ul class="keypoints">
+    <li>SN2: one step, backside attack, rate = k[R–X][Nu], inversion of configuration (Walden inversion). Fastest for methyl and primary halides because the carbon is least crowded.</li>
+    <li>SN1: slow ionisation to a planar carbocation, then fast attack by the nucleophile. Rate = k[R–X], racemisation. Fastest for tertiary halides (most stable carbocation) and in polar protic solvents.</li>
+    <li>Leaving-group ability: I⁻ &gt; Br⁻ &gt; Cl⁻ &gt; F⁻, so reactivity R–I &gt; R–Br &gt; R–Cl &gt; R–F, even though C–F is the most polar bond.</li>
+    <li>Haloarenes resist substitution: the C–X carbon is sp² and the lone pair of X is delocalised into the ring, giving the C–X bond partial double-bond character. Chlorobenzene needs about 623 K and 300 atm with NaOH; an o/p nitro group lowers this to about 443 K, two nitro groups to 368 K, and three (2,4,6-trinitrochlorobenzene) allow reaction with water at room temperature.</li>
+    <li>With strong bases such as alcoholic KOH, elimination (dehydrohalogenation, Saytzeff rule) competes with substitution, especially for 2° and 3° halides.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">SN2: rate = k [R–X] [Nu⁻]<small>Second order; inversion of configuration</small></div>
+    <div class="eq">SN1: rate = k [R–X]<small>First order; racemisation (planar carbocation)</small></div>
+    <div class="eq">SN2 order: CH<sub>3</sub>X &gt; 1° &gt; 2° &gt; 3°<small>Steric hindrance decides</small></div>
+    <div class="eq">SN1 order: 3° &gt; 2° &gt; 1° &gt; CH<sub>3</sub>X<small>Carbocation stability decides</small></div>
+    <div class="eq">R–Cl + NaI → R–I + NaCl↓<small>Finkelstein (dry acetone); Swarts: R–Br + AgF → R–F + AgBr</small></div>
+    <div class="eq">R–OH + SOCl<sub>2</sub> → R–Cl + SO<sub>2</sub> + HCl<small>Best lab route to chloroalkanes (gaseous by-products)</small></div>
+    <div class="eq">C<sub>6</sub>H<sub>5</sub>N<sub>2</sub><sup>+</sup>Cl<sup>−</sup> + CuCl → C<sub>6</sub>H<sub>5</sub>Cl + N<sub>2</sub><small>Sandmeyer; Wurtz: 2R–X + 2Na → R–R + 2NaX (dry ether)</small></div>
+    <div class="eq">R–X + Mg → R–MgX<small>Grignard reagent, dry ether</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: predict the mechanism</div>
+    <div class="controls">
+      <div class="ctl"><label for="che-haloalkanes-sub">Substrate</label><select id="che-haloalkanes-sub">
+        <option value="0">Methyl: CH₃–X</option><option value="1">Primary: CH₃CH₂–X</option><option value="2" selected>Secondary: (CH₃)₂CH–X</option><option value="3">Tertiary: (CH₃)₃C–X</option></select></div>
+      <div class="ctl"><label for="che-haloalkanes-nu">Nucleophile</label><select id="che-haloalkanes-nu">
+        <option value="1" selected>Strong, charged (OH⁻, CN⁻, I⁻)</option><option value="0">Weak, neutral (H₂O, ROH)</option></select></div>
+      <div class="ctl"><label for="che-haloalkanes-sol">Solvent</label><select id="che-haloalkanes-sol">
+        <option value="p">Polar protic (water, ethanol)</option><option value="a" selected>Polar aprotic (acetone, DMSO, DMF)</option></select></div>
+      <div class="ctl"><label for="che-haloalkanes-lg">Leaving group X</label><select id="che-haloalkanes-lg">
+        <option value="-10">I (best)</option><option value="0" selected>Br</option><option value="10">Cl</option></select></div>
+    </div>
+    <canvas class="stage" id="che-haloalkanes-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Predicted mechanism<b id="che-haloalkanes-mech">-</b></div>
+      <div class="readout">Rate law<b id="che-haloalkanes-rate">-</b></div>
+      <div class="readout">Stereochemistry<b id="che-haloalkanes-st">-</b></div>
+      <div class="readout">Intermediate<b id="che-haloalkanes-int">-</b></div>
+      <div class="readout">Barriers (model, kJ/mol)<b id="che-haloalkanes-ea">-</b></div>
+    </div>
+    <p id="che-haloalkanes-note" style="font-size:.9rem;color:var(--muted)"></p>
+    <p style="font-size:.85rem;color:var(--muted)">The energy values are a teaching model, not measured data. The mechanism with the lower barrier wins; when the two are within 10 kJ/mol both operate.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');
+      const $=id=>root.querySelector('#'+id);
+      const base2=[60,70,85,110], base1=[160,130,95,70];
+      function curve(ctx,pts,X,Y){
+        ctx.beginPath();
+        for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];
+          for(let k=0;k<=24;k++){const t=k/24,s=(1-Math.cos(Math.PI*t))/2;
+            const x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*s;
+            if(i===0&&k===0)ctx.moveTo(X(x),Y(y));else ctx.lineTo(X(x),Y(y));}}
+        ctx.stroke();
+      }
+      function draw(){
+        const s=+$('che-haloalkanes-sub').value, strong=$('che-haloalkanes-nu').value==='1',
+              prot=$('che-haloalkanes-sol').value==='p', lg=+$('che-haloalkanes-lg').value;
+        const e2=base2[s]+(strong?-10:20)+((strong&&prot)?8:0)+lg;
+        const e1=base1[s]+(prot?-15:15)+lg;
+        const d=e1-e2; // >0: SN2 easier
+        let mode=Math.abs(d)<10?'mix':(d>0?'sn2':'sn1');
+        const mech={sn2:'SN2',sn1:'SN1',mix:'SN1 and SN2 compete'}[mode];
+        const rate={sn2:'k[R–X][Nu]  (2nd order)',sn1:'k[R–X]  (1st order)',mix:'Between 1st and 2nd order'}[mode];
+        const st={sn2:'Inversion (Walden)',sn1:'Racemisation',mix:'Partial inversion + racemisation'}[mode];
+        const it={sn2:'None; one transition state',sn1:'Planar carbocation R⁺',mix:'Carbocation in the SN1 share'}[mode];
+        TB.set(root,'#che-haloalkanes-mech',mech);TB.set(root,'#che-haloalkanes-rate',rate);
+        TB.set(root,'#che-haloalkanes-st',st);TB.set(root,'#che-haloalkanes-int',it);
+        TB.set(root,'#che-haloalkanes-ea','SN2 '+e2+' | SN1 '+e1);
+        let note='';
+        if(s===3&&strong)note='A tertiary halide with a strong base such as OH⁻ or RO⁻ mostly gives elimination (alkene) by E2, not substitution.';
+        else if(s===3)note='Tertiary halide with a weak nucleophile in a protic solvent: classic SN1 solvolysis, e.g. (CH₃)₃C–Br + H₂O → (CH₃)₃C–OH.';
+        else if(s<=1)note='Primary and methyl halides cannot form stable carbocations, so SN2 is the only reasonable path.';
+        else note='Secondary halides sit on the border: a strong nucleophile in an aprotic solvent pushes towards SN2, a weak one in a protic solvent towards SN1.';
+        $('che-haloalkanes-note').textContent=note;
+        const g=TB.canvas($('che-haloalkanes-cv'),270),ctx=g.ctx,w=g.w,h=g.h;
+        const L=34,R=w-10,T=14,B=h-40,ymin=-40,ymax=205;
+        const X=x=>L+x*(R-L),Y=y=>B-(y-ymin)/(ymax-ymin)*(B-T);
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.lineWidth=1;
+        ctx.strokeStyle=TB.css('--muted');ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,B);ctx.lineTo(R,B);ctx.stroke();
+        ctx.fillStyle=TB.css('--ink');ctx.textAlign='center';ctx.fillText('Reaction coordinate',(L+R)/2,B+16);
+        ctx.save();ctx.translate(11,(T+B)/2);ctx.rotate(-Math.PI/2);ctx.fillText('Energy',0,0);ctx.restore();
+        ctx.strokeStyle=TB.css('--line');ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(L,Y(0));ctx.lineTo(R,Y(0));ctx.stroke();ctx.setLineDash([]);
+        const p2=[{x:0.05,y:0},{x:0.5,y:e2},{x:0.95,y:-25}];
+        const m=e1-20;
+        const p1=[{x:0.05,y:0},{x:0.27,y:e1},{x:0.5,y:m},{x:0.7,y:m+10},{x:0.95,y:-25}];
+        const c2=TB.css('--sub'),c1=TB.css('--maths');
+        function dr(pts,col,on){ctx.strokeStyle=col;ctx.globalAlpha=on?1:.4;ctx.lineWidth=on?3:1.5;ctx.setLineDash(on?[]:[5,4]);curve(ctx,pts,X,Y);ctx.setLineDash([]);ctx.globalAlpha=1;}
+        dr(p2,c2,mode!=='sn1');dr(p1,c1,mode!=='sn2');
+        ctx.lineWidth=1;ctx.textAlign='left';
+        ctx.fillStyle=c2;ctx.fillText('SN2',X(0.5)+6,Y(e2)+4);
+        ctx.fillStyle=c1;ctx.fillText('SN1: R⁺ intermediate',X(0.5)-40,Y(m)+(m>40?-4:16));
+        ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('R–X + Nu',L+4,Y(0)-6);ctx.textAlign='right';ctx.fillText('R–Nu + X⁻',R,Y(-25)+14);
+        ctx.textAlign='left';ctx.fillStyle=c2;ctx.fillText('SN2',L,h-6);
+        ctx.fillStyle=c1;ctx.fillText('SN1',L+42,h-6);ctx.fillStyle=TB.css('--muted');ctx.fillText('(thick line = favoured path)',L+84,h-6);
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4><p>Chlorofluorocarbons were made by the Swarts reaction (R–Cl + SbF<sub>3</sub>) and were phased out under the Montreal Protocol because their C–Cl bonds break in the stratosphere. For a rate-law check: for CH<sub>3</sub>Br + OH⁻ (SN2), doubling both [CH<sub>3</sub>Br] and [OH⁻] raises the rate 2 × 2 = 4 times. For (CH<sub>3</sub>)<sub>3</sub>CBr in aqueous solution (SN1), doubling [OH⁻] changes nothing and doubling [(CH<sub>3</sub>)<sub>3</sub>CBr] doubles the rate. This is the experimental way chemists tell the two mechanisms apart. Chloramphenicol, an antibiotic, and the antiseptic chloroxylenol (Dettol) are organohalogen compounds in everyday Indian medicine cabinets.</p></div>
+  <div class="quiz"><p class="q">Optically active (R)-2-bromobutane reacts with OH⁻ in acetone and gives (S)-butan-2-ol almost exclusively. Which mechanism is this?</p>
+    <div class="opts"><button data-ok>SN2: backside attack inverts the configuration</button><button>SN1: the carbocation is attacked from one face only</button><button>E1 elimination</button></div>
+    <p class="why" hidden>A strong nucleophile in an aprotic solvent on a secondary halide gives SN2. Backside attack inverts the stereocentre (R to S here). SN1 would give a racemic mixture because the carbocation is planar.</p></div>
+</article><div class="pager"><a href="che-surface.html"><small>Previous</small>Surface chemistry: adsorption and colloids</a><a class="next" href="che-alcohols.html"><small>Next</small>Alcohols, phenols and ethers</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

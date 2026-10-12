@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hardy-Weinberg principle - Class 12 Biology</title>
+<meta name="description" content="Hardy-Weinberg principle: Class 12 Biology lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--bio)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="biology.html">Biology</a></div><div style="height:.8rem"></div><article class="topic" id="bio-hardy-weinberg" data-title="Hardy-Weinberg principle">
+  <header><div class="tag">Evolution</div><h3>Hardy-Weinberg equilibrium and allele frequency change</h3></header>
+  <p class="lead">In a large, randomly mating population with no mutation, migration or selection, allele frequencies stay the same from generation to generation. When they do change, evolution is happening. The principle gives a baseline, so you can tell when selection, drift or gene flow is at work.</p>
+  <ul class="keypoints">
+    <li>For two alleles A and a with frequencies p and q: p + q = 1, and the genotype frequencies are p² (AA), 2pq (Aa) and q² (aa), so p² + 2pq + q² = 1.</li>
+    <li><b>Five conditions</b> for equilibrium: very large population (no genetic drift), random mating, no mutation, no gene flow, no natural selection. Change in allele frequency is the working definition of evolution.</li>
+    <li><b>Forces that change frequencies</b>: natural selection (stabilising, directional, disruptive), genetic drift (founder effect, bottleneck), gene flow, mutation and non-random mating.</li>
+    <li>If the recessive phenotype is rare, most copies of the recessive allele hide in carriers: carriers (2pq) are far more numerous than affected people (q²).</li>
+    <li><b>Heterozygote advantage</b> keeps a harmful allele in the population. The sickle-cell allele persists where malaria is common because carriers (HbA HbS) are partly protected against <i>Plasmodium falciparum</i>.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">p + q = 1<small>Allele frequencies</small></div>
+    <div class="eq">p² + 2pq + q² = 1<small>Genotype frequencies after one generation of random mating</small></div>
+    <div class="eq">q̂ = (w<sub>Aa</sub> − w<sub>AA</sub>) / (2w<sub>Aa</sub> − w<sub>AA</sub> − w<sub>aa</sub>)<small>Equilibrium with heterozygote advantage; w = relative fitness</small></div>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: Hardy-Weinberg genotype frequencies</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-hardy-weinberg-p">p, frequency of A <output></output></label><input type="range" id="bio-hardy-weinberg-p" min="0" max="1" step="0.01" value="0.7"></div>
+      <div class="ctl"><label for="bio-hardy-weinberg-q">q, frequency of a <output></output></label><input type="range" id="bio-hardy-weinberg-q" min="0" max="1" step="0.01" value="0.3"></div>
+    </div>
+    <canvas class="stage" id="bio-hardy-weinberg-cv"></canvas>
+    <div class="readouts"><div class="readout">p² (AA)<b data-r="pp">-</b></div><div class="readout">2pq (Aa)<b data-r="pq">-</b></div><div class="readout">q² (aa)<b data-r="qq">-</b></div><div class="readout">Sum<b data-r="sum">-</b></div><div class="readout">Per 1000 people: AA / Aa / aa<b data-r="k" style="font-size:.9rem">-</b></div></div>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-hardy-weinberg-cv'),q=s=>root.querySelector(s);
+    const pe=q('#bio-hardy-weinberg-p'),qe=q('#bio-hardy-weinberg-q');
+    pe.addEventListener('input',()=>{qe.value=(1-pe.value).toFixed(2);qe.dispatchEvent(new Event('sync'));});
+    qe.addEventListener('input',()=>{pe.value=(1-qe.value).toFixed(2);});
+    function syncOut(){root.querySelectorAll('.ctl input[type=range]').forEach(r=>{const o=r.closest('.ctl').querySelector('output');if(o)o.textContent=(+r.value).toFixed(2);});}
+    function draw(){
+      syncOut();
+      const p=+pe.value,qv=+qe.value,v=[p*p,2*p*qv,qv*qv],nm=['AA  p²','Aa  2pq','aa  q²'],col=['--chem','--bio','--maths'];
+      const g=TB.canvas(cv,260),ctx=g.ctx,W=g.w,H=g.h;ctx.font='12px "Source Sans 3", sans-serif';
+      const L=36,R=12,T=56,B=40,ph=H-T-B,pw=W-L-R,bw=pw/3*.6;
+      ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');ctx.textAlign='right';ctx.lineWidth=1;
+      [0,.25,.5,.75,1].forEach(t=>{const y=T+ph-t*ph;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();ctx.fillText(t.toFixed(2),L-4,y+4);});
+      v.forEach((x,i)=>{const cx=L+pw/3*(i+.5),h=x*ph;ctx.fillStyle=TB.css(col[i]);ctx.fillRect(cx-bw/2,T+ph-h,bw,h);
+        ctx.fillStyle=TB.css('--ink');ctx.textAlign='center';ctx.fillText(x.toFixed(3),cx,T+ph-h-5);ctx.fillText(nm[i],cx,H-B+16);});
+      /* stacked bar for sum */
+      let x0=L;v.forEach((x,i)=>{ctx.fillStyle=TB.css(col[i]);ctx.fillRect(x0,10,x*pw,14);x0+=x*pw;});
+      ctx.strokeStyle=TB.css('--muted');ctx.strokeRect(L,10,pw,14);
+      ctx.fillStyle=TB.css('--ink');ctx.textAlign='left';ctx.fillText('p² + 2pq + q² = '+(v[0]+v[1]+v[2]).toFixed(2),L,42);
+      ctx.textAlign='center';ctx.fillText('Genotype',L+pw/2,H-6);
+      TB.set(root,'[data-r=pp]',v[0].toFixed(3));TB.set(root,'[data-r=pq]',v[1].toFixed(3));TB.set(root,'[data-r=qq]',v[2].toFixed(3));TB.set(root,'[data-r=sum]',(v[0]+v[1]+v[2]).toFixed(2));
+      TB.set(root,'[data-r=k]',v.map(x=>Math.round(x*1000)).join(' / '));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="widget"><div class="w-title">Try it: selection over generations</div>
+    <div class="controls">
+      <div class="ctl"><label for="bio-hardy-weinberg-waa">Fitness of AA <output></output></label><input type="range" id="bio-hardy-weinberg-waa" min="0" max="1" step="0.01" value="0.85"></div>
+      <div class="ctl"><label for="bio-hardy-weinberg-wAa">Fitness of Aa <output></output></label><input type="range" id="bio-hardy-weinberg-wAa" min="0" max="1" step="0.01" value="1"></div>
+      <div class="ctl"><label for="bio-hardy-weinberg-wa">Fitness of aa <output></output></label><input type="range" id="bio-hardy-weinberg-wa" min="0" max="1" step="0.01" value="0.2"></div>
+      <div class="ctl"><label for="bio-hardy-weinberg-q0">Starting q <output></output></label><input type="range" id="bio-hardy-weinberg-q0" min="0.01" max="0.99" step="0.01" value="0.05"></div>
+      <div class="ctl"><label for="bio-hardy-weinberg-gen">Generations <output></output></label><input type="range" id="bio-hardy-weinberg-gen" min="5" max="200" step="5" value="100"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem"><button type="button" class="btn" id="bio-hardy-weinberg-s1">Sickle-cell, malaria region</button><button type="button" class="btn" id="bio-hardy-weinberg-s2">Sickle-cell, no malaria</button><button type="button" class="btn" id="bio-hardy-weinberg-s3">Recessive lethal</button></div>
+    <canvas class="stage" id="bio-hardy-weinberg-cv2"></canvas>
+    <div class="readouts"><div class="readout">q at the end<b data-r="qe">-</b></div><div class="readout">Aa (carriers) at the end<b data-r="ce">-</b></div><div class="readout">Predicted equilibrium q<b data-r="eq" style="font-size:.9rem">-</b></div><div class="readout">Mean fitness at the end<b data-r="wb">-</b></div></div>
+    <p style="font-size:.85rem;color:var(--muted)">Fitness values are illustrative, not measured. Each generation: p′ = (p²·w<sub>AA</sub> + pq·w<sub>Aa</sub>) / w̄, with random mating before selection.</p>
+    <script>(function(){const root=document.currentScript.closest('.widget');
+    const cv=root.querySelector('#bio-hardy-weinberg-cv2'),q=s=>root.querySelector(s);
+    const id=n=>q('#bio-hardy-weinberg-'+n);
+    const preset=(a,b,c,q0)=>{id('waa').value=a;id('wAa').value=b;id('wa').value=c;id('q0').value=q0;id('waa').dispatchEvent(new Event('input',{bubbles:true}));};
+    id('s1').addEventListener('click',()=>preset(.85,1,.2,.05));
+    id('s2').addEventListener('click',()=>preset(1,1,.2,.1));
+    id('s3').addEventListener('click',()=>preset(1,1,0,.2));
+    function run(w,q0,G){const out=[q0];let qq=q0,wb=0;for(let i=0;i<G;i++){const p=1-qq;wb=p*p*w[0]+2*p*qq*w[1]+qq*qq*w[2];qq=wb>0?(p*qq*w[1]+qq*qq*w[2])/wb:qq;out.push(qq);}
+      const p=1-qq;return {q:out,wb:p*p*w[0]+2*p*qq*w[1]+qq*qq*w[2]};}
+    function draw(){
+      const w=[+id('waa').value,+id('wAa').value,+id('wa').value],q0=+id('q0').value,G=+id('gen').value;
+      root.querySelectorAll('.ctl input[type=range]').forEach(r=>{const o=r.closest('.ctl').querySelector('output');if(o&&r.id!=='bio-hardy-weinberg-gen')o.textContent=(+r.value).toFixed(2);});
+      const s=run(w,q0,G),g=TB.canvas(cv,250),ctx=g.ctx,W=g.w,H=g.h;ctx.font='12px "Source Sans 3", sans-serif';
+      const L=36,R=12,T=16,B=40,ph=H-T-B,pw=W-L-R,X=t=>L+t/G*pw,Y=v=>T+ph-v*ph;
+      ctx.strokeStyle=TB.css('--line');ctx.fillStyle=TB.css('--muted');ctx.lineWidth=1;ctx.textAlign='right';
+      [0,.25,.5,.75,1].forEach(t=>{ctx.beginPath();ctx.moveTo(L,Y(t));ctx.lineTo(W-R,Y(t));ctx.stroke();ctx.fillText(t.toFixed(2),L-4,Y(t)+4);});
+      ctx.textAlign='center';for(let k=0;k<=4;k++){const t=Math.round(G*k/4);ctx.fillText(t,X(t),H-B+15);}
+      ctx.fillStyle=TB.css('--ink');ctx.fillText('Generation',L+pw/2,H-B+30);
+      const het=w[1]>w[0]&&w[1]>w[2],qh=het?(w[1]-w[0])/(2*w[1]-w[0]-w[2]):null;
+      if(qh!==null){ctx.setLineDash([4,3]);ctx.strokeStyle=TB.css('--muted');ctx.beginPath();ctx.moveTo(L,Y(qh));ctx.lineTo(W-R,Y(qh));ctx.stroke();ctx.setLineDash([]);}
+      [['q',s.q,'--bio'],['p',s.q.map(x=>1-x),'--chem']].forEach(a=>{ctx.strokeStyle=TB.css(a[2]);ctx.lineWidth=2.5;ctx.beginPath();a[1].forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));ctx.stroke();});
+      ctx.textAlign='left';ctx.fillStyle=TB.css('--bio');ctx.fillText('q (a)',W-R-96,T+12);ctx.fillStyle=TB.css('--chem');ctx.fillText('p (A)',W-R-48,T+12);
+      const qe=s.q[G];
+      TB.set(root,'[data-r=qe]',qe.toFixed(3));TB.set(root,'[data-r=ce]',(2*qe*(1-qe)).toFixed(3));
+      TB.set(root,'[data-r=eq]',qh!==null?qh.toFixed(3)+' (dashed)':'None: one allele is lost or fixed');
+      TB.set(root,'[data-r=wb]',s.wb.toFixed(3));
+    }
+    TB.live(root,draw);})();</script>
+  </div>
+
+  <div class="world"><h4>In the real world</h4><p>The sickle-cell trait (HbA HbS carriers) is common among tribal and other communities across Odisha, Chhattisgarh, Madhya Pradesh, Maharashtra, Gujarat and the Nilgiris, and in some groups up to 20 percent or more carry it. Worked example: if 20 percent are carriers, 2pq = 0.20, so q² − q + 0.10 = 0 and q = (1 − √0.6)/2 = 0.113, p = 0.887. Then p² = 0.787 (unaffected), 2pq = 0.200 and q² = 0.0127, about 13 affected per 1000 people. Check: 0.787 + 0.200 + 0.013 = 1.000. Real communities deviate because they marry within the group and malaria selects for carriers. Use the first preset in the selection widget: with w<sub>AA</sub> = 0.85, w<sub>Aa</sub> = 1 and w<sub>aa</sub> = 0.2, q settles near (1 − 0.85) / (2 − 0.85 − 0.2) = 0.158 whatever it starts at.</p></div>
+  <div class="quiz"><p class="q">In a population in Hardy-Weinberg equilibrium, 4% of people show a recessive trait. What percentage are carriers?</p><div class="opts"><button>16%</button><button>20%</button><button data-ok>32%</button><button>64%</button></div><p class="why" hidden>q² = 0.04, so q = 0.2 and p = 0.8. Carriers = 2pq = 2 × 0.8 × 0.2 = 0.32, or 32%. (64% is p², the homozygous dominant.)</p></div>
+</article><div class="pager"><a href="bio-evolution.html"><small>Previous</small>Evolution and natural selection</a><a class="next" href="bio-immunity.html"><small>Next</small>Human health and immunity</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

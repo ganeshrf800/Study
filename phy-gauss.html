@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gauss&#x27;s law and its uses - Class 12 Physics</title>
+<meta name="description" content="Gauss&#x27;s law and its uses: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-gauss" data-title="Gauss's law and its uses">
+  <header><div class="tag">Electric Charges and Fields</div><h3>Gauss's law: flux and symmetric charge distributions</h3></header>
+  <p class="lead">Electric flux counts how much field passes through a surface. Gauss's law says the flux through any closed surface depends only on the charge inside it. For charge distributions with enough symmetry, this gives the field in a few lines, with no integration.</p>
+  <ul class="keypoints">
+    <li>Flux through a flat area is Φ = E A cosθ, where θ is the angle between E and the area's normal. It is a scalar, and it is zero when the surface is parallel to the field.</li>
+    <li>Gauss's law: the net flux through a closed surface is q<sub>enc</sub>/ε₀. Charges outside contribute zero net flux.</li>
+    <li>Choose a Gaussian surface on which E is constant (or zero) and perpendicular to the surface: a sphere, a coaxial cylinder or a pillbox.</li>
+    <li>Inside a conductor's cavity or a charged shell, the field is zero; a charged conductor keeps all its charge on the outer surface.</li>
+    <li>Field falls as 1/r² for a sphere, 1/r for a long line, and does not fall at all for an infinite sheet.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">Φ = E A cosθ = E·A<small>Flux through a flat area A in a uniform field; unit N m² C⁻¹</small></div>
+    <div class="eq">∮ E·dA = q<sub>enc</sub> / ε<sub>0</sub><small>Gauss's law</small></div>
+    <div class="eq">E = Q/(4πε<sub>0</sub>r²), r ≥ R; E = 0, r &lt; R<small>Uniformly charged spherical shell (or conducting sphere); outside it acts like a point charge</small></div>
+    <div class="eq">E = λ/(2πε<sub>0</sub>r)<small>Infinitely long line charge, λ in C m⁻¹</small></div>
+    <div class="eq">E = σ/(2ε<sub>0</sub>)<small>Infinite plane sheet, σ in C m⁻²; independent of distance. Near a conductor surface E = σ/ε<sub>0</sub></small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: field of a sphere, a line and a sheet</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-gauss-geo">Charge distribution</label><select id="phy-gauss-geo"><option value="sphere">Charged spherical shell, R = 5 cm</option><option value="line">Infinite line charge</option><option value="sheet">Infinite plane sheet</option></select></div>
+      <div class="ctl"><label for="phy-gauss-s"><span class="nm">Charge Q</span> <output></output></label><input type="range" id="phy-gauss-s" min="1" max="10" step="0.5" value="5" data-unit=""></div>
+      <div class="ctl"><label for="phy-gauss-r">Gaussian surface distance r <output></output></label><input type="range" id="phy-gauss-r" min="1" max="20" step="0.5" value="10" data-unit=" cm"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Field E at r<b data-r="E">-</b></div>
+      <div class="readout">Flux through surface<b data-r="phi">-</b></div>
+      <div class="readout">Enclosed charge / ε₀<b data-r="qe">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Slide r inside and outside the shell: the flux (E × surface area) always equals q<sub>enc</sub>/ε₀. For the line, the surface is a cylinder 1 m long; for the sheet, a pillbox of face area 1 m².</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      const E0=8.854e-12,K=1/(4*Math.PI*E0),R=5;
+      const sup=s=>String(s).replace(/[-0-9]/g,c=>'⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
+      const sci=x=>{if(!x)return '0';let e=Math.floor(Math.log10(Math.abs(x)));let m=x/Math.pow(10,e);if(Math.abs(+m.toFixed(2))>=10){m/=10;e++}return m.toFixed(2)+'×10'+sup(e)};
+      function arrow(ctx,x0,y0,x1,y1,hs){ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-0.45),y1-hs*Math.sin(a-0.45));ctx.lineTo(x1-hs*Math.cos(a+0.45),y1-hs*Math.sin(a+0.45));ctx.closePath();ctx.fill()}
+      const names={sphere:'Total charge Q on shell (μC)',line:'Line density λ (μC/m)',sheet:'Surface density σ (μC/m²)'};
+      function field(geo,s,r){const v=s*1e-6,rm=r/100;
+        if(geo==='sphere')return r<R?0:K*v/(rm*rm);
+        if(geo==='line')return 2*K*v/rm;
+        return v/(2*E0)}
+      function draw(){
+        const geo=$('#phy-gauss-geo').value,s=+$('#phy-gauss-s').value,r=+$('#phy-gauss-r').value;
+        $('.nm').textContent=names[geo];
+        const g=TB.canvas($('canvas'),320),ctx=g.ctx,w=g.w,h=g.h;
+        const sub=TB.css('--sub'),ink=TB.css('--ink'),bad=TB.css('--bad'),mut=TB.css('--muted');
+        ctx.font='12px "Source Sans 3", sans-serif';
+        const E=field(geo,s,r);
+        /* diagram */
+        const cx=w/2,cy=66,rp=Math.max(4,r/20*54);
+        ctx.lineWidth=2;ctx.strokeStyle=sub;ctx.fillStyle=sub;
+        if(geo==='sphere'){const Rp=R/20*54;ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(cx,cy,Rp,0,7);ctx.fill();ctx.globalAlpha=1;ctx.stroke()}
+        else if(geo==='line'){ctx.beginPath();ctx.arc(cx,cy,3,0,7);ctx.fill()}
+        else{ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx,6);ctx.lineTo(cx,126);ctx.stroke()}
+        ctx.lineWidth=1.5;ctx.strokeStyle=ink;ctx.setLineDash([4,3]);
+        if(geo==='sheet'){ctx.strokeRect(cx-rp,cy-22,2*rp,44)}else{ctx.beginPath();ctx.arc(cx,cy,rp,0,7);ctx.stroke()}
+        ctx.setLineDash([]);
+        if(E>0){ctx.strokeStyle=bad;ctx.fillStyle=bad;ctx.lineWidth=1.8;
+          if(geo==='sheet'){[-10,10].forEach(dy=>{arrow(ctx,cx+rp,cy+dy,cx+rp+16,cy+dy,5);arrow(ctx,cx-rp,cy+dy,cx-rp-16,cy+dy,5)})}
+          else for(let i=0;i<10;i++){const a=i*Math.PI/5;arrow(ctx,cx+rp*Math.cos(a),cy+rp*Math.sin(a),cx+(rp+14)*Math.cos(a),cy+(rp+14)*Math.sin(a),5)}
+        }
+        ctx.fillStyle=ink;ctx.textAlign='left';
+        ctx.fillText(geo==='sphere'?'Gaussian sphere (dashed)':geo==='line'?'End view: Gaussian cylinder (dashed)':'Side view: Gaussian pillbox (dashed)',8,14);
+        /* graph */
+        const gx0=46,gx1=w-14,gy0=160,gy1=h-34;
+        const rmin=geo==='sphere'||geo==='sheet'?0:1;
+        const ymax=(geo==='sphere'?field(geo,s,R):field(geo,s,1))*1.1;
+        const X=rr=>gx0+rr/20*(gx1-gx0),Y=e=>gy1-e/ymax*(gy1-gy0);
+        ctx.strokeStyle=mut;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx0,gy0);ctx.lineTo(gx0,gy1);ctx.lineTo(gx1,gy1);ctx.stroke();
+        ctx.fillStyle=ink;ctx.textAlign='center';
+        for(let t=0;t<=20;t+=5){ctx.fillText(t,X(t),gy1+14);ctx.beginPath();ctx.moveTo(X(t),gy1);ctx.lineTo(X(t),gy1+3);ctx.stroke()}
+        ctx.fillText('distance r (cm)',(gx0+gx1)/2,gy1+28);
+        ctx.textAlign='left';ctx.fillText('E (N/C)',4,gy0-8);
+        ctx.textAlign='right';ctx.fillText(sci(ymax/1.1),gx0-4,gy0+10);ctx.fillText('0',gx0-4,gy1);
+        ctx.strokeStyle=sub;ctx.lineWidth=2.5;ctx.beginPath();
+        for(let rr=rmin;rr<=20.001;rr+=0.1){const x=X(rr),y=Y(field(geo,s,rr));rr===rmin?ctx.moveTo(x,y):ctx.lineTo(x,y)}
+        ctx.stroke();
+        ctx.setLineDash([3,3]);ctx.strokeStyle=bad;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(r),gy1);ctx.lineTo(X(r),Y(E));ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=bad;ctx.beginPath();ctx.arc(X(r),Y(E),5,0,7);ctx.fill();
+        /* numbers */
+        const rm=r/100,v=s*1e-6;
+        const area=geo==='sphere'?4*Math.PI*rm*rm:geo==='line'?2*Math.PI*rm:2;
+        const qenc=geo==='sphere'?(r>=R?v:0):v;
+        TB.set(root,'[data-r=E]',E?sci(E)+' N/C':'0');
+        TB.set(root,'[data-r=phi]',E?sci(E*area)+' N m²/C':'0');
+        TB.set(root,'[data-r=qe]',qenc?sci(qenc/E0)+' N m²/C':'0');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="widget"><div class="w-title">Try it: flux through a tilted surface</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-gauss-e">Field E <output></output></label><input type="range" id="phy-gauss-e" min="100" max="1000" step="10" value="500" data-unit=" N/C"></div>
+      <div class="ctl"><label for="phy-gauss-a">Area A <output></output></label><input type="range" id="phy-gauss-a" min="0.1" max="2" step="0.05" value="1" data-unit=" m²"></div>
+      <div class="ctl"><label for="phy-gauss-t">Angle θ (field to normal) <output></output></label><input type="range" id="phy-gauss-t" min="0" max="180" step="1" value="30" data-unit="°"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Flux Φ = E A cosθ<b data-r="phi">-</b></div>
+      <div class="readout">Projected area A cosθ<b data-r="pa">-</b></div>
+    </div>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      function arrow(ctx,x0,y0,x1,y1,hs){ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-0.45),y1-hs*Math.sin(a-0.45));ctx.lineTo(x1-hs*Math.cos(a+0.45),y1-hs*Math.sin(a+0.45));ctx.closePath();ctx.fill()}
+      function draw(){
+        const E=+$('#phy-gauss-e').value,A=+$('#phy-gauss-a').value,th=+$('#phy-gauss-t').value,c=Math.cos(th*Math.PI/180);
+        const g=TB.canvas($('canvas'),200),ctx=g.ctx,w=g.w,h=g.h;
+        const cx=w/2,cy=h/2+8,Lp=40+60*Math.sqrt(A/2),ta=th*Math.PI/180;
+        const sub=TB.css('--sub'),bad=TB.css('--bad'),good=TB.css('--good'),ink=TB.css('--ink');
+        const half=Lp/2*Math.abs(c);
+        ctx.lineWidth=1.5;
+        for(let i=-3;i<=3;i++){const y=cy+i*24,hit=Math.abs(i*24)<=half;
+          ctx.globalAlpha=hit?1:0.3;ctx.strokeStyle=ctx.fillStyle=hit?bad:sub;ctx.lineWidth=hit?2.4:1.2;arrow(ctx,8,y,w-8,y,6)}
+        ctx.globalAlpha=1;
+        const px=-Math.sin(ta)*Lp/2,py=-Math.cos(ta)*Lp/2;
+        ctx.strokeStyle=ink;ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-px,cy+py);ctx.lineTo(cx+px,cy-py);ctx.stroke();ctx.lineCap='butt';
+        ctx.strokeStyle=ctx.fillStyle=good;ctx.lineWidth=2.5;arrow(ctx,cx,cy,cx+40*Math.cos(ta),cy-40*Math.sin(ta),7);
+        ctx.fillStyle=ink;ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='left';
+        ctx.fillText('normal n (green)',8,16);ctx.fillText('θ = '+th+'°',8,32);
+        ctx.textAlign='right';ctx.fillText('lines through the plate: thick',w-8,16);
+        TB.set(root,'[data-r=phi]',(E*A*c).toFixed(1)+' N m²/C');
+        TB.set(root,'[data-r=pa]',(A*c).toFixed(3)+' m²');
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Fair-weather Earth has a downward field of about 120 N/C at the surface, so the ground carries negative charge. Treating the surface as a conductor, E = σ/ε₀ gives σ = 8.85×10⁻¹² × 120 ≈ 1.06×10⁻⁹ C m⁻². Over the Earth's area 4π(6.37×10⁶)² ≈ 5.1×10¹⁴ m², the total charge is about 5.4×10⁵ C (negative).</p>
+    <p>Gauss's law also explains why a car or a bus is a safe place in a lightning storm: it acts as a hollow conductor, so the field inside is zero and the charge stays on the outer metal skin. Sensitive electronics are shielded the same way in metal cabinets (Faraday cages).</p>
+  </div>
+  <div class="quiz"><p class="q">A charge Q sits at the centre of a cube. The electric flux through one face of the cube is:</p><div class="opts"><button data-ok>Q/(6ε₀)</button><button>Q/ε₀</button><button>Q/(4ε₀)</button><button>6Q/ε₀</button></div><p class="why" hidden>The total flux through the cube is Q/ε₀. By symmetry it divides equally among the 6 faces, so each gets Q/(6ε₀).</p></div>
+</article><div class="pager"><a href="phy-coulomb.html"><small>Previous</small>Coulomb&#x27;s law and electric field</a><a class="next" href="phy-cap.html"><small>Next</small>Capacitors and dielectrics</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

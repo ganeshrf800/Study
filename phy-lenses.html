@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lenses, mirrors and instruments - Class 12 Physics</title>
+<meta name="description" content="Lenses, mirrors and instruments: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-lenses" data-title="Lenses, mirrors and instruments">
+  <header><div class="tag">Ray Optics and Optical Instruments</div><h3>Lenses, mirrors and optical instruments</h3></header>
+  <p class="lead">A lens bends light by refraction and a mirror turns it back by reflection, and in both cases rays from one point of an object can meet again to form an image. The same few formulae give the position, size and nature of the image, and combining lenses gives microscopes and telescopes.</p>
+  <ul class="keypoints">
+    <li>Use the Cartesian sign convention: distances are measured from the pole or optical centre, positive along the direction of incident light. Object distance u is negative for a real object.</li>
+    <li>Lens: 1/v − 1/u = 1/f. Mirror: 1/v + 1/u = 1/f. A convex lens and a concave mirror are converging (they can form real images).</li>
+    <li>Magnification m = h<sub>i</sub>/h<sub>o</sub>: for a lens m = v/u, for a mirror m = −v/u. Negative m means inverted.</li>
+    <li>Power of a lens P = 1/f with f in metres, in dioptre (D). Powers of thin lenses in contact add.</li>
+    <li>The lens maker's formula gives f from the refractive index and the radii of curvature of the two surfaces.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">1/v − 1/u = 1/f<small>thin lens formula</small></div>
+    <div class="eq">1/v + 1/u = 1/f &emsp; f = R/2<small>spherical mirror formula</small></div>
+    <div class="eq">1/f = (n − 1)(1/R<sub>1</sub> − 1/R<sub>2</sub>)<small>lens maker's formula, lens in air</small></div>
+    <div class="eq">P = 1/f (metres) = 100/f (cm)<small>power in dioptre</small></div>
+    <div class="eq">M = 1 + D/f &emsp; M = D/f<small>simple microscope: image at near point D = 25 cm; image at infinity</small></div>
+    <div class="eq">M = f<sub>o</sub> / f<sub>e</sub> &emsp; L = f<sub>o</sub> + f<sub>e</sub><small>astronomical telescope in normal adjustment</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Image formation: object distance slider</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-lenses-type">Device</label><select id="phy-lenses-type"><option value="0">Convex lens</option><option value="1">Concave lens</option><option value="2">Concave mirror</option><option value="3">Convex mirror</option></select></div>
+      <div class="ctl"><label for="phy-lenses-f">Focal length |f| <output></output></label><input type="range" id="phy-lenses-f" min="5" max="25" step="1" value="10" data-unit=" cm"></div>
+      <div class="ctl"><label for="phy-lenses-d">Object distance |u| <output></output></label><input type="range" id="phy-lenses-d" min="3" max="60" step="1" value="25" data-unit=" cm"></div>
+    </div>
+    <canvas class="stage" id="phy-lenses-cv"></canvas>
+    <div class="readouts">
+      <div class="readout">Image distance v (cm)<b id="phy-lenses-r1">-</b></div>
+      <div class="readout">Magnification m<b id="phy-lenses-r2">-</b></div>
+      <div class="readout">Nature of image<b id="phy-lenses-r3">-</b></div>
+      <div class="readout">Power of lens<b id="phy-lenses-r4">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      const ty=$('phy-lenses-type'),fs=$('phy-lenses-f'),ds=$('phy-lenses-d'),cv=$('phy-lenses-cv');
+      function draw(){
+        const t=+ty.value,F=+fs.value,d=+ds.value,isLens=t<2;
+        const f=(t===0||t===3)?F:-F;
+        const invv=isLens?(1/f-1/d):(1/f+1/d);
+        const {ctx,w,h}=TB.canvas(cv,270);ctx.clearRect(0,0,w,h);
+        const sx=(w-24)/140,sy=sx*3,x0=w/2,y0=h/2+10;
+        const X=x=>x0+x*sx,Y=y=>y0-y*sy;
+        const ink=TB.css('--ink'),sub=TB.css('--sub'),good=TB.css('--good'),muted=TB.css('--muted');
+        ctx.save();ctx.beginPath();ctx.rect(0,0,w,h);ctx.clip();
+        ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y0);ctx.lineTo(w,y0);ctx.stroke();
+        // element
+        ctx.strokeStyle=ink;ctx.fillStyle=ink;ctx.lineWidth=2.5;
+        if(isLens){ctx.beginPath();ctx.moveTo(x0,y0-95);ctx.lineTo(x0,y0+95);ctx.stroke();
+          [-1,1].forEach(sg=>{const tipY=y0+sg*95;const baseY=tipY-sg*9;const tipOut=t===0;
+            ctx.beginPath();
+            if(tipOut){ctx.moveTo(x0,tipY);ctx.lineTo(x0-5,baseY);ctx.lineTo(x0+5,baseY);}
+            else{ctx.moveTo(x0-5,tipY);ctx.lineTo(x0+5,tipY);ctx.lineTo(x0,baseY);}
+            ctx.fill();});}
+        else{const e=t===2?-12:12;ctx.beginPath();ctx.moveTo(x0+e,y0-95);ctx.quadraticCurveTo(x0-e,y0,x0+e,y0+95);ctx.stroke();
+          ctx.lineWidth=1;for(let k=-90;k<=90;k+=12){const xk=x0+e*(k/95)*(k/95);ctx.beginPath();ctx.moveTo(xk,y0+k);ctx.lineTo(xk+6,y0+k+6);ctx.stroke();}}
+        // focal marks
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';ctx.fillStyle=muted;
+        const marks=isLens?[[F,'F'],[-F,'F'],[2*F,'2F'],[-2*F,'2F']]:[[f,'F'],[2*f,'C']];
+        marks.forEach(m=>{ctx.fillRect(X(m[0])-1,y0-4,2,8);ctx.fillText(m[1],X(m[0]),y0+20);});
+        // object
+        const ho=5;
+        function arr(x,y,col,dash){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2.5;ctx.setLineDash(dash?[4,3]:[]);
+          ctx.beginPath();ctx.moveTo(X(x),Y(0));ctx.lineTo(X(x),Y(y));ctx.stroke();ctx.setLineDash([]);
+          const dir=y>=0?1:-1;ctx.beginPath();ctx.moveTo(X(x),Y(y));ctx.lineTo(X(x)-4,Y(y)+dir*8);ctx.lineTo(X(x)+4,Y(y)+dir*8);ctx.fill();}
+        arr(-d,ho,ink,false);
+        const atInf=Math.abs(invv)<1e-9;
+        let v=NaN,m=NaN,real=false;
+        if(!atInf){
+          v=1/invv;m=isLens?-v/d:v/d;
+          real=isLens?v>0:v<0;
+          const hi=m*ho,T=[v,hi];
+          // incoming rays
+          ctx.strokeStyle=sub;ctx.lineWidth=1.6;
+          [[0,ho],[0,0]].forEach(P=>{
+            ctx.beginPath();ctx.moveTo(X(-d),Y(ho));ctx.lineTo(X(P[0]),Y(P[1]));ctx.stroke();
+            if(real){ctx.beginPath();ctx.moveTo(X(P[0]),Y(P[1]));ctx.lineTo(X(T[0]),Y(T[1]));ctx.stroke();}
+            else{const dx=P[0]-T[0],dy=P[1]-T[1];if(Math.abs(dx)>1e-9){const k=70/Math.abs(dx);
+              ctx.beginPath();ctx.moveTo(X(P[0]),Y(P[1]));ctx.lineTo(X(P[0]+k*dx),Y(P[1]+k*dy));ctx.stroke();
+              ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(X(P[0]),Y(P[1]));ctx.lineTo(X(T[0]),Y(T[1]));ctx.stroke();ctx.setLineDash([]);}}
+          });
+          arr(v,hi,good,!real);
+        }else{
+          ctx.strokeStyle=sub;ctx.lineWidth=1.6;
+          ctx.beginPath();ctx.moveTo(X(-d),Y(ho));ctx.lineTo(X(0),Y(ho));ctx.stroke();
+          ctx.beginPath();ctx.moveTo(X(-d),Y(ho));ctx.lineTo(X(0),Y(0));ctx.stroke();
+        }
+        ctx.restore();
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.fillStyle=ink;ctx.textAlign='left';
+        ctx.fillText('Object (O) green arrow = image (I); dashed = virtual. Vertical scale exaggerated.',6,14);
+        if(atInf){TB.set(root,'#phy-lenses-r1','∞');TB.set(root,'#phy-lenses-r2','∞');TB.set(root,'#phy-lenses-r3','Image at infinity (object at F)');}
+        else{
+          TB.set(root,'#phy-lenses-r1',TB.fmt(v,1));TB.set(root,'#phy-lenses-r2',TB.fmt(m,2));
+          TB.set(root,'#phy-lenses-r3',(real?'Real':'Virtual')+', '+(m<0?'inverted':'erect')+', '+(Math.abs(m)>1.005?'magnified':Math.abs(m)<0.995?'diminished':'same size'));
+        }
+        TB.set(root,'#phy-lenses-r4',isLens?TB.fmt(100/f,1)+' D':'-');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="widget"><div class="w-title">Lens maker's formula and instruments</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-lenses-shape">Lens shape</label><select id="phy-lenses-shape"><option value="bc">Biconvex</option><option value="pc">Plano-convex</option><option value="bd">Biconcave</option></select></div>
+      <div class="ctl"><label for="phy-lenses-n">Refractive index n <output></output></label><input type="range" id="phy-lenses-n" min="1.3" max="2" step="0.01" value="1.5"></div>
+      <div class="ctl"><label for="phy-lenses-r1s">Radius R<sub>1</sub> <output></output></label><input type="range" id="phy-lenses-r1s" min="5" max="40" step="1" value="20" data-unit=" cm"></div>
+      <div class="ctl"><label for="phy-lenses-r2s">Radius R<sub>2</sub> (magnitude) <output></output></label><input type="range" id="phy-lenses-r2s" min="5" max="40" step="1" value="20" data-unit=" cm"></div>
+      <div class="ctl"><label for="phy-lenses-fo">Telescope objective f<sub>o</sub> <output></output></label><input type="range" id="phy-lenses-fo" min="20" max="200" step="5" value="100" data-unit=" cm"></div>
+      <div class="ctl"><label for="phy-lenses-fe">Telescope eyepiece f<sub>e</sub> <output></output></label><input type="range" id="phy-lenses-fe" min="1" max="10" step="0.5" value="5" data-unit=" cm"></div>
+    </div>
+    <div class="readouts">
+      <div class="readout">Focal length f<b id="phy-lenses-q1">-</b></div>
+      <div class="readout">Power P<b id="phy-lenses-q2">-</b></div>
+      <div class="readout">Magnifier, image at 25 cm<b id="phy-lenses-q3">-</b></div>
+      <div class="readout">Magnifier, image at infinity<b id="phy-lenses-q4">-</b></div>
+      <div class="readout">Telescope magnification<b id="phy-lenses-q5">-</b></div>
+      <div class="readout">Telescope tube length<b id="phy-lenses-q6">-</b></div>
+    </div>
+    <script>(function(){const root=document.currentScript.closest('.widget');const $=id=>root.querySelector('#'+id);
+      function draw(){
+        const sh=$('phy-lenses-shape').value,n=+$('phy-lenses-n').value,R1=+$('phy-lenses-r1s').value,R2=+$('phy-lenses-r2s').value;
+        const fo=+$('phy-lenses-fo').value,fe=+$('phy-lenses-fe').value;
+        let k;// 1/f = (n-1)*k  (k in 1/cm)
+        if(sh==='bc')k=1/R1+1/R2;else if(sh==='pc')k=1/R1;else k=-(1/R1+1/R2);
+        const f=1/((n-1)*k);
+        TB.set(root,'#phy-lenses-q1',TB.fmt(f,1)+' cm');
+        TB.set(root,'#phy-lenses-q2',TB.fmt(100/f,2)+' D');
+        if(f>0){TB.set(root,'#phy-lenses-q3',TB.fmt(1+25/f,2)+'×');TB.set(root,'#phy-lenses-q4',TB.fmt(25/f,2)+'×');}
+        else{TB.set(root,'#phy-lenses-q3','diverging, not a magnifier');TB.set(root,'#phy-lenses-q4','-');}
+        TB.set(root,'#phy-lenses-q5',TB.fmt(fo/fe,1)+'×');
+        TB.set(root,'#phy-lenses-q6',TB.fmt(fo+fe,1)+' cm');
+      }
+      TB.live(root,draw);})();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>Spectacles. A myopic student whose far point is 50 cm cannot see distant boards clearly. A concave lens must form a virtual image of a distant object (u = ∞) at 50 cm, so v = −50 cm and f = −50 cm. The power is P = 100/(−50) = −2.0 D, the "−2.00" printed on the prescription. Cameras use the same thin lens formula: a phone lens of f = 5 mm focuses a subject 1 m away where 1/v = 1/f + 1/u = 1/0.5 − 1/100 = 1.99 cm⁻¹, so v = 0.5025 cm, only 0.025 cm beyond the focal plane; autofocus just moves the lens by that sliver. Worked check: an object 15 cm from a convex lens of f = 10 cm gives 1/v = 1/10 − 1/15 = 1/30, so v = 30 cm and m = v/u = −2, a real inverted image twice as large, as in a projector.</p></div>
+  <div class="quiz"><p class="q">An object is placed 20 cm in front of a convex lens of focal length 10 cm. The image is</p><div class="opts"><button>virtual and magnified</button><button data-ok>real, inverted and the same size as the object</button><button>real, inverted and diminished</button><button>at infinity</button></div><p class="why" hidden>Here u = −2f. 1/v = 1/10 − 1/20 = 1/20, so v = +20 cm and m = v/u = −1. The object at 2F gives an image at 2F on the other side, real, inverted and of equal size.</p></div>
+</article><div class="pager"><a href="phy-refraction.html"><small>Previous</small>Refraction and total internal reflection</a><a class="next" href="phy-yds.html"><small>Next</small>Interference: Young&#x27;s double slit</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Coulomb&#x27;s law and electric field - Class 12 Physics</title>
+<meta name="description" content="Coulomb&#x27;s law and electric field: Class 12 Physics lesson with simulation and quiz.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head><body style="--sub:var(--physics)">
+<div class="top"><a class="brand" href="home.html">Class 12 Interactive Textbook</a><span class="sp"></span><button class="btn" id="theme">Theme</button></div>
+<div class="app"><main>
+<div class="crumbs"><a href="home.html">Home</a> / <a href="physics.html">Physics</a></div><div style="height:.8rem"></div><article class="topic" id="phy-coulomb" data-title="Coulomb's law and electric field">
+  <header><div class="tag">Electric Charges and Fields</div><h3>Coulomb's law, electric field and the dipole</h3></header>
+  <p class="lead">Two point charges push or pull on each other with a force that falls as the square of their distance. Instead of tracking forces between pairs, we describe the space around a charge by its electric field: the force a unit positive test charge would feel at each point.</p>
+  <ul class="keypoints">
+    <li>Like charges repel and unlike charges attract. The force acts along the line joining the charges, and the two forces are equal and opposite.</li>
+    <li>Charge is quantised (q = ne, with e = 1.6×10⁻¹⁹ C) and conserved.</li>
+    <li>The electric field E = F/q₀ is a vector. Fields of several charges add as vectors (superposition).</li>
+    <li>Field lines start on positive charges and end on negative ones, never cross, and crowd together where the field is strong.</li>
+    <li>An electric dipole is +q and −q a distance 2a apart. Its dipole moment p = q(2a) points from −q to +q.</li>
+  </ul>
+  <h4>Formulae</h4>
+  <div class="formulas">
+    <div class="eq">F = k q<sub>1</sub>q<sub>2</sub> / r²<small>Coulomb's law; k = 1/(4πε<sub>0</sub>) = 9×10⁹ N m² C⁻², ε<sub>0</sub> = 8.85×10⁻¹² C² N⁻¹ m⁻²</small></div>
+    <div class="eq">E = F/q<sub>0</sub> = k q / r²<small>Field of a point charge; directed away from +q, towards −q</small></div>
+    <div class="eq">p = q × 2a<small>Dipole moment, unit C m, direction −q to +q</small></div>
+    <div class="eq">E<sub>axial</sub> = 2kp/r³, E<sub>equat</sub> = −kp/r³<small>Far field of a short dipole (r ≫ a); axial field is twice as large and opposite to the equatorial one</small></div>
+    <div class="eq">τ = pE sinθ, U = −pE cosθ<small>Dipole in a uniform field: torque and potential energy</small></div>
+  </div>
+  <div class="widget"><div class="w-title">Try it: two charges, their force and field</div>
+    <div class="controls">
+      <div class="ctl"><label for="phy-coulomb-q1">Charge q₁ <output></output></label><input type="range" id="phy-coulomb-q1" min="-10" max="10" step="0.5" value="5" data-unit=" μC"></div>
+      <div class="ctl"><label for="phy-coulomb-q2">Charge q₂ <output></output></label><input type="range" id="phy-coulomb-q2" min="-10" max="10" step="0.5" value="-5" data-unit=" μC"></div>
+      <div class="ctl"><label for="phy-coulomb-d">Separation d <output></output></label><input type="range" id="phy-coulomb-d" min="2" max="20" step="0.5" value="10" data-unit=" cm"></div>
+    </div>
+    <canvas class="stage"></canvas>
+    <div class="readouts">
+      <div class="readout">Force on each charge<b data-r="F">-</b></div>
+      <div class="readout">Nature<b data-r="nat">-</b></div>
+      <div class="readout">E at the midpoint<b data-r="Em">-</b></div>
+      <div class="readout">Dipole moment p<b data-r="p">-</b></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Set q₂ = −q₁ to make a dipole. Arrows show the field direction; longer, brighter arrows mean a stronger field. Green arrows are the forces on the charges.</p>
+    <script>(function(){
+      const root=document.currentScript.closest('.widget');const $=s=>root.querySelector(s);
+      const K=9e9;
+      const sup=s=>String(s).replace(/[-0-9]/g,c=>'⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
+      const sci=x=>{if(!x)return '0';let e=Math.floor(Math.log10(Math.abs(x)));let m=x/Math.pow(10,e);if(Math.abs(+m.toFixed(2))>=10){m/=10;e++}return m.toFixed(2)+'×10'+sup(e)};
+      function arrow(ctx,x0,y0,x1,y1,hs){ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hs*Math.cos(a-0.45),y1-hs*Math.sin(a-0.45));ctx.lineTo(x1-hs*Math.cos(a+0.45),y1-hs*Math.sin(a+0.45));ctx.closePath();ctx.fill()}
+      function draw(){
+        const q1=+$('#phy-coulomb-q1').value,q2=+$('#phy-coulomb-q2').value,d=+$('#phy-coulomb-d').value;
+        const Q1=q1*1e-6,Q2=q2*1e-6;
+        const g=TB.canvas($('canvas'),280),ctx=g.ctx,w=g.w,h=g.h;
+        const s=w/30,cx=w/2,cy=h/2+10,X1=cx-d/2*s,X2=cx+d/2*s;
+        const src=[[X1,Q1],[X2,Q2]];
+        const sub=TB.css('--sub');
+        ctx.strokeStyle=sub;ctx.fillStyle=sub;ctx.lineWidth=1.4;
+        const step=26;
+        for(let px=step/2;px<w;px+=step)for(let py=step/2+4;py<h;py+=step){
+          let ex=0,ey=0,near=false;
+          for(const [X,Q] of src){
+            const dx=(px-X)/s/100,dy=(py-cy)/s/100,r2=dx*dx+dy*dy,r=Math.sqrt(r2);
+            if(r*100*s<18){near=true;break}
+            ex+=K*Q*dx/(r2*r);ey+=K*Q*dy/(r2*r);
+          }
+          if(near)continue;
+          const E=Math.hypot(ex,ey);if(E<1)continue;
+          const t=Math.min(1,Math.max(0,(Math.log10(E)-3.5)/3.5));
+          const len=7+15*t,ux=ex/E,uy=ey/E;
+          ctx.globalAlpha=0.3+0.7*t;
+          arrow(ctx,px-ux*len/2,py-uy*len/2,px+ux*len/2,py+uy*len/2,4);
+        }
+        ctx.globalAlpha=1;
+        const F=K*Math.abs(Q1*Q2)/Math.pow(d/100,2),rep=Q1*Q2>0;
+        ctx.font='12px "Source Sans 3", sans-serif';ctx.textAlign='center';
+        if(F>0){
+          let len=Math.min(70,10+12*Math.max(0,Math.log10(F)+3));
+          len=Math.max(8,Math.min(len,X1-8));
+          const col=TB.css('--good');ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=3;
+          const dir=rep?-1:1,y=cy-38;
+          arrow(ctx,X1,y,X1+dir*len,y,8);arrow(ctx,X2,y,X2-dir*len,y,8);
+        }
+        [[X1,Q1,q1,'q₁'],[X2,Q2,q2,'q₂']].forEach(([X,Q,qv,nm])=>{
+          const rad=9+Math.min(11,Math.abs(qv)*1.2),col=Q>=0?TB.css('--bad'):sub;
+          ctx.globalAlpha=0.28;ctx.fillStyle=col;ctx.beginPath();ctx.arc(X,cy,rad,0,7);ctx.fill();ctx.globalAlpha=1;
+          ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+          ctx.fillStyle=TB.css('--ink');ctx.fillText(Q>0?'+':(Q<0?'−':'0'),X,cy+4);
+          ctx.fillText(nm,X,cy+rad+14);
+        });
+        ctx.textAlign='left';ctx.fillStyle=TB.css('--ink');
+        ctx.fillText('Force on each charge: '+(F>0?sci(F)+' N':'0'),8,16);
+        TB.set(root,'[data-r=F]',F>0?sci(F)+' N':'0');
+        TB.set(root,'[data-r=nat]',F===0?'no force':(rep?'repulsion':'attraction'));
+        const r=d/200,Ex=K*(Q1-Q2)/(r*r);
+        TB.set(root,'[data-r=Em]',Ex===0?'0':sci(Math.abs(Ex))+' N/C '+(Ex>0?'→':'←'));
+        const dip=q1*q2<0&&Math.abs(q1+q2)<1e-9;
+        TB.set(root,'[data-r=p]',dip?sci(Math.abs(Q1)*d/100)+' C m '+(q1<0?'→':'←'):(q1*q2>0?'not a dipole':'—'));
+      }
+      TB.live(root,draw);
+    })();</script>
+  </div>
+  <div class="world"><h4>In the real world</h4>
+    <p>In a hydrogen atom the electron orbits the proton at r ≈ 5.3×10⁻¹¹ m. The electric force is F = 9×10⁹ × (1.6×10⁻¹⁹)² / (5.3×10⁻¹¹)² ≈ 8.2×10⁻⁸ N. The gravitational force between the same two particles is only about 3.6×10⁻⁴⁷ N, so electricity wins by a factor of about 2×10³⁹. That is why atoms, molecules and all of chemistry are governed by electric forces.</p>
+    <p>The same law drives the electrostatic precipitators in Indian thermal power stations: they charge fly-ash particles in the flue gas and pull them onto plates by an electric field, removing over 99% of the dust before it reaches the chimney.</p>
+  </div>
+  <div class="quiz"><p class="q">Two point charges exert a force of 36 N on each other. If the distance between them is tripled and one of the charges is doubled, the new force is:</p><div class="opts"><button data-ok>8 N</button><button>24 N</button><button>12 N</button><button>108 N</button></div><p class="why" hidden>F ∝ q₁q₂/r². Doubling one charge multiplies F by 2; tripling r divides it by 9. New F = 36 × 2 / 9 = 8 N.</p></div>
+</article><div class="pager"><span></span><a class="next" href="phy-gauss.html"><small>Next</small>Gauss&#x27;s law and its uses</a></div>
+<footer class="site">Aligned with the CBSE/NCERT Class 12 syllabus. Simulations are teaching models; always confirm values against your textbook.</footer>
+</main></div>
+</body></html>
