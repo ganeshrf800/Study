@@ -235,7 +235,7 @@ const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / c
 const app=document.getElementById("app");
 const idx=PAGES.findIndex(p=>p.file===PAGE.file);
 const prev=PAGES[(idx-1+PAGES.length)%PAGES.length],next=PAGES[(idx+1)%PAGES.length];
-let h=`<div class="top"><a class="home" href="${HOME}">← Phone block diagram</a><nav class="modnav" aria-label="Module pages">${PAGES.map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</nav></div>
+let h=`<div class="top"><a class="home" href="../" style="border:1px solid currentColor;border-radius:4px;padding:5px 10px">⌂ Study home</a><a class="home" href="${HOME}">← Phone block diagram</a><nav class="modnav" aria-label="Module pages">${PAGES.map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</nav></div>
 <header class="hdr"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
 <div class="costbox"><span class="label">Typical cost per phone</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div></header>
 <div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>

@@ -111,3 +111,5 @@ table.t th{background:var(--soft)}
 .sub-big a span{color:var(--muted);font-size:.9rem}
 h3.unit{font:700 1.05rem var(--f-display);color:var(--sub);margin:1.6rem 0 .6rem;letter-spacing:-.01em}
 footer.site{color:var(--muted);font-size:.85rem;padding-block:2rem;border-top:1px solid var(--line);margin-top:2rem}
+
+a.btn{text-decoration:none;display:inline-block;line-height:inherit}
