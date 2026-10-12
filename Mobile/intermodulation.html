@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Intermodulation Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+.modnav{display:grid;gap:6px}
+.modnav .ng{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modnav .ng .label{min-width:92px}
+header.hdr.nocost{grid-template-columns:1fr}
+.sch .lk{font-size:11px;fill:var(--copper);font-weight:700}
+.go{display:inline-block;margin-top:8px;font-weight:650;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.go:hover{border-bottom-width:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.eqc{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.eqc .f{font-family:var(--mono);font-size:14.5px;font-weight:600;background:var(--sunk);padding:8px 10px;border-left:3px solid var(--copper);overflow-x:auto;white-space:pre-wrap}
+.eqc p{margin:0;font-size:14px;color:var(--muted)}
+.rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.rel a{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.rel a:hover{background:var(--sunk)}
+.rel b{display:block;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+<link rel="stylesheet" href="../back.css">
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC", "group": "Modules"}, {"file": "modem.html", "short": "5G modem", "group": "Modules"}, {"file": "transceiver.html", "short": "RF transceiver", "group": "Modules"}, {"file": "rf-front-end.html", "short": "RF front-end", "group": "Modules"}, {"file": "antennas.html", "short": "Antennas & tuning", "group": "Modules"}, {"file": "gnss.html", "short": "GNSS", "group": "Modules"}, {"file": "mmwave.html", "short": "mmWave", "group": "Modules"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth", "group": "Modules"}, {"file": "nfc-uwb.html", "short": "NFC & UWB", "group": "Modules"}, {"file": "power.html", "short": "Power & charging", "group": "Modules"}, {"file": "lna.html", "short": "LNA", "group": "Components"}, {"file": "pa.html", "short": "Power amplifier", "group": "Components"}, {"file": "mixers.html", "short": "Mixers", "group": "Components"}, {"file": "synthesizers.html", "short": "Synthesizers & PLLs", "group": "Components"}, {"file": "data-converters.html", "short": "ADC & DAC", "group": "Components"}, {"file": "acoustic-filters.html", "short": "SAW & BAW filters", "group": "Components"}, {"file": "rf-switches.html", "short": "Switches & tuners", "group": "Components"}, {"file": "linearization.html", "short": "DPD & envelope tracking", "group": "Components"}, {"file": "intermodulation.html", "short": "Intermodulation", "group": "Studies"}];
+const PAGE={
+file:"intermodulation.html",title:"Intermodulation Study",kicker:"Study · self-interference in multi-transmitter phones",
+lede:"When a phone transmits on two bands at once, as in EN-DC or uplink carrier aggregation, any nonlinearity in the path mixes the two signals. The resulting harmonics and intermodulation products can land in the phone's own receive bands, GNSS or Wi-Fi and desensitize them. This page maps which band combinations are at risk and lets you calculate the products and their levels.",
+stats:[["Combinations analysed","32 dual-uplink pairs"],["Victim receivers","25 bands"],["Products checked","H2, H3, IM2 – IM5"],["Band edges","3GPP TS 36.101 / 38.101-1"],["Method","Full-band interval overlap"]],
+sections:[
+{id:"matrix",title:"Aggressor × victim matrix",toc:"Matrix",sub:"Each row is a pair of simultaneous uplinks. Each cell shows the lowest-order product that can fall inside that victim's receive band for some channel choice in both uplink bands. Click a cell for every product that hits.",
+html:`<style>
+.mx-ctl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.mx-ctl .grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mx-ctl button{font:500 12.5px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:4px 10px;border-radius:999px;cursor:pointer}
+.mx-ctl button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.mx-ctl label{font-size:13px;display:inline-flex;gap:5px;align-items:center}
+.mxw{overflow:auto;max-height:640px}
+table.mx{border-collapse:separate;border-spacing:0;font-size:11.5px;min-width:0;width:auto}
+table.mx th,table.mx td{padding:0;border-bottom:1px solid var(--line);border-right:1px solid var(--line);text-align:center}
+table.mx thead th{position:sticky;top:0;background:var(--sunk);z-index:2;height:118px;vertical-align:bottom;padding:4px 0}
+table.mx thead th span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.02em;white-space:nowrap;color:var(--ink);display:inline-block;padding:2px 0}
+table.mx thead th small{display:block;writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;color:var(--muted);font-family:var(--mono)}
+table.mx thead th.corner{z-index:3;left:0;text-align:left;padding:8px;vertical-align:bottom}
+table.mx th{text-transform:none;letter-spacing:0}
+table.mx tbody th{position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;padding:5px 10px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;font-weight:600}
+table.mx tbody th small{color:var(--muted);font-weight:400;margin-left:6px}
+table.mx td{width:44px;min-width:44px;height:28px;cursor:pointer;font-family:var(--mono);font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums}
+table.mx td.o2{background:color-mix(in oklab,var(--copper) 78%,var(--surface));color:var(--surface)}
+table.mx td.o3{background:color-mix(in oklab,var(--copper) 50%,var(--surface));color:var(--ink)}
+table.mx td.o4{background:color-mix(in oklab,var(--pwr) 32%,var(--surface));color:var(--ink)}
+table.mx td.o5{background:color-mix(in oklab,var(--pwr) 14%,var(--surface));color:var(--muted)}
+table.mx td.na{background:repeating-linear-gradient(45deg,var(--sunk) 0 4px,var(--surface) 4px 8px);cursor:default}
+table.mx td.tdd{background-image:repeating-linear-gradient(45deg,transparent 0 5px,color-mix(in oklab,var(--surface) 35%,transparent) 5px 7px)}
+table.mx td.own{box-shadow:inset 0 0 0 2px var(--ink)}
+table.mx td.sel{outline:3px solid var(--lo);outline-offset:-3px}
+table.mx td:focus-visible{outline:3px solid var(--lo);outline-offset:-3px}
+.mxleg{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+.mxleg i{display:inline-block;width:18px;height:12px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+.mxd{padding:14px 16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.mxd h3{margin:0;font-family:var(--display);font-stretch:78%;font-size:20px;text-transform:uppercase}
+.mxd table{font-size:13px}
+.calc{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:0}
+@media (max-width:900px){.calc{grid-template-columns:1fr}}
+.cin{padding:16px;border-right:1px solid var(--line);display:grid;gap:12px;align-content:start}
+@media (max-width:900px){.cin{border-right:0;border-bottom:1px solid var(--line)}}
+.cin fieldset{border:1px solid var(--line);padding:10px 12px;display:grid;gap:8px;margin:0}
+.cin legend{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+.cin label{display:grid;gap:3px;font-size:13px}
+.cin select,.cin input[type=number]{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px}
+.cin input[type=range]{width:100%;accent-color:var(--copper)}
+.cin output{font-family:var(--mono);font-size:13px;font-weight:600}
+.cout{padding:16px;display:grid;gap:12px;min-width:0}
+.spec{width:100%;height:auto;display:block}
+.spec text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.ptbl td.hit{color:var(--copper);font-weight:700}
+.lvl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line)}
+.lvl div{padding:10px 12px;border-right:1px solid var(--line)}
+.lvl div:last-child{border-right:0}
+.lvl b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.lvl b.bad{color:var(--copper)}
+.ipchart{width:100%;max-width:560px;height:auto}
+.ipchart text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.theory{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+@media (max-width:900px){.theory{grid-template-columns:1fr}}
+.theory>div{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.theory>div:last-child{border-right:0}
+.theory p{margin:0 0 10px;max-width:68ch}
+</style>
+<div class="mx-ctl">
+ <div class="grp" id="mxRegion"><span class="label">Region</span></div>
+ <div class="grp"><span class="label">Show up to</span><select id="mxOrder" style="font:inherit;font-size:13px;padding:3px 6px"><option value="3" selected>3rd order</option><option value="4">4th order</option><option value="5">5th order</option></select></div>
+ <label><input type="checkbox" id="mxH" checked> Include single-band harmonics (H2, H3)</label>
+ <label><input type="checkbox" id="mxOwn"> Only own-band receivers</label>
+</div>
+<div class="mxw"><table class="mx" id="mx"></table></div>
+<div class="mxleg"><span><i style="background:color-mix(in oklab,var(--copper) 78%,var(--surface))"></i>2nd order (H2, IM2)</span><span><i style="background:color-mix(in oklab,var(--copper) 50%,var(--surface))"></i>3rd order (H3, IM3)</span><span><i style="background:color-mix(in oklab,var(--pwr) 32%,var(--surface))"></i>4th order</span><span><i style="background:color-mix(in oklab,var(--pwr) 14%,var(--surface))"></i>5th order</span><span><i style="box-shadow:inset 0 0 0 2px var(--ink)"></i>Victim is the aggressor's own downlink (3GPP MSD case)</span><span><i style="background:color-mix(in oklab,var(--copper) 78%,var(--surface));background-image:repeating-linear-gradient(45deg,transparent 0 4px,color-mix(in oklab,var(--surface) 35%,transparent) 4px 6px)"></i>TDD victim that is also a transmitter: only harmonics of the other carrier count</span><span><i style="background:repeating-linear-gradient(45deg,var(--sunk) 0 3px,var(--surface) 3px 6px)"></i>Not applicable</span></div>
+<div class="mxd" id="mxd" aria-live="polite"></div>`},
+{id:"calc",title:"Two-tone product calculator",toc:"Calculator",sub:"Pick two transmit carriers. The calculator lists every product up to 5th order with its exact frequency span and flags any that land in a receive band.",
+html:`<div class="calc"><div class="cin">
+<fieldset><legend>Transmitter A</legend><label>Band<select id="cA"></select></label><label>Center <output id="oA"></output><input type="range" id="fA"></label><label>Bandwidth (MHz)<input type="number" id="bA" value="10" min="1" max="400"></label></fieldset>
+<fieldset><legend>Transmitter B</legend><label>Band<select id="cB"></select></label><label>Center <output id="oB"></output><input type="range" id="fB"></label><label>Bandwidth (MHz)<input type="number" id="bB" value="20" min="1" max="400"></label></fieldset>
+<label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="cH" checked> Include harmonics of each carrier</label>
+</div><div class="cout"><svg class="spec" id="spec" viewBox="0 0 900 230" role="img" aria-label="Spectrum of transmit carriers, products and victim bands"></svg><div class="tw"><table class="ptbl"><thead><tr><th>Product</th><th>Order</th><th>Formula</th><th>Span (MHz)</th><th>Lands in</th></tr></thead><tbody id="ptb"></tbody></table></div></div></div>`},
+{id:"levels",title:"How strong is the product?",toc:"Level budget",sub:"Two-tone intercept arithmetic for one nonlinear element, such as an antenna switch, followed by the receive path.",
+html:`<div class="calc"><div class="cin">
+<fieldset><legend>Aggressors at the nonlinear element</legend>
+<label>Tone A power (dBm)<input type="number" id="pA" value="22" step="0.5"></label>
+<label>Tone B power (dBm)<input type="number" id="pB" value="22" step="0.5"></label></fieldset>
+<fieldset><legend>Element linearity (input-referred)</legend>
+<label>IIP2 (dBm)<input type="number" id="ip2" value="105" step="1"></label>
+<label>IIP3 (dBm)<input type="number" id="ip3" value="80" step="1"></label></fieldset>
+<fieldset><legend>Victim receiver</legend>
+<label>Loss from element to LNA input (dB)<input type="number" id="loss" value="2" step="0.5"></label>
+<label>Channel bandwidth (MHz)<input type="number" id="rbw" value="10" step="1" min="0.1"></label>
+<label>Receiver noise figure (dB)<input type="number" id="nf" value="6" step="0.5"></label></fieldset>
+</div><div class="cout">
+<div class="lvl" id="lvl"></div>
+<svg class="ipchart" id="ipc" viewBox="0 0 560 300" role="img" aria-label="Fundamental, IM2 and IM3 output power versus input power with intercept points"></svg>
+<p style="margin:0;font-size:13.5px;color:var(--muted);max-width:72ch">Desense is the rise of the receiver noise floor caused by the product. 3GPP allows a maximum sensitivity degradation (MSD) for specific EN-DC and UL-CA combinations in TS 38.101-3 and TS 36.101; anything above about 0.5–1 dB is usually treated as a design problem.</p>
+</div></div>`},
+{id:"theory",title:"Where intermodulation comes from",toc:"Theory",
+html:`<div class="theory"><div>
+<h3 style="margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase">The power series</h3>
+<p>Any slightly nonlinear device can be written as y = a1·x + a2·x² + a3·x³ + a4·x⁴ + a5·x⁵ + … Feed it two tones at f1 and f2 and the x² term produces 2f1, 2f2, f1+f2 and f2−f1. The x³ term produces 3f1, 3f2, 2f1±f2 and 2f2±f1. Higher terms add 4th- and 5th-order mixes in the same pattern: every product is m·f1 ± n·f2 with order m+n.</p>
+<p>Product power grows with the order: an IM2 product rises 2 dB for every 1 dB rise in both tones, IM3 rises 3 dB. The intercept point is where the extrapolated fundamental and product lines would meet; it is a single number that describes a device's linearity.</p>
+<p>A product's bandwidth is m·BW1 + n·BW2. A 3rd-order product of two 20 MHz carriers is 60 MHz wide, which is why IMD often overlaps a receive band even when the centres miss.</p>
+</div><div>
+<h3 style="margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase">Sources inside a phone</h3>
+<p><b>Antenna switches and tuners</b> see both transmit signals at full power and sit after all filtering, so their products go straight to the antenna and into the receive path. This is why switch linearity specs are so demanding.</p>
+<p><b>Duplexers and multiplexers</b> generate passive IMD in their acoustic resonators at high power. <b>PAs</b> generate products when the other transmitter's signal couples back into their output (reverse IMD). <b>Receivers</b> generate IM2 from their own TX leakage in zero-IF mixers.</p>
+<p><b>Mitigations</b> include frequency planning, higher-linearity switches, more antenna isolation between the two transmitters, single-uplink (time-multiplexed) operation for problem combinations, transmit power back-off, and digital cancellation of known products in the modem.</p>
+</div></div>`}
+],
+init(){
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// band edges in MHz: [id, label, UL, DL, duplex]
+const BAND={
+ B1:["B1 / n1",[1920,1980],[2110,2170],"FDD"],B2:["B2 / n2",[1850,1910],[1930,1990],"FDD"],B3:["B3 / n3",[1710,1785],[1805,1880],"FDD"],
+ B5:["B5 / n5",[824,849],[869,894],"FDD"],B7:["B7 / n7",[2500,2570],[2620,2690],"FDD"],B8:["B8 / n8",[880,915],[925,960],"FDD"],
+ B12:["B12 / n12",[699,716],[729,746],"FDD"],B13:["B13",[777,787],[746,756],"FDD"],B14:["B14",[788,798],[758,768],"FDD"],
+ B20:["B20 / n20",[832,862],[791,821],"FDD"],B28:["B28 / n28",[703,748],[758,803],"FDD"],B30:["B30",[2305,2315],[2350,2360],"FDD"],
+ B66:["B66 / n66",[1710,1780],[2110,2200],"FDD"],B71:["B71 / n71",[663,698],[617,652],"FDD"],
+ n41:["n41",[2496,2690],[2496,2690],"TDD"],n77:["n77",[3300,4200],[3300,4200],"TDD"],n78:["n78",[3300,3800],[3300,3800],"TDD"],n79:["n79",[4400,5000],[4400,5000],"TDD"],B40:["B40 / n40",[2300,2400],[2300,2400],"TDD"]
+};
+const NB={n1:"B1",n2:"B2",n3:"B3",n5:"B5",n7:"B7",n8:"B8",n12:"B12",n20:"B20",n28:"B28",n66:"B66",n71:"B71"};
+const K=id=>NB[id]||id;
+// victims: [key, short label, range, own-band key]
+const VIC=[
+ ["v71","B71 DL",[617,652],"B71"],["v12","B12 DL",[729,746],"B12"],["v13","B13 DL",[746,756],"B13"],["v14","B14 DL",[758,768],"B14"],
+ ["v28","B28 DL",[758,803],"B28"],["v20","B20 DL",[791,821],"B20"],["v5","B5 DL",[869,894],"B5"],["v8","B8 DL",[925,960],"B8"],
+ ["vL5","GNSS L5",[1164,1189],null],["v32","B32 SDL",[1452,1496],null],["vL1","GNSS L1",[1559,1610],null],["v3","B3 DL",[1805,1880],"B3"],
+ ["v2","B2/25 DL",[1930,1995],"B2"],["v1","B1/66 DL",[2110,2200],"B1|B66"],["v30","B30 DL",[2350,2360],"B30"],["v40","B40",[2300,2400],"B40"],
+ ["vW2","Wi-Fi 2.4/BT",[2400,2483.5],null],["v7","B7 DL",[2620,2690],"B7"],["v41","n41",[2496,2690],"n41"],["v78","n78",[3300,3800],"n78"],["v77","n77",[3300,4200],"n77"],
+ ["v79","n79",[4400,5000],"n79"],["vW5","Wi-Fi 5 GHz",[5150,5895],null],["vW6","Wi-Fi 6 GHz",[5925,7125],null],["vU","UWB ch5/9",[6240,8237],null]
+];
+// aggressor pairs: [A, B, region, note]
+const AGG=[
+ ["B2","n71","US","EN-DC"],["B66","n71","US","EN-DC"],["B2","n41","US","EN-DC"],["B66","n41","US","EN-DC"],["B12","n41","US","EN-DC"],
+ ["B2","n5","US","EN-DC"],["B66","n5","US","EN-DC"],["B2","n77","US","EN-DC"],["B66","n77","US","EN-DC"],["B5","n77","US","EN-DC"],
+ ["B13","n77","US","EN-DC"],["B14","n77","US","EN-DC"],["B30","n77","US","EN-DC"],["B12","n66","US","EN-DC"],["B2","B66","US","UL CA"],
+ ["B3","n78","EU","EN-DC"],["B1","n78","EU","EN-DC"],["B7","n78","EU","EN-DC"],["B8","n78","EU","EN-DC"],["B20","n78","EU","EN-DC"],
+ ["B3","n28","EU","EN-DC"],["B1","n28","EU","EN-DC"],["B3","B7","EU","UL CA"],["B3","B20","EU","UL CA"],["B7","B20","EU","UL CA"],["B1","B3","EU","UL CA"],
+ ["B1","n79","Asia","EN-DC"],["B3","n79","Asia","EN-DC"],["B28","n78","Asia","EN-DC"],["B1","n77","Asia","EN-DC"],["B3","n41","Asia","EN-DC"],["B40","n78","Asia","EN-DC"]
+];
+const UL=id=>BAND[K(id)][1];
+function absIv(lo,hi){if(lo>=0)return[lo,hi];if(hi<=0)return[-hi,-lo];return[0,Math.max(-lo,hi)]}
+function products(A,B,maxO,harm){
+ const a=UL(A),b=UL(B),out=[];
+ if(harm){[[A,a],[B,b]].forEach(([n,r])=>{[2,3].forEach(k=>{if(k<=maxO)out.push({lab:"H"+k+" "+n,ord:k,src:n,f:`${k}·f(${n})`,iv:[k*r[0],k*r[1]]})})})}
+ for(let o=2;o<=maxO;o++)for(let m=1;m<o;m++){const n=o-m;
+  out.push({lab:`IM${o}`,ord:o,f:`${m>1?m:""}f(${A}) + ${n>1?n:""}f(${B})`,iv:[m*a[0]+n*b[0],m*a[1]+n*b[1]]});
+  const d=absIv(m*a[0]-n*b[1],m*a[1]-n*b[0]);
+  out.push({lab:`IM${o}`,ord:o,f:`|${m>1?m:""}f(${A}) − ${n>1?n:""}f(${B})|`,iv:d});
+ }
+ return out;
+}
+const ov=(x,y)=>Math.max(x[0],y[0])<Math.min(x[1],y[1]);
+const tddBusy=(A,B,v)=>[A,B].some(id=>BAND[K(id)][3]==="TDD"&&ov(BAND[K(id)][1],v[2]));
+const isTdd=id=>BAND[K(id)][3]==="TDD";
+function hitsFor(A,B,v,maxO,harm){
+ const busy=tddBusy(A,B,v);
+ let P=products(A,B,maxO,harm);
+ if(busy){const quiet=[A,B].filter(id=>!(isTdd(id)&&ov(BAND[K(id)][1],v[2])));P=P.filter(p=>p.src&&quiet.includes(p.src))}
+ return {busy,hits:P.filter(p=>ov(p.iv,v[2]))};
+}
+const own=(A,B,v)=>v[3]&&v[3].split("|").some(o=>o===K(A)||o===K(B)||o===A||o===B);
+let region="All",sel=null;
+const reg=document.getElementById("mxRegion");
+["All","US","EU","Asia"].forEach(r=>{const b=document.createElement("button");b.textContent=r;b.setAttribute("aria-pressed",String(r===region));b.onclick=()=>{region=r;[...reg.querySelectorAll("button")].forEach(x=>x.setAttribute("aria-pressed",String(x.textContent===r)));draw()};reg.appendChild(b)});
+["mxOrder","mxH","mxOwn"].forEach(i=>document.getElementById(i).addEventListener("change",draw));
+const mx=document.getElementById("mx"),mxd=document.getElementById("mxd");
+function draw(){
+ const maxO=+document.getElementById("mxOrder").value,harm=document.getElementById("mxH").checked,onlyOwn=document.getElementById("mxOwn").checked;
+ const rows=AGG.filter(a=>region==="All"||a[2]===region);
+ let h=`<thead><tr><th class="corner"><span class="label" style="writing-mode:horizontal-tb;transform:none">Uplink pair ↓ · Victim RX →</span></th>${VIC.map(v=>`<th scope="col" title="${esc(v[1])}: ${v[2][0]}–${v[2][1]} MHz"><span>${esc(v[1])}</span></th>`).join("")}</tr></thead><tbody>`;
+ rows.forEach((a,ri)=>{
+  const P=products(a[0],a[1],maxO,harm);
+  h+=`<tr><th scope="row">${esc(a[0])} + ${esc(a[1])}<small>${a[2]} · ${a[3]}</small></th>`;
+  VIC.forEach((v,vi)=>{
+   const isOwn=own(a[0],a[1],v);
+   if(onlyOwn&&!isOwn){h+=`<td class="na" aria-label="hidden"></td>`;return}
+   const R=hitsFor(a[0],a[1],v,maxO,harm),hits=R.hits;
+   if(R.busy&&!hits.length){h+=`<td class="na" title="This TDD band is one of the transmitters; it cannot receive while transmitting, and the other carrier harmonics miss it"></td>`;return}
+   const mo=hits.length?Math.min(...hits.map(p=>p.ord)):0;
+   const top=hits.find(p=>p.ord===mo);
+   const t=mo?(top.lab.startsWith("H")?"H"+mo:"IM"+mo):"";
+   h+=`<td tabindex="0" data-r="${AGG.indexOf(a)}" data-v="${vi}" class="${mo?"o"+mo:""}${isOwn?" own":""}${R.busy?" tdd":""}${sel&&sel[0]===AGG.indexOf(a)&&sel[1]===vi?" sel":""}" aria-label="${esc(a[0]+" + "+a[1]+" into "+v[1]+": "+(t||"no product"))}">${t}</td>`;
+  });
+  h+=`</tr>`;
+ });
+ mx.innerHTML=h+"</tbody>";
+ if(sel)detail(sel[0],sel[1]);else mxd.innerHTML=`<span class="label">Cell detail</span><p style="margin:0">Select a coloured cell to see every product that can land in that receiver, with its formula and frequency span.</p>`;
+}
+function detail(ri,vi){
+ const a=AGG[ri],v=VIC[vi],maxO=+document.getElementById("mxOrder").value,harm=document.getElementById("mxH").checked;
+ const R=hitsFor(a[0],a[1],v,maxO,harm),hits=R.hits.sort((x,y)=>x.ord-y.ord);
+ const ua=UL(a[0]),ub=UL(a[1]);
+ mxd.innerHTML=`<span class="label">${esc(a[2])} · ${esc(a[3])}</span><h3>${esc(a[0])} (UL ${ua[0]}–${ua[1]}) + ${esc(a[1])} (UL ${ub[0]}–${ub[1]}) → ${esc(v[1])} (${v[2][0]}–${v[2][1]} MHz)</h3>`+
+ (hits.length?`<div class="tw"><table><thead><tr><th>Product</th><th>Order</th><th>Formula</th><th>Possible span (MHz)</th><th>Overlap with victim</th></tr></thead><tbody>${hits.map(p=>`<tr><td class="b">${esc(p.lab)}</td><td class="n">${p.ord}</td><td class="n">${esc(p.f)}</td><td class="n">${Math.round(p.iv[0])}–${Math.round(p.iv[1])}</td><td class="n">${Math.round(Math.max(p.iv[0],v[2][0]))}–${Math.round(Math.min(p.iv[1],v[2][1]))}</td></tr>`).join("")}</tbody></table></div><p style="margin:0;font-size:13px;color:var(--muted)">Spans assume any channel in each uplink band. Use the calculator below with specific channels to see whether a real allocation hits.${R.busy?" This receiver is the TDD band that is also transmitting, so only harmonics of the other carrier can hit it, during the TDD band receive slots.":""}${own(a[0],a[1],v)?" This victim is one of the aggressors' own downlinks, the case 3GPP covers with MSD allowances.":""}</p>`:`<p style="margin:0">No product up to the selected order lands in this receiver.</p>`);
+}
+mx.addEventListener("click",e=>{const td=e.target.closest("td[data-r]");if(!td)return;sel=[+td.dataset.r,+td.dataset.v];draw()});
+mx.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const td=e.target.closest("td[data-r]");if(!td)return;e.preventDefault();sel=[+td.dataset.r,+td.dataset.v];draw();const n=mx.querySelector(`td[data-r="${sel[0]}"][data-v="${sel[1]}"]`);if(n)n.focus()});
+draw();
+
+// ---------- calculator ----------
+const ids=Object.keys(BAND),cA=document.getElementById("cA"),cB=document.getElementById("cB");
+[cA,cB].forEach((s,i)=>{ids.forEach(id=>{const o=document.createElement("option");o.value=id;o.textContent=`${BAND[id][0]} · UL ${BAND[id][1][0]}–${BAND[id][1][1]} (${BAND[id][3]})`;s.appendChild(o)});s.value=i?"n78":"B3"});
+const fA=document.getElementById("fA"),fB=document.getElementById("fB");
+function setRange(s,f){const r=BAND[s.value][1];f.min=r[0];f.max=r[1];f.step=0.1;if(+f.value<r[0]||+f.value>r[1]||!f.dataset.init){f.value=((r[0]+r[1])/2).toFixed(1);f.dataset.init=1}}
+setRange(cA,fA);setRange(cB,fB);
+cA.onchange=()=>{fA.dataset.init="";setRange(cA,fA);calc()};cB.onchange=()=>{fB.dataset.init="";setRange(cB,fB);calc()};
+["fA","fB","bA","bB","cH"].forEach(i=>document.getElementById(i).addEventListener("input",calc));
+const VICALL=VIC.concat([["vA","—",[0,0],null]]).slice(0,-1);
+function calc(){
+ const A=cA.value,B=cB.value,a=+fA.value,b=+fB.value,wa=Math.max(0.1,+document.getElementById("bA").value||1),wb=Math.max(0.1,+document.getElementById("bB").value||1),harm=document.getElementById("cH").checked;
+ const ra=BAND[A][1],rb=BAND[B][1];
+ const ca=Math.min(Math.max(a,ra[0]+wa/2),ra[1]-wa/2),cb=Math.min(Math.max(b,rb[0]+wb/2),rb[1]-wb/2);
+ document.getElementById("oA").textContent=ca.toFixed(1)+" MHz";document.getElementById("oB").textContent=cb.toFixed(1)+" MHz";
+ const P=[];
+ if(harm){[[A,ca,wa],[B,cb,wb]].forEach(([n,f,w])=>[2,3].forEach(k=>P.push({lab:`H${k} ${n}`,ord:k,src:n,f:`${k}·${f.toFixed(1)}`,c:k*f,w:k*w})))}
+ for(let o=2;o<=5;o++)for(let m=1;m<o;m++){const n=o-m;
+  P.push({lab:`IM${o}`,ord:o,f:`${m>1?m:""}fA + ${n>1?n:""}fB`,c:m*ca+n*cb,w:m*wa+n*wb});
+  const d=m*ca-n*cb;P.push({lab:`IM${o}`,ord:o,f:`|${m>1?m:""}fA − ${n>1?n:""}fB|`,c:Math.abs(d),w:m*wa+n*wb});
+ }
+ P.forEach(p=>{const iv=[p.c-p.w/2,p.c+p.w/2];p.iv=iv;p.hits=VIC.filter(v=>{if(!ov(iv,v[2]))return false;if(!tddBusy(A,B,v))return true;const quiet=[A,B].filter(id=>!(isTdd(id)&&ov(BAND[K(id)][1],v[2])));return !!p.src&&quiet.includes(p.src)}).map(v=>v[1])});
+ document.getElementById("ptb").innerHTML=P.filter(p=>p.c>1).sort((x,y)=>x.c-y.c).map(p=>`<tr><td class="b">${esc(p.lab)}</td><td class="n">${p.ord}</td><td class="n">${esc(p.f)}</td><td class="n">${p.iv[0].toFixed(1)}–${p.iv[1].toFixed(1)}</td><td class="${p.hits.length?"hit":"m"}">${p.hits.length?esc(p.hits.join(", ")):"—"}</td></tr>`).join("");
+ // spectrum
+ const W=900,H=230,L=40,R=890,f0=500,f1=8500,lx=f=>L+(Math.log(f)-Math.log(f0))/(Math.log(f1)-Math.log(f0))*(R-L);
+ let s="";
+ VIC.forEach((v,i)=>{const x0=lx(Math.max(v[2][0],f0)),x1=lx(Math.min(v[2][1],f1));s+=`<rect x="${x0}" y="26" width="${Math.max(1.5,x1-x0)}" height="138" fill="var(--sunk)" opacity=".9"><title>${esc(v[1])} ${v[2][0]}–${v[2][1]} MHz</title></rect>`});
+ let lastX=[-99,-99];VIC.forEach((v,i)=>{const x0=lx(Math.max(v[2][0],f0)),x1=lx(Math.min(v[2][1],f1)),cx=(x0+x1)/2,lab=v[1].replace(" DL","").replace("Wi-Fi ","Wi-Fi\u00a0");const w=lab.length*6.1;let row=cx-w/2>lastX[0]+4?0:(cx-w/2>lastX[1]+4?1:-1);if(row<0)return;lastX[row]=cx+w/2;s+=`<text x="${cx}" y="${row?22:11}" text-anchor="middle">${esc(lab)}</text>`});
+ const hgt={1:122,2:98,3:76,4:56,5:40};
+ P.filter(p=>p.iv[1]>f0&&p.iv[0]<f1&&p.c>1).forEach(p=>{const x0=lx(Math.max(p.iv[0],f0)),x1=lx(Math.min(p.iv[1],f1)),hh=hgt[p.ord];
+  s+=`<rect x="${x0}" y="${164-hh}" width="${Math.max(1.5,x1-x0)}" height="${hh}" fill="${p.hits.length?"var(--copper)":"var(--wire)"}" opacity="${p.hits.length?.9:.55}"><title>${esc(p.lab)} ${p.iv[0].toFixed(0)}–${p.iv[1].toFixed(0)} MHz${p.hits.length?" hits "+esc(p.hits.join(", ")):""}</title></rect>`});
+ [[A,ca,wa],[B,cb,wb]].forEach(([n,c,w])=>{const x0=lx(c-w/2),x1=lx(c+w/2);s+=`<rect x="${x0}" y="${164-hgt[1]}" width="${Math.max(2,x1-x0)}" height="${hgt[1]}" fill="var(--lo)"><title>TX ${esc(n)} ${c.toFixed(1)} MHz</title></rect><text x="${(x0+x1)/2}" y="${164-hgt[1]-4}" text-anchor="middle" style="fill:var(--lo);font-weight:600">TX ${esc(n)}</text>`});
+ s+=`<line x1="${L}" x2="${R}" y1="164" y2="164" stroke="var(--line)"/>`;
+ [600,800,1000,1500,2000,3000,4000,5000,6000,8000].forEach(f=>{s+=`<line x1="${lx(f)}" x2="${lx(f)}" y1="164" y2="169" stroke="var(--muted)"/><text x="${lx(f)}" y="181" text-anchor="middle">${f>=1000?f/1000+" GHz":f}</text>`});
+ s+=`<rect x="${L}" y="198" width="12" height="9" fill="var(--lo)"/><text x="${L+16}" y="206">TX carriers</text><rect x="${L+100}" y="198" width="12" height="9" fill="var(--copper)"/><text x="${L+116}" y="206">product in a receive band</text><rect x="${L+290}" y="198" width="12" height="9" fill="var(--wire)" opacity=".55"/><text x="${L+306}" y="206">product outside receive bands</text><rect x="${L+510}" y="198" width="12" height="9" fill="var(--sunk)"/><text x="${L+526}" y="206">receive band</text><text x="${L}" y="224">Bar height shows product order: taller is lower order and usually stronger. Log frequency axis.</text>`;
+ document.getElementById("spec").innerHTML=s;
+}
+calc();
+
+// ---------- level budget ----------
+["pA","pB","ip2","ip3","loss","rbw","nf"].forEach(i=>document.getElementById(i).addEventListener("input",lvl));
+function lvl(){
+ const g=i=>+document.getElementById(i).value,pa=g("pA"),pb=g("pB"),i2=g("ip2"),i3=g("ip3"),loss=g("loss"),bw=Math.max(0.01,g("rbw")),nf=g("nf");
+ const im2=pa+pb-i2,im3=2*pa+pb-2*i3,nfl=-174+10*Math.log10(bw*1e6)+nf;
+ const at2=im2-loss,at3=im3-loss;
+ const ds=p=>10*Math.log10(1+Math.pow(10,(p-nfl)/10));
+ const d2=ds(at2),d3=ds(at3);
+ const f=v=>(v>=0?"+":"")+v.toFixed(1);
+ document.getElementById("lvl").innerHTML=`<div><span class="label">IM2 at element</span><b>${f(im2)} dBm</b></div><div><span class="label">IM3 (2A−B) at element</span><b>${f(im3)} dBm</b></div><div><span class="label">Receiver noise floor</span><b>${f(nfl)} dBm</b></div><div><span class="label">Desense from IM2</span><b class="${d2>1?"bad":""}">${d2.toFixed(2)} dB</b></div><div><span class="label">Desense from IM3</span><b class="${d3>1?"bad":""}">${d3.toFixed(2)} dB</b></div>`;
+ // intercept chart: Pin from -10 to max(ip3, ip2) ; single tone power = pa
+ const Wc=560,Hc=300,l=46,r=540,t=14,b=262;
+ const xmin=-10,xmax=Math.min(130,Math.max(i3,i2)+10),ymin=-160,ymax=Math.min(130,Math.max(i3,i2)+10);
+ const X=v=>l+(v-xmin)/(xmax-xmin)*(r-l),Y=v=>b-(v-ymin)/(ymax-ymin)*(b-t);
+ const line=(sl,ip,col,lab)=>{const y0=ip+sl*(xmin-ip),y1=ip+sl*(xmax-ip);return `<line x1="${X(xmin)}" y1="${Y(y0)}" x2="${X(xmax)}" y2="${Y(y1)}" stroke="${col}" stroke-width="2" clip-path="url(#ipclip)"/>`};
+ let s=`<defs><clipPath id="ipclip"><rect x="${l}" y="${t}" width="${r-l}" height="${b-t}"/></clipPath></defs>`;
+ for(let v=-150;v<=ymax;v+=50){if(v<ymin)continue;s+=`<line x1="${l}" x2="${r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${l-6}" y="${Y(v)+3}" text-anchor="end">${v}</text>`}
+ for(let v=0;v<=xmax;v+=25){s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${t}" y2="${b}" stroke="var(--line)" stroke-dasharray="2 3"/><text x="${X(v)}" y="${b+14}" text-anchor="middle">${v}</text>`}
+ s+=line(1,0,"var(--ink)")+line(2,i2,"var(--lo)")+line(3,i3,"var(--copper)");
+ s+=`<line x1="${X(pa)}" x2="${X(pa)}" y1="${t}" y2="${b}" stroke="var(--muted)" stroke-width="1"/>`;
+ [[pa,pa,"var(--ink)"],[pa,im2,"var(--lo)"],[pa,im3,"var(--copper)"]].forEach(([x,y,c])=>{if(y>=ymin&&y<=ymax)s+=`<circle cx="${X(x)}" cy="${Y(y)}" r="4" fill="${c}"/>`});
+ if(i3<=xmax)s+=`<circle cx="${X(i3)}" cy="${Y(i3)}" r="4" fill="none" stroke="var(--copper)" stroke-width="2"/><text x="${X(i3)-6}" y="${Y(i3)-8}" text-anchor="end" style="fill:var(--copper)">IIP3 ${i3}</text>`;
+ if(i2<=xmax)s+=`<circle cx="${X(i2)}" cy="${Y(i2)}" r="4" fill="none" stroke="var(--lo)" stroke-width="2"/><text x="${X(i2)-6}" y="${Y(i2)-8}" text-anchor="end" style="fill:var(--lo)">IIP2 ${i2}</text>`;
+ s+=`<text x="${(l+r)/2}" y="${Hc-6}" text-anchor="middle">Input power per tone (dBm)</text><text x="12" y="${(t+b)/2}" transform="rotate(-90 12 ${(t+b)/2})" text-anchor="middle">Output (dBm)</text>`;
+ s+=`<rect x="${l+6}" y="${t+4}" width="128" height="50" fill="var(--surface)" stroke="var(--line)"/><text x="${l+14}" y="${t+18}" style="fill:var(--ink)">fundamental (1:1)</text><text x="${l+14}" y="${t+32}" style="fill:var(--lo)">IM2 (2:1)</text><text x="${l+14}" y="${t+46}" style="fill:var(--copper)">IM3 (3:1)</text><text x="${X(pa)+5}" y="${b-6}" style="fill:var(--muted)">operating point</text>`;
+ document.getElementById("ipc").innerHTML=s;
+}
+lvl();
+},
+eq:[
+ ["Products of two tones","f_IM = |m·f1 ± n·f2|, order = m + n","Every intermodulation product. Harmonics are the special case n = 0."],
+ ["Product bandwidth","BW_IM = m·BW1 + n·BW2","A 3rd-order product of a 10 MHz and a 20 MHz carrier is 40 or 50 MHz wide."],
+ ["IM2 level","P_IM2 = P1 + P2 − IIP2","Rises 2 dB per dB of input. Dominates where f1 + f2 or f2 − f1 lands in a receive band."],
+ ["IM3 level","P_IM3(2f1−f2) = 2·P1 + P2 − 2·IIP3","Rises 3 dB per dB of input. The classic close-in product."],
+ ["Noise floor","N = −174 dBm/Hz + 10·log10(BW) + NF","For 10 MHz and NF 6 dB, N ≈ −98 dBm."],
+ ["Desense","ΔN = 10·log10(1 + 10^((P_IM − N)/10))","A product equal to the noise floor costs 3 dB of sensitivity; 6 dB below costs ≈ 1 dB."]
+],
+chal:[
+ ["Harmonics into GNSS","B13 and B14 second harmonics (1554–1596 MHz) overlap GPS L1. Low-band PA harmonic traps and antenna filtering are required in US phones."],
+ ["C-band with mid-band","n77/n78 minus a B3 or B1/B66 uplink (IM2) and 2× B3 (H2) fall back on mid-band downlinks and on n78 itself. 3GPP defines MSD for several such EN-DC combinations."],
+ ["Low band with mid band","Combinations like B20 + B3 or B8 + n78 produce 3rd- and 5th-order products in other operators' downlinks and GNSS."],
+ ["Wi-Fi and cellular","n41 and B40 sit beside 2.4 GHz Wi-Fi; mid-band harmonics land in 5 GHz Wi-Fi. Coexistence filters and the PTA arbiter manage it."],
+ ["Passive IMD","Antenna switches, tuners, connectors and even corroded contacts generate products after all the filters, so their linearity must be extreme."]
+],
+specs:[["Switch IIP3","≈ 75–90 dBm effective"],["Switch IIP2","≈ 100–115 dBm"],["Duplexer IMD3","≈ −105 to −115 dBm at +20 dBm tones"],["Harmonic spec (switch)","< −80 dBc at +26 dBm"],["MSD allowance","Combination specific, TS 38.101-3"],["Typical RX noise floor","≈ −98 dBm in 10 MHz"]],
+specsTitle:"Typical linearity targets",
+related:["rf-front-end.html","rf-switches.html","acoustic-filters.html","pa.html","mixers.html","gnss.html","wifi-bluetooth.html"],
+foot:"Band edges follow 3GPP TS 36.101 and TS 38.101-1. The matrix flags products that can overlap a receive band for some channel choice; whether a real allocation is affected depends on channels, bandwidths and actual product levels. Linearity targets are typical values, not specification limits."
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const grp=PAGES.filter(p=>p.group===(PAGES.find(q=>q.file===PAGE.file)||{}).group);
+const idx=grp.findIndex(p=>p.file===PAGE.file);
+const prev=grp[(idx-1+grp.length)%grp.length],next=grp[(idx+1)%grp.length];
+const GROUPS=[...new Set(PAGES.map(p=>p.group))];
+const sec=(id,title,sub,body)=>`<section class="blk" id="${id}"><div class="bh"><h2>${esc(title)}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div>${body}</section>`;
+const toc=[];
+let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a></div>
+<nav class="modnav" aria-label="All pages">${GROUPS.map(g=>`<div class="ng"><span class="label">${esc(g)}</span>${PAGES.filter(p=>p.group===g).map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</div>`).join("")}</nav>
+<header class="hdr${PAGE.cost?"":" nocost"}"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+${PAGE.cost?`<div class="costbox"><span class="label">${esc(PAGE.costLabel||"Typical cost per phone")}</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div>`:""}</header>
+${PAGE.stats?`<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`:""}
+<nav class="toc" id="toc" aria-label="On this page"></nav>`;
+if(PAGE.diagram){toc.push(["diagram","Block diagram"]);h+=sec("diagram",PAGE.diagram.title||"Internal block diagram",PAGE.diagram.caption+" Click or tab to a block; blocks marked ↗ open a detail page.",`<div class="scroll"><svg class="sch" id="sch"></svg></div><div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div>`)}
+(PAGE.sections||[]).forEach(s=>{toc.push([s.id,s.toc||s.title]);h+=sec(s.id,s.title,s.sub,s.html)});
+if(PAGE.how){toc.push(["how","How it works"]);h+=sec("how","How it works","",`<div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div>`)}
+if(PAGE.eq){toc.push(["eq","Key equations"]);h+=sec("eq","Key equations","The relationships designers use every day.",`<div class="eqs">${PAGE.eq.map(([n,f,x])=>`<div class="eqc"><span class="label">${esc(n)}</span><code class="f">${esc(f)}</code><p>${esc(x)}</p></div>`).join("")}</div>`)}
+if(PAGE.arch){toc.push(["arch",PAGE.archTitle||"Architectures"]);h+=sec("arch",PAGE.archTitle||"Architecture options","The main design choices and where each one is used.",`<div class="tw"><table class="atbl"><thead><tr><th>${esc(PAGE.archCol||"Architecture")}</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div>`)}
+if(PAGE.chal){toc.push(["chal","Design challenges"]);h+=sec("chal","Design challenges","",`<div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div>`)}
+if(PAGE.specs||PAGE.parts){h+=`<div class="two">`;
+ if(PAGE.specs){toc.push(["specs","Specifications"]);h+=sec("specs",PAGE.specsTitle||"Key specifications","",`<div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div>`)}
+ if(PAGE.parts){toc.push(["parts","Parts & vendors"]);h+=sec("parts","Parts & vendors","Representative examples; exact parts vary by phone and region.",`<div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div>`)}
+ h+=`</div>`}
+const rel=(PAGE.related||[]).map(f=>PAGES.find(p=>p.file===f)).filter(Boolean);
+if(rel.length){toc.push(["related","Related"]);h+=sec("related","Related pages","",`<div class="rel">${rel.map(p=>`<a href="${p.file}"><span class="label">${esc(p.group)}</span><b>${esc(p.short)}</b></a>`).join("")}</div>`)}
+h+=`<nav class="pn" aria-label="Previous and next"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+document.getElementById("toc").innerHTML=`<span class="label">On this page</span>`+toc.map(([i,t])=>`<a href="#${i}">${esc(t)}</a>`).join("");
+if(PAGE.init)PAGE.init();
+if(!PAGE.diagram)return;
+// ---------- auto links from diagram blocks to detail pages ----------
+const LINKRULES=[
+ [/phase shifter/i,"mmwave.html"],
+ [/\bDPD\b|envelope|ET tracker|ET trackers/i,"linearization.html"],
+ [/\bLNA\b|low-noise|LNA bank|RF input/i,"lna.html"],
+ [/\bPA\b|power stage|driver stage|driver amp|Driver amplifier|PA \/ LNA/i,"pa.html"],
+ [/mixer|converter$|up\/down/i,"mixers.html"],
+ [/synthesi[sz]er|PLL|LO divider|LO \//i,"synthesizers.html"],
+ [/\bADC\b|\bDAC\b/i,"data-converters.html"],
+ [/SAW|BAW|duplexer|plexer|Pre-filter|Diplexer/i,"acoustic-filters.html"],
+ [/switch|tuner|matrix/i,"rf-switches.html"]
+];
+const EXTRULES=[
+ [/transceiver/i,"transceiver.html"],[/^modem|cellular modem|5G modem/i,"modem.html"],[/^SoC|App processor|SoC /i,"soc.html"],[/GNSS/i,"gnss.html"],
+ [/PAMiD|front-end module|in front-end|DRx module|MIMO L-FEM|front end/i,"rf-front-end.html"],
+ [/antenna|ANT\d/i,"antennas.html"],[/Wi-Fi/i,"wifi-bluetooth.html"],[/PMIC|charger|battery/i,"power.html"],[/mmWave|AiP/i,"mmwave.html"]
+];
+function linkFor(b){
+ if(D.link&&b.id in D.link)return D.link[b.id];
+ const rules=b.cls.includes("ext")?EXTRULES.concat(LINKRULES):LINKRULES.concat(EXTRULES);
+ for(const [re,f] of rules){if(re.test(b.label)&&f!==PAGE.file&&PAGES.some(p=>p.file===f))return f}
+ return null;
+}
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ o.href=linkFor(o);
+ if(o.href){const t=el("text",{x:o.x+o.w-5,y:o.y+12,"text-anchor":"end",class:"lk"},g);t.textContent="↗"}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}${o.href?`<a class="go" href="${o.href}">Open the ${esc((PAGES.find(p=>p.file===o.href)||{short:"detail"}).short)} page →</a>`:""}`;
+}
+focus(null);
+document.getElementById("leg").innerHTML=[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>

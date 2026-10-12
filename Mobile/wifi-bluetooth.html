@@ -113,6 +113,21 @@ td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
 .pn a span{display:block}
 .pn .nx{text-align:right}
 .pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+.modnav{display:grid;gap:6px}
+.modnav .ng{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modnav .ng .label{min-width:92px}
+header.hdr.nocost{grid-template-columns:1fr}
+.sch .lk{font-size:11px;fill:var(--copper);font-weight:700}
+.go{display:inline-block;margin-top:8px;font-weight:650;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.go:hover{border-bottom-width:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.eqc{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.eqc .f{font-family:var(--mono);font-size:14.5px;font-weight:600;background:var(--sunk);padding:8px 10px;border-left:3px solid var(--copper);overflow-x:auto;white-space:pre-wrap}
+.eqc p{margin:0;font-size:14px;color:var(--muted)}
+.rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.rel a{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.rel a:hover{background:var(--sunk)}
+.rel b{display:block;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
 footer{font-size:12.5px;color:var(--muted);max-width:90ch}
 a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
 </style>
@@ -122,7 +137,7 @@ a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:
 <div class="wrap" id="app"></div>
 <script>
 const HOME="index.html";
-const PAGES=[{"file": "soc.html", "short": "SoC"}, {"file": "modem.html", "short": "5G modem"}, {"file": "transceiver.html", "short": "RF transceiver"}, {"file": "rf-front-end.html", "short": "RF front-end"}, {"file": "antennas.html", "short": "Antennas & tuning"}, {"file": "gnss.html", "short": "GNSS"}, {"file": "mmwave.html", "short": "mmWave"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth"}, {"file": "nfc-uwb.html", "short": "NFC & UWB"}, {"file": "power.html", "short": "Power & charging"}];
+const PAGES=[{"file": "soc.html", "short": "SoC", "group": "Modules"}, {"file": "modem.html", "short": "5G modem", "group": "Modules"}, {"file": "transceiver.html", "short": "RF transceiver", "group": "Modules"}, {"file": "rf-front-end.html", "short": "RF front-end", "group": "Modules"}, {"file": "antennas.html", "short": "Antennas & tuning", "group": "Modules"}, {"file": "gnss.html", "short": "GNSS", "group": "Modules"}, {"file": "mmwave.html", "short": "mmWave", "group": "Modules"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth", "group": "Modules"}, {"file": "nfc-uwb.html", "short": "NFC & UWB", "group": "Modules"}, {"file": "power.html", "short": "Power & charging", "group": "Modules"}, {"file": "lna.html", "short": "LNA", "group": "Components"}, {"file": "pa.html", "short": "Power amplifier", "group": "Components"}, {"file": "mixers.html", "short": "Mixers", "group": "Components"}, {"file": "synthesizers.html", "short": "Synthesizers & PLLs", "group": "Components"}, {"file": "data-converters.html", "short": "ADC & DAC", "group": "Components"}, {"file": "acoustic-filters.html", "short": "SAW & BAW filters", "group": "Components"}, {"file": "rf-switches.html", "short": "Switches & tuners", "group": "Components"}, {"file": "linearization.html", "short": "DPD & envelope tracking", "group": "Components"}, {"file": "intermodulation.html", "short": "Intermodulation", "group": "Studies"}];
 const PAGE={
 file:"wifi-bluetooth.html",title:"Wi-Fi 7 & Bluetooth",kicker:"Connectivity combo · 2.4 / 5 / 6 GHz",
 lede:"A single combo chip handles Wi-Fi 7 and Bluetooth, with external front-end modules for each antenna. Wi-Fi 7 adds 320 MHz channels, 4096-QAM and multi-link operation across bands; Bluetooth adds LE Audio and Channel Sounding.",
@@ -232,26 +247,59 @@ const G={
 const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
 const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
 const app=document.getElementById("app");
-const idx=PAGES.findIndex(p=>p.file===PAGE.file);
-const prev=PAGES[(idx-1+PAGES.length)%PAGES.length],next=PAGES[(idx+1)%PAGES.length];
-let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a><nav class="modnav" aria-label="Module pages">${PAGES.map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</nav></div>
-<header class="hdr"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
-<div class="costbox"><span class="label">Typical cost per phone</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div></header>
-<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>
-<nav class="toc" aria-label="On this page"><span class="label">On this page</span><a href="#diagram">Block diagram</a><a href="#how">How it works</a><a href="#arch">Architectures</a><a href="#chal">Design challenges</a><a href="#specs">Specifications</a><a href="#parts">Parts &amp; vendors</a></nav>
-<section class="blk" id="diagram"><div class="bh"><h2>Internal block diagram</h2><p>${esc(PAGE.diagram.caption)} Click or tab to a block for details.</p></div><div class="scroll"><svg class="sch" id="sch"></svg></div>
-<div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div></section>
-<section class="blk" id="how"><div class="bh"><h2>How it works</h2></div><div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div></section>
-<section class="blk" id="arch"><div class="bh"><h2>Architecture options</h2><p>The main design choices and where each one is used.</p></div><div class="tw"><table class="atbl"><thead><tr><th>Architecture</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div></section>
-<section class="blk" id="chal"><div class="bh"><h2>Design challenges</h2></div><div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div></section>
-<div class="two">
-<section class="blk" id="specs"><div class="bh"><h2>Key specifications</h2></div><div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div></section>
-<section class="blk" id="parts"><div class="bh"><h2>Parts &amp; vendors</h2><p>Representative examples; exact parts vary by phone and region.</p></div><div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div></section>
-</div>
-<nav class="pn" aria-label="Previous and next module"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+const grp=PAGES.filter(p=>p.group===(PAGES.find(q=>q.file===PAGE.file)||{}).group);
+const idx=grp.findIndex(p=>p.file===PAGE.file);
+const prev=grp[(idx-1+grp.length)%grp.length],next=grp[(idx+1)%grp.length];
+const GROUPS=[...new Set(PAGES.map(p=>p.group))];
+const sec=(id,title,sub,body)=>`<section class="blk" id="${id}"><div class="bh"><h2>${esc(title)}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div>${body}</section>`;
+const toc=[];
+let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a></div>
+<nav class="modnav" aria-label="All pages">${GROUPS.map(g=>`<div class="ng"><span class="label">${esc(g)}</span>${PAGES.filter(p=>p.group===g).map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</div>`).join("")}</nav>
+<header class="hdr${PAGE.cost?"":" nocost"}"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+${PAGE.cost?`<div class="costbox"><span class="label">${esc(PAGE.costLabel||"Typical cost per phone")}</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div>`:""}</header>
+${PAGE.stats?`<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`:""}
+<nav class="toc" id="toc" aria-label="On this page"></nav>`;
+if(PAGE.diagram){toc.push(["diagram","Block diagram"]);h+=sec("diagram",PAGE.diagram.title||"Internal block diagram",PAGE.diagram.caption+" Click or tab to a block; blocks marked ↗ open a detail page.",`<div class="scroll"><svg class="sch" id="sch"></svg></div><div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div>`)}
+(PAGE.sections||[]).forEach(s=>{toc.push([s.id,s.toc||s.title]);h+=sec(s.id,s.title,s.sub,s.html)});
+if(PAGE.how){toc.push(["how","How it works"]);h+=sec("how","How it works","",`<div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div>`)}
+if(PAGE.eq){toc.push(["eq","Key equations"]);h+=sec("eq","Key equations","The relationships designers use every day.",`<div class="eqs">${PAGE.eq.map(([n,f,x])=>`<div class="eqc"><span class="label">${esc(n)}</span><code class="f">${esc(f)}</code><p>${esc(x)}</p></div>`).join("")}</div>`)}
+if(PAGE.arch){toc.push(["arch",PAGE.archTitle||"Architectures"]);h+=sec("arch",PAGE.archTitle||"Architecture options","The main design choices and where each one is used.",`<div class="tw"><table class="atbl"><thead><tr><th>${esc(PAGE.archCol||"Architecture")}</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div>`)}
+if(PAGE.chal){toc.push(["chal","Design challenges"]);h+=sec("chal","Design challenges","",`<div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div>`)}
+if(PAGE.specs||PAGE.parts){h+=`<div class="two">`;
+ if(PAGE.specs){toc.push(["specs","Specifications"]);h+=sec("specs",PAGE.specsTitle||"Key specifications","",`<div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div>`)}
+ if(PAGE.parts){toc.push(["parts","Parts & vendors"]);h+=sec("parts","Parts & vendors","Representative examples; exact parts vary by phone and region.",`<div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div>`)}
+ h+=`</div>`}
+const rel=(PAGE.related||[]).map(f=>PAGES.find(p=>p.file===f)).filter(Boolean);
+if(rel.length){toc.push(["related","Related"]);h+=sec("related","Related pages","",`<div class="rel">${rel.map(p=>`<a href="${p.file}"><span class="label">${esc(p.group)}</span><b>${esc(p.short)}</b></a>`).join("")}</div>`)}
+h+=`<nav class="pn" aria-label="Previous and next"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
 <footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
 app.innerHTML=h;
-
+document.getElementById("toc").innerHTML=`<span class="label">On this page</span>`+toc.map(([i,t])=>`<a href="#${i}">${esc(t)}</a>`).join("");
+if(PAGE.init)PAGE.init();
+if(!PAGE.diagram)return;
+// ---------- auto links from diagram blocks to detail pages ----------
+const LINKRULES=[
+ [/phase shifter/i,"mmwave.html"],
+ [/\bDPD\b|envelope|ET tracker|ET trackers/i,"linearization.html"],
+ [/\bLNA\b|low-noise|LNA bank|RF input/i,"lna.html"],
+ [/\bPA\b|power stage|driver stage|driver amp|Driver amplifier|PA \/ LNA/i,"pa.html"],
+ [/mixer|converter$|up\/down/i,"mixers.html"],
+ [/synthesi[sz]er|PLL|LO divider|LO \//i,"synthesizers.html"],
+ [/\bADC\b|\bDAC\b/i,"data-converters.html"],
+ [/SAW|BAW|duplexer|plexer|Pre-filter|Diplexer/i,"acoustic-filters.html"],
+ [/switch|tuner|matrix/i,"rf-switches.html"]
+];
+const EXTRULES=[
+ [/transceiver/i,"transceiver.html"],[/^modem|cellular modem|5G modem/i,"modem.html"],[/^SoC|App processor|SoC /i,"soc.html"],[/GNSS/i,"gnss.html"],
+ [/PAMiD|front-end module|in front-end|DRx module|MIMO L-FEM|front end/i,"rf-front-end.html"],
+ [/antenna|ANT\d/i,"antennas.html"],[/Wi-Fi/i,"wifi-bluetooth.html"],[/PMIC|charger|battery/i,"power.html"],[/mmWave|AiP/i,"mmwave.html"]
+];
+function linkFor(b){
+ if(D.link&&b.id in D.link)return D.link[b.id];
+ const rules=b.cls.includes("ext")?EXTRULES.concat(LINKRULES):LINKRULES.concat(EXTRULES);
+ for(const [re,f] of rules){if(re.test(b.label)&&f!==PAGE.file&&PAGES.some(p=>p.file===f))return f}
+ return null;
+}
 // ---------- schematic ----------
 const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=30,P=26,TOP=36;
 const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
@@ -303,6 +351,8 @@ Object.values(B).forEach(o=>{
  const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
  lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
  if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ o.href=linkFor(o);
+ if(o.href){const t=el("text",{x:o.x+o.w-5,y:o.y+12,"text-anchor":"end",class:"lk"},g);t.textContent="↗"}
  const act=()=>focus(o.id);
  g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
  g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
@@ -321,7 +371,7 @@ function focus(id){
  if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
  const o=B[cur],txt=(D.desc||{})[cur]||"";
  const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
- dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}`;
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}${o.href?`<a class="go" href="${o.href}">Open the ${esc((PAGES.find(p=>p.file===o.href)||{short:"detail"}).short)} page →</a>`:""}`;
 }
 focus(null);
 document.getElementById("leg").innerHTML=[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")

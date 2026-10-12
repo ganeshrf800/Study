@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SAW & BAW Filters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+.modnav{display:grid;gap:6px}
+.modnav .ng{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modnav .ng .label{min-width:92px}
+header.hdr.nocost{grid-template-columns:1fr}
+.sch .lk{font-size:11px;fill:var(--copper);font-weight:700}
+.go{display:inline-block;margin-top:8px;font-weight:650;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.go:hover{border-bottom-width:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.eqc{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.eqc .f{font-family:var(--mono);font-size:14.5px;font-weight:600;background:var(--sunk);padding:8px 10px;border-left:3px solid var(--copper);overflow-x:auto;white-space:pre-wrap}
+.eqc p{margin:0;font-size:14px;color:var(--muted)}
+.rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.rel a{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.rel a:hover{background:var(--sunk)}
+.rel b{display:block;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+<link rel="stylesheet" href="../back.css">
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC", "group": "Modules"}, {"file": "modem.html", "short": "5G modem", "group": "Modules"}, {"file": "transceiver.html", "short": "RF transceiver", "group": "Modules"}, {"file": "rf-front-end.html", "short": "RF front-end", "group": "Modules"}, {"file": "antennas.html", "short": "Antennas & tuning", "group": "Modules"}, {"file": "gnss.html", "short": "GNSS", "group": "Modules"}, {"file": "mmwave.html", "short": "mmWave", "group": "Modules"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth", "group": "Modules"}, {"file": "nfc-uwb.html", "short": "NFC & UWB", "group": "Modules"}, {"file": "power.html", "short": "Power & charging", "group": "Modules"}, {"file": "lna.html", "short": "LNA", "group": "Components"}, {"file": "pa.html", "short": "Power amplifier", "group": "Components"}, {"file": "mixers.html", "short": "Mixers", "group": "Components"}, {"file": "synthesizers.html", "short": "Synthesizers & PLLs", "group": "Components"}, {"file": "data-converters.html", "short": "ADC & DAC", "group": "Components"}, {"file": "acoustic-filters.html", "short": "SAW & BAW filters", "group": "Components"}, {"file": "rf-switches.html", "short": "Switches & tuners", "group": "Components"}, {"file": "linearization.html", "short": "DPD & envelope tracking", "group": "Components"}, {"file": "intermodulation.html", "short": "Intermodulation", "group": "Studies"}];
+const PAGE={
+file:"acoustic-filters.html",title:"SAW & BAW Filters",kicker:"Component · acoustic filters, duplexers, multiplexers",
+lede:"A phone needs dozens of filters, each a few square millimetres, with insertion loss under 2 dB and rejection over 50 dB only a few MHz away. Only acoustic resonators deliver that, because a sound wave in a crystal has a wavelength about 100,000 times shorter than a radio wave at the same frequency.",
+cost:["$0.10–0.60","Per filter or duplexer; a flagship carries 60–100 resonator dies"],costLabel:"Typical cost",
+stats:[["Insertion loss","≈ 1–2.5 dB"],["Rejection","≈ 40–60 dB"],["Resonator Q","SAW 1–2k · BAW 2–4k"],["Temp. drift","SAW −40 · TC-SAW −10 · BAW −20 ppm/°C"],["Size","≈ 1 mm² per filter"]],
+diagram:{cols:5,rows:5,cw:136,title:"Ladder filter and duplexer",
+ caption:"Top: a ladder filter built from series and shunt resonators. Bottom: a duplexer, which joins a transmit and a receive filter at one antenna port through a matching network.",
+ intro:"In the ladder, series resonators pass the band and shunt resonators short out frequencies just below it. In the duplexer, each filter looks like an open circuit in the other filter's band, so TX and RX share the antenna.",
+ groups:[[1,0,3,1,"Ladder filter"],[1,3,2,4,"Duplexer"]],
+ blocks:[
+  ["p1",0,0,1,1,"Input port","","ext","50 Ω"],
+  ["s1",1,0,1,1,"Series resonator 1","filter","","fs above band"],
+  ["s2",2,0,1,1,"Series resonator 2","filter"],
+  ["s3",3,0,1,1,"Series resonator 3","filter"],
+  ["p2",4,0,1,1,"Output port","","ext","50 Ω"],
+  ["h1",1,1,1,1,"Shunt resonator 1","filter","","fs below band"],
+  ["h2",2,1,1,1,"Shunt resonator 2","filter"],
+  ["h3",3,1,1,1,"Shunt resonator 3","filter"],
+  ["ant",0,3,1,2,"Antenna port","ant","ext"],
+  ["mn",1,3,1,2,"Phase / matching network","","","λ/4-like shift"],
+  ["tx",2,3,1,1,"TX filter","filter","hl","passes UL"],
+  ["rx",2,4,1,1,"RX filter","filter","hl","passes DL"],
+  ["pa",3,3,1,1,"From PA","amp","ext"],
+  ["lna",3,4,1,1,"To LNA","amp","ext"]
+ ],
+ edges:[["p1","s1","rf"],["s1","s2","rf"],["s2","s3","rf"],["s3","p2","rf"],["s1","h1","rf"],["s2","h2","rf"],["s3","h3","rf"],
+  ["ant","mn","rf"],["mn","tx","rf"],["mn","rx","rf"],["pa","tx","rf"],["rx","lna","rf"]],
+ link:{s1:null,s2:null,s3:null,h1:null,h2:null,h3:null,tx:null,rx:null,ant:"antennas.html"},
+ desc:{p1:"Signal enters.",s1:"Resonator whose series resonance sits in the passband and whose anti-resonance (near-open circuit) sits just above it, creating the upper rejection notch.",s2:"Second series element.",s3:"Third series element.",p2:"Filtered output.",
+  h1:"Shunt resonator to ground whose resonance (near-short) sits just below the passband, creating the lower notch.",h2:"Second shunt element.",h3:"Third shunt element.",
+  ant:"Common antenna port.",mn:"Transforms each filter's out-of-band impedance into a near-open circuit at the shared node so the filters do not load each other.",
+  tx:"Passes the uplink band and rejects the downlink band so the transmitter's noise does not reach the receiver.",rx:"Passes the downlink band and rejects the uplink band by 50 dB or more so the transmit signal does not desense the receiver.",
+  pa:"Power amplifier output.",lna:"Receive path to the LNA."}},
+how:[
+ ["Acoustic resonators",["A piezoelectric material turns an RF voltage into a mechanical wave and back. Sound in these crystals travels at roughly 3,000–11,000 m/s, about 100,000 times slower than light, so a resonator sized to the acoustic wavelength at 2 GHz is only a few micrometres in its critical dimension.","Each resonator has a series resonance (low impedance) and a slightly higher anti-resonance (high impedance). The spacing between them is set by the material's electromechanical coupling, and it limits how wide a filter can be."]],
+ ["SAW: surface waves",["Surface acoustic wave filters use interdigital metal fingers on lithium tantalate or lithium niobate. The finger pitch sets the frequency. SAW is cheap and works well below about 1.5–2 GHz; above that, fingers get too fine and losses rise.","Temperature-compensated SAW adds a silicon-dioxide layer whose stiffness rises with temperature, cancelling most of the drift. Layered substrates (thin-film on silicon) raise Q further."]],
+ ["BAW: bulk waves",["Bulk acoustic wave resonators sandwich a thin aluminium-nitride (often scandium-doped) film between two electrodes; the film thickness sets the frequency. The wave is trapped either by an air cavity under the membrane (FBAR) or by a stack of alternating acoustic mirror layers (SMR).","BAW has higher Q at 1.5–6 GHz and handles more power than SAW, making it essential for crowded mid/high bands, n41 and Wi-Fi coexistence."]],
+ ["Duplexers and multiplexers",["A duplexer joins a TX and an RX filter at one antenna port. Each filter must look like an open circuit at the other's frequencies, which a matching network arranges. Carrier aggregation extends this to quadplexers and hexaplexers with four to six filters on one node.","Every additional filter on the node adds loading, so multiplexers trade a few tenths of a dB of loss for the ability to aggregate bands without switching."]]
+],
+eq:[
+ ["Acoustic wavelength","λ_acoustic = v / f","At 2 GHz with v ≈ 4,000 m/s, λ ≈ 2 µm, versus 15 cm for the radio wave."],
+ ["Coupling from fs and fp","k²_eff ≈ (π²/4)·(fp − fs)/fp","Higher coupling allows wider filters. AlN ≈ 6–7%; ScAlN reaches 10% and more."],
+ ["Resonator figure of merit","FOM = Q · k²_eff","Higher means lower loss and steeper skirts for a given bandwidth."],
+ ["Temperature drift","Δf = TCF · ΔT · f","With TCF = −20 ppm/°C, a 1.9 GHz filter moves about 4.6 MHz over 120 °C."],
+ ["Fractional bandwidth limit","BW/f0 ≲ k²_eff / 2 (roughly)","Explains why n77 (24% fractional BW) needs non-acoustic or very-high-coupling filters."]
+],
+archTitle:"Filter technologies",archCol:"Technology",
+arch:[
+ ["SAW","IDT fingers on LiTaO₃ / LiNbO₃.","Cheap and small; limited above ≈ 2 GHz, high temperature drift.","Low band, GNSS, receive filters"],
+ ["TC-SAW","SAW with SiO₂ temperature compensation.","Low drift for narrow gaps; slightly more loss.","B13, B26, n71, B20"],
+ ["Thin-film / layered SAW (IHP, I.H.P.)","Piezo thin film bonded on high-velocity substrate.","Higher Q and frequency, low drift.","Mid-band SAW in recent modules"],
+ ["BAW-SMR","AlN film over Bragg reflector stack.","High Q, robust, good power handling.","Mid/high band, n41, Wi-Fi"],
+ ["FBAR","AlN membrane over air cavity.","Highest Q in BAW; membrane fabrication.","Broadcom mid/high-band modules"],
+ ["XBAW / high-coupling BAW","ScAlN or novel stacks for higher coupling.","Wider bandwidth for UHB and Wi-Fi 6/7.","n77/n79, 5–7 GHz Wi-Fi"],
+ ["LTCC / IPD","Lumped L-C in ceramic or on glass/silicon.","Very wide bandwidth; lower Q and selectivity.","n77, n79, diplexers"]
+],
+chal:[
+ ["Narrow duplex gaps","B25 has a 15 MHz gap at 1.9 GHz (0.8%), needing high Q and low drift together."],
+ ["Power handling","The TX filter carries nearly 1 W; acoustic migration and heating limit lifetime."],
+ ["Nonlinearity","Resonators produce IM2/IM3 and harmonics at high power, contributing to self-interference."],
+ ["Loading in multiplexers","Each added filter loads the others, so cross-band design must be co-optimized."]
+],
+specs:[["Insertion loss (TX)","≈ 1.2–2.0 dB"],["Insertion loss (RX)","≈ 1.5–2.5 dB"],["TX-RX isolation","≈ 50–60 dB"],["Out-of-band rejection","≈ 30–50 dB"],["Power handling","≈ +30 to +33 dBm"],["Package","Chip-scale, wafer-level or in module"]],
+parts:[["SAW / TC-SAW","Murata, Qualcomm RF360, Kyocera, Skyworks","Low band, GNSS"],["BAW-SMR","Qorvo, Qualcomm","Mid/high band"],["FBAR","Broadcom","Mid/high band"],["XBAW","Akoustis, others","Wide bands"],["LTCC / IPD","Murata, TDK","UHB, diplexers"]],
+related:["rf-front-end.html","lna.html","pa.html","intermodulation.html"],
+foot:"Typical values for handset acoustic filters. Equations are standard approximations."
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const grp=PAGES.filter(p=>p.group===(PAGES.find(q=>q.file===PAGE.file)||{}).group);
+const idx=grp.findIndex(p=>p.file===PAGE.file);
+const prev=grp[(idx-1+grp.length)%grp.length],next=grp[(idx+1)%grp.length];
+const GROUPS=[...new Set(PAGES.map(p=>p.group))];
+const sec=(id,title,sub,body)=>`<section class="blk" id="${id}"><div class="bh"><h2>${esc(title)}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div>${body}</section>`;
+const toc=[];
+let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a></div>
+<nav class="modnav" aria-label="All pages">${GROUPS.map(g=>`<div class="ng"><span class="label">${esc(g)}</span>${PAGES.filter(p=>p.group===g).map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</div>`).join("")}</nav>
+<header class="hdr${PAGE.cost?"":" nocost"}"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+${PAGE.cost?`<div class="costbox"><span class="label">${esc(PAGE.costLabel||"Typical cost per phone")}</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div>`:""}</header>
+${PAGE.stats?`<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`:""}
+<nav class="toc" id="toc" aria-label="On this page"></nav>`;
+if(PAGE.diagram){toc.push(["diagram","Block diagram"]);h+=sec("diagram",PAGE.diagram.title||"Internal block diagram",PAGE.diagram.caption+" Click or tab to a block; blocks marked ↗ open a detail page.",`<div class="scroll"><svg class="sch" id="sch"></svg></div><div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div>`)}
+(PAGE.sections||[]).forEach(s=>{toc.push([s.id,s.toc||s.title]);h+=sec(s.id,s.title,s.sub,s.html)});
+if(PAGE.how){toc.push(["how","How it works"]);h+=sec("how","How it works","",`<div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div>`)}
+if(PAGE.eq){toc.push(["eq","Key equations"]);h+=sec("eq","Key equations","The relationships designers use every day.",`<div class="eqs">${PAGE.eq.map(([n,f,x])=>`<div class="eqc"><span class="label">${esc(n)}</span><code class="f">${esc(f)}</code><p>${esc(x)}</p></div>`).join("")}</div>`)}
+if(PAGE.arch){toc.push(["arch",PAGE.archTitle||"Architectures"]);h+=sec("arch",PAGE.archTitle||"Architecture options","The main design choices and where each one is used.",`<div class="tw"><table class="atbl"><thead><tr><th>${esc(PAGE.archCol||"Architecture")}</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div>`)}
+if(PAGE.chal){toc.push(["chal","Design challenges"]);h+=sec("chal","Design challenges","",`<div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div>`)}
+if(PAGE.specs||PAGE.parts){h+=`<div class="two">`;
+ if(PAGE.specs){toc.push(["specs","Specifications"]);h+=sec("specs",PAGE.specsTitle||"Key specifications","",`<div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div>`)}
+ if(PAGE.parts){toc.push(["parts","Parts & vendors"]);h+=sec("parts","Parts & vendors","Representative examples; exact parts vary by phone and region.",`<div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div>`)}
+ h+=`</div>`}
+const rel=(PAGE.related||[]).map(f=>PAGES.find(p=>p.file===f)).filter(Boolean);
+if(rel.length){toc.push(["related","Related"]);h+=sec("related","Related pages","",`<div class="rel">${rel.map(p=>`<a href="${p.file}"><span class="label">${esc(p.group)}</span><b>${esc(p.short)}</b></a>`).join("")}</div>`)}
+h+=`<nav class="pn" aria-label="Previous and next"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+document.getElementById("toc").innerHTML=`<span class="label">On this page</span>`+toc.map(([i,t])=>`<a href="#${i}">${esc(t)}</a>`).join("");
+if(PAGE.init)PAGE.init();
+if(!PAGE.diagram)return;
+// ---------- auto links from diagram blocks to detail pages ----------
+const LINKRULES=[
+ [/phase shifter/i,"mmwave.html"],
+ [/\bDPD\b|envelope|ET tracker|ET trackers/i,"linearization.html"],
+ [/\bLNA\b|low-noise|LNA bank|RF input/i,"lna.html"],
+ [/\bPA\b|power stage|driver stage|driver amp|Driver amplifier|PA \/ LNA/i,"pa.html"],
+ [/mixer|converter$|up\/down/i,"mixers.html"],
+ [/synthesi[sz]er|PLL|LO divider|LO \//i,"synthesizers.html"],
+ [/\bADC\b|\bDAC\b/i,"data-converters.html"],
+ [/SAW|BAW|duplexer|plexer|Pre-filter|Diplexer/i,"acoustic-filters.html"],
+ [/switch|tuner|matrix/i,"rf-switches.html"]
+];
+const EXTRULES=[
+ [/transceiver/i,"transceiver.html"],[/^modem|cellular modem|5G modem/i,"modem.html"],[/^SoC|App processor|SoC /i,"soc.html"],[/GNSS/i,"gnss.html"],
+ [/PAMiD|front-end module|in front-end|DRx module|MIMO L-FEM|front end/i,"rf-front-end.html"],
+ [/antenna|ANT\d/i,"antennas.html"],[/Wi-Fi/i,"wifi-bluetooth.html"],[/PMIC|charger|battery/i,"power.html"],[/mmWave|AiP/i,"mmwave.html"]
+];
+function linkFor(b){
+ if(D.link&&b.id in D.link)return D.link[b.id];
+ const rules=b.cls.includes("ext")?EXTRULES.concat(LINKRULES):LINKRULES.concat(EXTRULES);
+ for(const [re,f] of rules){if(re.test(b.label)&&f!==PAGE.file&&PAGES.some(p=>p.file===f))return f}
+ return null;
+}
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ o.href=linkFor(o);
+ if(o.href){const t=el("text",{x:o.x+o.w-5,y:o.y+12,"text-anchor":"end",class:"lk"},g);t.textContent="↗"}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}${o.href?`<a class="go" href="${o.href}">Open the ${esc((PAGES.find(p=>p.file===o.href)||{short:"detail"}).short)} page →</a>`:""}`;
+}
+focus(null);
+document.getElementById("leg").innerHTML=[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>

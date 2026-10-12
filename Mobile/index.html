@@ -137,7 +137,7 @@ tbody tr.on{background:var(--copper-soft)}
 .filters b{display:block;font-family:var(--display);font-stretch:75%;font-size:16px;text-transform:uppercase}
 .filters .r{font-family:var(--mono);font-size:11px;color:var(--copper)}
 .modpages{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.modpages .label{margin-right:6px}
+.modpages .label{margin-right:6px;min-width:96px}
 .modpages a{font-size:13px;text-decoration:none;color:var(--ink);border:1px solid var(--ink);background:var(--surface);padding:5px 11px}
 .modpages a:hover{background:var(--ink);color:var(--surface)}
 .pagelink{justify-self:start;font-weight:650;font-size:14px;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
@@ -180,6 +180,12 @@ footer{font-size:12.5px;color:var(--muted);max-width:90ch}
 
 <nav class="modpages" aria-label="Module pages"><span class="label">Module pages</span>
   <a href="soc.html">SoC</a><a href="modem.html">5G modem</a><a href="transceiver.html">RF transceiver</a><a href="rf-front-end.html">RF front-end</a><a href="antennas.html">Antennas &amp; tuning</a><a href="gnss.html">GNSS</a><a href="mmwave.html">mmWave</a><a href="wifi-bluetooth.html">Wi-Fi &amp; Bluetooth</a><a href="nfc-uwb.html">NFC &amp; UWB</a><a href="power.html">Power &amp; charging</a>
+</nav>
+<nav class="modpages" aria-label="Component pages"><span class="label">Components</span>
+  <a href="lna.html">LNA</a><a href="pa.html">Power amplifier</a><a href="mixers.html">Mixers</a><a href="synthesizers.html">Synthesizers &amp; PLLs</a><a href="data-converters.html">ADC &amp; DAC</a><a href="acoustic-filters.html">SAW &amp; BAW filters</a><a href="rf-switches.html">Switches &amp; tuners</a><a href="linearization.html">DPD &amp; envelope tracking</a>
+</nav>
+<nav class="modpages" aria-label="Studies"><span class="label">Studies</span>
+  <a href="intermodulation.html">Intermodulation matrix &amp; calculator</a>
 </nav>
 
 <div class="paths" role="group" aria-label="Signal paths">
