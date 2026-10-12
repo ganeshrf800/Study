@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modulation Schemes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --ok:#2e7d4f; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --ok:#6fcf97; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --ok:#6fcf97; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+.modnav{display:grid;gap:6px}
+.modnav .ng{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modnav .ng .label{min-width:92px}
+header.hdr.nocost{grid-template-columns:1fr}
+.sch .lk{font-size:11px;fill:var(--copper);font-weight:700}
+.go{display:inline-block;margin-top:8px;font-weight:650;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.go:hover{border-bottom-width:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.eqc{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.eqc .f{font-family:var(--mono);font-size:14.5px;font-weight:600;background:var(--sunk);padding:8px 10px;border-left:3px solid var(--copper);overflow-x:auto;white-space:pre-wrap}
+.eqc p{margin:0;font-size:14px;color:var(--muted)}
+.rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.rel a{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.rel a:hover{background:var(--sunk)}
+.rel b{display:block;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+/* shared study widgets */
+.calc{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:0}
+@media (max-width:900px){.calc{grid-template-columns:1fr}}
+.cin{padding:16px;border-right:1px solid var(--line);display:grid;gap:12px;align-content:start;min-width:0}
+@media (max-width:900px){.cin{border-right:0;border-bottom:1px solid var(--line)}}
+.cin fieldset{border:1px solid var(--line);padding:10px 12px;display:grid;gap:8px;margin:0;min-width:0}
+.cin legend{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+.cin label{display:grid;gap:3px;font-size:13px}
+.cin label.row{display:flex;gap:6px;align-items:center}
+.cin select,.cin input[type=number]{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px;min-width:0}
+.cin input[type=range]{width:100%;accent-color:var(--copper)}
+.cin output{font-family:var(--mono);font-size:13px;font-weight:600}
+.cout{padding:16px;display:grid;gap:14px;min-width:0;align-content:start}
+.lvl{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--line)}
+.lvl div{padding:10px 12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.lvl b{display:block;font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.lvl b.bad{color:var(--copper)}
+.lvl b.ok{color:var(--ok)}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.theory{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+@media (max-width:900px){.theory{grid-template-columns:1fr}}
+.theory>div{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.theory>div:last-child{border-right:0}
+.theory h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase}
+.theory p{margin:0 0 10px;max-width:68ch}
+table.ed td{padding:4px 6px}
+table.ed input{font:inherit;font-family:var(--mono);font-size:12.5px;width:100%;min-width:56px;padding:4px 6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px}
+table.ed input.nm{font-family:var(--body);min-width:150px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn2{font:500 12.5px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer}
+.btn2:hover{border-color:var(--copper)}
+.btn2[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.note2{font-size:13px;color:var(--muted);margin:0;max-width:80ch}
+.kv{font-family:var(--mono);font-size:12.5px}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+<link rel="stylesheet" href="../back.css">
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC", "group": "Modules"}, {"file": "modem.html", "short": "5G modem", "group": "Modules"}, {"file": "transceiver.html", "short": "RF transceiver", "group": "Modules"}, {"file": "rf-front-end.html", "short": "RF front-end", "group": "Modules"}, {"file": "antennas.html", "short": "Antennas & tuning", "group": "Modules"}, {"file": "gnss.html", "short": "GNSS", "group": "Modules"}, {"file": "mmwave.html", "short": "mmWave", "group": "Modules"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth", "group": "Modules"}, {"file": "nfc-uwb.html", "short": "NFC & UWB", "group": "Modules"}, {"file": "power.html", "short": "Power & charging", "group": "Modules"}, {"file": "lna.html", "short": "LNA", "group": "Components"}, {"file": "pa.html", "short": "Power amplifier", "group": "Components"}, {"file": "mixers.html", "short": "Mixers", "group": "Components"}, {"file": "synthesizers.html", "short": "Synthesizers & PLLs", "group": "Components"}, {"file": "data-converters.html", "short": "ADC & DAC", "group": "Components"}, {"file": "acoustic-filters.html", "short": "SAW & BAW filters", "group": "Components"}, {"file": "rf-switches.html", "short": "Switches & tuners", "group": "Components"}, {"file": "linearization.html", "short": "DPD & envelope tracking", "group": "Components"}, {"file": "intermodulation.html", "short": "Intermodulation", "group": "Studies"}, {"file": "rf-budget.html", "short": "Gain budget & dynamic range", "group": "Studies"}, {"file": "modulation.html", "short": "Modulation schemes", "group": "Studies"}, {"file": "power-budget.html", "short": "Power consumption", "group": "Studies"}, {"file": "thermal.html", "short": "Thermal", "group": "Studies"}];
+const PAGE={
+file:"modulation.html",title:"Modulation Schemes",kicker:"Study · constellations, EVM, PAPR, spectral efficiency",
+lede:"Every radio in the phone trades robustness for speed by choosing how many bits to pack into each symbol. This page simulates constellations with real impairments, measures EVM against the 3GPP and Wi-Fi limits, compares the peak-to-average power of OFDM and DFT-spread OFDM, and maps spectral efficiency against the Shannon limit.",
+stats:[["Schemes","BPSK to 4096-QAM"],["Impairments","Noise, phase noise, IQ, PA"],["Waveforms","OFDM vs DFT-s-OFDM"],["EVM limits","3GPP NR, Wi-Fi 7"],["Efficiency","NR CQI table vs Shannon"]],
+sections:[
+{id:"const",title:"Constellation and EVM simulator",toc:"Constellation",sub:"Simulates 3,000 symbols through the impairments you set. EVM is measured after removing the average gain, as a test instrument would.",
+html:`<div class="calc"><div class="cin">
+<fieldset><legend>Modulation</legend><label>Scheme<select id="mMod"></select></label></fieldset>
+<fieldset><legend>Impairments</legend>
+<label>SNR (dB) <output id="oSnr"></output><input type="range" id="mSnr" min="0" max="50" step="0.5" value="30"></label>
+<label>Phase noise (° rms) <output id="oPn"></output><input type="range" id="mPn" min="0" max="5" step="0.1" value="0.5"></label>
+<label>IQ gain imbalance (dB) <output id="oIg"></output><input type="range" id="mIg" min="0" max="2" step="0.05" value="0.1"></label>
+<label>IQ phase skew (°) <output id="oIp"></output><input type="range" id="mIp" min="0" max="5" step="0.1" value="0.5"></label>
+<label>PA back-off from saturation (dB) <output id="oBo"></output><input type="range" id="mBo" min="0" max="15" step="0.5" value="10"></label>
+</fieldset>
+<p class="note2">The PA uses a Rapp AM/AM model with smoothness 2; less back-off compresses the outer points.</p>
+</div><div class="cout">
+<div class="lvl" id="mOut"></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"><canvas id="mCan" width="380" height="380" style="width:380px;max-width:100%;height:auto;border:1px solid var(--line);background:var(--surface)" role="img" aria-label="Received constellation"></canvas>
+<div style="flex:1;min-width:220px" class="note2" id="mExp"></div></div>
+</div></div>`},
+{id:"table",title:"Schemes used in a phone",toc:"Scheme table",sub:"Required SNR is computed for uncoded symbol error rate 10⁻³ in AWGN from the standard QAM formula; real links run lower SNR with channel coding.",
+html:`<div class="tw"><table class="atbl" id="mTbl"></table></div>`},
+{id:"papr",title:"PAPR: OFDM vs DFT-spread OFDM",toc:"PAPR",sub:"Complementary cumulative distribution of peak-to-average power ratio, simulated with 512 occupied subcarriers in a 2048-point IFFT (4× oversampled). Lower PAPR lets the PA run closer to saturation.",
+html:`<div class="cout"><div class="btns"><button class="btn2" id="pRun">Run simulation again</button><span class="note2" id="pStat"></span></div><svg class="chart" id="pChart" viewBox="0 0 900 380" role="img" aria-label="PAPR CCDF curves"></svg><div class="lvl" id="pOut"></div></div>`},
+{id:"eff",title:"Spectral efficiency",toc:"Efficiency",sub:"Shannon capacity per Hz against SNR, with the NR 256-QAM CQI table (TS 38.214 Table 5.2.2.1-3). CQI points are placed at the Shannon SNR plus a 2.5 dB implementation gap, as an approximation.",
+html:`<div class="cout"><svg class="chart" id="eChart" viewBox="0 0 900 360" role="img" aria-label="Spectral efficiency versus SNR"></svg></div>`},
+{id:"theory",title:"What limits each scheme",toc:"Method",
+html:`<div class="theory"><div><h3>EVM and SNR</h3><p>Error vector magnitude is the rms distance between received and ideal points, relative to the rms signal. If noise is the only impairment, SNR ≈ −20·log10(EVM). Every impairment in the radio adds to the error: thermal noise, LO phase noise, IQ mismatch, PA compression, DAC quantization and filter ripple.</p><p>Higher-order QAM puts points closer together, so each extra bit per symbol needs roughly 6 dB more SNR. That is why 1024-QAM needs an EVM near 2.5% and Wi-Fi 7's 4096-QAM needs about −38 dB (1.3%).</p></div>
+<div><h3>Waveforms</h3><p>OFDM sums hundreds of subcarriers, so its time-domain peaks are high: PAPR above 10 dB at 10⁻³ probability. NR uplink offers DFT-spread OFDM, which precodes the symbols with a DFT so the transmitted signal behaves like a single-carrier waveform with 2–3 dB lower PAPR.</p><p>Lower PAPR means the PA can be driven harder for the same distortion, raising output power and efficiency. Phones switch to DFT-s-OFDM and π/2-BPSK at the cell edge, where every dB of transmit power counts.</p></div></div>`}
+],
+init(){
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const css=getComputedStyle(document.documentElement),cv=n=>css.getPropertyValue(n).trim();
+// [label, M, EVM limit %, limit source]
+const MODS=[["BPSK",2,30,"3GPP NR π/2-BPSK UE limit"],["QPSK",4,17.5,"3GPP NR UE limit"],["16-QAM",16,12.5,"3GPP NR UE limit"],["64-QAM",64,8,"3GPP NR UE limit"],["256-QAM",256,3.5,"3GPP NR UE limit"],["1024-QAM",1024,2.5,"3GPP NR 1024-QAM (base station)"],["4096-QAM",4096,100*Math.pow(10,-38/20),"Wi-Fi 7 MCS 12–13 (−38 dB)"]];
+MODS.forEach((m,i)=>{const o=document.createElement("option");o.value=i;o.textContent=m[0];$("mMod").appendChild(o)});$("mMod").value=4;
+function ideal(M){if(M===2)return[[1,0],[-1,0]];const k=Math.sqrt(M),pts=[];for(let i=0;i<k;i++)for(let j=0;j<k;j++)pts.push([2*i-k+1,2*j-k+1]);const p=pts.reduce((s,q)=>s+q[0]*q[0]+q[1]*q[1],0)/M,sc=1/Math.sqrt(p);return pts.map(q=>[q[0]*sc,q[1]*sc])}
+const randn=()=>{let u=0,v=0;while(!u)u=Math.random();v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+function erfc(x){const z=Math.abs(x),t=1/(1+0.5*z),r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r}
+const Q=x=>0.5*erfc(x/Math.SQRT2);
+function serTheory(M,snrDb){const g=Math.pow(10,snrDb/10);if(M===2)return Q(Math.sqrt(2*g));const k=Math.sqrt(M),p=2*(1-1/k)*Q(Math.sqrt(3*g/(M-1)));return 1-(1-p)*(1-p)}
+function snrFor(M,ser){let lo=-10,hi=60;for(let i=0;i<60;i++){const m=(lo+hi)/2;serTheory(M,m)>ser?lo=m:hi=m}return (lo+hi)/2}
+let N=3000;
+function sim(){
+ const mi=+$("mMod").value,[lab,M,lim,src]=MODS[mi],snr=+$("mSnr").value,pn=+$("mPn").value,ig=+$("mIg").value,ip=+$("mIp").value,bo=+$("mBo").value;
+ $("oSnr").textContent=snr.toFixed(1)+" dB";$("oPn").textContent=pn.toFixed(1)+"°";$("oIg").textContent=ig.toFixed(2)+" dB";$("oIp").textContent=ip.toFixed(1)+"°";$("oBo").textContent=bo.toFixed(1)+" dB";
+ const P=ideal(M),sig=Math.sqrt(Math.pow(10,-snr/10)/2),Asat=Math.pow(10,bo/20),g=Math.pow(10,ig/20),ph=ip*Math.PI/180,pnr=pn*Math.PI/180;
+ const X=[],Y=[];
+ for(let n=0;n<N;n++){const s=P[(Math.random()*M)|0];let i=s[0],q=s[1];
+  // PA (Rapp, p=2) applied to the transmitted symbol amplitude
+  const a=Math.hypot(i,q),ga=1/Math.pow(1+Math.pow(a/Asat,4),0.25);i*=ga;q*=ga;
+  // IQ imbalance
+  const i2=i*Math.sqrt(g),q2=(q*Math.cos(ph)+i*Math.sin(ph))/Math.sqrt(g);
+  // phase noise
+  const th=randn()*pnr,c=Math.cos(th),sn=Math.sin(th);let ri=i2*c-q2*sn,rq=i2*sn+q2*c;
+  ri+=randn()*sig;rq+=randn()*sig;X.push(s);Y.push([ri,rq]);}
+ // remove average complex gain
+ let nr=0,ni=0,dd=0;for(let n=0;n<N;n++){const x=X[n],y=Y[n];nr+=y[0]*x[0]+y[1]*x[1];ni+=y[1]*x[0]-y[0]*x[1];dd+=x[0]*x[0]+x[1]*x[1]}
+ const gr=nr/dd,gi=ni/dd,gm=gr*gr+gi*gi;
+ let err=0,se=0;const Z=Y.map(y=>[(y[0]*gr+y[1]*gi)/gm,(y[1]*gr-y[0]*gi)/gm]);
+ for(let n=0;n<N;n++){const z=Z[n],x=X[n];err+=(z[0]-x[0])**2+(z[1]-x[1])**2;let best=1e9,bp=null;for(const p of P){const d=(z[0]-p[0])**2+(z[1]-p[1])**2;if(d<best){best=d;bp=p}}if(bp!==x)se++}
+ const evm=Math.sqrt(err/dd),evmPct=evm*100,evmDb=20*Math.log10(evm),ok=evmPct<=lim;
+ const serT=serTheory(M,snr);
+ $("mOut").innerHTML=`<div><span class="label">EVM</span><b class="${ok?"ok":"bad"}">${evmPct.toFixed(2)} %</b></div><div><span class="label">EVM (dB)</span><b>${evmDb.toFixed(1)} dB</b></div><div><span class="label">Limit (${esc(lab)})</span><b>${lim.toFixed(2)} %</b></div><div><span class="label">Effective SNR</span><b>${(-evmDb).toFixed(1)} dB</b></div><div><span class="label">Symbol errors</span><b>${se} / ${N}</b></div><div><span class="label">SER, noise only (theory)</span><b>${serT<1e-9?"< 1e-9":serT.toExponential(1)}</b></div>`;
+ $("mExp").innerHTML=`<p style="margin:0 0 8px"><b>${esc(lab)}</b> carries ${Math.log2(M)} bit${M>2?"s":""} per symbol. The limit shown is the ${esc(src)}.</p><p style="margin:0 0 8px">${ok?"This setting meets the EVM limit.":"This setting fails the EVM limit."} With noise alone the EVM would be ${(100*Math.pow(10,-snr/20)).toFixed(2)}%; the rest comes from phase noise, IQ imbalance and PA compression.</p><p style="margin:0">Uncoded SER 10⁻³ needs about ${snrFor(M,1e-3).toFixed(1)} dB SNR for this scheme.</p>`;
+ // draw
+ const cn=$("mCan"),ctx=cn.getContext("2d"),W=cn.width,H=cn.height,sc=W/2/(M===2?1.6:1.5),cx=W/2,cy=H/2;
+ ctx.clearRect(0,0,W,H);ctx.strokeStyle=cv("--line");ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+ ctx.fillStyle=cv("--lo");ctx.globalAlpha=M>=1024?0.35:0.5;const r=M>=1024?1:1.6;
+ for(const z of Z){ctx.fillRect(cx+z[0]*sc-r/2,cy-z[1]*sc-r/2,r,r)}
+ ctx.globalAlpha=1;ctx.fillStyle=cv("--copper");const pr=M>=1024?0.9:M>=256?1.6:3;
+ for(const p of P){ctx.beginPath();ctx.arc(cx+p[0]*sc,cy-p[1]*sc,pr,0,7);ctx.fill()}
+}
+["mMod","mSnr","mPn","mIg","mIp","mBo"].forEach(i=>$(i).addEventListener("input",sim));sim();
+// scheme table
+const ROWS=[["π/2-BPSK / BPSK",1,2,"30%","NR uplink at cell edge; GNSS signals (BPSK, BOC)"],["QPSK",2,4,"17.5%","LTE/NR control and cell-edge data; Wi-Fi low MCS"],["16-QAM",4,16,"12.5%","LTE/NR mid SNR; Wi-Fi"],["64-QAM",6,64,"8%","LTE/NR uplink and downlink"],["256-QAM",8,256,"3.5%","LTE/NR downlink, NR uplink"],["1024-QAM",10,1024,"≈ 2.5%","NR downlink (Rel-17), Wi-Fi 6"],["4096-QAM",12,4096,"−38 dB (1.3%)","Wi-Fi 7"],["GFSK",1,0,"—","Bluetooth BR and LE"],["π/4-DQPSK, 8DPSK",3,0,"—","Bluetooth EDR (2 and 3 Mbps)"],["ASK (10% / 100%)",1,0,"—","NFC reader to card"],["BPM-BPSK pulses",1,0,"—","UWB (IEEE 802.15.4z HRP)"]];
+$("mTbl").innerHTML=`<thead><tr><th>Scheme</th><th>Bits / symbol</th><th>SNR for SER 10⁻³</th><th>EVM limit</th><th>Where used</th></tr></thead><tbody>`+ROWS.map(r=>`<tr><td class="b">${esc(r[0])}</td><td class="n">${r[1]}</td><td class="n">${r[2]?snrFor(r[2],1e-3).toFixed(1)+" dB":"—"}</td><td class="n">${esc(r[3])}</td><td class="m">${esc(r[4])}</td></tr>`).join("")+`</tbody>`;
+// ---------- PAPR ----------
+function fft(re,im,inv){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}
+ for(let len=2;len<=n;len<<=1){const a=(inv?2:-2)*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<len/2;j++){const ur=re[i+j],ui=im[i+j],vr=re[i+j+len/2]*cr-im[i+j+len/2]*ci,vi=re[i+j+len/2]*ci+im[i+j+len/2]*cr;re[i+j]=ur+vr;im[i+j]=ui+vi;re[i+j+len/2]=ur-vr;im[i+j+len/2]=ui-vi;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t}}}}
+function paprRun(kind,M,nsym){const Nf=2048,Ms=512,P=M===2?null:ideal(M),out=[];
+ for(let s=0;s<nsym;s++){const dr=new Float64Array(Ms),di=new Float64Array(Ms);
+  for(let k=0;k<Ms;k++){if(M===2){const b=Math.random()<0.5?1:-1;if(k%2){dr[k]=0;di[k]=b}else{dr[k]=b;di[k]=0}}else{const p=P[(Math.random()*M)|0];dr[k]=p[0];di[k]=p[1]}}
+  if(kind==="dfts")fft(dr,di,false);
+  const re=new Float64Array(Nf),im=new Float64Array(Nf);
+  for(let k=0;k<Ms;k++){const bin=(k-Ms/2+Nf)%Nf;re[bin]=dr[k];im[bin]=di[k]}
+  fft(re,im,true);let mx=0,mean=0;for(let i=0;i<Nf;i++){const p=re[i]*re[i]+im[i]*im[i];mean+=p;if(p>mx)mx=p}
+  out.push(10*Math.log10(mx/(mean/Nf)));}
+ return out.sort((a,b)=>a-b);}
+const CURVES=[["OFDM, 64-QAM","ofdm",64,"var(--copper)",""],["OFDM, QPSK","ofdm",4,"var(--copper)","5 3"],["DFT-s-OFDM, 64-QAM","dfts",64,"var(--lo)",""],["DFT-s-OFDM, QPSK","dfts",4,"var(--lo)","5 3"],["DFT-s-OFDM, π/2-BPSK","dfts",2,"var(--ok)",""]];
+function runPapr(){
+ $("pStat").textContent="Simulating 800 symbols per waveform…";
+ setTimeout(()=>{const t0=performance.now(),NS=800,res=CURVES.map(c=>paprRun(c[1],c[2],NS));
+  const L=60,R=880,T=14,B=330,xmin=2,xmax=13,X=v=>L+(v-xmin)/(xmax-xmin)*(R-L),Y=p=>T+(-Math.log10(p))/3*(B-T);
+  let s="";[1,0.1,0.01,0.001].forEach(p=>{s+=`<line x1="${L}" x2="${R}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(p)+3}" text-anchor="end">${p}</text>`});
+  for(let v=xmin;v<=xmax;v++){s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${B}" stroke="var(--line)" stroke-dasharray="2 3"/><text x="${X(v)}" y="${B+14}" text-anchor="middle">${v}</text>`}
+  s+=`<text x="${(L+R)/2}" y="${B+32}" text-anchor="middle">PAPR threshold (dB)</text><text x="14" y="${(T+B)/2}" transform="rotate(-90 14 ${(T+B)/2})" text-anchor="middle">Probability PAPR exceeds threshold</text>`;
+  const at=[];res.forEach((arr,ci)=>{const pts=[];for(let v=xmin;v<=xmax;v+=0.05){const cnt=arr.length-arr.findIndex(x=>x>v);const p=(arr.findIndex(x=>x>v)<0?0:cnt)/arr.length;if(p>=1e-3)pts.push(`${X(v).toFixed(1)},${Y(Math.min(1,p)).toFixed(1)}`)}
+   s+=`<polyline fill="none" stroke="${CURVES[ci][3]}" stroke-width="2.2" stroke-dasharray="${CURVES[ci][4]}" points="${pts.join(" ")}"/>`;
+   const i1=Math.min(arr.length-1,Math.ceil(arr.length*(1-0.01)));at.push(arr[i1]);});
+  CURVES.forEach((c,i)=>{s+=`<line x1="${R-230}" x2="${R-200}" y1="${T+14+i*16}" y2="${T+14+i*16}" stroke="${c[3]}" stroke-width="2.2" stroke-dasharray="${c[4]}"/><text x="${R-194}" y="${T+17+i*16}">${esc(c[0])}</text>`});
+  $("pChart").innerHTML=s;
+  $("pOut").innerHTML=CURVES.map((c,i)=>`<div><span class="label">${esc(c[0])} @ 1%</span><b>${at[i].toFixed(1)} dB</b></div>`).join("");
+  $("pStat").textContent=`Done in ${((performance.now()-t0)/1000).toFixed(1)} s. Values at 1% probability are shown below; curves stop at 10⁻³.`;},30);
+}
+$("pRun").onclick=runPapr;runPapr();
+// ---------- efficiency ----------
+const CQI=[[1,"QPSK",0.1523],[2,"QPSK",0.377],[3,"QPSK",0.877],[4,"16-QAM",1.4766],[5,"16-QAM",1.9141],[6,"16-QAM",2.4063],[7,"64-QAM",2.7305],[8,"64-QAM",3.3223],[9,"64-QAM",3.9023],[10,"64-QAM",4.5234],[11,"64-QAM",5.1152],[12,"256-QAM",5.5547],[13,"256-QAM",6.2266],[14,"256-QAM",6.9141],[15,"256-QAM",7.4063]];
+(function(){const L=60,R=880,T=14,B=310,xmin=-10,xmax=30,ymax=10,X=v=>L+(v-xmin)/(xmax-xmin)*(R-L),Y=v=>B-v/ymax*(B-T);
+ let s="";for(let v=0;v<=ymax;v+=2){s+=`<line x1="${L}" x2="${R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${v}</text>`}
+ for(let v=xmin;v<=xmax;v+=5){s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${B}" stroke="var(--line)" stroke-dasharray="2 3"/><text x="${X(v)}" y="${B+14}" text-anchor="middle">${v}</text>`}
+ const sh=[];for(let v=xmin;v<=xmax;v+=0.5)sh.push(`${X(v)},${Y(Math.log2(1+Math.pow(10,v/10)))}`);
+ s+=`<polyline fill="none" stroke="var(--ink)" stroke-width="2.2" points="${sh.join(" ")}"/><text x="${X(27)}" y="${Y(Math.log2(1+Math.pow(10,2.7)))-8}" text-anchor="end" style="fill:var(--ink)">Shannon limit log₂(1+SNR)</text>`;
+ const col={"QPSK":"var(--ok)","16-QAM":"var(--lo)","64-QAM":"var(--copper)","256-QAM":"var(--pwr)"};
+ CQI.forEach(([q,m,e])=>{const snr=10*Math.log10(Math.pow(2,e)-1)+2.5;s+=`<circle cx="${X(snr)}" cy="${Y(e)}" r="5" fill="${col[m]}"><title>CQI ${q}: ${m}, ${e} b/s/Hz, ≈ ${snr.toFixed(1)} dB</title></circle><text x="${X(snr)+7}" y="${Y(e)+4}">${q}</text>`});
+ let lx=L+10;Object.entries(col).forEach(([m,c])=>{s+=`<circle cx="${lx}" cy="${T+10}" r="5" fill="${c}"/><text x="${lx+9}" y="${T+14}">${m}</text>`;lx+=90});
+ s+=`<text x="${(L+R)/2}" y="${B+32}" text-anchor="middle">SNR (dB)</text><text x="14" y="${(T+B)/2}" transform="rotate(-90 14 ${(T+B)/2})" text-anchor="middle">Spectral efficiency (b/s/Hz per layer)</text>`;
+ $("eChart").innerHTML=s;})();
+},
+eq:[
+ ["EVM","EVM = √(Σ|z−x|² / Σ|x|²)","z: received symbol after gain correction; x: ideal symbol."],
+ ["EVM and SNR","SNR ≈ −20·log10(EVM)","Holds when errors are noise-like. 3.5% EVM ≈ 29 dB SNR."],
+ ["Square M-QAM SER","Ps = 1 − (1 − 2(1−1/√M)·Q(√(3·SNR/(M−1))))²","Used for the table and the theory figure above."],
+ ["Shannon capacity","C/B = log₂(1 + SNR)","Upper bound on spectral efficiency per spatial layer."],
+ ["PAPR","PAPR = max|x(t)|² / E|x(t)|²","Measured per OFDM symbol on the oversampled time signal."],
+ ["Rapp PA model","|y| = |x| / (1 + (|x|/A_sat)^(2p))^(1/(2p))","Smooth AM/AM compression used in the simulator, p = 2."]
+],
+related:["linearization.html","pa.html","synthesizers.html","data-converters.html","rf-budget.html"],
+foot:"EVM limits: 3GPP TS 38.101-1 (UE), TS 38.104 (1024-QAM base station), IEEE 802.11be (4096-QAM). CQI efficiencies from 3GPP TS 38.214 Table 5.2.2.1-3. Simulations are statistical and vary slightly each run."
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const grp=PAGES.filter(p=>p.group===(PAGES.find(q=>q.file===PAGE.file)||{}).group);
+const idx=grp.findIndex(p=>p.file===PAGE.file);
+const prev=grp[(idx-1+grp.length)%grp.length],next=grp[(idx+1)%grp.length];
+const GROUPS=[...new Set(PAGES.map(p=>p.group))];
+const sec=(id,title,sub,body)=>`<section class="blk" id="${id}"><div class="bh"><h2>${esc(title)}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div>${body}</section>`;
+const toc=[];
+let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a></div>
+<nav class="modnav" aria-label="All pages">${GROUPS.map(g=>`<div class="ng"><span class="label">${esc(g)}</span>${PAGES.filter(p=>p.group===g).map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</div>`).join("")}</nav>
+<header class="hdr${PAGE.cost?"":" nocost"}"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+${PAGE.cost?`<div class="costbox"><span class="label">${esc(PAGE.costLabel||"Typical cost per phone")}</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div>`:""}</header>
+${PAGE.stats?`<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`:""}
+<nav class="toc" id="toc" aria-label="On this page"></nav>`;
+if(PAGE.diagram){toc.push(["diagram","Block diagram"]);h+=sec("diagram",PAGE.diagram.title||"Internal block diagram",PAGE.diagram.caption+" Click or tab to a block; blocks marked ↗ open a detail page.",`<div class="scroll"><svg class="sch" id="sch"></svg></div><div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div>`)}
+(PAGE.sections||[]).forEach(s=>{toc.push([s.id,s.toc||s.title]);h+=sec(s.id,s.title,s.sub,s.html)});
+if(PAGE.how){toc.push(["how","How it works"]);h+=sec("how","How it works","",`<div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div>`)}
+if(PAGE.eq){toc.push(["eq","Key equations"]);h+=sec("eq","Key equations","The relationships designers use every day.",`<div class="eqs">${PAGE.eq.map(([n,f,x])=>`<div class="eqc"><span class="label">${esc(n)}</span><code class="f">${esc(f)}</code><p>${esc(x)}</p></div>`).join("")}</div>`)}
+if(PAGE.arch){toc.push(["arch",PAGE.archTitle||"Architectures"]);h+=sec("arch",PAGE.archTitle||"Architecture options","The main design choices and where each one is used.",`<div class="tw"><table class="atbl"><thead><tr><th>${esc(PAGE.archCol||"Architecture")}</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div>`)}
+if(PAGE.chal){toc.push(["chal","Design challenges"]);h+=sec("chal","Design challenges","",`<div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div>`)}
+if(PAGE.specs||PAGE.parts){h+=`<div class="two">`;
+ if(PAGE.specs){toc.push(["specs","Specifications"]);h+=sec("specs",PAGE.specsTitle||"Key specifications","",`<div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div>`)}
+ if(PAGE.parts){toc.push(["parts","Parts & vendors"]);h+=sec("parts","Parts & vendors","Representative examples; exact parts vary by phone and region.",`<div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div>`)}
+ h+=`</div>`}
+const rel=(PAGE.related||[]).map(f=>PAGES.find(p=>p.file===f)).filter(Boolean);
+if(rel.length){toc.push(["related","Related"]);h+=sec("related","Related pages","",`<div class="rel">${rel.map(p=>`<a href="${p.file}"><span class="label">${esc(p.group)}</span><b>${esc(p.short)}</b></a>`).join("")}</div>`)}
+h+=`<nav class="pn" aria-label="Previous and next"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+document.getElementById("toc").innerHTML=`<span class="label">On this page</span>`+toc.map(([i,t])=>`<a href="#${i}">${esc(t)}</a>`).join("");
+if(PAGE.init)PAGE.init();
+if(!PAGE.diagram)return;
+// ---------- auto links from diagram blocks to detail pages ----------
+const LINKRULES=[
+ [/phase shifter/i,"mmwave.html"],
+ [/\bDPD\b|envelope|ET tracker|ET trackers/i,"linearization.html"],
+ [/\bLNA\b|low-noise|LNA bank|RF input/i,"lna.html"],
+ [/\bPA\b|power stage|driver stage|driver amp|Driver amplifier|PA \/ LNA/i,"pa.html"],
+ [/mixer|converter$|up\/down/i,"mixers.html"],
+ [/synthesi[sz]er|PLL|LO divider|LO \//i,"synthesizers.html"],
+ [/\bADC\b|\bDAC\b/i,"data-converters.html"],
+ [/SAW|BAW|duplexer|plexer|Pre-filter|Diplexer/i,"acoustic-filters.html"],
+ [/switch|tuner|matrix/i,"rf-switches.html"]
+];
+const EXTRULES=[
+ [/transceiver/i,"transceiver.html"],[/^modem|cellular modem|5G modem/i,"modem.html"],[/^SoC|App processor|SoC /i,"soc.html"],[/GNSS/i,"gnss.html"],
+ [/PAMiD|front-end module|in front-end|DRx module|MIMO L-FEM|front end/i,"rf-front-end.html"],
+ [/antenna|ANT\d/i,"antennas.html"],[/Wi-Fi/i,"wifi-bluetooth.html"],[/PMIC|charger|battery/i,"power.html"],[/mmWave|AiP/i,"mmwave.html"]
+];
+function linkFor(b){
+ if(D.link&&b.id in D.link)return D.link[b.id];
+ const rules=b.cls.includes("ext")?EXTRULES.concat(LINKRULES):LINKRULES.concat(EXTRULES);
+ for(const [re,f] of rules){if(re.test(b.label)&&f!==PAGE.file&&PAGES.some(p=>p.file===f))return f}
+ return null;
+}
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ o.href=linkFor(o);
+ if(o.href){const t=el("text",{x:o.x+o.w-5,y:o.y+12,"text-anchor":"end",class:"lk"},g);t.textContent="↗"}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}${o.href?`<a class="go" href="${o.href}">Open the ${esc((PAGES.find(p=>p.file===o.href)||{short:"detail"}).short)} page →</a>`:""}`;
+}
+focus(null);
+document.getElementById("leg").innerHTML=[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>
