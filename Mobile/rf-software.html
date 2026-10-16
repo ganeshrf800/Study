@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RF Control Software</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --ok:#2e7d4f; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --L-app:#2f6db0; --L-fw:#3f8f8a; --L-hal:#6b8f2a; --L-kern:#a0701a; --L-sec:#b0423a; --L-co:#7a4fa3; --L-boot:#4a5560;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --ok:#6fcf97; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; --L-app:#7fb0ec; --L-fw:#6cc6bf; --L-hal:#a8cc66; --L-kern:#e3b45a; --L-sec:#ef8a80; --L-co:#bb97e3; --L-boot:#a7b3be; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --ok:#6fcf97; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; --L-app:#7fb0ec; --L-fw:#6cc6bf; --L-hal:#a8cc66; --L-kern:#e3b45a; --L-sec:#ef8a80; --L-co:#bb97e3; --L-boot:#a7b3be; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .b.Lapp rect.box{fill:color-mix(in oklab,var(--L-app) 12%,var(--surface));stroke:var(--L-app);stroke-width:1.4}
+.sch .b.Lfw rect.box{fill:color-mix(in oklab,var(--L-fw) 12%,var(--surface));stroke:var(--L-fw);stroke-width:1.4}
+.sch .b.Lhal rect.box{fill:color-mix(in oklab,var(--L-hal) 12%,var(--surface));stroke:var(--L-hal);stroke-width:1.4}
+.sch .b.Lkern rect.box{fill:color-mix(in oklab,var(--L-kern) 12%,var(--surface));stroke:var(--L-kern);stroke-width:1.4}
+.sch .b.Lsec rect.box{fill:color-mix(in oklab,var(--L-sec) 12%,var(--surface));stroke:var(--L-sec);stroke-width:1.4}
+.sch .b.Lco rect.box{fill:color-mix(in oklab,var(--L-co) 12%,var(--surface));stroke:var(--L-co);stroke-width:1.4}
+.sch .b.Lboot rect.box{fill:color-mix(in oklab,var(--L-boot) 12%,var(--surface));stroke:var(--L-boot);stroke-width:1.4}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+.modnav{display:grid;gap:6px}
+.modnav .ng{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modnav .ng .label{min-width:92px}
+header.hdr.nocost{grid-template-columns:1fr}
+.sch .lk{font-size:11px;fill:var(--copper);font-weight:700}
+.go{display:inline-block;margin-top:8px;font-weight:650;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.go:hover{border-bottom-width:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.eqc{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.eqc .f{font-family:var(--mono);font-size:14.5px;font-weight:600;background:var(--sunk);padding:8px 10px;border-left:3px solid var(--copper);overflow-x:auto;white-space:pre-wrap}
+.eqc p{margin:0;font-size:14px;color:var(--muted)}
+.rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.rel a{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.rel a:hover{background:var(--sunk)}
+.rel b{display:block;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+/* software layer stack */
+.swk{display:grid;gap:0}
+.swr{display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,330px);border-bottom:1px solid var(--line)}
+.swr:last-child{border-bottom:0}
+@media (max-width:860px){.swr{grid-template-columns:1fr}}
+.swl{padding:12px 14px;color:var(--surface);background:var(--lc);display:flex;flex-direction:column;gap:2px;justify-content:center}
+.swl b{font-family:var(--display);font-stretch:80%;font-size:15px;text-transform:uppercase;line-height:1.1}
+.swl span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+.swm{padding:12px 16px;min-width:0;border-left:4px solid var(--lc)}
+.swm h3{margin:0 0 4px;font-size:15.5px;font-weight:700}
+.swm p{margin:0;font-size:14px;max-width:70ch}
+.swx{padding:10px 14px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px;align-content:center;background:color-mix(in oklab,var(--lc) 7%,var(--surface));min-width:0}
+.swx dt{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.swx dd{margin:0}
+.swhw{padding:10px 14px;background:var(--sunk);font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;border-top:2px solid var(--ink)}
+.swfoot{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
+.swleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+.swleg i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px;background:var(--lc)}
+/* shared study widgets */
+.calc{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:0}
+@media (max-width:900px){.calc{grid-template-columns:1fr}}
+.cin{padding:16px;border-right:1px solid var(--line);display:grid;gap:12px;align-content:start;min-width:0}
+@media (max-width:900px){.cin{border-right:0;border-bottom:1px solid var(--line)}}
+.cin fieldset{border:1px solid var(--line);padding:10px 12px;display:grid;gap:8px;margin:0;min-width:0}
+.cin legend{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+.cin label{display:grid;gap:3px;font-size:13px}
+.cin label.row{display:flex;gap:6px;align-items:center}
+.cin select,.cin input[type=number]{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px;min-width:0}
+.cin input[type=range]{width:100%;accent-color:var(--copper)}
+.cin output{font-family:var(--mono);font-size:13px;font-weight:600}
+.cout{padding:16px;display:grid;gap:14px;min-width:0;align-content:start}
+.lvl{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--line)}
+.lvl div{padding:10px 12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.lvl b{display:block;font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.lvl b.bad{color:var(--copper)}
+.lvl b.ok{color:var(--ok)}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.theory{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+@media (max-width:900px){.theory{grid-template-columns:1fr}}
+.theory>div{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.theory>div:last-child{border-right:0}
+.theory h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase}
+.theory p{margin:0 0 10px;max-width:68ch}
+table.ed td{padding:4px 6px}
+table.ed input{font:inherit;font-family:var(--mono);font-size:12.5px;width:100%;min-width:56px;padding:4px 6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px}
+table.ed input.nm{font-family:var(--body);min-width:150px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn2{font:500 12.5px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer}
+.btn2:hover{border-color:var(--copper)}
+.btn2[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.note2{font-size:13px;color:var(--muted);margin:0;max-width:80ch}
+.kv{font-family:var(--mono);font-size:12.5px}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+<link rel="stylesheet" href="../back.css">
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC", "group": "Modules"}, {"file": "modem.html", "short": "5G modem", "group": "Modules"}, {"file": "transceiver.html", "short": "RF transceiver", "group": "Modules"}, {"file": "rf-front-end.html", "short": "RF front-end", "group": "Modules"}, {"file": "antennas.html", "short": "Antennas & tuning", "group": "Modules"}, {"file": "gnss.html", "short": "GNSS", "group": "Modules"}, {"file": "mmwave.html", "short": "mmWave", "group": "Modules"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth", "group": "Modules"}, {"file": "nfc-uwb.html", "short": "NFC & UWB", "group": "Modules"}, {"file": "power.html", "short": "Power & charging", "group": "Modules"}, {"file": "lna.html", "short": "LNA", "group": "Components"}, {"file": "pa.html", "short": "Power amplifier", "group": "Components"}, {"file": "mixers.html", "short": "Mixers", "group": "Components"}, {"file": "synthesizers.html", "short": "Synthesizers & PLLs", "group": "Components"}, {"file": "data-converters.html", "short": "ADC & DAC", "group": "Components"}, {"file": "acoustic-filters.html", "short": "SAW & BAW filters", "group": "Components"}, {"file": "rf-switches.html", "short": "Switches & tuners", "group": "Components"}, {"file": "linearization.html", "short": "DPD & envelope tracking", "group": "Components"}, {"file": "intermodulation.html", "short": "Intermodulation", "group": "Studies"}, {"file": "rf-budget.html", "short": "Gain budget & dynamic range", "group": "Studies"}, {"file": "modulation.html", "short": "Modulation schemes", "group": "Studies"}, {"file": "power-budget.html", "short": "Power consumption", "group": "Studies"}, {"file": "thermal.html", "short": "Thermal", "group": "Studies"}, {"file": "software-stack.html", "short": "Software stack", "group": "Software"}, {"file": "boot-security.html", "short": "Boot & security", "group": "Software"}, {"file": "modem-software.html", "short": "Modem software", "group": "Software"}, {"file": "rf-software.html", "short": "RF control software", "group": "Software"}, {"file": "connectivity-software.html", "short": "Connectivity software", "group": "Software"}, {"file": "multimedia-software.html", "short": "Multimedia & AI software", "group": "Software"}, {"file": "power-software.html", "short": "Power & thermal software", "group": "Software"}];
+const PAGE={
+file:"rf-software.html",title:"RF Control Software",kicker:"Software · RF driver, calibration and control loops",
+lede:"No Linux driver touches the power amplifiers, switches or tuners. They are run by an RF driver inside the modem firmware, which reconfigures the whole front end for every slot: which band and antenna, which PA gain state, how much drive, which LNA gain, which tuner setting. Its decisions come from 3GPP power-control rules, safety limits and per-phone calibration tables written at the factory.",
+stats:[["Runs in","Modem firmware"],["Update rate","Every slot (≤ 1 ms)"],["Control bus","MIPI RFFE"],["Calibration","Per phone, per band, per channel"],["Inputs","Network, SAR, thermal, coexistence"]],
+diagram:{cols:5,rows:3,cw:150,gy:40,autolink:false,title:"RF control software inside the modem",
+ caption:"Software blocks (purple) decide every slot what the RF hardware (grey) must do. Inputs from Android services enter on the left.",
+ intro:"Uplink power control computes a target, the limiter caps it for safety and regulation, and TX power realization turns it into hardware settings using calibration tables. Receive gain, antenna tuning and coexistence run alongside.",
+ groups:[[1,0,4,2,"Modem RF driver"]],
+ blocks:[
+  ["inp",0,0,1,2,"SAR, proximity and thermal inputs","","Lhal ext","from Android services"],
+  ["lim",1,0,1,1,"TX power limiter","","Lco","P_CMAX, SAR, MPR"],
+  ["txp",2,0,1,1,"TX power realization","","Lco hl","PA state, gain index"],
+  ["trx",3,0,1,1,"Transceiver","","ext","TX, RX, feedback RX"],
+  ["fe",4,0,1,1,"PAs, switches, tuners","amp","ext","MIPI RFFE devices"],
+  ["ulpc",1,1,1,1,"Uplink power control","","Lco","TS 38.213"],
+  ["core",2,1,1,1,"Slot scheduler","cpu","Lco","band, carrier, timing"],
+  ["rx",3,1,1,1,"RX AGC and gain states","","Lco"],
+  ["tun",4,1,1,1,"Antenna tuner manager","","Lco","closed loop"],
+  ["wifi",0,2,1,1,"Wi-Fi / BT firmware","","ext Lco","coex signals"],
+  ["coex",1,2,1,1,"Coexistence manager","","Lco"],
+  ["cfg",2,2,1,1,"Band and device config","","Lco","which PA, filter, port"],
+  ["dpd",3,2,1,1,"DPD and ET training","","Lco"],
+  ["cal",4,2,1,1,"Calibration NV tables","mem","Lboot","factory written"]
+ ],
+ edges:[["inp","lim","ctl"],["ulpc","lim","ctl"],["lim","txp","ctl"],["txp","trx","ctl"],["trx","fe","ctl","RFFE"],["core","txp","ctl"],["core","rx","ctl"],["rx","trx","ctl"],["tun","fe","ctl"],["wifi","coex","ctl"],["coex","core","ctl"],["cfg","core","ctl"],["cal","dpd","ctl"]],
+ link:{trx:"transceiver.html",fe:"rf-front-end.html",tun:"rf-switches.html",dpd:"linearization.html",inp:"power-software.html",wifi:"connectivity-software.html"},
+ desc:{inp:"Android's vendor SAR service reads grip and proximity sensors and sends a power-backoff index; the thermal engine sends limits when the phone is hot.",
+  lim:"Caps the transmit power at P_CMAX: the power-class limit minus allowed reductions (MPR for waveform and allocation), minus SAR and thermal backoff.",
+  txp:"Turns a target power into hardware settings: PA gain state, transceiver gain index, PA bias and ET mode, using calibration tables with frequency and temperature compensation, then corrects using the feedback receiver.",
+  trx:"Receives gain, frequency and timing settings from the modem and forwards PA, switch and tuner writes over MIPI RFFE at precise times.",
+  fe:"Every front-end device is a MIPI RFFE slave with registers for mode, gain and bias.",
+  ulpc:"Computes the target uplink power from the network's parameters, the measured path loss and closed-loop correction commands (TPC) in each grant.",
+  core:"Schedules all RF events against the slot timeline: which bands are active, when to retune, when to switch antennas for SRS, and when to apply each write.",
+  rx:"Chooses LNA and baseband gain states so the wanted signal sits well inside the ADC range, using RSSI measurements and calibrated gain offsets.",
+  tun:"Picks aperture and impedance tuner settings per band and adapts them from reflected-power measurements and grip state.",
+  wifi:"Wi-Fi and Bluetooth firmware exchange real-time transmit and receive timing with the modem.",
+  coex:"Avoids self-interference between cellular, Wi-Fi, Bluetooth and GNSS, for example by blanking, power limits or channel choices.",
+  cfg:"Per-phone-design tables: which PA module, filter and antenna port serve each band and band combination.",
+  dpd:"Measures PA distortion through the feedback receiver and updates predistortion coefficients and envelope-tracking delay.",
+  cal:"Per-phone calibration data: TX power versus gain index, RX gain offsets, DPD and ET parameters, feedback-receiver gain, crystal frequency offset."}},
+sections:[
+{id:"txpc",title:"From power-control formula to PA settings",toc:"TX power walk",sub:"Stage 1 is the 3GPP uplink power-control formula. Stage 2 is what RF software does with the result. The calibration curves are illustrative, but the steps are the real ones.",
+html:`<div class="calc"><div class="cin">
+<fieldset><legend>Stage 1 · 3GPP PUSCH power control</legend>
+<label>P0 nominal (dBm per RB)<input type="number" id="uP0" value="-90" step="1"></label>
+<label>Path-loss compensation α<select id="uA"><option>0.4</option><option>0.6</option><option selected>0.8</option><option>1</option></select></label>
+<label>Measured path loss (dB) <output id="oPL"></output><input type="range" id="uPL" min="60" max="150" value="110" step="1"></label>
+<label>Allocated resource blocks<input type="number" id="uRB" value="50" min="1" max="273"></label>
+<label>Numerology μ<select id="uMu"><option value="0">0 (15 kHz)</option><option value="1" selected>1 (30 kHz)</option></select></label>
+<label>Closed-loop correction f (dB)<input type="number" id="uF" value="0" step="1"></label></fieldset>
+<fieldset><legend>Limits</legend>
+<label>Power class<select id="uPc"><option value="23" selected>PC3 · 23 dBm</option><option value="26">PC2 · 26 dBm</option></select></label>
+<label>MPR for waveform and allocation (dB)<input type="number" id="uMpr" value="1" step="0.5" min="0"></label>
+<label>SAR backoff (dB)<input type="number" id="uSar" value="0" step="0.5" min="0"></label></fieldset>
+<fieldset><legend>Stage 2 · Conditions</legend>
+<label>Channel position in band <output id="oCh"></output><input type="range" id="uCh" min="0" max="100" value="50"></label>
+<label>PA temperature (°C) <output id="oT"></output><input type="range" id="uT" min="-10" max="85" value="45"></label></fieldset>
+</div><div class="cout"><div class="lvl" id="uOut"></div><svg class="chart" id="uCal" viewBox="0 0 900 330" role="img" aria-label="Calibration curves and chosen gain index"></svg><p class="note2 kv" id="uLeg"></p><div id="uSteps"></div></div></div>`},
+{id:"calflow",title:"Factory calibration",toc:"Calibration",sub:"Every phone runs this sequence on the production line, connected to a radio tester. It takes from tens of seconds to a couple of minutes per phone.",
+html:`<div class="tw"><table class="atbl"><thead><tr><th>Step</th><th>What is measured</th><th>What is stored</th><th>Why</th></tr></thead><tbody>
+<tr><td class="b">Crystal frequency</td><td>Reference oscillator offset against a precise source</td><td>Frequency correction and temperature curve</td><td>All carriers and GNSS depend on it</td></tr>
+<tr><td class="b">TX linearization</td><td>Output power for a sweep of gain indexes in each PA state, at several channels per band</td><td>Power versus gain-index tables</td><td>Sets power accurately without measuring every unit's PA at run time</td></tr>
+<tr><td class="b">Feedback receiver</td><td>Coupled power reading against tester power</td><td>Detector gain offsets</td><td>Closed-loop power control and DPD rely on it</td></tr>
+<tr><td class="b">DPD and ET</td><td>PA AM/AM and AM/PM, envelope delay</td><td>Initial coefficients and delay per band</td><td>Starting point for run-time training</td></tr>
+<tr><td class="b">RX gain</td><td>Reported signal level for known input levels in each LNA gain state, per channel</td><td>RX gain offsets</td><td>Accurate RSRP reporting and AGC</td></tr>
+<tr><td class="b">Verification</td><td>Calls on several bands; power, EVM, ACLR and sensitivity</td><td>Pass/fail record</td><td>Catches assembly defects</td></tr></tbody></table></div>`}
+],
+init(){
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Illustrative calibration: power at antenna vs gain index (RGI 0..63) per PA state and channel (low/mid/high)
+const ST=[["High-gain",4,27.5,0.66,8,[0.6,0,-0.8]],["Mid-gain",-14,13,0.5,-4,[0.4,0,-0.5]],["Low-gain",-48,0,0.82,-60,[0.3,0,-0.3]]];// name, Pmin@RGI0, Psat, slope, switch threshold, channel offsets
+const curve=(s,rgi,chOff)=>{const lin=s[1]+s[3]*rgi+chOff;return s[2]-Math.log(1+Math.exp((s[2]-lin)*1.6))/1.6};// soft compression
+const TC=-0.025;// dB per °C gain drift
+function chOffset(s,pos){const o=s[5],x=pos/100;return x<0.5?o[0]+(o[1]-o[0])*x*2:o[1]+(o[2]-o[1])*(x-0.5)*2}
+["uP0","uA","uPL","uRB","uMu","uF","uPc","uMpr","uSar","uCh","uT"].forEach(i=>$(i).addEventListener("input",calc));
+function calc(){
+ const P0=+$("uP0").value,a=+$("uA").value,PL=+$("uPL").value,RB=Math.max(1,+$("uRB").value),mu=+$("uMu").value,f=+$("uF").value,pc=+$("uPc").value,mpr=+$("uMpr").value,sar=+$("uSar").value,ch=+$("uCh").value,T=+$("uT").value;
+ $("oPL").textContent=PL+" dB";$("oCh").textContent=ch+"%";$("oT").textContent=T+" °C";
+ const req=P0+10*Math.log10(Math.pow(2,mu)*RB)+a*PL+f;
+ const pcmax=pc-mpr-sar,target=Math.min(pcmax,req),phr=pcmax-req;
+ const si=target>ST[0][4]?0:target>ST[1][4]?1:2,s=ST[si];
+ const co=chOffset(s,ch),tc=TC*(T-25);
+ // open loop: find rgi giving target (with temperature comp applied to the prediction)
+ let rgi=0;for(let r=0;r<=63;r++){if(curve(s,r,co)+tc>=target-0.15){rgi=r;break}rgi=r}
+ const pred=curve(s,rgi,co)+tc,sat=curve(s,63,co)+tc;
+ // what you'd get without temperature compensation
+ let rgiNo=0;for(let r=0;r<=63;r++){if(curve(s,r,co)>=target-0.15){rgiNo=r;break}rgiNo=r}
+ const actNo=curve(s,rgiNo,co)+tc;
+ const loop=si===0&&target>8;
+ $("uOut").innerHTML=`<div><span class="label">Required power</span><b>${req.toFixed(1)} dBm</b></div><div><span class="label">P_CMAX</span><b>${pcmax.toFixed(1)} dBm</b></div><div><span class="label">Target</span><b class="${req>pcmax?"bad":"ok"}">${target.toFixed(1)} dBm</b></div><div><span class="label">Power headroom</span><b class="${phr<0?"bad":"ok"}">${phr.toFixed(1)} dB</b></div><div><span class="label">PA state</span><b>${s[0]}</b></div><div><span class="label">Gain index</span><b>${rgi}</b></div><div><span class="label">Error without temp. comp.</span><b class="${Math.abs(actNo-target)>1?"bad":""}">${(actNo-target).toFixed(1)} dB</b></div>`;
+ // chart
+ const L=60,R=880,Tt=14,B=280,ymin=-50,ymax=30,X=r=>L+r/63*(R-L),Y=v=>B-(v-ymin)/(ymax-ymin)*(B-Tt);
+ let h="";for(let v=ymin;v<=ymax;v+=10){h+=`<line x1="${L}" x2="${R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${v}</text>`}
+ for(let r=0;r<=63;r+=7){h+=`<text x="${X(r)}" y="${B+14}" text-anchor="middle">${r}</text>`}
+ const cols=["var(--copper)","var(--lo)","var(--ok)"];
+ ST.forEach((st,k)=>{[0,0.5,1].forEach((p,j)=>{const off=chOffset(st,p*100);const pts=[];for(let r=0;r<=63;r++)pts.push(`${X(r)},${Y(curve(st,r,off))}`);h+=`<polyline fill="none" stroke="${cols[k]}" stroke-width="${k===si?2.2:1.2}" stroke-dasharray="${j===1?"":j===0?"5 3":"1 3"}" opacity="${k===si?1:.45}" points="${pts.join(" ")}"/>`})});
+ h+=`<line x1="${L}" x2="${R}" y1="${Y(target)}" y2="${Y(target)}" stroke="var(--ink)" stroke-dasharray="4 3"/><text x="${R-4}" y="${Y(target)-5}" text-anchor="end" style="fill:var(--ink)">target ${target.toFixed(1)} dBm</text>`;
+ h+=`<circle cx="${X(rgi)}" cy="${Y(pred)}" r="6" fill="none" stroke="var(--ink)" stroke-width="2.4"/>`;
+ h+=`<text x="${(L+R)/2}" y="${B+32}" text-anchor="middle">Transceiver gain index (RGI)</text><text x="14" y="${(Tt+B)/2}" transform="rotate(-90 14 ${(Tt+B)/2})" text-anchor="middle">Power at antenna (dBm)</text>`;
+ $("uCal").innerHTML=h;
+ $("uLeg").innerHTML=ST.map((st,k)=>`<span style="display:inline-flex;gap:6px;align-items:center;margin-right:14px"><i style="display:inline-block;width:22px;height:3px;background:${cols[k]}"></i>${st[0]} PA state</span>`).join("")+`<span>Line style: dashed = low channel, solid = mid, dotted = high. The circle marks the chosen gain index.</span>`;
+ const steps=[
+  [`Network parameters and path loss give a required power of ${req.toFixed(1)} dBm (P0 ${P0} + 10·log10(2^${mu}·${RB}) + ${a}·${PL} + ${f}).`],
+  [`P_CMAX = ${pc} − ${mpr} (MPR) − ${sar} (SAR) = ${pcmax.toFixed(1)} dBm.${req>pcmax?" The phone is power-limited; it reports negative headroom so the network can reduce the allocation.":""}`],
+  [`Target ${target.toFixed(1)} dBm selects the ${s[0].toLowerCase()} PA state (switch points with hysteresis keep it from toggling).`],
+  [`Calibration tables for this band are interpolated to the channel (${co>=0?"+":""}${co.toFixed(2)} dB) and the temperature drift is added (${tc>=0?"+":""}${tc.toFixed(2)} dB at ${T} °C).`],
+  [`The lowest gain index reaching the target is ${rgi}, predicting ${pred.toFixed(1)} dBm. Without temperature compensation the PA would deliver ${actNo.toFixed(1)} dBm.`],
+  [loop?`Above about 8 dBm the feedback receiver measures the real output and trims the next slot's setting, removing the remaining error.`:`At this low power the feedback receiver is too noisy to trust, so the open-loop calibration alone sets the accuracy.`],
+  [`Writes go out as timed transceiver and MIPI RFFE commands that take effect at the next symbol boundary.`]];
+ $("uSteps").innerHTML=`<ol class="note2" style="color:var(--ink);display:grid;gap:4px;padding-left:20px;margin:0">${steps.map(x=>`<li>${esc(x[0])}</li>`).join("")}</ol>`;
+}
+calc();
+},
+how:[
+ ["Why RF lives in the modem",["Front-end settings must change exactly at slot and symbol boundaries: switching bands for a measurement gap, changing PA gain between slots, moving SRS between antennas. Only the modem knows the slot timeline, so its firmware owns every RF device. Android supplies only slow inputs such as SAR backoff and thermal limits."]],
+ ["Power control in two stages",["The 3GPP layer computes how much power the network wants, from configured parameters, the measured path loss and closed-loop commands. The RF layer then has to produce that power at the antenna to within about ±1 dB across every band, channel, temperature and unit.","Hardware gain varies by several dB from part to part and with temperature, so the RF layer relies on per-phone calibration tables and, at higher powers, a feedback receiver that measures what actually left the PA."]],
+ ["Receive control",["On receive, the RF driver chooses LNA and baseband gain states so strong signals do not clip the ADC and weak ones stay above its noise. Calibrated gain offsets let the modem report RSRP accurately, which matters because the network uses those reports for handover and power control."]],
+ ["Tuning, SAR and coexistence",["The antenna tuner manager selects tuner states per band and adjusts them as a hand changes the antenna's impedance. The SAR logic lowers maximum power when the phone is against the body, averaged over time windows set by regulators. The coexistence manager coordinates with Wi-Fi, Bluetooth and GNSS so one radio does not deafen another."]]
+],
+arch:[
+ ["Open-loop power control","Calibration tables only.","Fast and works at any power; accuracy limited by temperature and aging.","Low and medium output power"],
+ ["Closed-loop with feedback receiver","Measure actual output and correct the next slot.","Accurate; needs a calibrated detector and enough signal.","High output power"],
+ ["Per-unit vs characterized calibration","Measure every phone, or use typical curves with a few points.","Per-unit is accurate but costs test time.","Usually a mix: few points per unit plus characterized shapes"],
+ ["Time-averaged SAR","Average exposure over a regulatory window, allowing short bursts above the static limit.","Better uplink performance; more complex firmware.","Recent flagships"]
+],
+chal:[
+ ["Combinatorial testing","Every band combination, PA state and antenna path needs settings and verification."],
+ ["Test time","Each second of factory calibration costs money across millions of phones."],
+ ["Temperature and aging","Gain drifts with temperature and age; compensation tables and closed loops keep power within tolerance."],
+ ["Timing","RFFE writes must land within microseconds of slot boundaries, while dozens of devices share the bus."]
+],
+specs:[["Power accuracy target","About ±1 to ±2 dB absolute (3GPP), tighter in practice"],["Control bus","MIPI RFFE, up to about 52 MHz"],["Update rate","Every slot or symbol group"],["Gain-index resolution","About 0.5 dB per step (typical)"],["Calibration storage","Modem NV items"],["Power-control formula","3GPP TS 38.213 §7.1"]],
+related:["modem-software.html","rf-front-end.html","linearization.html","rf-switches.html","rf-budget.html"],
+foot:"The power-control formula follows 3GPP TS 38.213. The calibration curves, PA switch points and temperature coefficient in the interactive are illustrative values chosen to show the method."
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const grp=PAGES.filter(p=>p.group===(PAGES.find(q=>q.file===PAGE.file)||{}).group);
+const idx=grp.findIndex(p=>p.file===PAGE.file);
+const prev=grp[(idx-1+grp.length)%grp.length],next=grp[(idx+1)%grp.length];
+const GROUPS=[...new Set(PAGES.map(p=>p.group))];
+const sec=(id,title,sub,body)=>`<section class="blk" id="${id}"><div class="bh"><h2>${esc(title)}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div>${body}</section>`;
+const toc=[];
+let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a></div>
+<nav class="modnav" aria-label="All pages">${GROUPS.map(g=>`<div class="ng"><span class="label">${esc(g)}</span>${PAGES.filter(p=>p.group===g).map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</div>`).join("")}</nav>
+<header class="hdr${PAGE.cost?"":" nocost"}"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+${PAGE.cost?`<div class="costbox"><span class="label">${esc(PAGE.costLabel||"Typical cost per phone")}</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div>`:""}</header>
+${PAGE.stats?`<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`:""}
+<nav class="toc" id="toc" aria-label="On this page"></nav>`;
+if(PAGE.diagram){toc.push(["diagram","Block diagram"]);h+=sec("diagram",PAGE.diagram.title||"Internal block diagram",PAGE.diagram.caption+" Click or tab to a block; blocks marked ↗ open a detail page.",`<div class="scroll"><svg class="sch" id="sch"></svg></div><div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div>`)}
+(PAGE.sections||[]).forEach(s=>{toc.push([s.id,s.toc||s.title]);h+=sec(s.id,s.title,s.sub,s.html)});
+const SWL={app:["Apps","--L-app"],fw:["OS framework","--L-fw"],hal:["HAL & vendor services","--L-hal"],kern:["Kernel & drivers","--L-kern"],sec:["Secure world","--L-sec"],co:["Co-processor firmware","--L-co"],boot:["Boot, ROM & config","--L-boot"]};
+window.SWL=SWL;
+if(PAGE.sw){toc.push(["sw","Software & firmware"]);const S=PAGE.sw;
+ h+=sec("sw","Software & firmware",S.sub||"Every layer of code that touches this block, from apps down to firmware running inside the chip.",
+ `<div class="swk">${S.stack.map(([k,t,d,run,lang,own,upd])=>`<div class="swr" style="--lc:var(${SWL[k][1]})"><div class="swl"><span>Layer</span><b>${esc(SWL[k][0])}</b></div><div class="swm"><h3>${esc(t)}</h3><p>${esc(d)}</p></div><dl class="swx"><dt>Runs on</dt><dd>${esc(run)}</dd><dt>Written in</dt><dd>${esc(lang)}</dd><dt>Supplied by</dt><dd>${esc(own)}</dd><dt>Updated by</dt><dd>${esc(upd)}</dd></dl></div>`).join("")}<div class="swhw">${esc(S.hw||"Hardware")}</div></div>
+ <div class="swfoot"><div class="swleg">${Object.values(SWL).map(([n,c])=>`<span style="--lc:var(${c})"><i></i>${esc(n)}</span>`).join("")}</div>${S.link?`<a class="go" href="${S.link[0]}">${esc(S.link[1])} →</a>`:""}</div>`)}
+if(PAGE.how){toc.push(["how","How it works"]);h+=sec("how","How it works","",`<div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div>`)}
+if(PAGE.eq){toc.push(["eq","Key equations"]);h+=sec("eq","Key equations","The relationships designers use every day.",`<div class="eqs">${PAGE.eq.map(([n,f,x])=>`<div class="eqc"><span class="label">${esc(n)}</span><code class="f">${esc(f)}</code><p>${esc(x)}</p></div>`).join("")}</div>`)}
+if(PAGE.arch){toc.push(["arch",PAGE.archTitle||"Architectures"]);h+=sec("arch",PAGE.archTitle||"Architecture options","The main design choices and where each one is used.",`<div class="tw"><table class="atbl"><thead><tr><th>${esc(PAGE.archCol||"Architecture")}</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div>`)}
+if(PAGE.chal){toc.push(["chal","Design challenges"]);h+=sec("chal","Design challenges","",`<div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div>`)}
+if(PAGE.specs||PAGE.parts){h+=`<div class="two">`;
+ if(PAGE.specs){toc.push(["specs","Specifications"]);h+=sec("specs",PAGE.specsTitle||"Key specifications","",`<div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div>`)}
+ if(PAGE.parts){toc.push(["parts","Parts & vendors"]);h+=sec("parts","Parts & vendors","Representative examples; exact parts vary by phone and region.",`<div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div>`)}
+ h+=`</div>`}
+const rel=(PAGE.related||[]).map(f=>PAGES.find(p=>p.file===f)).filter(Boolean);
+if(rel.length){toc.push(["related","Related"]);h+=sec("related","Related pages","",`<div class="rel">${rel.map(p=>`<a href="${p.file}"><span class="label">${esc(p.group)}</span><b>${esc(p.short)}</b></a>`).join("")}</div>`)}
+h+=`<nav class="pn" aria-label="Previous and next"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+document.getElementById("toc").innerHTML=`<span class="label">On this page</span>`+toc.map(([i,t])=>`<a href="#${i}">${esc(t)}</a>`).join("");
+if(PAGE.init)PAGE.init();
+if(!PAGE.diagram)return;
+// ---------- auto links from diagram blocks to detail pages ----------
+const LINKRULES=[
+ [/phase shifter/i,"mmwave.html"],
+ [/\bDPD\b|envelope|ET tracker|ET trackers/i,"linearization.html"],
+ [/\bLNA\b|low-noise|LNA bank|RF input/i,"lna.html"],
+ [/\bPA\b|power stage|driver stage|driver amp|Driver amplifier|PA \/ LNA/i,"pa.html"],
+ [/mixer|converter$|up\/down/i,"mixers.html"],
+ [/synthesi[sz]er|PLL|LO divider|LO \//i,"synthesizers.html"],
+ [/\bADC\b|\bDAC\b/i,"data-converters.html"],
+ [/SAW|BAW|duplexer|plexer|Pre-filter|Diplexer/i,"acoustic-filters.html"],
+ [/switch|tuner|matrix/i,"rf-switches.html"]
+];
+const EXTRULES=[
+ [/transceiver/i,"transceiver.html"],[/^modem|cellular modem|5G modem/i,"modem.html"],[/^SoC|App processor|SoC /i,"soc.html"],[/GNSS/i,"gnss.html"],
+ [/PAMiD|front-end module|in front-end|DRx module|MIMO L-FEM|front end/i,"rf-front-end.html"],
+ [/antenna|ANT\d/i,"antennas.html"],[/Wi-Fi/i,"wifi-bluetooth.html"],[/PMIC|charger|battery/i,"power.html"],[/mmWave|AiP/i,"mmwave.html"]
+];
+function linkFor(b){
+ if(D.autolink===false)return (D.link&&D.link[b.id])||null;
+ if(D.link&&b.id in D.link)return D.link[b.id];
+ const rules=b.cls.includes("ext")?EXTRULES.concat(LINKRULES):LINKRULES.concat(EXTRULES);
+ for(const [re,f] of rules){if(re.test(b.label)&&f!==PAGE.file&&PAGES.some(p=>p.file===f))return f}
+ return null;
+}
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=D.gy||30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ o.href=linkFor(o);
+ if(o.href){const t=el("text",{x:o.x+o.w-5,y:o.y+12,"text-anchor":"end",class:"lk"},g);t.textContent="↗"}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}${o.href?`<a class="go" href="${o.href}">Open the ${esc((PAGES.find(p=>p.file===o.href)||{short:"detail"}).short)} page →</a>`:""}`;
+}
+focus(null);
+const usedL=[...new Set(Object.values(B).map(o=>(o.cls.match(/\bL(app|fw|hal|kern|sec|co|boot)\b/)||[])[1]).filter(Boolean))];
+document.getElementById("leg").innerHTML=usedL.map(k=>{const m={app:"Apps",fw:"OS framework",hal:"HAL & vendor services",kern:"Kernel & drivers",sec:"Secure world",co:"Co-processor firmware",boot:"Boot, ROM & config"};return `<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="color-mix(in oklab,var(--L-${k}) 12%,var(--surface))" stroke="var(--L-${k})" stroke-width="1.4"/></svg>${m[k]}</span>`}).join("")+[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>

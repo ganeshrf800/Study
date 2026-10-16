@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phone Software Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Module page: title block, signal-flow schematic as the centerpiece, then explanation, architecture table, challenges, specs, parts. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd; --ok:#2e7d4f; --lo:#4054ad; --pwr:#9a7410; --ctl:#7a8a84;
+  --L-app:#2f6db0; --L-fw:#3f8f8a; --L-hal:#6b8f2a; --L-kern:#a0701a; --L-sec:#b0423a; --L-co:#7a4fa3; --L-boot:#4a5560;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --ok:#6fcf97; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; --L-app:#7fb0ec; --L-fw:#6cc6bf; --L-hal:#a8cc66; --L-kern:#e3b45a; --L-sec:#ef8a80; --L-co:#bb97e3; --L-boot:#a7b3be; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416; --ok:#6fcf97; --lo:#8b9cf0; --pwr:#e2bb4f; --ctl:#7f918a; --L-app:#7fb0ec; --L-fw:#6cc6bf; --L-hal:#a8cc66; --L-kern:#e3b45a; --L-sec:#ef8a80; --L-co:#bb97e3; --L-boot:#a7b3be; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;padding:0 16px}
+a{color:var(--copper)}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 64px;display:grid;gap:22px}
+.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.home{font-family:var(--mono);font-size:12px;text-decoration:none;letter-spacing:.04em}
+.home:hover{text-decoration:underline}
+.modnav{display:flex;flex-wrap:wrap;gap:6px}
+.modnav a{font-size:12.5px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.modnav a:hover{border-color:var(--copper)}
+.modnav a[aria-current="page"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+header.hdr{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+@media (max-width:860px){header.hdr{grid-template-columns:1fr}}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper)}
+h1{font-family:var(--display);font-stretch:66%;font-weight:800;font-size:clamp(38px,6.5vw,72px);line-height:.92;margin:6px 0 10px;text-transform:uppercase;text-wrap:balance}
+.lede{margin:0;max-width:64ch;font-size:17px;color:var(--muted)}
+.costbox{border:1px solid var(--line);background:var(--surface);padding:12px 14px;display:grid;gap:4px;align-self:end}
+.costbox .amt{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;line-height:1.1}
+.costbox small{color:var(--muted);font-size:12.5px}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:10px 14px;border-right:1px solid var(--line);min-width:0}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.toc a{text-decoration:none;color:var(--muted)}
+.toc a:hover{color:var(--copper)}
+section.blk{background:var(--surface);border:1px solid var(--line);min-width:0;scroll-margin-top:16px}
+.bh{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+h2{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:24px;margin:0;text-transform:uppercase}
+.bh p{margin:0;color:var(--muted);font-size:13px;max-width:72ch}
+.scroll{overflow-x:auto}
+svg.sch{display:block;height:auto;min-width:760px;width:100%}
+.sch text{font-family:var(--body);fill:var(--ink)}
+.sch .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--muted)}
+.sch .grp{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:6 4}
+.sch .grpf{fill:color-mix(in oklab,var(--sunk) 35%,var(--surface))}
+.sch .b rect.box{fill:var(--surface);stroke:var(--ink);stroke-width:1.1;transition:stroke-width .12s}
+.sch .b.ext rect.box{fill:var(--sunk);stroke:var(--wire);stroke-dasharray:4 3}
+.sch .b.bus rect.box{fill:color-mix(in oklab,var(--copper) 10%,var(--surface));stroke:var(--copper)}
+.sch .b.hl rect.box{stroke:var(--copper);stroke-width:1.6}
+.sch .b{cursor:pointer}
+.sch .b:hover rect.box,.sch .b.on rect.box{stroke:var(--copper);stroke-width:2.2}
+.sch .b.Lapp rect.box{fill:color-mix(in oklab,var(--L-app) 12%,var(--surface));stroke:var(--L-app);stroke-width:1.4}
+.sch .b.Lfw rect.box{fill:color-mix(in oklab,var(--L-fw) 12%,var(--surface));stroke:var(--L-fw);stroke-width:1.4}
+.sch .b.Lhal rect.box{fill:color-mix(in oklab,var(--L-hal) 12%,var(--surface));stroke:var(--L-hal);stroke-width:1.4}
+.sch .b.Lkern rect.box{fill:color-mix(in oklab,var(--L-kern) 12%,var(--surface));stroke:var(--L-kern);stroke-width:1.4}
+.sch .b.Lsec rect.box{fill:color-mix(in oklab,var(--L-sec) 12%,var(--surface));stroke:var(--L-sec);stroke-width:1.4}
+.sch .b.Lco rect.box{fill:color-mix(in oklab,var(--L-co) 12%,var(--surface));stroke:var(--L-co);stroke-width:1.4}
+.sch .b.Lboot rect.box{fill:color-mix(in oklab,var(--L-boot) 12%,var(--surface));stroke:var(--L-boot);stroke-width:1.4}
+.sch .bt{font-size:11.2px;font-weight:600;font-stretch:90%}
+.sch .bs{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.sch .sep{stroke:var(--line)}
+.sch .gy{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.sch .e{fill:none;stroke-width:1.4;transition:opacity .15s}
+.sch .e.rf{stroke:var(--ink)}
+.sch .e.dig{stroke:var(--ink);stroke-dasharray:6 3;stroke-width:1.2}
+.sch .e.ctl{stroke:var(--ctl);stroke-dasharray:2 3;stroke-width:1.2}
+.sch .e.pwr{stroke:var(--pwr);stroke-dasharray:1 3;stroke-width:2.2;stroke-linecap:round}
+.sch .e.lo{stroke:var(--lo);stroke-dasharray:9 3 2 3}
+.sch .e.bus{stroke:var(--copper);stroke-width:1.8}
+.sch .el{font-family:var(--mono);font-size:9px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.sch.focus .e:not(.on){opacity:.18}
+.sch .e.on{stroke-width:2.4}
+.sch .e.on.rf,.sch .e.on.dig{stroke:var(--copper)}
+.dfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;border-top:1px solid var(--line);padding:12px 16px;align-items:start}
+@media (max-width:860px){.dfoot{grid-template-columns:1fr}}
+.ddesc{min-height:48px}
+.ddesc h3{margin:0 0 2px;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+.ddesc p{margin:0;max-width:80ch;font-size:14px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);max-width:520px;justify-content:flex-end}
+@media (max-width:860px){.leg{justify-content:flex-start}}
+.leg span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leg svg{overflow:visible}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:0}
+.how article{padding:16px 18px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.how h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase;line-height:1.15}
+.how p{margin:0 0 10px;max-width:72ch}
+.how p:last-child{margin-bottom:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.b{font-weight:700}
+td.m{color:var(--muted)}
+td.n{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.atbl{min-width:760px}
+.chal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.chal div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.chal b{display:block;font-family:var(--display);font-stretch:80%;font-size:16px;text-transform:uppercase;margin-bottom:4px;color:var(--copper)}
+.chal p{margin:0;font-size:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:22px}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pn a{display:block;border:1px solid var(--line);background:var(--surface);padding:12px 16px;text-decoration:none;color:var(--ink)}
+.pn a:hover{border-color:var(--copper)}
+.pn a span{display:block}
+.pn .nx{text-align:right}
+.pn b{font-family:var(--display);font-stretch:75%;font-size:20px;text-transform:uppercase}
+.modnav{display:grid;gap:6px}
+.modnav .ng{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modnav .ng .label{min-width:92px}
+header.hdr.nocost{grid-template-columns:1fr}
+.sch .lk{font-size:11px;fill:var(--copper);font-weight:700}
+.go{display:inline-block;margin-top:8px;font-weight:650;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.go:hover{border-bottom-width:3px}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.eqc{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start;min-width:0}
+.eqc .f{font-family:var(--mono);font-size:14.5px;font-weight:600;background:var(--sunk);padding:8px 10px;border-left:3px solid var(--copper);overflow-x:auto;white-space:pre-wrap}
+.eqc p{margin:0;font-size:14px;color:var(--muted)}
+.rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.rel a{padding:12px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.rel a:hover{background:var(--sunk)}
+.rel b{display:block;font-family:var(--display);font-stretch:78%;font-size:18px;text-transform:uppercase}
+/* software layer stack */
+.swk{display:grid;gap:0}
+.swr{display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,330px);border-bottom:1px solid var(--line)}
+.swr:last-child{border-bottom:0}
+@media (max-width:860px){.swr{grid-template-columns:1fr}}
+.swl{padding:12px 14px;color:var(--surface);background:var(--lc);display:flex;flex-direction:column;gap:2px;justify-content:center}
+.swl b{font-family:var(--display);font-stretch:80%;font-size:15px;text-transform:uppercase;line-height:1.1}
+.swl span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+.swm{padding:12px 16px;min-width:0;border-left:4px solid var(--lc)}
+.swm h3{margin:0 0 4px;font-size:15.5px;font-weight:700}
+.swm p{margin:0;font-size:14px;max-width:70ch}
+.swx{padding:10px 14px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px;align-content:center;background:color-mix(in oklab,var(--lc) 7%,var(--surface));min-width:0}
+.swx dt{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.swx dd{margin:0}
+.swhw{padding:10px 14px;background:var(--sunk);font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;border-top:2px solid var(--ink)}
+.swfoot{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
+.swleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+.swleg i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px;background:var(--lc)}
+/* shared study widgets */
+.calc{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:0}
+@media (max-width:900px){.calc{grid-template-columns:1fr}}
+.cin{padding:16px;border-right:1px solid var(--line);display:grid;gap:12px;align-content:start;min-width:0}
+@media (max-width:900px){.cin{border-right:0;border-bottom:1px solid var(--line)}}
+.cin fieldset{border:1px solid var(--line);padding:10px 12px;display:grid;gap:8px;margin:0;min-width:0}
+.cin legend{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 4px}
+.cin label{display:grid;gap:3px;font-size:13px}
+.cin label.row{display:flex;gap:6px;align-items:center}
+.cin select,.cin input[type=number]{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px;min-width:0}
+.cin input[type=range]{width:100%;accent-color:var(--copper)}
+.cin output{font-family:var(--mono);font-size:13px;font-weight:600}
+.cout{padding:16px;display:grid;gap:14px;min-width:0;align-content:start}
+.lvl{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--line)}
+.lvl div{padding:10px 12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.lvl b{display:block;font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.lvl b.bad{color:var(--copper)}
+.lvl b.ok{color:var(--ok)}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.theory{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+@media (max-width:900px){.theory{grid-template-columns:1fr}}
+.theory>div{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.theory>div:last-child{border-right:0}
+.theory h3{margin:0 0 8px;font-family:var(--display);font-stretch:78%;font-size:19px;text-transform:uppercase}
+.theory p{margin:0 0 10px;max-width:68ch}
+table.ed td{padding:4px 6px}
+table.ed input{font:inherit;font-family:var(--mono);font-size:12.5px;width:100%;min-width:56px;padding:4px 6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px}
+table.ed input.nm{font-family:var(--body);min-width:150px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn2{font:500 12.5px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer}
+.btn2:hover{border-color:var(--copper)}
+.btn2[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.note2{font-size:13px;color:var(--muted);margin:0;max-width:80ch}
+.kv{font-family:var(--mono);font-size:12.5px}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+a:focus-visible,.b:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+</style>
+<link rel="stylesheet" href="../back.css">
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const HOME="index.html";
+const PAGES=[{"file": "soc.html", "short": "SoC", "group": "Modules"}, {"file": "modem.html", "short": "5G modem", "group": "Modules"}, {"file": "transceiver.html", "short": "RF transceiver", "group": "Modules"}, {"file": "rf-front-end.html", "short": "RF front-end", "group": "Modules"}, {"file": "antennas.html", "short": "Antennas & tuning", "group": "Modules"}, {"file": "gnss.html", "short": "GNSS", "group": "Modules"}, {"file": "mmwave.html", "short": "mmWave", "group": "Modules"}, {"file": "wifi-bluetooth.html", "short": "Wi-Fi & Bluetooth", "group": "Modules"}, {"file": "nfc-uwb.html", "short": "NFC & UWB", "group": "Modules"}, {"file": "power.html", "short": "Power & charging", "group": "Modules"}, {"file": "lna.html", "short": "LNA", "group": "Components"}, {"file": "pa.html", "short": "Power amplifier", "group": "Components"}, {"file": "mixers.html", "short": "Mixers", "group": "Components"}, {"file": "synthesizers.html", "short": "Synthesizers & PLLs", "group": "Components"}, {"file": "data-converters.html", "short": "ADC & DAC", "group": "Components"}, {"file": "acoustic-filters.html", "short": "SAW & BAW filters", "group": "Components"}, {"file": "rf-switches.html", "short": "Switches & tuners", "group": "Components"}, {"file": "linearization.html", "short": "DPD & envelope tracking", "group": "Components"}, {"file": "intermodulation.html", "short": "Intermodulation", "group": "Studies"}, {"file": "rf-budget.html", "short": "Gain budget & dynamic range", "group": "Studies"}, {"file": "modulation.html", "short": "Modulation schemes", "group": "Studies"}, {"file": "power-budget.html", "short": "Power consumption", "group": "Studies"}, {"file": "thermal.html", "short": "Thermal", "group": "Studies"}, {"file": "software-stack.html", "short": "Software stack", "group": "Software"}, {"file": "boot-security.html", "short": "Boot & security", "group": "Software"}, {"file": "modem-software.html", "short": "Modem software", "group": "Software"}, {"file": "rf-software.html", "short": "RF control software", "group": "Software"}, {"file": "connectivity-software.html", "short": "Connectivity software", "group": "Software"}, {"file": "multimedia-software.html", "short": "Multimedia & AI software", "group": "Software"}, {"file": "power-software.html", "short": "Power & thermal software", "group": "Software"}];
+const PAGE={
+file:"software-stack.html",title:"Phone Software Stack",kicker:"Software · from apps to firmware",
+lede:"A phone runs far more code than the operating system you see. Under every app sit the OS framework, vendor hardware layers, the Linux kernel, a secure world, and separate firmware running on a dozen processors inside the modem, DSPs, Wi-Fi chip, camera ISP, sensor hub and power controller. This page maps which software runs at which layer of which hardware block, and follows real tasks down through them.",
+stats:[["Layers","7, apps to boot ROM"],["Hardware blocks","12"],["Processors running code","≈ 15–20"],["Main OS","Android (Linux) or iOS (XNU)"],["Scenarios traced","7"]],
+sections:[
+{id:"matrix",title:"Layer × block map",toc:"Map",sub:"Rows are software layers, columns are hardware blocks. Click a cell for what runs there, where it runs, who writes it and how it is updated. Pick a scenario to trace a task through the stack.",
+html:`<style>
+.sc-ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.mxw2{overflow:auto}
+table.sm{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px;font-size:12px}
+table.sm th,table.sm td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0;vertical-align:top}
+table.sm thead th{background:var(--sunk);font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:none;font-weight:600;color:var(--ink);padding:8px 6px;text-align:left;position:sticky;top:0;z-index:2}
+table.sm thead th a{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--muted)}
+table.sm tbody th{position:sticky;left:0;z-index:1;background:var(--lc);color:var(--surface);text-align:left;padding:8px 10px;width:130px;min-width:130px}
+table.sm tbody th b{display:block;font-family:var(--display);font-stretch:80%;font-size:14px;text-transform:uppercase;line-height:1.1}
+table.sm tbody th span{font-family:var(--mono);font-size:9.5px;opacity:.9}
+table.sm td button{all:unset;box-sizing:border-box;display:block;width:100%;min-height:58px;padding:7px 8px;cursor:pointer;font-family:var(--body);font-size:12px;line-height:1.3;color:var(--ink);background:color-mix(in oklab,var(--lc) 7%,var(--surface));position:relative}
+table.sm td button:hover{background:color-mix(in oklab,var(--lc) 18%,var(--surface))}
+table.sm td button:focus-visible{outline:2px solid var(--copper);outline-offset:-2px}
+table.sm td.empty{background:repeating-linear-gradient(45deg,var(--surface) 0 5px,var(--sunk) 5px 7px)}
+table.sm td.sel button{box-shadow:inset 0 0 0 3px var(--copper)}
+table.sm.trace td:not(.on) button{opacity:.32}
+table.sm.trace td.empty{opacity:.4}
+table.sm td.on button{background:color-mix(in oklab,var(--lc) 26%,var(--surface));box-shadow:inset 0 0 0 2px var(--lc)}
+.badge{position:absolute;top:4px;right:4px;display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.badge i{font-style:normal;font-family:var(--mono);font-size:10px;font-weight:700;background:var(--copper);color:var(--surface);border-radius:999px;min-width:17px;height:17px;display:inline-grid;place-items:center;padding:0 4px}
+.smd{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:1px solid var(--line)}
+@media (max-width:900px){.smd{grid-template-columns:1fr}}
+.smd>div{padding:14px 16px;min-width:0}
+.smd>div+div{border-left:1px solid var(--line)}
+@media (max-width:900px){.smd>div+div{border-left:0;border-top:1px solid var(--line)}}
+.smd h3{margin:2px 0 6px;font-family:var(--display);font-stretch:78%;font-size:21px;text-transform:uppercase;line-height:1.1}
+.smd p{margin:0 0 8px;max-width:70ch}
+.steps{margin:0;padding-left:0;list-style:none;display:grid;gap:6px;counter-reset:st}
+.steps li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px;align-items:start;font-size:13.5px}
+.steps li::before{counter-increment:st;content:counter(st);font-family:var(--mono);font-weight:700;font-size:11px;background:var(--copper);color:var(--surface);border-radius:999px;width:22px;height:22px;display:grid;place-items:center}
+.steps li span.lay{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:block}
+.steps li button{all:unset;cursor:pointer;color:var(--ink);border-bottom:1px dotted var(--muted)}
+</style>
+<div class="sc-ctl" id="scBtns"><span class="label">Trace a task</span></div>
+<div class="mxw2"><table class="sm" id="sm"></table></div>
+<div class="smd"><div id="smCell" aria-live="polite"></div><div id="smScen" aria-live="polite"></div></div>`},
+{id:"ios",title:"Android and iOS, layer by layer",toc:"Android vs iOS",sub:"The same hardware layers exist on both platforms; the names and the split of who writes what differ.",html:`<div class="tw"><table class="atbl" id="iosT"></table></div>`},
+{id:"who",title:"Who writes and who updates each layer",toc:"Ownership",sub:"Why some fixes arrive in days and others never do.",html:`<div class="tw"><table class="atbl" id="whoT"></table></div>`}
+],
+init(){
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SWL=window.SWL,LAY=["app","fw","hal","kern","sec","co","boot"];
+const DEF={
+ app:["Main CPU cores, as sandboxed Linux processes","Kotlin, Java, C/C++ (NDK)","App developers","App store, any time"],
+ fw:["Main CPU (system_server and system services)","Java, Kotlin, C++, Rust","Google (AOSP) plus OEM additions","OS updates; many modules monthly through Google Play system updates (Mainline)"],
+ hal:["Main CPU, vendor processes","C++, some Rust","SoC vendor and phone maker","Vendor partition in the maker's OTA updates"],
+ kern:["Main CPU in kernel mode","C","Google (GKI core) plus SoC vendor modules","Maker's OTA updates, including monthly security patches"],
+ sec:["Main CPU in TrustZone, or a separate secure processor","C, C++, Rust","SoC vendor, phone maker, Google","Firmware partitions in the maker's OTA updates"],
+ co:["A dedicated DSP or microcontroller inside the block","C, C++, assembly, on an RTOS","Chip vendor","Firmware images inside the maker's OTA updates"],
+ boot:["Boot ROM, fuses and factory-written data","C (ROM), data tables","SoC vendor and phone factory","ROM never; calibration only at the factory or repair"]
+};
+const B=[
+ ["cpu","CPU & OS core","soc.html"],["gpu","GPU & display","soc.html"],["cam","Camera & ISP","multimedia-software.html"],["npu","NPU & AI","multimedia-software.html"],["aud","Audio & sensors","multimedia-software.html"],["mdm","5G modem","modem-software.html"],
+ ["rf","RF transceiver & front end","rf-software.html"],["wifi","Wi-Fi & Bluetooth","connectivity-software.html"],["gnss","GNSS","connectivity-software.html"],["nfc","NFC & UWB","connectivity-software.html"],["pwr","Power & charging","power-software.html"],["sec","Security","boot-security.html"]];
+// cell: [short, detail, {run,lang,own,upd} overrides]
+const C={
+cpu:{app:["Every app","Apps are Linux processes, each with its own user ID and SELinux domain. Kotlin and Java code runs on the Android Runtime; games and engines use native C/C++ through the NDK."],
+ fw:["ART, Zygote, system_server","The Android Runtime compiles app bytecode ahead of time and just in time using usage profiles. Zygote pre-loads common classes and forks every new app. system_server hosts the activity, package, window and power managers, all talking over Binder IPC.",{upd:"OS updates; ART itself is a Mainline module updated through Google Play"}],
+ hal:["AIDL HALs, vendor init","Project Treble separates the vendor partition from the OS. Hardware services expose stable AIDL interfaces, so Google can update Android without the SoC vendor rewriting drivers."],
+ kern:["Linux kernel (GKI)","One Generic Kernel Image per Android version holds the scheduler (Energy Aware Scheduling), memory management and the Binder driver. SoC-specific drivers load as vendor modules on top."],
+ sec:["Hypervisor and secure monitor","Arm Trusted Firmware at EL3 handles world switches and power calls (PSCI). A hypervisor at EL2, pKVM or a vendor one such as Qualcomm Gunyah, isolates protected VMs and vendor VMs from Android.",{lang:"C, some Rust"}],
+ co:["CPU power controller firmware","Small embedded controllers take CPU idle-state and frequency requests and sequence clocks and rails, for example Arm SCP firmware or Qualcomm CPUCP.",{run:"Microcontroller inside the SoC"}],
+ boot:["Boot ROM → bootloaders","The primary bootloader is mask ROM and cannot change. It verifies the secondary bootloader (Qualcomm XBL, MediaTek preloader), which brings up DRAM and loads the Android bootloader (ABL / LK).",{own:"SoC vendor (ROM), phone maker (later stages)"}]},
+gpu:{app:["Games, UI toolkits","Games call Vulkan or OpenGL ES. Ordinary app UIs (Jetpack Compose or Views) are drawn by the HWUI renderer on top of Skia."],
+ fw:["SurfaceFlinger, HWUI","Each app renders into a buffer. SurfaceFlinger collects all visible buffers every frame and asks the display hardware to compose them, timed to the display's vsync."],
+ hal:["Composer HAL, Vulkan driver","The Hardware Composer HAL decides which layers the display controller overlays directly and which the GPU must merge. The GPU user-mode driver (Vulkan / GLES) compiles shaders and builds command buffers.",{upd:"Vendor OTA; some phones also receive GPU driver updates through the app store"}],
+ kern:["GPU and DRM/KMS drivers","The GPU kernel driver (for example Adreno KGSL/msm, Arm Mali kbase) schedules command buffers and manages GPU memory. DRM/KMS drives the display controller and the panel over MIPI DSI."],
+ sec:["Protected video path","DRM such as Widevine L1 decrypts premium video inside the trusted execution environment; frames stay in protected buffers the OS cannot read."],
+ co:["GPU microcode, panel DDIC firmware","The GPU's command processor and power management unit run vendor microcode (for example Adreno SQE and GMU firmware). The display driver IC on the panel has its own firmware."],
+ boot:["Splash screen, panel init","The bootloader brings up the display early to show the logo; panel power-up sequences and timings come from the device tree."]},
+cam:{app:["Camera apps","Apps use CameraX or Camera2 to request streams and captures; computational photography (HDR merging, night mode, portrait) runs as app or vendor code on the CPU, GPU and NPU."],
+ fw:["CameraService","The camera server process arbitrates which app owns which camera, configures streams and passes capture requests to the HAL."],
+ hal:["Camera HAL3 and 3A","The vendor camera stack (for example Qualcomm CamX/CHI, or Google's own on Pixel) builds the processing pipeline, runs auto-exposure, autofocus and auto white balance, and applies per-sensor tuning data."],
+ kern:["Sensor, actuator and ISP drivers","Drivers program the image sensors and lens actuators over I²C/I3C, receive MIPI CSI data and hand frames around as DMA-BUF buffers."],
+ sec:["Secure camera for biometrics","On phones with secure face unlock, frames for authentication go to protected memory and are matched inside the TEE."],
+ co:["ISP firmware, OIS controller","The ISP's embedded controller (for example Qualcomm's image control processor) schedules the hardware pipeline. Optical image stabilization runs a fast control loop on its own controller."],
+ boot:["Module OTP calibration","Each camera module stores lens shading, autofocus and colour calibration in OTP/EEPROM, written when the module is built."]},
+npu:{app:["ML apps, on-device LLMs","Apps run models with LiteRT (formerly TensorFlow Lite), ONNX Runtime or MediaPipe. On Android, Gemini Nano is offered to apps through the AICore system service."],
+ fw:["AICore, ML Kit","AICore manages on-device foundation models and their updates. NNAPI is deprecated from Android 15; runtimes now call vendor delegates directly.",{own:"Google"}],
+ hal:["Vendor AI runtime and compiler","The SoC vendor's runtime (Qualcomm AI Engine Direct/QNN, MediaTek NeuroPilot, Google's TPU stack on Pixel) compiles model graphs, quantizes them and schedules work onto the NPU."],
+ kern:["NPU driver","A kernel driver queues work to the accelerator and maps shared buffers through the IOMMU; on Qualcomm, FastRPC passes calls to the Hexagon DSP."],
+ sec:null,
+ co:["NPU firmware","The accelerator's control core runs firmware that sequences layers, manages on-chip SRAM and DMA (on Qualcomm, the Hexagon compute DSP runs the QuRT RTOS)."],
+ boot:["Signed NPU image","The NPU firmware is signed and loaded by the application processor at boot through the remote-processor loader."]},
+aud:{app:["Media, calls, fitness","Apps play and record through AAudio, Oboe or AudioTrack, and read sensors through SensorManager."],
+ fw:["AudioFlinger, SensorService","AudioFlinger mixes streams and applies routing policy; SensorService batches and dispatches sensor events; the Context Hub service loads nanoapps onto the sensor hub."],
+ hal:["Audio HAL, Sensors HAL","The Audio HAL routes streams to the DSP and codec and exposes effects. The Sensors Multi-HAL and Context Hub HAL connect to the sensor hub."],
+ kern:["ALSA/ASoC, sensor drivers","ALSA System-on-Chip drivers control the codec and smart amplifiers over SoundWire or I²S; IIO or vendor drivers handle sensors."],
+ sec:null,
+ co:["Audio DSP and sensor hub","The low-power audio DSP runs echo cancellation, noise suppression, voice codecs and wake-word detection. The sensor hub runs CHRE nanoapps such as step counting and activity recognition while the CPU sleeps."],
+ boot:["Factory sensor and speaker calibration","IMU offsets, magnetometer and speaker impedance calibration are stored per phone in a persistent partition."]},
+mdm:{app:["Phone, Messages, any data app","Apps open sockets as on any computer; the phone app and messaging use the telephony APIs for calls and SMS."],
+ fw:["Telephony, ConnectivityService, IMS","The telephony framework tracks service state and SIMs; ConnectivityService chooses between Wi-Fi and cellular; the IMS framework (ImsService) carries VoLTE/VoNR calls; CarrierConfig holds per-operator settings."],
+ hal:["Radio HAL (vendor RIL)","The vendor RIL implements the IRadio AIDL interface and translates it into the modem's control protocol (for example Qualcomm QMI). An IMS vendor service handles SIP signalling."],
+ kern:["Modem transport drivers","Drivers load the modem image, carry control messages over shared memory (for example QRTR) and move IP packets through high-speed data paths (rmnet with a hardware packet accelerator)."],
+ sec:["Isolated modem memory","Hardware firewalls keep the application processor out of modem memory and the modem out of Android memory; SIM credentials never leave the UICC or eUICC."],
+ co:["Modem RTOS and protocol stack","The modem's own processors run a real-time OS with the full 3GPP stack: NAS, RRC, PDCP, RLC, MAC and L1 PHY firmware driving hardware accelerators.",{run:"Modem DSP and control CPU (for example Hexagon with QuRT)"}],
+ boot:["Modem image, NV items, IMEI","The signed modem firmware image, per-carrier configuration files and factory-written NV items (RF calibration, IMEI) are stored in dedicated partitions."]},
+rf:{app:null,
+ fw:["Signal reporting, radio power","The telephony framework reports signal strength (RSRP, RSRQ, SINR) and turns the radio off for airplane mode; that is as close as Android gets to the RF."],
+ hal:["SAR and antenna services","A vendor service reads grip and proximity sensors and tells the modem which transmit-power backoff to apply to stay within exposure limits."],
+ kern:["Proximity and grip sensor drivers","No Linux driver programs the PAs or tuners directly; the modem owns them. Linux only supplies the sensor inputs used for SAR backoff."],
+ sec:null,
+ co:["RF driver inside the modem","Modem firmware configures bands and carriers, runs AGC and transmit power control, trains DPD and envelope tracking, and sets PAs, switches and tuners over MIPI RFFE with symbol-accurate timing.",{run:"Modem processor and the transceiver's own sequencers"}],
+ boot:["RF calibration and device tables","Every phone is calibrated at the factory: transmit power versus gain index, receive gain offsets and DPD/ET delays per band and channel. Device tables record which PA, filter and switch port serves each band."]},
+wifi:{app:["Settings, sharing, audio","Apps use WifiManager and BluetoothAdapter, or higher-level features such as Quick Share and LE Audio streaming."],
+ fw:["Wi-Fi service, Bluetooth stack","Both the Wi-Fi framework and the Bluetooth stack (C++ and Rust) are Mainline modules that Google updates independently of the phone maker.",{upd:"Google Play system updates (Mainline)"}],
+ hal:["Wi-Fi HAL, supplicant, HCI HAL","wpa_supplicant and hostapd handle authentication (WPA3); the vendor Wi-Fi HAL adds chip features; the Bluetooth HCI HAL passes HCI packets to the controller."],
+ kern:["cfg80211 driver, HCI transport","The WLAN driver plugs into Linux cfg80211/nl80211 and talks to the chip over PCIe; Bluetooth HCI packets travel over UART."],
+ sec:null,
+ co:["Wi-Fi and Bluetooth firmware","The combo chip's processors run MAC scheduling, rate adaptation, multi-link operation, power save and roaming offloads, and the Bluetooth link layer including LE Audio isochronous channels."],
+ boot:["Board data file","Per-design Wi-Fi calibration and regulatory power limits are stored in a board data file loaded with the firmware."]},
+gnss:{app:["Maps, navigation, fitness","Apps request locations through LocationManager or Google Play services' Fused Location Provider, which blends GNSS with Wi-Fi, cell and sensor data."],
+ fw:["Location manager, raw measurements","The location service enforces permissions and exposes positions and, since Android 7, raw GNSS measurements for precise applications."],
+ hal:["GNSS HAL and A-GNSS client","The vendor location daemon implements the GNSS AIDL HAL, fetches assistance data (SUPL or web) and supports batching and geofencing offload."],
+ kern:["Transport to the GNSS engine","Shared memory or QMI to an integrated engine, or UART/SPI to a standalone chip."],
+ sec:null,
+ co:["GNSS engine firmware","Runs acquisition and tracking loops for every satellite, dual-frequency processing and the navigation filter, often on the modem's DSP."],
+ boot:["Front-end and clock calibration","Group-delay calibration for L1/L5 and the reference oscillator's frequency offset are measured at the factory."]},
+nfc:{app:["Wallets, transit, car keys","Payment apps use host card emulation or a secure element; car-key and item-finder apps use the UWB ranging API (Jetpack UWB)."],
+ fw:["NFC service, UWB service","The NFC service builds the routing table that decides whether the phone, the secure element or an app answers a reader. The UWB service (Android 12+) is a Mainline module with a Rust core."],
+ hal:["NFC HAL (NCI), UWB HAL (UCI)","Both talk standard host-controller protocols: NCI from the NFC Forum, and UCI from the FiRa Consortium."],
+ kern:["I²C / SPI drivers","Simple bus drivers carry NCI and UCI packets to the chips."],
+ sec:["Secure element applets","An embedded secure element runs a Java Card OS with payment, transit and car-key applets; keys never leave it, and apps reach it only through OMAPI."],
+ co:["NFC and UWB firmware","The NFC controller firmware runs the RF protocols and card-emulation routing; the UWB chip firmware schedules ranging rounds, generates STS cryptograms and measures angle of arrival."],
+ boot:["Antenna and AoA calibration","NFC matching and UWB antenna phase offsets for angle-of-arrival are calibrated per phone."]},
+pwr:{app:["Battery settings, battery saver","Users see battery health, usage per app and power-saving modes."],
+ fw:["Power, battery and thermal services","PowerManagerService handles wake locks and Doze; BatteryService reports charge; the thermal service and ADPF APIs tell games how much thermal headroom is left."],
+ hal:["Power, Health and Thermal HALs","The Power HAL turns performance hints into frequency floors; the Health HAL reports battery state; the Thermal HAL exposes temperatures and throttling levels from the vendor thermal engine."],
+ kern:["schedutil, EAS, thermal, power_supply","cpufreq with the schedutil governor and Energy Aware Scheduling pick frequencies and cores; devfreq scales GPU and bus; the thermal framework maps sensors to cooling devices; power_supply and TCPM drive charging and USB-C."],
+ sec:null,
+ co:["Power controller, PMIC, charger firmware","An always-on power controller (for example Qualcomm AOP) aggregates clock and rail votes from every subsystem. PMICs, fuel gauge, charge pump and USB PD controller each have their own firmware."],
+ boot:["Power-on sequence, battery profile","The PMIC's power-up sequence is one-time programmed; the fuel gauge loads a battery profile (open-circuit voltage curve, aging model) for the exact cell."]},
+sec:{app:["Banking, passwords, passkeys","Apps use BiometricPrompt, Keystore keys and passkeys; hardware attestation proves keys are protected by the TEE or StrongBox."],
+ fw:["Keystore2, biometric service","Keystore2 (written in Rust) brokers key operations; the biometric service and lock screen gate access to credentials."],
+ hal:["KeyMint, Gatekeeper, biometrics HALs","HAL interfaces forward requests to trusted apps in the secure world."],
+ kern:["TEE driver, verity, encryption","A TEE driver passes calls to the secure world; dm-verity checks system partitions on every read; fscrypt with the inline crypto engine encrypts user data per file."],
+ sec:["Trusted OS and trusted apps","A trusted OS in TrustZone (Qualcomm QTEE, Google Trusty, Trustonic Kinibi, OP-TEE) runs KeyMint, Gatekeeper, fingerprint matching and Widevine.",{own:"SoC vendor or third-party TEE vendor, phone maker"}],
+ co:["StrongBox or secure processor","A separate tamper-resistant chip or on-die secure processor (for example Titan M2 on Pixel, Qualcomm SPU) holds the most sensitive keys."],
+ boot:["Hardware root of trust","The boot ROM plus a fused hash of the vendor's public key anchor every signature check; anti-rollback counters live in fuses or RPMB."]}
+};
+const SC=[
+ ["Send a photo over 5G",[["mdm","app","The messaging app hands the photo to a socket."],["cpu","kern","Linux TCP/IP builds IP packets and queues them on the cellular network interface."],["mdm","kern","The rmnet driver and hardware packet accelerator push packets into modem memory."],["mdm","co","The modem stack adds SDAP, PDCP (ciphering), RLC and MAC headers and requests uplink grants."],["rf","co","The RF driver sets transmit power from calibration tables, trains DPD and sets the PA through MIPI RFFE."],["rf","hal","If a hand or head is near, the SAR service has already told the modem to cap power."]]],
+ ["Take a photo",[["cam","app","The camera app sends a capture request through CameraX."],["cam","fw","CameraService checks permission and forwards the request."],["cam","hal","The camera HAL runs 3A and configures the ISP pipeline for HDR capture."],["cam","kern","Drivers start the sensor streaming over MIPI CSI into DMA-BUF buffers."],["cam","co","ISP firmware schedules demosaic, noise reduction and HDR merge in hardware."],["npu","hal","The vendor AI runtime segments the scene for portrait or night processing."],["npu","co","NPU firmware executes the model layers."],["gpu","fw","SurfaceFlinger shows the preview at the display refresh rate."]]],
+ ["Tap to pay",[["nfc","app","The wallet app is the default payment service."],["sec","fw","BiometricPrompt asks for a fingerprint or face."],["sec","sec","A trusted app in the TEE matches the fingerprint and unlocks the payment key."],["nfc","fw","The NFC service's routing table points payment requests at the secure element."],["nfc","co","NFC controller firmware detects the reader field and routes APDUs."],["nfc","sec","The payment applet in the secure element computes the transaction cryptogram."]]],
+ ["Get a GPS fix",[["gnss","app","The maps app requests high-accuracy location."],["gnss","fw","The location service checks permission and starts GNSS."],["gnss","hal","The GNSS HAL downloads assistance data (orbits, time) over the data connection."],["mdm","co","The modem carries the assistance request."],["gnss","co","GNSS firmware acquires and tracks satellites on L1 and L5 and solves for position."],["aud","co","The sensor hub supplies motion data for dead reckoning."],["gnss","fw","Fused location blends GNSS, Wi-Fi and sensors before the app receives it."]]],
+ ["Voice call (VoNR)",[["mdm","app","The dialer places a call through the Telecom API."],["mdm","fw","The IMS framework starts a VoNR session."],["mdm","hal","The vendor IMS service exchanges SIP signalling with the operator's IMS core."],["aud","hal","The audio HAL routes the call path to the DSP."],["aud","co","The audio DSP runs the EVS speech codec, echo cancellation and noise suppression."],["mdm","co","The modem sends voice packets on a dedicated QoS flow with header compression."],["rf","co","The RF driver keeps uplink power just high enough for the cell."]]],
+ ["Fast charge",[["pwr","co","The USB PD controller firmware negotiates a programmable power supply contract with the charger."],["pwr","kern","The charger driver enables the charge pump and sets current limits."],["pwr","co","Charge-pump and fuel-gauge firmware regulate current and track charge."],["pwr","hal","The Health HAL reports battery state; the Thermal HAL watches battery and skin temperature."],["pwr","fw","BatteryService updates the UI and charging policy, such as stopping at 80%."],["pwr","app","The user sees charging speed and time to full."]]],
+ ["Boot the phone",[["sec","boot","The boot ROM checks the secondary bootloader against the fused key hash."],["cpu","boot","Bootloaders bring up DRAM and load the next stages, verifying each one."],["sec","sec","The trusted OS starts in TrustZone."],["cpu","sec","The hypervisor starts and partitions memory."],["cpu","kern","Android Verified Boot checks the kernel and vbmeta; Linux starts."],["mdm","boot","The kernel loads and authenticates the modem firmware image."],["cpu","fw","init starts Zygote and system_server."],["mdm","fw","Telephony comes up and the modem registers on the network."]]]
+];
+// table
+let selCell=null,scen=-1;
+function draw(){
+ const steps=scen>=0?SC[scen][1]:[];
+ let h=`<thead><tr><th style="left:0;z-index:3;position:sticky">Layer</th>${B.map(b=>`<th><a href="${b[2]}">${esc(b[1])}</a></th>`).join("")}</tr></thead><tbody>`;
+ LAY.forEach(l=>{h+=`<tr style="--lc:var(${SWL[l][1]})"><th scope="row"><b>${esc(SWL[l][0])}</b><span>${["L7","L6","L5","L4","L3","L2","L1"][LAY.indexOf(l)]}</span></th>`;
+  B.forEach(b=>{const c=C[b[0]][l];
+   if(!c){h+=`<td class="empty" title="No software at this layer"></td>`;return}
+   const nums=steps.map((s,i)=>s[0]===b[0]&&s[1]===l?i+1:0).filter(Boolean);
+   h+=`<td class="${nums.length?"on":""}${selCell&&selCell[0]===b[0]&&selCell[1]===l?" sel":""}"><button data-b="${b[0]}" data-l="${l}">${esc(c[0])}${nums.length?`<span class="badge">${nums.map(n=>`<i>${n}</i>`).join("")}</span>`:""}</button></td>`});
+  h+=`</tr>`});
+ $("sm").innerHTML=h+"</tbody>";$("sm").classList.toggle("trace",scen>=0);
+ cell();scenTxt();
+}
+function cell(){
+ if(!selCell){$("smCell").innerHTML=`<span class="label">Cell detail</span><p>Select any cell to see what runs there. Hatched cells have no software at that layer for that block.</p>`;return}
+ const [b,l]=selCell,c=C[b][l],bb=B.find(x=>x[0]===b),o=Object.assign({},{run:DEF[l][0],lang:DEF[l][1],own:DEF[l][2],upd:DEF[l][3]},c[2]||{});
+ $("smCell").innerHTML=`<span class="label" style="color:var(${SWL[l][1]})">${esc(SWL[l][0])} · ${esc(bb[1])}</span><h3>${esc(c[0])}</h3><p>${esc(c[1])}</p><dl class="swx" style="--lc:var(${SWL[l][1]});padding:10px 12px"><dt>Runs on</dt><dd>${esc(o.run)}</dd><dt>Written in</dt><dd>${esc(o.lang)}</dd><dt>Supplied by</dt><dd>${esc(o.own)}</dd><dt>Updated by</dt><dd>${esc(o.upd)}</dd></dl><a class="go" href="${bb[2]}">More on ${esc(bb[1])} →</a>`;
+}
+function scenTxt(){
+ if(scen<0){$("smScen").innerHTML=`<span class="label">Scenario</span><p>Choose a task above to see the order in which each layer gets involved. Numbers appear in the matrix cells.</p>`;return}
+ const s=SC[scen];
+ $("smScen").innerHTML=`<span class="label">Scenario</span><h3>${esc(s[0])}</h3><ol class="steps">${s[1].map(([b,l,t])=>`<li><div><span class="lay">${esc(SWL[l][0])} · ${esc(B.find(x=>x[0]===b)[1])}</span><button data-b="${b}" data-l="${l}">${esc(t)}</button></div></li>`).join("")}</ol>`;
+}
+$("sm").addEventListener("click",e=>{const t=e.target.closest("button[data-b]");if(!t)return;selCell=[t.dataset.b,t.dataset.l];draw();$("smCell").scrollIntoView({block:"nearest",behavior:"smooth"})});
+$("smScen").addEventListener("click",e=>{const t=e.target.closest("button[data-b]");if(!t)return;selCell=[t.dataset.b,t.dataset.l];draw()});
+const sb=$("scBtns");SC.forEach((s,i)=>{const b=document.createElement("button");b.className="btn2";b.textContent=s[0];b.setAttribute("aria-pressed","false");b.onclick=()=>{scen=scen===i?-1:i;[...sb.querySelectorAll("button")].forEach((x,j)=>x.setAttribute("aria-pressed",String(j===scen)));if(scen>=0){const f=SC[scen][1][0];selCell=[f[0],f[1]]}draw()};sb.appendChild(b)});
+selCell=["mdm","co"];draw();
+// Android vs iOS
+const IOS=[["Apps","Kotlin/Java on ART, or native code via NDK","Swift or Objective-C with SwiftUI/UIKit"],["OS framework","system_server services, Binder IPC; Mainline modules updated via Google Play","Frameworks (Foundation, Core Telephony, Core Location, AVFoundation, Core ML) and system daemons such as CommCenter for telephony and locationd"],["HAL & vendor services","AIDL HALs in a separate vendor partition (Project Treble), written by SoC vendors and phone makers","No separate vendor layer; Apple writes the drivers and daemons for its own hardware"],["Kernel & drivers","Linux (Generic Kernel Image) plus vendor kernel modules","XNU kernel with IOKit drivers; some drivers in user space via DriverKit"],["Secure world","TrustZone trusted OS (QTEE, Trusty, Kinibi, OP-TEE); optional StrongBox chip","Secure Enclave: a separate processor running Apple's sepOS"],["Co-processor firmware","Modem, DSP, ISP, Wi-Fi/BT, GNSS and power-controller firmware from the chip vendors","Same categories: baseband firmware (Qualcomm or Apple's own modem), Neural Engine, ISP and always-on processor firmware"],["Boot & ROM","Boot ROM → vendor bootloaders → Android Verified Boot","Boot ROM → iBoot → kernel; the Secure Enclave has its own boot ROM"],["Updates","Apps via store; Mainline modules monthly; everything else in the maker's OTA","Apps via App Store; everything else in iOS updates, plus background security fixes between releases"]];
+$("iosT").innerHTML=`<thead><tr><th>Layer</th><th>Android</th><th>iOS</th></tr></thead><tbody>${IOS.map(r=>`<tr><td class="b">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody>`;
+const WHO=[["Apps","App developers","App store","Hours to days"],["OS framework (Mainline parts)","Google","Google Play system updates","Monthly"],["OS framework (rest)","Google, phone maker","Maker's OTA","Monthly to yearly"],["HAL & vendor services","SoC vendor, phone maker","Maker's OTA (vendor partition)","Depends on maker's support window"],["Kernel","Google GKI + SoC vendor modules","Maker's OTA","Monthly security patches"],["Secure world","SoC vendor, TEE vendor, maker","Maker's OTA (signed firmware)","With security releases"],["Co-processor firmware","Modem, Wi-Fi, camera and power chip vendors","Maker's OTA (firmware partitions)","Usually a few times a year"],["Boot ROM","SoC vendor","Never","Fixed in silicon; flaws are permanent"],["Calibration data","Phone factory","Factory or authorized repair","Once per phone"]];
+$("whoT").innerHTML=`<thead><tr><th>Layer</th><th>Written by</th><th>Delivered through</th><th>Typical cadence</th></tr></thead><tbody>${WHO.map(r=>`<tr><td class="b">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class="m">${esc(r[3])}</td></tr>`).join("")}</tbody>`;
+},
+how:[
+ ["Why so many layers",["Each layer exists so the layer above can change without the one below changing. Apps never touch drivers; the OS talks to hardware only through stable HAL interfaces; drivers talk to chips through register maps or host-controller protocols; firmware hides the chip's internal timing.","Android's Project Treble made this split formal: the vendor partition holds everything the SoC vendor and phone maker supply, so a new Android version can boot on old vendor code."]],
+ ["Many processors, many operating systems",["Only the main CPU runs Android. The modem runs a real-time OS with the cellular stack. DSPs run their own RTOS for audio, sensors and AI. The Wi-Fi chip, camera ISP, GPU, power controller, NFC controller, UWB chip, fuel gauge and secure element each run firmware.","These processors talk to Android through shared memory, mailboxes and standard protocols such as Bluetooth HCI, NFC NCI and UWB UCI."]],
+ ["Real time versus best effort",["Android schedules threads with millisecond-level latency, fine for apps but not for radio. A 5G slot can be 125 µs long, and the modem must acknowledge data within a few slots, so everything with hard deadlines runs in firmware on dedicated processors with hardware timers.","That is why the RF parts are controlled by modem firmware, not by Linux drivers."]],
+ ["Trust and isolation",["A chain of signatures starts in the boot ROM and covers every bootloader, the kernel, the system partitions and every firmware image. The secure world and secure elements hold keys that even a fully compromised Android kernel cannot read.","Hardware firewalls also isolate the modem from the application processor, so a bug in one cannot directly read the other's memory."]]
+],
+related:["boot-security.html","modem-software.html","rf-software.html","connectivity-software.html","multimedia-software.html","power-software.html"],
+foot:"Android-centric description of a 2025–26 flagship with iOS comparison. Vendor component names are examples; implementations differ by SoC vendor and phone maker."
+};
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ ampr:'<path d="M1 1 V17 L17 9 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>',
+ cpu:'<rect x="3" y="3" width="12" height="12"/><path d="M6 0.5 V3 M9 0.5 V3 M12 0.5 V3 M6 15 V17.5 M9 15 V17.5 M12 15 V17.5 M0.5 6 H3 M0.5 9 H3 M0.5 12 H3 M15 6 H17.5 M15 9 H17.5 M15 12 H17.5"/>',
+ mem:'<rect x="0.5" y="4" width="17" height="10"/><path d="M4 7 V11 M7 7 V11 M10 7 V11 M13 7 V11"/>',
+ bat:'<rect x="0.5" y="4" width="15" height="10"/><path d="M15.5 7 H17.5 V11 H15.5 M4 9 H8 M6 7 V11"/>',
+ coil:'<path d="M1 9 c0 -6 4 -6 4 0 c0 6 4 6 4 0 c0 -6 4 -6 4 0 c0 6 4 6 4 0"/>',
+ lock:'<rect x="2" y="8" width="14" height="9"/><path d="M5 8 V5 a4 4 0 0 1 8 0 V8"/>',
+ dsp:'<path d="M1 13 L5 5 L9 13 L13 5 L17 13"/>'
+};
+const SN={amp:"Amplifier",ampr:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"ADC / DAC",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power converter",cpu:"Processor",mem:"Memory",bat:"Battery",coil:"Coil",lock:"Secure element",dsp:"Signal processing"};
+const EN={rf:"RF signal",dig:"Digital data",ctl:"Control",pwr:"Power",lo:"LO / clock",bus:"On-chip bus"};
+const app=document.getElementById("app");
+const grp=PAGES.filter(p=>p.group===(PAGES.find(q=>q.file===PAGE.file)||{}).group);
+const idx=grp.findIndex(p=>p.file===PAGE.file);
+const prev=grp[(idx-1+grp.length)%grp.length],next=grp[(idx+1)%grp.length];
+const GROUPS=[...new Set(PAGES.map(p=>p.group))];
+const sec=(id,title,sub,body)=>`<section class="blk" id="${id}"><div class="bh"><h2>${esc(title)}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div>${body}</section>`;
+const toc=[];
+let h=`<div class="top"><a class="study-back" href="../">← Study home</a><a class="home" href="${HOME}">← Phone block diagram</a></div>
+<nav class="modnav" aria-label="All pages">${GROUPS.map(g=>`<div class="ng"><span class="label">${esc(g)}</span>${PAGES.filter(p=>p.group===g).map(p=>`<a href="${p.file}"${p.file===PAGE.file?' aria-current="page"':""}>${esc(p.short)}</a>`).join("")}</div>`).join("")}</nav>
+<header class="hdr${PAGE.cost?"":" nocost"}"><div><span class="kick">${esc(PAGE.kicker)}</span><h1>${esc(PAGE.title)}</h1><p class="lede">${esc(PAGE.lede)}</p></div>
+${PAGE.cost?`<div class="costbox"><span class="label">${esc(PAGE.costLabel||"Typical cost per phone")}</span><span class="amt">${esc(PAGE.cost[0])}</span><small>${esc(PAGE.cost[1])}</small></div>`:""}</header>
+${PAGE.stats?`<div class="stats">${PAGE.stats.map(([k,v])=>`<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>`:""}
+<nav class="toc" id="toc" aria-label="On this page"></nav>`;
+if(PAGE.diagram){toc.push(["diagram","Block diagram"]);h+=sec("diagram",PAGE.diagram.title||"Internal block diagram",PAGE.diagram.caption+" Click or tab to a block; blocks marked ↗ open a detail page.",`<div class="scroll"><svg class="sch" id="sch"></svg></div><div class="dfoot"><div class="ddesc" id="ddesc" aria-live="polite"></div><div class="leg" id="leg"></div></div>`)}
+(PAGE.sections||[]).forEach(s=>{toc.push([s.id,s.toc||s.title]);h+=sec(s.id,s.title,s.sub,s.html)});
+const SWL={app:["Apps","--L-app"],fw:["OS framework","--L-fw"],hal:["HAL & vendor services","--L-hal"],kern:["Kernel & drivers","--L-kern"],sec:["Secure world","--L-sec"],co:["Co-processor firmware","--L-co"],boot:["Boot, ROM & config","--L-boot"]};
+window.SWL=SWL;
+if(PAGE.sw){toc.push(["sw","Software & firmware"]);const S=PAGE.sw;
+ h+=sec("sw","Software & firmware",S.sub||"Every layer of code that touches this block, from apps down to firmware running inside the chip.",
+ `<div class="swk">${S.stack.map(([k,t,d,run,lang,own,upd])=>`<div class="swr" style="--lc:var(${SWL[k][1]})"><div class="swl"><span>Layer</span><b>${esc(SWL[k][0])}</b></div><div class="swm"><h3>${esc(t)}</h3><p>${esc(d)}</p></div><dl class="swx"><dt>Runs on</dt><dd>${esc(run)}</dd><dt>Written in</dt><dd>${esc(lang)}</dd><dt>Supplied by</dt><dd>${esc(own)}</dd><dt>Updated by</dt><dd>${esc(upd)}</dd></dl></div>`).join("")}<div class="swhw">${esc(S.hw||"Hardware")}</div></div>
+ <div class="swfoot"><div class="swleg">${Object.values(SWL).map(([n,c])=>`<span style="--lc:var(${c})"><i></i>${esc(n)}</span>`).join("")}</div>${S.link?`<a class="go" href="${S.link[0]}">${esc(S.link[1])} →</a>`:""}</div>`)}
+if(PAGE.how){toc.push(["how","How it works"]);h+=sec("how","How it works","",`<div class="how">${PAGE.how.map(([t,ps])=>`<article><h3>${esc(t)}</h3>${ps.map(p=>`<p>${esc(p)}</p>`).join("")}</article>`).join("")}</div>`)}
+if(PAGE.eq){toc.push(["eq","Key equations"]);h+=sec("eq","Key equations","The relationships designers use every day.",`<div class="eqs">${PAGE.eq.map(([n,f,x])=>`<div class="eqc"><span class="label">${esc(n)}</span><code class="f">${esc(f)}</code><p>${esc(x)}</p></div>`).join("")}</div>`)}
+if(PAGE.arch){toc.push(["arch",PAGE.archTitle||"Architectures"]);h+=sec("arch",PAGE.archTitle||"Architecture options","The main design choices and where each one is used.",`<div class="tw"><table class="atbl"><thead><tr><th>${esc(PAGE.archCol||"Architecture")}</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${PAGE.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td class="m">${esc(a[3])}</td></tr>`).join("")}</tbody></table></div>`)}
+if(PAGE.chal){toc.push(["chal","Design challenges"]);h+=sec("chal","Design challenges","",`<div class="chal">${PAGE.chal.map(([t,p])=>`<div><b>${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div>`)}
+if(PAGE.specs||PAGE.parts){h+=`<div class="two">`;
+ if(PAGE.specs){toc.push(["specs","Specifications"]);h+=sec("specs",PAGE.specsTitle||"Key specifications","",`<div class="tw"><table><tbody>${PAGE.specs.map(([k,v])=>`<tr><td class="m">${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table></div>`)}
+ if(PAGE.parts){toc.push(["parts","Parts & vendors"]);h+=sec("parts","Parts & vendors","Representative examples; exact parts vary by phone and region.",`<div class="tw"><table><thead><tr><th>Part</th><th>Vendors</th><th>Notes</th></tr></thead><tbody>${PAGE.parts.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td class="m">${esc(a[2])}</td></tr>`).join("")}</tbody></table></div>`)}
+ h+=`</div>`}
+const rel=(PAGE.related||[]).map(f=>PAGES.find(p=>p.file===f)).filter(Boolean);
+if(rel.length){toc.push(["related","Related"]);h+=sec("related","Related pages","",`<div class="rel">${rel.map(p=>`<a href="${p.file}"><span class="label">${esc(p.group)}</span><b>${esc(p.short)}</b></a>`).join("")}</div>`)}
+h+=`<nav class="pn" aria-label="Previous and next"><a href="${prev.file}"><span class="label">← Previous</span><b>${esc(prev.short)}</b></a><a class="nx" href="${next.file}"><span class="label">Next →</span><b>${esc(next.short)}</b></a></nav>
+<footer>${esc(PAGE.foot||"Representative 2025–2026 flagship architecture. Figures are typical values from public datasheets, standards and teardown estimates; costs are high-volume OEM estimates in USD and vary with volume, contracts and region.")}</footer>`;
+app.innerHTML=h;
+document.getElementById("toc").innerHTML=`<span class="label">On this page</span>`+toc.map(([i,t])=>`<a href="#${i}">${esc(t)}</a>`).join("");
+if(PAGE.init)PAGE.init();
+if(!PAGE.diagram)return;
+// ---------- auto links from diagram blocks to detail pages ----------
+const LINKRULES=[
+ [/phase shifter/i,"mmwave.html"],
+ [/\bDPD\b|envelope|ET tracker|ET trackers/i,"linearization.html"],
+ [/\bLNA\b|low-noise|LNA bank|RF input/i,"lna.html"],
+ [/\bPA\b|power stage|driver stage|driver amp|Driver amplifier|PA \/ LNA/i,"pa.html"],
+ [/mixer|converter$|up\/down/i,"mixers.html"],
+ [/synthesi[sz]er|PLL|LO divider|LO \//i,"synthesizers.html"],
+ [/\bADC\b|\bDAC\b/i,"data-converters.html"],
+ [/SAW|BAW|duplexer|plexer|Pre-filter|Diplexer/i,"acoustic-filters.html"],
+ [/switch|tuner|matrix/i,"rf-switches.html"]
+];
+const EXTRULES=[
+ [/transceiver/i,"transceiver.html"],[/^modem|cellular modem|5G modem/i,"modem.html"],[/^SoC|App processor|SoC /i,"soc.html"],[/GNSS/i,"gnss.html"],
+ [/PAMiD|front-end module|in front-end|DRx module|MIMO L-FEM|front end/i,"rf-front-end.html"],
+ [/antenna|ANT\d/i,"antennas.html"],[/Wi-Fi/i,"wifi-bluetooth.html"],[/PMIC|charger|battery/i,"power.html"],[/mmWave|AiP/i,"mmwave.html"]
+];
+function linkFor(b){
+ if(D.autolink===false)return (D.link&&D.link[b.id])||null;
+ if(D.link&&b.id in D.link)return D.link[b.id];
+ const rules=b.cls.includes("ext")?EXTRULES.concat(LINKRULES):LINKRULES.concat(EXTRULES);
+ for(const [re,f] of rules){if(re.test(b.label)&&f!==PAGE.file&&PAGES.some(p=>p.file===f))return f}
+ return null;
+}
+// ---------- schematic ----------
+const D=PAGE.diagram,CW=D.cw||124,GX=D.gx||42,RH=D.rh||52,GY=D.gy||30,P=26,TOP=36;
+const X=c=>P+c*(CW+GX),Y=r=>TOP+r*(RH+GY);
+const W=2*P+D.cols*CW+(D.cols-1)*GX,H=TOP+D.rows*RH+(D.rows-1)*GY+P;
+const svg=document.getElementById("sch");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.style.maxWidth=W+"px";
+svg.setAttribute("role","img");svg.setAttribute("aria-label","Internal block diagram of "+PAGE.title);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const defs=el("defs",{},svg);
+[["rf","var(--ink)"],["dig","var(--ink)"],["ctl","var(--ctl)"],["pwr","var(--pwr)"],["lo","var(--lo)"],["on","var(--copper)"]].forEach(([k,c])=>{
+ const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+ el("path",{d:"M0 0 L10 5 L0 10 Z",fill:c},m)});
+const B={};
+D.blocks.forEach(b=>{const [id,c,r,w=1,hh=1]=b;B[id]={id,x:X(c),y:Y(r),w:w*CW+(w-1)*GX,h:hh*RH+(hh-1)*GY,label:b[5],sym:b[6],cls:b[7]||"",sub:b[8]}});
+const gG=el("g",{},svg),eG=el("g",{},svg),bG=el("g",{},svg),lG=el("g",{},svg);
+(D.groups||[]).forEach(([c0,r0,c1,r1,lab])=>{
+ const x=X(c0)-14,y=Y(r0)-24,w=X(c1)+CW+14-x,hh=Y(r1)+RH+12-y;
+ el("rect",{x,y,width:w,height:hh,rx:6,class:"grpf"},gG);el("rect",{x,y,width:w,height:hh,rx:6,class:"grp"},gG);
+ const t=el("text",{x:x+10,y:y+14,class:"gl"},gG);t.textContent=lab.toUpperCase();});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,o){
+ o=o||0;
+ if(b.x>=a.x+a.w||a.x>=b.x+b.w){
+  const rgt=b.x>=a.x+a.w,sx=rgt?a.x+a.w:a.x,ex=rgt?b.x:b.x+b.w;
+  const lo=Math.max(a.y,b.y),hi=Math.min(a.y+a.h,b.y+b.h);
+  if(hi-lo>=6){const y=(lo+hi)/2+(o&&Math.abs(o)<(hi-lo)/2?o:0);return{d:`M${sx} ${y} H${ex}`,lx:(sx+ex)/2,ly:y-5,anc:"middle"}}
+  const m=(sx+ex)/2+o,sy=clamp(b.y+b.h/2,a.y+10,a.y+a.h-10),ey=clamp(a.y+a.h/2,b.y+10,b.y+b.h-10);
+  return{d:`M${sx} ${sy} H${m} V${ey} H${ex}`,lx:m+5,ly:(sy+ey)/2+3,anc:"start"};
+ }
+ const down=b.y>=a.y+a.h,sy=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h;
+ const lo=Math.max(a.x,b.x),hi=Math.min(a.x+a.w,b.x+b.w),x=(lo+hi)/2+o;
+ return{d:`M${x} ${sy} V${ey}`,lx:x+6,ly:(sy+ey)/2+3,anc:"start"};
+}
+const edges=D.edges.map(([a,b,t,lab,o])=>{
+ const r=route(B[a],B[b],o),p=el("path",{d:r.d,class:"e "+t},eG);
+ if(t!=="bus")p.setAttribute("marker-end",`url(#m-${t})`);
+ if(lab){const tx=el("text",{x:r.lx,y:r.ly,"text-anchor":r.anc,class:"el"},lG);tx.textContent=lab}
+ return{a,b,t,p}});
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+const usedSym=new Set(),usedE=new Set(edges.map(e=>e.t));
+Object.values(B).forEach(o=>{
+ const g=el("g",{class:"b "+o.cls,tabindex:"0",role:"button","aria-label":o.label},bG);
+ el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3,class:"box"},g);
+ const gw=o.sym?30:0;
+ if(o.sym){usedSym.add(o.sym);const s=el("g",{class:"gy",transform:`translate(${o.x+7} ${o.y+o.h/2-9})`},g);s.innerHTML=G[o.sym];
+  el("line",{x1:o.x+gw,x2:o.x+gw,y1:o.y+5,y2:o.y+o.h-5,class:"sep"},g)}
+ const avail=o.w-gw-14,lines=wrapT(o.label,Math.max(8,Math.floor(avail/6.1)));
+ const n=lines.length+(o.sub?1:0),lh=13,cy=o.y+o.h/2-(n-1)*lh/2+4;
+ const tx=o.sym?o.x+gw+8:o.x+o.w/2,anc=o.sym?"start":"middle";
+ lines.forEach((ln,k)=>{const t=el("text",{x:tx,y:cy+k*lh,"text-anchor":anc,class:"bt"},g);t.textContent=ln});
+ if(o.sub){const t=el("text",{x:tx,y:cy+lines.length*lh,"text-anchor":anc,class:"bs"},g);t.textContent=o.sub}
+ o.href=linkFor(o);
+ if(o.href){const t=el("text",{x:o.x+o.w-5,y:o.y+12,"text-anchor":"end",class:"lk"},g);t.textContent="↗"}
+ const act=()=>focus(o.id);
+ g.addEventListener("click",act);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+ g.addEventListener("mouseenter",()=>hi(o.id));g.addEventListener("mouseleave",()=>hi(cur));
+ o.g=g;
+});
+let cur=null;
+function hi(id){
+ svg.classList.toggle("focus",!!id);
+ edges.forEach(e=>{const on=!!id&&(e.a===id||e.b===id);e.p.classList.toggle("on",on);
+  if(e.t!=="bus")e.p.setAttribute("marker-end",`url(#m-${on&&(e.t==="rf"||e.t==="dig")?"on":e.t})`)});
+ Object.values(B).forEach(o=>o.g.classList.toggle("on",o.id===id));
+}
+const dd=document.getElementById("ddesc");
+function focus(id){
+ cur=cur===id?null:id;hi(cur);
+ if(!cur){dd.innerHTML=`<span class="label">Reading the diagram</span><p>${esc(D.intro)}</p>`;return}
+ const o=B[cur],txt=(D.desc||{})[cur]||"";
+ const ins=edges.filter(e=>e.b===cur).map(e=>B[e.a].label),outs=edges.filter(e=>e.a===cur).map(e=>B[e.b].label);
+ dd.innerHTML=`<span class="label">${o.cls.includes("ext")?"Outside this module":"Block"}</span><h3>${esc(o.label)}</h3><p>${esc(txt)}</p>${ins.length||outs.length?`<p class="label" style="margin-top:6px">${ins.length?"From: "+ins.map(esc).join(", "):""}${ins.length&&outs.length?" · ":""}${outs.length?"To: "+outs.map(esc).join(", "):""}</p>`:""}${o.href?`<a class="go" href="${o.href}">Open the ${esc((PAGES.find(p=>p.file===o.href)||{short:"detail"}).short)} page →</a>`:""}`;
+}
+focus(null);
+const usedL=[...new Set(Object.values(B).map(o=>(o.cls.match(/\bL(app|fw|hal|kern|sec|co|boot)\b/)||[])[1]).filter(Boolean))];
+document.getElementById("leg").innerHTML=usedL.map(k=>{const m={app:"Apps",fw:"OS framework",hal:"HAL & vendor services",kern:"Kernel & drivers",sec:"Secure world",co:"Co-processor firmware",boot:"Boot, ROM & config"};return `<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="color-mix(in oklab,var(--L-${k}) 12%,var(--surface))" stroke="var(--L-${k})" stroke-width="1.4"/></svg>${m[k]}</span>`}).join("")+[...usedE].map(t=>`<span><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" class="e ${t}" style="stroke:${t==="ctl"?"var(--ctl)":t==="pwr"?"var(--pwr)":t==="lo"?"var(--lo)":t==="bus"?"var(--copper)":"var(--ink)"};stroke-dasharray:${t==="dig"?"6 3":t==="ctl"?"2 3":t==="pwr"?"1 3":t==="lo"?"9 3 2 3":"0"};stroke-width:${t==="pwr"?2.2:1.6};stroke-linecap:round"/></svg>${EN[t]}</span>`).join("")
+ +`<span><svg width="20" height="12"><rect x="0.5" y="0.5" width="19" height="11" fill="var(--sunk)" stroke="var(--wire)" stroke-dasharray="3 2"/></svg>Outside the module</span>`
+ +[...new Map([...usedSym].map(k=>[SN[k],k])).values()].map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="gy" style="fill:none;stroke:var(--ink);stroke-width:1.2">${G[k]}</svg>${SN[k]}</span>`).join("");
+// also style legend svgs (they are outside .sch)
+document.querySelectorAll("#leg svg").forEach(s=>s.querySelectorAll("path,rect,circle").forEach(n=>{if(!n.getAttribute("fill"))n.setAttribute("fill","none")}));
+})();
+</script>
+</body>
+</html>

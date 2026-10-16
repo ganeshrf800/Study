@@ -187,6 +187,9 @@ footer{font-size:12.5px;color:var(--muted);max-width:90ch}
 <nav class="modpages" aria-label="Studies"><span class="label">Studies</span>
   <a href="intermodulation.html">Intermodulation matrix &amp; calculator</a><a href="rf-budget.html">Gain budget &amp; dynamic range</a><a href="modulation.html">Modulation schemes</a><a href="power-budget.html">Power consumption</a><a href="thermal.html">Thermal</a>
 </nav>
+<nav class="modpages" aria-label="Software"><span class="label">Software</span>
+  <a href="software-stack.html">Software stack map</a><a href="boot-security.html">Boot &amp; security</a><a href="modem-software.html">Modem software</a><a href="rf-software.html">RF control software</a><a href="connectivity-software.html">Connectivity software</a><a href="multimedia-software.html">Multimedia &amp; AI software</a><a href="power-software.html">Power &amp; thermal software</a>
+</nav>
 
 <div class="paths" role="group" aria-label="Signal paths">
   <span class="label">Trace a path</span>
@@ -520,6 +523,7 @@ function panel(id,extra){
   ${x.in?`<div><h3>Internal block diagram</h3><div class="inner">${innerSvg(d.t,x.in)}</div>${symKey(x.in)}</div>`:""}
   <div><h3>How it works</h3><p>${esc(d.role)}</p></div>
   ${PAGEOF[id]?`<a class="pagelink" href="${PAGEOF[id][0]}">Open the ${esc(PAGEOF[id][1])} page →</a>`:""}
+  ${SWOF[id]?`<a class="pagelink" href="${SWOF[id][0]}">Software for this block: ${esc(SWOF[id][1])} →</a>`:""}
   ${DEEP[id]?`<button class="chip deeplink" type="button" onclick="document.getElementById('deep').scrollIntoView({behavior:'smooth'})">Implementation &amp; architectures ↓</button>`:""}
   ${d.specs?`<div><h3>Key figures</h3><dl class="spec">${d.specs.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></div>`:""}
   ${d.parts?`<div><h3>Typical parts</h3><ul class="parts">${d.parts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>`:""}
@@ -719,6 +723,14 @@ const PAGEOF={};
  ["wifi-bluetooth.html","Wi-Fi & Bluetooth",["a_wifi","wfem","wcombo"]],
  ["nfc-uwb.html","NFC & UWB",["a_nfc","nfc","a_uwb","uwb"]],
  ["power.html","Power & charging",["pmic","chg","usb"]]].forEach(([f,n,ids])=>ids.forEach(i=>PAGEOF[i]=[f,n]));
+const SWOF={};
+[["software-stack.html","software stack map",["soc","cpu","gpu","slc","noc","memc","io","dram","ufs","dispm","sens","usb","hap"]],
+ ["boot-security.html","boot & security",["sec","pmu"]],
+ ["modem-software.html","modem software",["modem","sim"]],
+ ["rf-software.html","RF control software",["trx","lb","mhb","uhb","drx","mimo","et","tuner","asm","a_main","a_div","a_m3","a_m4","mmw","mmwif","a_mmw"]],
+ ["connectivity-software.html","connectivity software",["wfem","wcombo","a_wifi","gnss","gnss_lna","a_gnss","nfc","a_nfc","uwb","a_uwb"]],
+ ["multimedia-software.html","multimedia & AI software",["npu","isp","dsp","disp","cam","audio"]],
+ ["power-software.html","power & thermal software",["pmic","chg"]]].forEach(([f,n,ids])=>ids.forEach(i=>SWOF[i]=[f,n]));
 function deep(id){
  const d=DEEP[id],b=D[id];if(!d||!b)return;
  const c=CAT[b.cat];
