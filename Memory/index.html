@@ -55,6 +55,7 @@ th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;le
 tr.sel td{background:rgba(79,179,169,.1)}
 tbody tr{cursor:pointer}
 .tablewrap{overflow-x:auto}
+.wrap td{white-space:normal;vertical-align:top;min-width:140px}
 /* hierarchy */
 .pyramid{display:flex;flex-direction:column;align-items:center;gap:6px}
 .pyramid button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;padding:10px;cursor:pointer;text-align:center;transition:.15s}
@@ -93,7 +94,8 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
   <a href="#lanes">5 · Lanes &amp; widths</a>
   <a href="#config">6 · 2×16 / 4×16 builder</a>
   <a href="#kits">7 · “2×16 GB” kits</a>
-  <a href="#quiz">8 · Check yourself</a>
+  <a href="#devices">8 · Phone vs PC</a>
+  <a href="#quiz">9 · Check yourself</a>
 </div></nav>
 
 <main>
@@ -252,9 +254,47 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
   <div class="callout"><b>Under the hood, the two meanings meet.</b> A single-rank 16 GB DDR4 stick is often built as 8 chips × 16 Gb, each x8 (an “8×8” rank). A 16 GB DDR5 stick has two independent 32-bit sub-channels per stick, each filled by x8 or x16 chips. So a “2×16GB” kit is made of many small chip arrangements like the ones in section 6.</div>
 </section>
 
-<!-- 8 QUIZ -->
+<!-- 8 DEVICES -->
+<section id="devices">
+  <div class="kicker">08 · Phone vs laptop vs desktop</div>
+  <h2>Mobile memory (LPDDR) vs PC memory (DDR)</h2>
+  <p>Phones and many thin laptops use <b>LPDDR</b> (Low-Power DDR), while desktops and many laptops use standard <b>DDR</b> on removable sticks. Both store bits the same way, but LPDDR is built to save battery: lower voltages, narrow <b>16-bit channels</b> that can sleep independently, and extra low-power modes. The trade-off is that LPDDR is soldered right next to (or on top of) the processor, so it can't be upgraded. Pick a device:</p>
+  <div class="card">
+    <div class="ctrl"><div><label>Device</label><div class="seg" id="dvSel"><button data-v="0" class="on">Phone</button><button data-v="1">Thin laptop (LPDDR)</button><button data-v="2">Laptop (SODIMM)</button><button data-v="3">Desktop</button></div></div></div>
+    <svg id="dvSvg" viewBox="0 0 640 250" width="100%" role="img" aria-label="How memory is attached in the selected device"></svg>
+    <div class="stats" id="dvStats"></div>
+    <p id="dvNote" style="margin:12px 0 0;font-size:14px" class="muted"></p>
+  </div>
+
+  <h3>Power modes: why LPDDR lasts longer on battery</h3>
+  <p>DRAM burns power even when idle, because every cell must keep being refreshed. A phone spends most of its life with the screen off, so LPDDR adds deeper ways to idle. Tap a mode to see what it does and which memory supports it. Bars show relative power, for illustration only.</p>
+  <div class="card">
+    <div id="pmList"></div>
+    <div id="pmInfo" style="margin-top:12px"></div>
+  </div>
+
+  <h3>Side by side</h3>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th></th><th style="white-space:normal">LPDDR5X (phone / thin laptop)</th><th style="white-space:normal">DDR5 (laptop SODIMM / desktop DIMM)</th></tr></thead>
+      <tbody>
+        <tr><td>Channel width</td><td>16-bit channels (×4 in a phone, ×8 in a laptop)</td><td>64-bit channel, split into 2 × 32-bit sub-channels</td></tr>
+        <tr><td>I/O voltage (VDDQ)</td><td>~0.5 V</td><td>1.1 V</td></tr>
+        <tr><td>Top data rates</td><td>~8533–10,700 MT/s</td><td>JEDEC 4800–8800 MT/s</td></tr>
+        <tr><td>Mounting</td><td>Soldered: stacked on the SoC or beside it; LPCAMM2 modules in some laptops</td><td>Removable DIMM / SODIMM sticks; also soldered in some laptops</td></tr>
+        <tr><td>Upgradeable</td><td>No (except LPCAMM2)</td><td>Yes</td></tr>
+        <tr><td>Max capacity (typical)</td><td>8–24 GB phone · 16–128 GB laptop</td><td>16–96 GB laptop · up to 192–256 GB desktop</td></tr>
+        <tr><td>Speed scaling</td><td>Changes frequency <i>and</i> voltage on the fly (DVFS)</td><td>Fixed speed set at boot</td></tr>
+        <tr><td>Error protection</td><td>Link ECC options; no ECC modules</td><td>On-die ECC; full ECC on server/workstation modules</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout"><b>Ties back to section 6:</b> a phone's “4×16” LPDDR5X setup is four independent x16 channels making a 64-bit bus. A laptop with “8×16” LPDDR5X gets a 128-bit bus, the same total width as a dual-channel desktop, but split into eight channels that can each sleep or wake on their own.</div>
+</section>
+
+<!-- 9 QUIZ -->
 <section id="quiz">
-  <div class="kicker">08 · Check yourself</div>
+  <div class="kicker">09 · Check yourself</div>
   <h2>Quick check</h2>
   <div id="quizBox"></div>
 </section>
@@ -637,13 +677,73 @@ function drawKit(){const s=$('#kSvg');s.innerHTML='';
  $('#kNote').textContent=note}
 drawKit();
 
-/* ---------- 8 quiz ---------- */
+/* ---------- 8 devices ---------- */
+const devs=[
+ {type:'LPDDR5X',bus:64,ch:'4 × 16-bit',rate:8533,cap:'8–24 GB',up:'No',v:'~0.5 V',note:'In most phones the DRAM package is stacked directly on top of the SoC (package-on-package) or sits right beside it. The very short wires allow high speed at low power. Four 16-bit channels give a 64-bit bus: a “4×16” configuration.'},
+ {type:'LPDDR5X',bus:128,ch:'8 × 16-bit',rate:8533,cap:'16–128 GB',up:'No (LPCAMM2: yes)',v:'~0.5 V',note:'Thin laptops and Apple/Arm-style chips solder LPDDR packages around the processor, or even inside the processor package (on-package memory). Eight 16-bit channels make a 128-bit bus. The newer LPCAMM2 module puts LPDDR on a replaceable, screw-down board.'},
+ {type:'DDR5 SODIMM',bus:128,ch:'2 × 64-bit',rate:5600,cap:'16–96 GB',up:'Yes',v:'1.1 V',note:'Small-outline DIMMs lie flat, one per channel. Each 64-bit channel is internally two 32-bit sub-channels on DDR5. Easy to upgrade, but the slots and longer traces cost speed and power compared with soldered LPDDR.'},
+ {type:'DDR5 DIMM',bus:128,ch:'2 × 64-bit',rate:6000,cap:'16–256 GB',up:'Yes',v:'1.1 V',note:'Full-size DIMMs stand upright, usually 4 slots on 2 channels. Power matters less on mains, so desktops favour capacity, upgradeability and overclocking (XMP/EXPO profiles). Rates shown are a typical retail kit.'}
+];
+let dv=0;seg('#dvSel',v=>{dv=+v;drawDev()});
+function drawDev(){const s=$('#dvSvg');s.innerHTML='';const D=devs[dv];
+ const chipBox=(x,y,w,h,label,sub,col)=>{rc(s,x,y,w,h,{fill:C.chip,stroke:col||C.accent,'stroke-width':2,rx:6});tx(s,x+w/2,y+h/2+(sub?-2:5),label,{...mid,'font-weight':600,'font-size':13});if(sub)tx(s,x+w/2,y+h/2+15,sub,{...mid,fill:C.muted,'font-size':11})};
+ const soc=(x,y,w,h,t)=>{rc(s,x,y,w,h,{fill:C.panel2,stroke:C.a3,'stroke-width':2,rx:8});tx(s,x+w/2,y+h/2+5,t,{...mid,'font-weight':600,'font-size':14})};
+ if(dv===0){
+  tx(s,150,18,'Side view: package-on-package',{...mid,fill:C.muted,'font-size':12});
+  rc(s,20,190,260,12,{fill:'#1b2a22',stroke:C.line,rx:2});tx(s,150,222,'phone circuit board',{...mid,fill:C.muted,'font-size':11});
+  soc(60,140,180,40,'SoC (CPU + GPU)');for(let i=0;i<9;i++)el('circle',{cx:70+i*20,cy:185,r:4,fill:C.muted},s);
+  chipBox(60,70,180,46,'LPDDR5X package','DRAM dies stacked inside');for(let i=0;i<9;i++)el('circle',{cx:70+i*20,cy:124,r:4,fill:C.a2},s);
+  tx(s,262,128,'solder balls',{fill:C.a2,'font-size':11});
+  tx(s,470,18,'Top view: 4 independent x16 channels',{...mid,fill:C.muted,'font-size':12});
+  soc(410,160,120,60,'SoC');const cols=[C.accent,C.a2,G,'#d9798f'];
+  for(let i=0;i<4;i++){const x=352+i*60;chipBox(x,40,50,44,'CH'+i,'x16',cols[i]);ln(s,x+25,84,430+i*27,158,{stroke:cols[i],'stroke-width':3})}
+  tx(s,470,244,'4 × 16 = 64-bit bus',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
+ } else if(dv===1){
+  soc(240,85,160,80,'SoC');const cols=[C.accent,C.a2,G,'#d9798f'];
+  [[60,30],[60,150],[480,30],[480,150]].forEach(([x,y],k)=>{chipBox(x,y,100,66,'LPDDR5X',`2 × x16`,cols[k]);const sx=x<300?240:400,cx=x<300?160:480;ln(s,cx,y+24,sx,105+(y>100?25:0),{stroke:cols[k],'stroke-width':3});ln(s,cx,y+42,sx,113+(y>100?25:0),{stroke:cols[k],'stroke-width':3})});
+  tx(s,320,30,'Soldered beside the processor',{...mid,fill:C.muted,'font-size':12});
+  tx(s,320,240,'4 packages × 2 channels × 16 bits = 128-bit bus',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
+ } else if(dv===2){
+  soc(40,80,140,90,'CPU');
+  [['Channel A',C.accent,40],['Channel B',C.a3,140]].forEach(([n,c,y])=>{rc(s,250,y,360,70,{fill:'#1b2a22',stroke:c,'stroke-width':2,rx:4});for(let i=0;i<8;i++)rc(s,266+i*42,y+14,34,30,{fill:C.chip,stroke:c,rx:3});tx(s,430,y+62,n+' · SODIMM · 64-bit (2 × 32)',{...mid,'font-size':11,fill:c});ln(s,180,y<100?110:140,250,y+35,{stroke:c,'stroke-width':4})});
+  tx(s,320,22,'Two removable SODIMMs lying flat, one per channel',{...mid,fill:C.muted,'font-size':12});
+  tx(s,320,240,'2 channels × 64 bits = 128-bit total',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
+ } else {
+  soc(30,85,140,80,'CPU');
+  [['A1',C.accent],['A2',C.accent],['B1',C.a3],['B2',C.a3]].forEach(([n,c],i)=>{const x=260+i*85+(i>1?20:0);rc(s,x,30,50,180,{fill:'#1b2a22',stroke:c,'stroke-width':2,rx:4});for(let k=0;k<5;k++)rc(s,x+9,42+k*32,32,24,{fill:C.chip,stroke:c,rx:3});tx(s,x+25,226,n,{...mid,fill:c,'font-size':12})});
+  ln(s,170,110,260,110,{stroke:C.accent,'stroke-width':4});ln(s,170,140,450,140,{stroke:C.a3,'stroke-width':4,opacity:.8});
+  tx(s,400,20,'Four upright DIMM slots on two channels',{...mid,fill:C.muted,'font-size':12});
+  tx(s,400,246,'2 channels × 64 bits = 128-bit total',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
+ }
+ const bw=D.rate*D.bus/8/1000;
+ $('#dvStats').innerHTML=[[D.type,'memory type'],[D.ch,'channels'],[D.bus+'-bit','total bus'],[fmtBW(bw),'peak bandwidth @ '+D.rate+' MT/s',1],[D.cap,'typical capacity'],[D.up,'upgradeable'],[D.v,'I/O voltage']].map(([v,l,h])=>`<div class="stat${h?' hi':''}"><div class="v" style="font-size:18px">${v}</div><div class="l">${l}</div></div>`).join('');
+ $('#dvNote').textContent=D.note;}
+drawDev();
+
+const pmodes=[
+ {n:'Active',p:100,lp:1,dd:1,d:'Reading and writing data at full speed. Both memory types are similar here, but LPDDR\'s lower I/O voltage (~0.5 V vs 1.1 V) means each bit sent costs less energy.'},
+ {n:'Low-speed active (DVFS)',p:45,lp:1,dd:0,d:'<b>Dynamic voltage &amp; frequency scaling.</b> When the phone only needs a little bandwidth (scrolling text, music playing), LPDDR drops to a lower clock <i>and</i> lower voltage while staying fully usable. DDR5 picks one speed at boot and stays there.'},
+ {n:'Power-down',p:20,lp:1,dd:1,d:'The memory is idle for a moment, so the controller switches off its input buffers and clock receivers. Wake-up takes only a few nanoseconds. Both LPDDR and DDR support this.'},
+ {n:'Self-refresh',p:8,lp:1,dd:1,d:'The memory controller goes quiet and the DRAM refreshes its own cells using an internal timer. This is how data survives sleep / standby (“suspend to RAM”) on laptops and desktops too.'},
+ {n:'Partial-array self-refresh',p:4,lp:1,dd:0,d:'LPDDR can refresh <b>only the parts of memory that hold data</b> and let empty banks fade, saving refresh power on a lightly used phone. LPDDR also slows refresh when the chip is cool (temperature-compensated refresh), because cold cells leak more slowly.'},
+ {n:'Deep sleep / deep power-down',p:1,lp:1,dd:0,d:'LPDDR\'s deepest state: almost everything inside is switched off. Power is a tiny fraction of active, but waking takes longer, so phones use it for long screen-off periods. Each 16-bit channel can enter these states independently.'}
+];
+let pm=4;
+function drawPM(){const box=$('#pmList');box.innerHTML='';
+ pmodes.forEach((m,i)=>{const r=document.createElement('div');r.style.cssText=`display:grid;grid-template-columns:minmax(150px,210px) 1fr auto;gap:10px;align-items:center;padding:7px 8px;border-radius:8px;cursor:pointer;${i===pm?'background:rgba(79,179,169,.12);':''}`;
+  r.innerHTML=`<span style="font-size:14px;${i===pm?'font-weight:600':''}">${m.n}</span><span style="background:var(--panel2);border-radius:4px;height:12px;overflow:hidden"><span style="display:block;height:100%;width:${Math.max(1.5,m.p)}%;background:${i===pm?C.accent:C.muted};border-radius:4px"></span></span><span style="font:12px 'IBM Plex Mono',monospace;white-space:nowrap"><span title="LPDDR" style="color:${m.lp?C.accent:C.danger}">LP ${m.lp?'✓':'✗'}</span> &nbsp;<span title="DDR" style="color:${m.dd?C.a3:C.danger}">DDR ${m.dd?'✓':'✗'}</span></span>`;
+  r.onclick=()=>{pm=i;drawPM()};box.appendChild(r)});
+ const m=pmodes[pm];$('#pmInfo').innerHTML=`<p style="margin:0"><b>${m.n}</b> · ${m.lp&&m.dd?'LPDDR and DDR':'LPDDR only'}</p><p style="margin:6px 0 0">${m.d}</p>`;}
+drawPM();
+
+/* ---------- 9 quiz ---------- */
 const qs=[
  {q:'A board uses a “4×16” DDR4 configuration. How wide is its data bus?',o:['16-bit','32-bit','64-bit','4-bit'],a:2,e:'Four chips × 16 data lanes each = 64 lanes, a 64-bit bus.'},
  {q:'Four 8 Gb chips give how much memory?',o:['32 GB','4 GB','8 GB','2 GB'],a:1,e:'4 × 8 Gb = 32 Gb, and 32 gigabits ÷ 8 = 4 gigabytes.'},
  {q:'DDR4-3200 on a 64-bit channel has a peak bandwidth of about…',o:['3.2 GB/s','25.6 GB/s','51.2 GB/s','204.8 GB/s'],a:1,e:'3200 MT/s × 64 bits ÷ 8 = 25,600 MB/s ≈ 25.6 GB/s.'},
  {q:'Why is DDR4-3200 called “3200” when its I/O clock is 1600 MHz?',o:['Marketing rounding','It transfers on both clock edges','It has two channels','It has 2 ranks'],a:1,e:'Double data rate: two transfers per clock cycle, so 1600 MHz × 2 = 3200 MT/s.'},
  {q:'You buy a “2×16GB” kit. What is it?',o:['Two x16 chips','Two sticks of 16 GB each','16 sticks of 2 GB','One 32 GB stick in x16 mode'],a:1,e:'In retail kit naming, 2×16GB = two 16 GB modules. Install one per channel for dual-channel.'},
+ {q:'A phone uses LPDDR5X in a “4×16” setup. What does that mean?',o:['4 sticks of 16 GB','4 independent 16-bit channels, a 64-bit bus','16 channels of 4 bits','4 GB at 16 GT/s'],a:1,e:'LPDDR uses narrow 16-bit channels; four of them make a 64-bit bus, and each can sleep on its own to save power.'},
  {q:'How many x8 chips make one 64-bit rank?',o:['4','8','16','64'],a:1,e:'64 bits ÷ 8 lanes per chip = 8 chips.'}
 ];
 const qb=$('#quizBox');let score=0,done=0;
