@@ -68,6 +68,23 @@ svg.dia{display:block;width:100%;min-width:980px;height:auto}
 .link.pwr{stroke-dasharray:1.5 3;stroke-width:2;stroke-linecap:round}
 .dim .node:not(.on) rect,.dim .node:not(.on) text{opacity:.28}
 .dim .link:not(.on){opacity:.15}
+[hidden]{display:none!important}
+.proto .link{stroke-width:2.2;stroke-dasharray:none}
+.proto .link.pf-rf{stroke:var(--c-ant)}
+.proto .link.pf-hs{stroke:var(--c-trx)}
+.proto .link.pf-ls{stroke:var(--c-io);stroke-dasharray:5 3}
+.proto .link.pf-mem{stroke:var(--c-rffe);stroke-width:3}
+.proto .link.pf-pwr{stroke:var(--c-pwr);stroke-dasharray:1.5 3;stroke-linecap:round}
+.dia .sub.protot{fill:var(--c-trx);font-weight:600}
+.link{pointer-events:visibleStroke}
+.protoleg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);align-items:center}
+.protoleg i{display:inline-block;width:22px;height:0;border-top:3px solid var(--fc);vertical-align:middle;margin-right:6px}
+.ptab{width:100%;min-width:0;border-collapse:collapse;font-size:12.5px}
+.ptab td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.ptab button{all:unset;cursor:pointer;font-weight:650;color:var(--ink);border-bottom:1px dotted var(--muted)}
+.ptab button:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.ptab tr.sel td{background:var(--copper-soft)}
+.fam{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--fc);margin-right:6px;vertical-align:-1px}
 .link.on{stroke:var(--copper);stroke-width:2.6;stroke-dasharray:7 5}
 .link.on.fwd{animation:flow 0.9s linear infinite}
 .link.on.rev{animation:flow 0.9s linear infinite reverse}
@@ -200,6 +217,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:90ch}
   <div class="sheet">
     <div class="sheet-head">
       <span class="label">Block diagram · click a block</span>
+      <div class="protoleg" id="protoLeg" hidden></div>
       <div class="legend">
         <span><i></i>RF</span><span><i class="d"></i>Digital / IQ / bus</span><span><i class="p"></i>Power</span>
         <span><b style="border-color:var(--c-ant)"></b>Antenna</span><span><b style="border-color:var(--c-rffe)"></b>RF front-end</span><span><b style="border-color:var(--c-trx)"></b>Transceiver</span><span><b style="border-color:var(--c-soc)"></b>SoC</span>
@@ -522,6 +540,7 @@ function panel(id,extra){
   <div class="cost"><div><h3>Typical cost</h3><span class="amt">${x.c?fmt(x.c):"Included"}</span></div><span class="cq">${esc(x.q||"")}</span></div>
   ${x.in?`<div><h3>Internal block diagram</h3><div class="inner">${innerSvg(d.t,x.in)}</div>${symKey(x.in)}</div>`:""}
   <div><h3>How it works</h3><p>${esc(d.role)}</p></div>
+  ${interfacesHtml(id)}
   ${PAGEOF[id]?`<a class="pagelink" href="${PAGEOF[id][0]}">Open the ${esc(PAGEOF[id][1])} page →</a>`:""}
   ${SWOF[id]?`<a class="pagelink" href="${SWOF[id][0]}">Software for this block: ${esc(SWOF[id][1])} →</a>`:""}
   ${DEEP[id]?`<button class="chip deeplink" type="button" onclick="document.getElementById('deep').scrollIntoView({behavior:'smooth'})">Implementation &amp; architectures ↓</button>`:""}
@@ -829,8 +848,76 @@ function bomHtml(){
   let tl=0,th=0;const rows=Object.entries(grp).map(([g,ids])=>{let l=0,h=0;ids.forEach(i=>{const c=X[i]&&X[i].c;if(c){l+=c[0];h+=c[1]}});tl+=l;th+=h;return `<dt>${g}</dt><dd>$${Math.round(l)}–${Math.round(h)}</dd>`}).join("");
   return `<div><h3>Estimated bill of materials</h3><dl class="spec">${rows}<dt><b>Chips & modules shown</b></dt><dd><b>$${Math.round(tl)}–${Math.round(th)}</b></dd></dl><p class="cq" style="margin-top:6px">High-volume OEM estimates in USD, excluding housing, PCB, assembly and royalties.</p></div>`;
 }
+// ---------- protocols between blocks ----------
+const FAM={rf:["RF signal","--c-ant"],hs:["High-speed serial","--c-trx"],ls:["Low-speed control / data bus","--c-io"],mem:["Memory interface","--c-rffe"],pwr:["Power","--c-pwr"]};
+// id, name, family, speed, standard body, what it carries
+const PROTOS=[
+ ["rf","RF (analog)","rf","617 MHz – 8 GHz on 50 Ω lines","—","Analog radio signals on coax, flex and board traces between antennas, tuners, switches, front-end modules and the transceiver. They carry the air-interface waveforms (LTE/NR, Wi-Fi, GNSS, NFC, UWB)."],
+ ["if","IF over coax","rf","≈ 7–12 GHz IF","—","Intermediate-frequency signal between each mmWave module and the IF transceiver, so 24–40 GHz signals never cross the board."],
+ ["rffe","MIPI RFFE","ls","2-wire, up to 52 MHz clock","MIPI Alliance","Control bus from the transceiver to every front-end device: PA modules, LNAs, switches, tuners and the envelope tracker. Timed triggers apply new settings exactly at slot boundaries."],
+ ["iq","Serial digital IQ","hs","Multi-Gbps serial lanes","Vendor-specific (earlier MIPI DigRF)","Digitized baseband samples plus timing and control between the RF transceiver and the modem."],
+ ["power","DC power rails","pwr","Battery ≈ 3.5–4.5 V; rails ≈ 0.5–1.8 V","—","Supply rails from the PMICs, and the fast-moving PA collector supply from the envelope tracker."],
+ ["spmi","MIPI SPMI","ls","2-wire, up to 26 MHz","MIPI Alliance","System Power Management Interface: the SoC sets PMIC voltages and reads their status."],
+ ["lpddr","LPDDR5X","mem","Up to ≈ 10.7 Gbps per pin, 64-bit","JEDEC","Main memory bus between the SoC's memory controller and DRAM."],
+ ["ufs","UFS 4 on MIPI M-PHY","hs","HS-Gear 5, ≈ 23 Gbps per lane, 2 lanes","JEDEC, MIPI Alliance","Storage commands and data between SoC and flash."],
+ ["pcie","PCIe Gen 4","hs","16 GT/s per lane","PCI-SIG","Wi-Fi data and control between the combo chip and the SoC."],
+ ["hci","UART · Bluetooth HCI","ls","≈ 3–8 Mbps UART","Bluetooth SIG","Bluetooth host-controller packets between the controller and Android's Bluetooth stack."],
+ ["wci2","WCI-2 coexistence","ls","UART-style serial","Bluetooth SIG (Core Specification)","Real-time transmit and receive timing between the cellular modem and Wi-Fi/Bluetooth so they do not desense each other."],
+ ["nci","I²C · NFC NCI","ls","I²C up to 3.4 MHz","NFC Forum (NCI)","NFC controller commands, notifications and data."],
+ ["uci","SPI · UWB UCI","ls","SPI ≈ 10–20 MHz","FiRa Consortium (UCI)","UWB ranging-session commands and results."],
+ ["dsi","MIPI DSI-2 + DSC","hs","Several Gbps per lane (C-PHY or D-PHY)","MIPI Alliance, VESA (DSC)","Compressed display frames and panel commands to the display driver IC."],
+ ["csi","MIPI CSI-2 (C-PHY / D-PHY)","hs","Several Gbps per lane or trio","MIPI Alliance","Raw image data from each camera sensor into the ISP."],
+ ["cci","I²C / I3C camera control","ls","Up to 1 MHz (I²C), 12.5 MHz (I3C)","MIPI Alliance, NXP","Sensor, lens-actuator and OIS register control alongside CSI-2."],
+ ["swire","MIPI SoundWire · I²S","ls","SoundWire ≈ 12 Mbps class","MIPI Alliance","Audio samples and control to the codec, smart amplifiers and digital microphones."],
+ ["i3c","MIPI I3C · I²C · SPI","ls","I3C up to 12.5 MHz","MIPI Alliance","Sensor data and configuration to the always-on sensor hub."],
+ ["usb","USB 3.2 · DisplayPort Alt Mode · USB PD","hs","Up to 10 Gbps; PD over the CC line","USB-IF, VESA","External data, video out and charging negotiation through USB-C."],
+ ["iso7816","ISO/IEC 7816","ls","Clock ≈ 1–5 MHz","ISO/IEC, ETSI","APDU exchange between the modem and the SIM or eUICC."],
+ ["i2c","I²C","ls","100 kHz – 1 MHz","NXP specification","Simple control of chargers, fuel gauges and haptic drivers."],
+ ["gpio","GPIO control lines","ls","Static logic levels","—","Enable and band-select lines for Wi-Fi front-end modules and the GNSS LNA."],
+ ["noc","On-chip interconnect (AMBA)","mem","Hundreds of GB/s aggregate","Arm (AMBA AXI / CHI)","The network-on-chip linking CPU, GPU, NPU, ISP, modem and memory controller inside the SoC."]
+];
+const PBY=Object.fromEntries(PROTOS.map(p=>[p[0],p]));
+// protocols per drawn link ("from>to")
+const LPROTO={"mmw>mmwif":["if"],"et>lb":["power"],"et>mhb":["power"],"et>uhb":["power"],"wcombo>soc":["pcie","hci"],"nfc>soc":["nci"],"uwb>soc":["uci"],"mmwif>soc":["iq"],"trx>modem":["iq"],
+ "soc>dram":["lpddr"],"soc>ufs":["ufs"],"pmic>soc":["power","spmi"],"chg>pmic":["power","i2c"],"soc>dispm":["dsi"],"soc>cam":["csi","cci"],"soc>audio":["swire"],"soc>sens":["i3c"],"soc>usb":["usb"],"soc>sim":["iso7816"],"soc>hap":["i2c"]};
+const lproto=l=>LPROTO[l.f+">"+l.t]||(l.p.classList.contains("rf")?["rf"]:[]);
+// protocols that are not drawn as lines: [protocol, peer, blocks]
+const XPROTO=[["rffe","RF transceiver",["trx","tuner","asm","lb","mhb","uhb","drx","mimo","et"],{trx:"PA modules, LNAs, switches, tuners, ET tracker"}],["gpio","Wi-Fi chip / GNSS engine",["wfem","gnss_lna"],{}],["wci2","Wi-Fi / Bluetooth chip",["wcombo","modem"],{wcombo:"5G modem"}],["noc","Other SoC blocks and memory",["modem","cpu","gpu","npu","isp","dsp","disp","sec","io","gnss","slc","memc","pmu","noc"],{noc:"Every SoC block"}]];
+// block subtitles in protocol view
+const BP={a_main:"RF feed → tuner",a_div:"RF feed → tuner",a_m3:"RF feed → switch",a_m4:"RF feed → switch",a_wifi:"RF feed → Wi-Fi FEM",a_gnss:"RF feed → GNSS LNA",a_nfc:"13.56 MHz magnetic",a_uwb:"RF feed → UWB chip",a_mmw:"in-package feed",
+ tuner:"RF · MIPI RFFE",asm:"RF · MIPI RFFE",lb:"RF · MIPI RFFE",mhb:"RF · MIPI RFFE",uhb:"RF · MIPI RFFE",drx:"RF · MIPI RFFE",mimo:"RF · MIPI RFFE",wfem:"RF · GPIO control",gnss_lna:"RF · GPIO enable",nfc:"I²C · NCI to SoC",uwb:"SPI · UCI to SoC",mmw:"IF over coax",
+ trx:"serial IQ · RFFE master",et:"ET supply · RFFE",wcombo:"PCIe · UART HCI · WCI-2",mmwif:"IF in · serial IQ out",
+ modem:"serial IQ · NoC · WCI-2",cpu:"NoC (AMBA)",gpu:"NoC (AMBA)",npu:"NoC (AMBA)",isp:"MIPI CSI-2 in",dsp:"SoundWire · I3C",disp:"MIPI DSI out",sec:"NoC · secure bus",io:"PCIe · UFS · USB PHYs",gnss:"RF in from LNA",slc:"NoC",memc:"LPDDR5X PHY",pmu:"SPMI master",noc:"AMBA AXI / CHI",
+ dram:"LPDDR5X · 64-bit",ufs:"UFS 4 · M-PHY",pmic:"SPMI · power rails",chg:"I²C · USB PD",dispm:"MIPI DSI · DSC",cam:"CSI-2 · I²C/I3C",audio:"SoundWire · I²S",sens:"I3C · I²C · SPI",usb:"USB 3.2 · DP · PD",sim:"ISO/IEC 7816",hap:"I²C"};
+linkEls.forEach(l=>{const ps=lproto(l);if(!ps.length)return;l.p.classList.add("pf-"+PBY[ps[0]][2]);const t=el("title",{},l.p);t.textContent=`${byId[l.f].label||"SoC"} ↔ ${byId[l.t].label||"SoC"}: ${ps.map(i=>PBY[i][1]).join(" + ")}`});
+function interfacesHtml(id){
+ const rows=[];
+ linkEls.forEach(l=>{if(l.f!==id&&l.t!==id)return;const peer=l.f===id?l.t:l.f;const ps=lproto(l);if(!ps.length)return;rows.push([byId[peer].label||"Application SoC",ps])});
+ XPROTO.forEach(([pid,peer,ids,ov])=>{if(ids.includes(id))rows.push([ov[id]||peer,[pid]])});
+ if(!rows.length)return "";
+ return `<div><h3>Interfaces</h3><table class="ptab">${rows.map(([peer,ps])=>`<tr><td>${esc(peer)}</td><td>${ps.map(p=>`<span class="fam" style="--fc:var(${FAM[PBY[p][2]][1]})"></span>${esc(PBY[p][1])}`).join("<br>")}</td></tr>`).join("")}</table></div>`;
+}
+let showProto=false,selProto=null;
+function hiProto(pid){
+ selProto=pid;curPreset=null;setChips();clearBands();
+ const nodes=new Set();
+ linkEls.forEach(l=>{const on=lproto(l).includes(pid);l.p.classList.toggle("on",on);l.p.classList.remove("fwd","rev");if(on){nodes.add(l.f);nodes.add(l.t)}});
+ XPROTO.forEach(([p,,ids])=>{if(p===pid)ids.forEach(i=>nodes.add(i))});
+ if([...nodes].some(i=>byId[i]&&byId[i].parent==="soc"))nodes.add("soc");
+ svg.classList.add("dim");
+ Object.entries(nodeEls).forEach(([id,g])=>{g.classList.toggle("on",nodes.has(id));g.classList.remove("sel")});
+ protoPanel();
+}
+function protoPanel(){
+ const p=selProto?PBY[selProto]:null;
+ insp.innerHTML=`<div class="insp-head" style="--cat:var(--c-trx)"><span class="tag">Protocols</span><h2>${p?esc(p[1]):"Interfaces between blocks"}</h2></div>
+ <div class="insp-body">${p?`<p>${esc(p[5])}</p><dl class="spec"><dt>Type</dt><dd>${esc(FAM[p[2]][0])}</dd><dt>Speed</dt><dd>${esc(p[3])}</dd><dt>Defined by</dt><dd>${esc(p[4])}</dd></dl>`:`<p>Each block's label now shows the interface it uses, and lines are coloured by protocol type. Hover a line to name it. Pick a protocol below to light up every block and connection that uses it.</p>`}
+ <div><h3>All protocols</h3><table class="ptab">${PROTOS.map(q=>`<tr class="${q[0]===selProto?"sel":""}"><td><span class="fam" style="--fc:var(${FAM[q[2]][1]})"></span><button type="button" data-p="${q[0]}">${esc(q[1])}</button></td><td class="m" style="color:var(--muted)">${esc(q[3])}</td></tr>`).join("")}</table></div></div>`;
+ insp.querySelectorAll("button[data-p]").forEach(b=>b.onclick=()=>hiProto(b.dataset.p));
+}
 let showCost=false;
-function relabel(){NODES.forEach(n=>{const g=nodeEls[n[0]];const t=g.querySelectorAll("text")[1];const x=X[n[0]];t.textContent=showCost?(x?(x.c?fmt(x.c):x.q.startsWith("Included in AiP")?"in AiP":"in SoC"):""):n[7];t.classList.toggle("costt",showCost)})}
+function relabel(){NODES.forEach(n=>{const g=nodeEls[n[0]];const t=g.querySelectorAll("text")[1];const x=X[n[0]];t.textContent=showProto?(BP[n[0]]||n[7]):showCost?(x?(x.c?fmt(x.c):x.q.startsWith("Included in AiP")?"in AiP":"in SoC"):""):n[7];t.classList.toggle("costt",showCost&&!showProto);t.classList.toggle("protot",showProto)});
+ svg.classList.toggle("proto",showProto);document.getElementById("protoLeg").hidden=!showProto;document.querySelector(".sheet-head .legend").hidden=showProto}
 let curPreset=null;
 function apply(set,dir,sel){
   const S=new Set(set);
@@ -850,6 +937,7 @@ function neighbors(id){
   return s;
 }
 function select(id,extra){
+  selProto=null;
   curPreset=null;setChips();clearBands();
   apply(neighbors(id),null,id);panel(id,extra);
 }
@@ -864,8 +952,12 @@ function runPreset(p){
 const pc=document.getElementById("presets");
 PRESETS.forEach(p=>{const b=document.createElement("button");b.className="chip";b.textContent=p.n;b.dataset.id=p.id;b.setAttribute("aria-pressed","false");b.onclick=()=>runPreset(p);pc.appendChild(b)});
 const cb=document.createElement("button");cb.className="chip ghost";cb.textContent="Show costs on diagram";cb.setAttribute("aria-pressed","false");
-cb.onclick=()=>{showCost=!showCost;cb.setAttribute("aria-pressed",String(showCost));cb.textContent=showCost?"Show descriptions":"Show costs on diagram";relabel()};
-document.querySelector(".sheet-head").insertBefore(cb,document.querySelector(".legend"));
+const pbtn=document.createElement("button");pbtn.className="chip ghost";pbtn.textContent="Show protocols";pbtn.setAttribute("aria-pressed","false");
+function syncBtns(){cb.setAttribute("aria-pressed",String(showCost));cb.textContent=showCost?"Show descriptions":"Show costs on diagram";pbtn.setAttribute("aria-pressed",String(showProto));pbtn.textContent=showProto?"Hide protocols":"Show protocols"}
+cb.onclick=()=>{showCost=!showCost;if(showCost&&showProto){showProto=false;selProto=null;apply([],null);overview()}syncBtns();relabel()};
+pbtn.onclick=()=>{showProto=!showProto;if(showProto)showCost=false;selProto=null;syncBtns();relabel();apply([],null);if(showProto)protoPanel();else overview()};
+const sh=document.querySelector(".sheet-head");sh.insertBefore(cb,sh.querySelector(".legend"));sh.insertBefore(pbtn,sh.querySelector(".legend"));
+document.getElementById("protoLeg").innerHTML=Object.values(FAM).map(([n,c])=>`<span style="--fc:var(${c})"><i></i>${n}</span>`).join("")+`<span>Hover a line to name its protocol</span>`;
 const clr=document.createElement("button");clr.className="chip ghost";clr.textContent="Clear";clr.onclick=()=>{curPreset=null;setChips();clearBands();apply([],null);overview()};pc.appendChild(clr);
 function setChips(){pc.querySelectorAll(".chip[data-id]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.id===curPreset)))}
 svg.addEventListener("click",e=>{if(e.target===svg){curPreset=null;setChips();clearBands();apply([],null);overview()}});
