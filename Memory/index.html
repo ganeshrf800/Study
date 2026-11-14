@@ -122,6 +122,19 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
 <section id="deep">
   <div class="kicker">02 · Deep dive</div>
   <h2>Watch the processor work</h2>
+  <div class="ctrl"><div><label>View</label><div class="seg" id="cpuMode"><button data-v="simple" class="on">Simple</button><button data-v="detail">Detailed</button></div></div></div>
+  <div id="cpuSimple">
+    <p>The processor wants <b>one number</b> so it can add it. It looks in the <b>closest place first</b>, and only goes farther if the number isn't there. Tap where the number is hiding:</p>
+    <div class="card">
+      <div class="seg" id="smpSel"><button data-v="0" class="on">✋ Hand</button><button data-v="1">🗄️ Drawer</button><button data-v="2">📚 Shelf</button><button data-v="3">🏠 Other room</button><button data-v="4">🏪 Store</button></div>
+      <div id="smpRows" style="margin-top:14px"></div>
+      <p id="smpTxt" style="margin:8px 0 0"></p>
+      <div class="stats" id="smpStats"></div>
+    </div>
+    <div class="callout"><b>The big idea:</b> the math itself is instant (about 1 second in this story). Almost all the time goes into <b>fetching the number</b>. That's why computers keep recently used things close by (cache), and why faster RAM and SSDs make a computer feel quicker.</div>
+    <p class="muted" style="font-size:13px">Times are stretched so that 1 processor step = 1 second. The real times are shown in small print. Switch to <b>Detailed</b> to see every step the processor really takes.</p>
+  </div>
+  <div id="cpuDetail" style="display:none">
   <p>Follow one real instruction through the machine. The program below adds up an array (<code>sum += a[i]</code>). Its first instruction, <code>MOV RBX, [RSI]</code>, loads <code>a[i]</code> from memory. Choose where that data currently lives, then step through what the CPU and memory actually do. Timings use the reference desktop in the table below.</p>
   <div class="card">
     <div class="ctrl">
@@ -150,6 +163,7 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
         <tr><td><b>Hard drive</b> (7200 RPM)</td><td>4–24 TB</td><td class="mono">~50,000,000</td><td class="mono">~5–12 ms</td><td>~0.25 GB/s</td><td>~1.5 years</td></tr>
       </tbody>
     </table>
+  </div>
   </div>
   <h2 id="deepTitle" style="margin-top:36px">Inside DRAM</h2>
   <div class="ctrl"><div><label>Layer (follows your pick in section 1)</label><div class="seg" id="deepLvl"><button data-v="0">Registers</button><button data-v="1">Cache</button><button data-v="2" class="on">DRAM</button><button data-v="3">SSD / HDD</button></div></div></div>
@@ -663,6 +677,31 @@ function drawCpu(){const s=$('#cpuSvg');s.innerHTML='';defs(s);const E=cpuEvents
  const b=$('#cpuBtns');b.innerHTML='';
  b.append(btn('◀ Back',()=>{stopCpu();cpuK=Math.max(0,cpuK-1);drawCpu()}),btn('Step ▶',()=>{stopCpu();cpuK=Math.min(E.length-1,cpuK+1);drawCpu()}),btn(cpuTimer?'⏸ Pause':'▶ Play',()=>{if(cpuTimer){stopCpu();drawCpu();return}if(cpuK>=E.length-1)cpuK=0;cpuTimer=setInterval(()=>{if(cpuK>=E.length-1){stopCpu();drawCpu();return}cpuK++;drawCpu()},1700);drawCpu()}),btn('Reset',()=>{stopCpu();cpuK=0;drawCpu()}));}
 drawCpu();
+
+/* ---------- simple fetch view ---------- */
+const SP=[
+ {i:'✋',n:'Hand',m:'L1 cache',t:'~5 seconds',r:'~1 ns',s:5,x:'It\'s right in your hand. Grab it and you\'re done.'},
+ {i:'🗄️',n:'Drawer',m:'L2 cache',t:'~15 seconds',r:'~3.5 ns',s:16,x:'Not in your hand, so you open the desk drawer. Found it!'},
+ {i:'📚',n:'Shelf',m:'L3 cache',t:'~1 minute',r:'~11 ns',s:50,x:'Not in your hand or the drawer, so you get up and check the bookshelf in your room. There it is.'},
+ {i:'🏠',n:'Other room',m:'RAM',t:'~5 minutes',r:'~70 ns',s:300,x:'It\'s nowhere in your room. You walk to another room of the house, where everything for today\'s work is kept, and bring it back.'},
+ {i:'🏪',n:'Store',m:'SSD',t:'~3 days',r:'~60 µs',s:260000,x:'It\'s not even in the house! It has to be ordered from a store across town, and you wait days. (In a computer, the operating system handles this trip.)'}
+];
+let smp=0;seg('#smpSel',v=>{smp=+v;drawSmp()});
+seg('#cpuMode',v=>{$('#cpuSimple').style.display=v==='simple'?'':'none';$('#cpuDetail').style.display=v==='detail'?'':'none'});
+function drawSmp(){const box=$('#smpRows');
+ const row=(icon,name,sub,time,state,w)=>{const col=state==='hit'?'var(--accent)':state==='miss'?'var(--danger)':'var(--line)';
+  return `<div style="display:grid;grid-template-columns:40px 1fr auto;gap:4px 12px;align-items:center;padding:9px 10px;border-radius:10px;border:1px solid ${state==='hit'?'var(--accent)':'transparent'};${state==='hit'?'background:rgba(79,179,169,.12);':''}${state==='skip'?'opacity:.4;':''}">
+   <div style="font-size:26px;text-align:center">${icon}</div>
+   <div><b>${name}</b> <span class="muted" style="font-size:13px">${sub}</span>
+    <div style="height:6px;background:var(--panel2);border-radius:3px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${w}%;background:${state==='skip'?'var(--line)':col};border-radius:3px"></div></div></div>
+   <div style="text-align:right;font-size:14px;white-space:nowrap">${state==='hit'?'<span style="color:var(--accent);font-weight:700">✓ found</span>':state==='miss'?'<span style="color:var(--danger)">✗ not here</span>':''}<div class="muted mono" style="font-size:12px">${time}</div></div></div>`};
+ const W=[8,22,40,62,100];
+ box.innerHTML=row('🧮','Processor','does the math','1 s','',0).replace('opacity:.4;','')+'<div class="muted" style="font-size:12px;padding:2px 10px 4px">↓ looks here first, then farther away</div>'+
+  SP.map((p,i)=>row(p.i,p.n,p.m,p.t,i===smp?'hit':i<smp?'miss':'skip',W[i])).join('');
+ const p=SP[smp],pct=Math.floor(p.s/(p.s+1)*100);
+ $('#smpTxt').innerHTML=p.x;
+ $('#smpStats').innerHTML=[[p.t,`trip to the ${p.n.toLowerCase()} (${p.m})`,1],['1 second','doing the math'],[pct+'%','of the time spent fetching',1],[p.r,'real time for the trip']].map(([v,l,hi])=>`<div class="stat${hi?' hi':''}"><div class="v" style="font-size:18px">${v}</div><div class="l">${l}</div></div>`).join('');}
+drawSmp();
 
 const deep=[REG,CACHE,DRAM,STOR];
 seg('#deepLvl',v=>setLevel(+v));
