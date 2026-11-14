@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory, DDR, Lanes &amp; x16 Configurations — Interactive Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1216; --panel:#171b21; --panel2:#1e242c; --line:#2b333d;
+  --text:#e6e9ee; --muted:#9aa4b2; --accent:#4fb3a9; --accent2:#e0a84f; --accent3:#8f8cf0; --danger:#e06c6c;
+  --chip:#26404a; --chipEdge:#4fb3a9;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 "IBM Plex Sans",system-ui,sans-serif}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+header.hero{padding:48px 20px 28px;max-width:980px;margin:0 auto}
+header.hero h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 12px;letter-spacing:-.01em}
+header.hero p{color:var(--muted);max-width:680px;margin:0}
+nav.toc{position:sticky;top:0;z-index:10;background:rgba(15,18,22,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.toc div{max-width:980px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:8px 14px;scrollbar-width:none}
+nav.toc a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap}
+nav.toc a:hover,nav.toc a.on{color:var(--text);background:var(--panel2)}
+main{max-width:980px;margin:0 auto;padding:0 20px 80px}
+section{padding:44px 0 8px;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:0}
+.kicker{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+h2{font-size:clamp(22px,3.6vw,30px);margin:0 0 12px;line-height:1.2}
+h3{font-size:18px;margin:24px 0 8px}
+p{margin:0 0 14px}
+.muted{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.callout{border-left:3px solid var(--accent2);background:rgba(224,168,79,.07);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0}
+.callout b{color:var(--accent2)}
+button,.seg button{font:inherit}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{background:transparent;color:var(--muted);border:0;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:14px}
+.seg button.on{background:var(--accent);color:#0b1513;font-weight:600}
+.ctrl{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin:6px 0 14px}
+.ctrl label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
+input[type=range]{width:180px;accent-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat .v{font:600 22px/1.2 "IBM Plex Mono",monospace;color:var(--text)}
+.stat .l{font-size:12px;color:var(--muted);margin-top:4px}
+.stat.hi .v{color:var(--accent)}
+svg text{font-family:"IBM Plex Sans",sans-serif}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+tr.sel td{background:rgba(79,179,169,.1)}
+tbody tr{cursor:pointer}
+.tablewrap{overflow-x:auto}
+/* hierarchy */
+.pyramid{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pyramid button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;padding:10px;cursor:pointer;text-align:center;transition:.15s}
+.pyramid button.on{border-color:var(--accent);background:rgba(79,179,169,.15)}
+.pyramid button small{display:block;color:var(--muted);font-size:12px}
+.drill{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.drill button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:14px}
+.drill button.on{color:#0b1513;background:var(--accent);border-color:var(--accent);font-weight:600}
+.drill .arrow{color:var(--line);align-self:center}
+.pill{display:inline-block;font:600 11px/1 "IBM Plex Mono",monospace;padding:4px 7px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);margin-right:4px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.quizq{margin:14px 0}
+.quizq .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.quizq .opts button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;cursor:pointer}
+.quizq .opts button.right{border-color:var(--accent);background:rgba(79,179,169,.18)}
+.quizq .opts button.wrong{border-color:var(--danger);background:rgba(224,108,108,.15)}
+.quizq .fb{font-size:14px;color:var(--muted);margin-top:8px;min-height:1em}
+footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <a href="../" style="color:var(--muted);text-decoration:none;font-size:14px">← Study</a>
+  <div class="kicker" style="margin-top:14px">Interactive guide</div>
+  <h1>Memory, DDR, lanes &amp; what “2×16” and “4×16” really mean</h1>
+  <p>From CPU registers and caches down to disks, and from a single capacitor holding one bit up to how DRAM chips are wired side-by-side to form a memory bus. Tap, slide and toggle as you go.</p>
+</header>
+
+<nav class="toc" id="toc"><div>
+  <a href="#basics">1 · Memory basics</a>
+  <a href="#deep">2 · Deep dive</a>
+  <a href="#ddr">3 · Double data rate</a>
+  <a href="#gens">4 · DDR generations</a>
+  <a href="#lanes">5 · Lanes &amp; widths</a>
+  <a href="#config">6 · 2×16 / 4×16 builder</a>
+  <a href="#kits">7 · “2×16 GB” kits</a>
+  <a href="#quiz">8 · Check yourself</a>
+</div></nav>
+
+<main>
+
+<!-- 1 BASICS -->
+<section id="basics">
+  <div class="kicker">01 · Memory basics</div>
+  <h2>Why computers have a memory hierarchy</h2>
+  <p>A processor can do billions of operations per second, but storage that is both <b>huge</b> and <b>fast</b> doesn't exist. So systems stack several kinds of memory: tiny and very fast near the CPU core, big and slow farther away. DRAM (“main memory” or RAM) sits in the middle — this guide is about that layer.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="pyramid" id="pyr"></div>
+    </div>
+    <div class="card" id="pyrInfo"></div>
+  </div>
+  <div class="callout"><b>Volatile vs. non-volatile:</b> registers, cache (SRAM) and DRAM lose their contents when power is cut. SSDs (flash) and hard drives keep data. That's why programs are <i>loaded</i> from storage into RAM to run.</div>
+</section>
+
+<!-- 2 DEEP DIVE -->
+<section id="deep">
+  <div class="kicker">02 · Deep dive</div>
+  <h2 id="deepTitle">Inside DRAM</h2>
+  <div class="ctrl"><div><label>Layer (follows your pick in section 1)</label><div class="seg" id="deepLvl"><button data-v="0">Registers</button><button data-v="1">Cache</button><button data-v="2" class="on">DRAM</button><button data-v="3">SSD / HDD</button></div></div></div>
+  <p id="deepIntro"></p>
+  <div class="drill" id="drill"></div>
+  <div class="card">
+    <svg id="drillSvg" viewBox="0 0 640 230" width="100%" role="img" aria-label="Deep-dive diagram"></svg>
+    <div id="drillTxt" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- 3 DDR -->
+<section id="ddr">
+  <div class="kicker">03 · Double data rate</div>
+  <h2>DDR = data on both clock edges</h2>
+  <p>Older SDRAM moved one chunk of data per clock cycle, on the rising edge. <b>DDR</b> (Double Data Rate) moves data on the <b>rising and falling</b> edge, so it transfers twice per cycle at the same clock frequency. That's why DDR speeds are quoted in <b>MT/s</b> (mega-transfers per second): DDR4-3200 runs its I/O clock at 1600 MHz but transfers 3200 million times per second.</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Mode</label><div class="seg" id="ddrMode"><button data-v="sdr">SDR</button><button data-v="ddr" class="on">DDR</button></div></div>
+      <div><label>Animation</label><div class="seg" id="ddrPlay"><button data-v="play" class="on">Play</button><button data-v="pause">Pause</button></div></div>
+    </div>
+    <svg id="ddrSvg" viewBox="0 0 640 190" width="100%" role="img" aria-label="Clock and data timing"></svg>
+    <div class="stats">
+      <div class="stat"><div class="v" id="ddrCyc">0</div><div class="l">clock cycles</div></div>
+      <div class="stat hi"><div class="v" id="ddrXfer">0</div><div class="l">data transfers</div></div>
+      <div class="stat"><div class="v" id="ddrRatio">2×</div><div class="l">transfers per cycle</div></div>
+    </div>
+  </div>
+  <div class="callout"><b>Prefetch is the other trick.</b> The DRAM core itself is slow (a few hundred MHz). Each internal access grabs several bits per data pin at once (the “prefetch”: 2n for DDR1, 8n for DDR3/4, 16n for DDR5) and the I/O then streams them out quickly. That's how the external transfer rate keeps climbing while the cells don't get much faster.</div>
+</section>
+
+<!-- 4 GENERATIONS -->
+<section id="gens">
+  <div class="kicker">04 · DDR generations</div>
+  <h2>DDR1 → DDR5 at a glance</h2>
+  <p>Tap a row to compute peak bandwidth for a standard 64-bit channel at that generation's speeds.</p>
+  <div class="card tablewrap">
+    <table>
+      <thead><tr><th>Gen</th><th>Year*</th><th>Voltage</th><th>Prefetch</th><th>Speeds (MT/s)</th><th>Notable</th></tr></thead>
+      <tbody id="genBody"></tbody>
+    </table>
+    <p class="muted" style="font-size:12px;margin:10px 0 0">*Approximate year of mainstream PC adoption. Speeds are JEDEC standard ranges; overclocked (XMP/EXPO) kits go higher.</p>
+  </div>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Data rate: <span class="mono" id="genRateLbl"></span></label><input type="range" id="genRate"></div>
+      <div><label>Bus width</label><div class="seg" id="genBus"><button data-v="16">16-bit</button><button data-v="32">32-bit</button><button data-v="64" class="on">64-bit</button></div></div>
+    </div>
+    <div class="stats">
+      <div class="stat hi"><div class="v" id="genBW"></div><div class="l">peak bandwidth</div></div>
+      <div class="stat"><div class="v" id="genClk"></div><div class="l">I/O clock</div></div>
+    </div>
+    <p class="muted mono" style="font-size:13px;margin:12px 0 0" id="genFormula"></p>
+  </div>
+</section>
+
+<!-- 5 LANES -->
+<section id="lanes">
+  <div class="kicker">05 · Lanes &amp; widths</div>
+  <h2>Data lanes (DQ) and what “x4 / x8 / x16” means</h2>
+  <p>Each DRAM chip has a number of <b>data pins</b>, called <b>DQ</b> lines. Think of each one as a <b>lane</b> carrying one bit per transfer. The chip's <b>width</b> is how many lanes it has:</p>
+  <ul>
+    <li><b>x4</b>: 4 data lanes (common on server RDIMMs: more chips = more capacity and better ECC coverage)</li>
+    <li><b>x8</b>: 8 data lanes (the typical desktop DIMM chip)</li>
+    <li><b>x16</b>: 16 data lanes (laptops, embedded boards, SoCs, graphics: fewer chips for a given bus width)</li>
+  </ul>
+  <p>The memory controller has a fixed <b>bus width</b> (classic PC channel: 64 bits; plus 8 more for ECC = 72). Chips are placed <b>side by side</b>, each covering a slice of the bus, until the full width is filled. That group of chips that answers together is a <b>rank</b>.</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Chip width</label><div class="seg" id="lnW"><button data-v="4">x4</button><button data-v="8" class="on">x8</button><button data-v="16">x16</button></div></div>
+      <div><label>Bus to fill</label><div class="seg" id="lnBus"><button data-v="32">32-bit</button><button data-v="64" class="on">64-bit</button><button data-v="72">72-bit (ECC)</button></div></div>
+    </div>
+    <svg id="lnSvg" viewBox="0 0 640 220" width="100%" role="img" aria-label="Chips filling a data bus"></svg>
+    <p id="lnTxt" style="margin-top:10px"></p>
+  </div>
+  <div class="callout"><b>“Lanes” vs. PCIe lanes:</b> in PCIe, “x16” means 16 serial lanes, each a full-duplex differential pair. In DRAM, “x16” means a chip with 16 parallel data pins on a shared, half-duplex bus. Same notation, different technology.</div>
+</section>
+
+<!-- 6 CONFIG -->
+<section id="config">
+  <div class="kicker">06 · Configuration builder</div>
+  <h2>“2×16” and “4×16”: chips × width</h2>
+  <p>On board schematics, SoC datasheets and FPGA designs, a notation like <code>2×16</code> means <b>two x16 DRAM chips</b> wired side by side. Their lanes add up: 2 × 16 = a <b>32-bit</b> bus. <code>4×16</code> is four x16 chips, making a <b>64-bit</b> bus. More chips in parallel means more bandwidth <i>and</i> more capacity. Build one:</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Number of chips</label><div class="seg" id="cfN"><button data-v="1">1</button><button data-v="2" class="on">2</button><button data-v="4">4</button><button data-v="8">8</button></div></div>
+      <div><label>Chip width</label><div class="seg" id="cfW"><button data-v="8">x8</button><button data-v="16" class="on">x16</button></div></div>
+      <div><label>Chip density</label><div class="seg" id="cfD"><button data-v="4">4 Gb</button><button data-v="8" class="on">8 Gb</button><button data-v="16">16 Gb</button></div></div>
+      <div><label>Speed</label><div class="seg" id="cfS"><button data-v="2400">DDR4-2400</button><button data-v="3200" class="on">DDR4-3200</button><button data-v="4800">DDR5-4800</button><button data-v="6400">LPDDR5-6400</button></div></div>
+    </div>
+    <svg id="cfSvg" viewBox="0 0 640 300" width="100%" role="img" aria-label="Memory configuration diagram"></svg>
+    <div class="stats">
+      <div class="stat"><div class="v mono" id="cfName"></div><div class="l">configuration</div></div>
+      <div class="stat hi"><div class="v" id="cfBus"></div><div class="l">data bus width</div></div>
+      <div class="stat"><div class="v" id="cfCap"></div><div class="l">total capacity</div></div>
+      <div class="stat hi"><div class="v" id="cfBW"></div><div class="l">peak bandwidth</div></div>
+    </div>
+    <p class="muted" id="cfNote" style="margin:12px 0 0;font-size:14px"></p>
+  </div>
+  <div class="callout"><b>Capacity is in gigabits per chip.</b> An “8 Gb” chip holds 8 gigabits = 1 gigabyte. So 4 × 8 Gb chips = 4 GB. Easy place to slip up by 8×.</div>
+  <h3>Common real-world examples</h3>
+  <div class="card tablewrap">
+    <table>
+      <thead><tr><th>Config</th><th>Bus</th><th>Where you'll see it</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1×16</td><td>16-bit</td><td>Small microcontrollers/FPGAs, one LPDDR channel</td></tr>
+        <tr><td class="mono">2×16</td><td>32-bit</td><td>Single-board computers, set-top boxes, many embedded SoCs</td></tr>
+        <tr><td class="mono">4×16</td><td>64-bit</td><td>Laptops with soldered RAM, mini-PCs, single-rank SODIMMs</td></tr>
+        <tr><td class="mono">8×8</td><td>64-bit</td><td>Typical single-rank desktop DIMM</td></tr>
+        <tr><td class="mono">16×4 (+2 ECC)</td><td>72-bit</td><td>Server RDIMM, one rank</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 7 KITS -->
+<section id="kits">
+  <div class="kicker">07 · Retail kits</div>
+  <h2>The other “2×16”: a 2 × 16 GB kit</h2>
+  <p>When you shop for RAM, <code>2×16GB</code> means something different: <b>two memory sticks of 16 GB each</b> (32 GB total). <code>4×16GB</code> is four sticks, 64 GB. What matters here is <b>channels</b>: most desktop CPUs have two memory channels, and each channel is its own 64-bit path. One stick per channel = <b>dual-channel</b> = double the bandwidth of a single stick.</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Sticks installed</label><div class="seg" id="kN"><button data-v="1">1</button><button data-v="2" class="on">2</button><button data-v="4">4</button></div></div>
+      <div><label>Size per stick</label><div class="seg" id="kS"><button data-v="8">8 GB</button><button data-v="16" class="on">16 GB</button><button data-v="32">32 GB</button></div></div>
+      <div><label>Speed</label><div class="seg" id="kR"><button data-v="3200">DDR4-3200</button><button data-v="6000" class="on">DDR5-6000</button></div></div>
+    </div>
+    <svg id="kSvg" viewBox="0 0 640 230" width="100%" role="img" aria-label="Motherboard slot diagram"></svg>
+    <div class="stats">
+      <div class="stat"><div class="v mono" id="kName"></div><div class="l">kit</div></div>
+      <div class="stat"><div class="v" id="kCap"></div><div class="l">total capacity</div></div>
+      <div class="stat hi"><div class="v" id="kMode"></div><div class="l">channel mode</div></div>
+      <div class="stat hi"><div class="v" id="kBW"></div><div class="l">peak bandwidth</div></div>
+    </div>
+    <p class="muted" id="kNote" style="margin:12px 0 0;font-size:14px"></p>
+  </div>
+  <div class="callout"><b>Under the hood, the two meanings meet.</b> A single-rank 16 GB DDR4 stick is often built as 8 chips × 16 Gb, each x8 (an “8×8” rank). A 16 GB DDR5 stick has two independent 32-bit sub-channels per stick, each filled by x8 or x16 chips. So a “2×16GB” kit is made of many small chip arrangements like the ones in section 6.</div>
+</section>
+
+<!-- 8 QUIZ -->
+<section id="quiz">
+  <div class="kicker">08 · Check yourself</div>
+  <h2>Quick check</h2>
+  <div id="quizBox"></div>
+</section>
+
+</main>
+<footer>Figures are peak theoretical values (data rate × bus width ÷ 8). Real-world throughput is lower due to refresh, row switching, and command overhead.</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e}
+function seg(id,cb){const box=$(id);box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v)});return ()=>box.querySelector('.on').dataset.v}
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const C={accent:css('--accent'),a2:css('--accent2'),a3:css('--accent3'),line:css('--line'),muted:css('--muted'),text:css('--text'),panel2:css('--panel2'),chip:css('--chip'),danger:css('--danger')};
+const fmtBW=gbs=>gbs>=10?gbs.toFixed(1)+' GB/s':gbs.toFixed(2)+' GB/s';
+
+/* ---------- 1 hierarchy ---------- */
+const levels=[
+ {n:'Registers',w:30,lat:'~0.3 ns',size:'~1 KB',d:'Inside the CPU core itself. Holds the handful of values being worked on this instant. Fastest possible, but tiny.'},
+ {n:'L1 / L2 / L3 cache',w:50,lat:'1–40 ns',size:'KB → tens of MB',d:'SRAM on the CPU die: 6 transistors per bit, no refresh needed, very fast but expensive and power-hungry, so it stays small. Keeps copies of recently used RAM data.'},
+ {n:'DRAM (main memory)',w:72,lat:'~60–100 ns',size:'GB → TB',d:'1 transistor + 1 capacitor per bit, so it is dense and cheap. Needs constant refresh. Connected to the CPU over a parallel memory bus. DDR is the interface standard for this layer.'},
+ {n:'SSD / HDD storage',w:96,lat:'~0.05–10 ms',size:'TB',d:'Non-volatile: keeps data without power. Thousands of times slower than DRAM, so programs and files are copied into DRAM to be used.'}
+];
+let pyrSel=2,dSel=0,timers=[];
+function setLevel(i){pyrSel=i;dSel=0;drawPyr();drawDeep()}
+function drawPyr(){const p=$('#pyr');p.innerHTML='';levels.forEach((l,i)=>{const b=document.createElement('button');b.style.width=l.w+'%';b.className=i===pyrSel?'on':'';b.innerHTML=`${l.n}<small>${l.lat} · ${l.size}</small>`;b.onclick=()=>setLevel(i);p.appendChild(b)});
+ const l=levels[pyrSel];$('#pyrInfo').innerHTML=`<h3 style="margin-top:0">${l.n}</h3><p><span class="pill">latency ${l.lat}</span><span class="pill">${l.size}</span></p><p>${l.d}</p><p><a href="#deep" style="color:var(--accent);font-weight:600;text-decoration:none">Explore inside ${l.n.split(' (')[0]} ↓</a></p><p class="muted" style="font-size:13px;margin:0">↑ faster, smaller, pricier per byte &nbsp;·&nbsp; ↓ slower, larger, cheaper</p>`}
+
+/* ---------- 2 deep dive ---------- */
+function tx(s,x,y,str,o={}){return el('text',Object.assign({x,y,fill:C.text,'font-size':13},o),s,str)}
+function rc(s,x,y,w,h,o={}){return el('rect',Object.assign({x,y,width:w,height:h,rx:6,fill:C.panel2,stroke:C.line},o),s)}
+function ln(s,x1,y1,x2,y2,o={}){return el('line',Object.assign({x1,y1,x2,y2,stroke:C.muted,'stroke-width':2},o),s)}
+function defs(s){const d=el('defs',{},s);[['ah',C.muted],['ahA',C.accent]].forEach(([id,c])=>{const m=el('marker',{id,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},d);el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m)})}
+const mid={'text-anchor':'middle'},mono={'font-family':'IBM Plex Mono, monospace'};
+const G='#6fbf73';
+function btn(label,fn){const b=document.createElement('button');b.textContent=label;b.style.cssText='background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 12px;cursor:pointer;margin:8px 8px 0 0;font:inherit;font-size:14px';b.onclick=fn;return b}
+function addUI(...nodes){const d=document.createElement('div');nodes.forEach(n=>d.appendChild(n));$('#drillTxt').appendChild(d);return d}
+function inverter(s,x,y,dir,col){// dir 1 = pointing right
+ const p=dir>0?`M${x},${y-18} L${x},${y+18} L${x+36},${y} Z`:`M${x},${y-18} L${x},${y+18} L${x-36},${y} Z`;
+ el('path',{d:p,fill:C.panel2,stroke:col,'stroke-width':2},s);el('circle',{cx:x+dir*41,cy:y,r:5,fill:C.panel2,stroke:col,'stroke-width':2},s)}
+
+/* registers */
+let regStep=0,ffVal=1;
+const prog=[
+ {i:'(start)',e:'a = 5 and b = 7 live in memory. The ALU cannot add values in memory directly, so they must be loaded into registers first.'},
+ {i:'MOV RAX, [a]',e:'Load a from memory (in practice from L1 cache) into register RAX.'},
+ {i:'MOV RBX, [b]',e:'Load b into RBX.'},
+ {i:'ADD RAX, RBX',e:'The ALU reads both registers, adds them, writes 12 back into RAX and updates the flags (ZF = 0 because the result isn\'t zero). This takes about one clock cycle.'},
+ {i:'MOV [c], RAX',e:'Store the result from RAX back to the memory variable c. Done: four instructions, all built around registers.'}];
+const REG={title:'Inside the registers',intro:'Registers are the CPU\'s working hands: a few dozen tiny, ultra-fast storage slots inside each core. Every calculation happens on values held in registers, so data from memory is loaded into them, worked on, and stored back.',steps:[
+ {n:'Where they live',t:'The <b>register file</b> sits right next to the <b>ALU</b> (arithmetic logic unit) inside each core. An instruction like <code>ADD</code> reads two registers, the ALU computes, and the result is written back, all within about one clock cycle (~0.25 ns at 4 GHz). Data only reaches registers through <b>load</b> and <b>store</b> instructions that talk to the L1 cache. x86-64 exposes 16 general-purpose registers; ARM64 exposes 31. Behind those names, modern cores have <i>hundreds</i> of physical registers (register renaming) so many instructions can be in flight at once.',
+  d:s=>{defs(s);
+   rc(s,10,8,620,214,{fill:'none','stroke-dasharray':'5 5',rx:12});tx(s,22,26,'One CPU core',{fill:C.muted,'font-size':12});
+   rc(s,30,45,120,60,{stroke:C.a3});tx(s,90,71,'Fetch &',mid);tx(s,90,89,'decode',mid);
+   rc(s,30,145,120,55,{stroke:C.a2});tx(s,90,170,'L1 cache',mid);tx(s,90,187,'loads / stores',{...mid,fill:C.muted,'font-size':11});
+   rc(s,190,36,250,174,{stroke:C.accent,'stroke-width':2,fill:'rgba(79,179,169,.08)'});tx(s,315,54,'Register file',{...mid,'font-weight':600,fill:C.accent});
+   ['RAX','RBX','RCX','RDX','RSI','RDI','RBP','RSP','R8','R9','R10','R11','R12','R13','R14','R15'].forEach((n,i)=>{const x=202+(i%4)*58,y=64+Math.floor(i/4)*35;rc(s,x,y,52,28,{fill:C.chip,stroke:C.accent,rx:4});tx(s,x+26,y+18,n,{...mid,...mono,'font-size':11})});
+   rc(s,480,70,130,80,{stroke:C.accent});tx(s,545,103,'ALU',{...mid,'font-weight':600,'font-size':16});tx(s,545,123,'add · sub · and · shift',{...mid,fill:C.muted,'font-size':11});
+   ln(s,150,75,188,75,{'marker-end':'url(#ah)'});
+   ln(s,152,172,188,172,{'marker-end':'url(#ah)','marker-start':'url(#ah)'});
+   ln(s,440,92,478,92,{'marker-end':'url(#ah)'});tx(s,446,86,'A, B',{fill:C.muted,'font-size':11});
+   ln(s,478,132,442,132,{'marker-end':'url(#ah)'});tx(s,446,148,'result',{fill:C.muted,'font-size':11});}},
+ {n:'Kinds',t:'<b>General-purpose</b> registers hold numbers and memory addresses. The <b>instruction pointer</b> holds the address of the next instruction to run. The <b>flags</b> register records facts about the last result (zero? carry? negative?) so that <code>if</code> statements and loops can branch on them. <b>Vector (SIMD)</b> registers are extra-wide (up to 512 bits) and hold many numbers at once, for example 16 floats processed by a single instruction, which is what speeds up graphics, audio, and AI math.',
+  d:s=>{const box=(x,y,t,sub,col)=>{rc(s,x,y,300,102,{stroke:col});tx(s,x+12,y+22,t,{'font-weight':600,fill:col});tx(s,x+12,y+40,sub,{fill:C.muted,'font-size':12})};
+   box(10,8,'General-purpose','RAX … R15 · 16 × 64-bit',C.accent);
+   ['RAX','RBX','RCX','…','R15'].forEach((n,i)=>{rc(s,22+i*56,58,50,32,{fill:C.chip,stroke:C.accent,rx:4});tx(s,47+i*56,79,n,{...mid,...mono,'font-size':11})});
+   box(330,8,'Instruction pointer','RIP · where the program is right now',C.a3);
+   rc(s,342,58,276,32,{fill:C.chip,stroke:C.a3,rx:4});tx(s,480,79,'0x00007FF6 1A2B 3C40',{...mid,...mono,'font-size':12});
+   box(10,120,'Flags','RFLAGS · set by the ALU, read by branches',C.a2);
+   [['ZF','zero',1],['CF','carry',0],['SF','sign',0],['OF','overflow',0]].forEach(([f,n,v],i)=>{rc(s,22+i*70,166,62,44,{fill:v?'rgba(224,168,79,.25)':C.chip,stroke:C.a2,rx:4});tx(s,53+i*70,184,f+'='+v,{...mid,...mono,'font-size':12});tx(s,53+i*70,201,n,{...mid,'font-size':10,fill:C.muted})});
+   box(330,120,'Vector / SIMD','XMM 128 · YMM 256 · ZMM 512-bit',G);
+   for(let i=0;i<16;i++)rc(s,342+i*17.25,160,15.5,34,{fill:C.chip,stroke:G,rx:2});tx(s,480,212,'one ZMM register = 16 × 32-bit floats',{...mid,fill:C.muted,'font-size':11});}},
+ {n:'Widths',t:'Register size is the CPU\'s natural word size. On x86-64, the 64-bit <code>RAX</code> still lets old code reach its lower parts by their historic names: <code>EAX</code> (low 32 bits, from 32-bit CPUs), <code>AX</code> (low 16 bits, from the 8086), and <code>AH</code>/<code>AL</code> (8-bit halves). A 64-bit register can hold any whole number up to about 1.8 × 10¹⁹, or address 16 exabytes of memory.',
+  d:s=>{const x0=40,pb=8.75,bx=b=>x0+(63-b)*pb;
+   [63,47,31,15,7,0].forEach(b=>{tx(s,bx(b)+(b===0?pb/2:0),22,String(b),{...mid,...mono,fill:C.muted,'font-size':11});ln(s,bx(b),26,bx(b),206,{stroke:C.line,'stroke-width':1,'stroke-dasharray':'2 4'})});
+   const bar=(hi,lo,y,name,bits,col)=>{rc(s,bx(hi),y,(hi-lo+1)*pb,34,{fill:col,opacity:.85,stroke:'#0f1216',rx:4});tx(s,bx(hi)+(hi-lo+1)*pb/2,y+22,name,{...mid,...mono,'font-weight':600,fill:'#0b1513','font-size':13})};
+   bar(63,0,34,'RAX · 64 bits',0,C.accent);bar(31,0,78,'EAX · 32',0,C.a3);bar(15,0,122,'AX · 16',0,C.a2);bar(15,8,166,'AH',0,G);bar(7,0,166,'AL',0,G);
+   tx(s,x0,224,'bit 63 (most significant) … bit 0 (least significant)',{fill:C.muted,'font-size':11});}},
+ {n:'How a bit is stored',t:'A register bit is a <b>flip-flop</b>: two inverters (NOT gates) feeding each other in a loop. If Q is 1, the lower inverter outputs 0, which makes the upper one output 1 again, so the loop holds itself stable as long as power is on. No capacitor, no leakage, <b>no refresh</b>. A clock signal decides exactly when a new value may be written. Register-file cells need extra ports so several instructions can read and write at once, which makes them large (often 10–20+ transistors per bit). That is why there are so few registers.',
+  d:s=>{defs(s);const on=ffVal?C.accent:C.muted,off=ffVal?C.muted:C.accent;
+   inverter(s,260,80,1,C.accent);inverter(s,380,160,-1,C.a3);
+   el('path',{d:'M306,80 L450,80 L450,160 L380,160',fill:'none',stroke:on,'stroke-width':3},s);
+   el('path',{d:'M334,160 L190,160 L190,80 L260,80',fill:'none',stroke:off,'stroke-width':3},s);
+   tx(s,462,85,'Q = '+ffVal,{...mono,'font-size':16,'font-weight':600,fill:on});
+   tx(s,120,165,'Q̄ = '+(1-ffVal),{...mono,'font-size':16,'font-weight':600,fill:off});
+   tx(s,278,60,'NOT',{fill:C.muted,'font-size':11});tx(s,340,195,'NOT',{fill:C.muted,'font-size':11});
+   tx(s,320,222,'The loop keeps itself stable: stored bit = '+ffVal,{...mid,fill:C.text,'font-size':13});
+   addUI(btn('Write the opposite bit',()=>{ffVal=1-ffVal;drawDeep()}));}},
+ {n:'In action',t:'',d:s=>{defs(s);const st=regStep,P=prog[st];
+   $('#drillTxt').innerHTML=`<p style="margin:0"><span class="pill">step ${st}/4</span> <code>${P.i}</code></p><p style="margin:8px 0 0">${P.e}</p>`;
+   tx(s,320,20,'C code:  c = a + b;',{...mid,...mono,fill:C.muted,'font-size':12});
+   rc(s,20,40,160,170,{stroke:C.a2});tx(s,100,60,'Memory',{...mid,fill:C.a2,'font-weight':600});
+   const mem=[['a','5'],['b','7'],['c',st>=4?'12':'?']];mem.forEach(([n,v],i)=>{rc(s,40,72+i*44,120,32,{fill:C.chip,stroke:(st===1&&i===0)||(st===2&&i===1)||(st===4&&i===2)?C.accent:C.line,rx:4});tx(s,56,93+i*44,n+' =',mono);tx(s,140,93+i*44,v,{...mono,'text-anchor':'end','font-weight':600})});
+   const rax=st>=3?'12':st>=1?'5':'—',rbx=st>=2?'7':'—';
+   rc(s,250,40,150,170,{stroke:C.accent});tx(s,325,60,'Registers',{...mid,fill:C.accent,'font-weight':600});
+   [['RAX',rax,st===1||st===3||st===4],['RBX',rbx,st===2||st===3]].forEach(([n,v,h],i)=>{rc(s,265,76+i*60,120,36,{fill:h?'rgba(79,179,169,.25)':C.chip,stroke:h?C.accent:C.line,rx:4});tx(s,280,99+i*60,n,mono);tx(s,372,99+i*60,v,{...mono,'text-anchor':'end','font-weight':600})});
+   rc(s,470,80,140,70,{stroke:st===3?C.accent:C.line,fill:st===3?'rgba(79,179,169,.15)':C.panel2});tx(s,540,112,'ALU',{...mid,'font-weight':600});tx(s,540,132,st===3?'5 + 7 = 12':'idle',{...mid,...mono,fill:C.muted,'font-size':12});
+   const A={stroke:C.accent,'stroke-width':3,'marker-end':'url(#ahA)'};
+   if(st===1)ln(s,162,88,263,94,A);
+   if(st===2)ln(s,162,132,263,154,A);
+   if(st===3){ln(s,387,94,468,105,A);ln(s,387,154,468,130,A);el('path',{d:'M540,78 L540,30 L325,30 L325,72',fill:'none',...A},s)}
+   if(st===4)ln(s,263,100,162,176,A);
+   addUI(btn('◀ Back',()=>{regStep=Math.max(0,regStep-1);drawDeep()}),btn('Next ▶',()=>{regStep=Math.min(4,regStep+1);drawDeep()}),btn('Reset',()=>{regStep=0;drawDeep()}));}}
+]};
+
+/* cache */
+let addr=6780,sim={slots:[null,null,null,null],hits:0,miss:0,last:null,res:''};
+const CACHE={title:'Inside the cache',intro:'Caches are small, fast SRAM memories built onto the CPU chip. They keep copies of recently used DRAM data so the core rarely has to wait on main memory.',steps:[
+ {n:'Why cache?',t:'A modern core can finish several instructions per cycle, but a trip to DRAM costs hundreds of cycles. Without caches, the CPU would spend most of its time waiting. Caches work because programs have <b>locality</b>: <b>temporal</b> (data used now is likely to be used again soon, such as a loop counter) and <b>spatial</b> (data next to it is likely to be used soon, such as the next element of an array). Typical modern desktop figures shown; exact numbers vary by CPU.',
+  d:s=>{const rows=[['Register','~1 cycle · 0.25 ns',1,C.accent],['L1 cache','~4–5 cycles · ~1 ns',4.5,C.accent],['L2 cache','~12–15 cycles · ~3 ns',14,C.a3],['L3 cache','~40–50 cycles · ~10 ns',45,C.a2],['DRAM','~250–400 cycles · ~60–100 ns',320,C.danger]];
+   tx(s,20,18,'Time to fetch one value (wider = slower)',{fill:C.muted,'font-size':12});
+   rows.forEach(([n,l,c,col],i)=>{const y=30+i*40;tx(s,20,y+20,n,{'font-weight':600});rc(s,110,y+4,Math.max(5,c/320*300),22,{fill:col,stroke:'none',rx:4,opacity:.85});tx(s,Math.max(5,c/320*300)+118,y+20,l,{fill:C.muted,'font-size':12})});}},
+ {n:'L1 / L2 / L3',t:'Each core has its own small <b>L1</b> (split into an instruction cache and a data cache) and a larger <b>L2</b>. All cores share one big <b>L3</b> (also called last-level cache). The CPU checks L1 first, then L2, then L3, and only goes to DRAM if all three miss. Each level is bigger but slower than the one above it. Sizes shown are typical of recent desktop chips.',
+  d:s=>{for(let i=0;i<4;i++){const x=16+i*154;rc(s,x,8,146,124,{stroke:C.accent});tx(s,x+73,26,'Core '+i,{...mid,'font-weight':600});
+    rc(s,x+8,36,62,34,{fill:C.chip,stroke:C.accent,rx:4});tx(s,x+39,51,'L1i',{...mid,'font-size':12});tx(s,x+39,64,'32 KB',{...mid,fill:C.muted,'font-size':10});
+    rc(s,x+76,36,62,34,{fill:C.chip,stroke:C.accent,rx:4});tx(s,x+107,51,'L1d',{...mid,'font-size':12});tx(s,x+107,64,'32–48 KB',{...mid,fill:C.muted,'font-size':10});
+    rc(s,x+8,78,130,44,{fill:'rgba(143,140,240,.15)',stroke:C.a3,rx:4});tx(s,x+73,97,'L2',{...mid,'font-size':12});tx(s,x+73,112,'1–2 MB',{...mid,fill:C.muted,'font-size':10});
+    ln(s,x+73,132,x+73,144,{stroke:C.a2})}
+   rc(s,16,144,608,36,{fill:'rgba(224,168,79,.15)',stroke:C.a2});tx(s,320,167,'L3 cache · shared by all cores · ~16–36 MB',{...mid,'font-size':13});
+   ln(s,320,180,320,194,{stroke:C.muted});rc(s,180,194,280,30,{});tx(s,320,214,'Memory controller → DRAM',{...mid,'font-size':12,fill:C.muted});}},
+ {n:'Cache lines',t:'Caches never fetch a single byte. They move data in fixed blocks called <b>cache lines</b>, 64 bytes on most CPUs. Ask for byte 75 and the whole line holding bytes 64–127 is copied into the cache. The next 63 neighbouring bytes are now nearly free to read. That\'s why walking through an array in order is fast, while jumping around memory at random is slow.',
+  d:s=>{const x0=46,cw=8.6;tx(s,320,24,'CPU asks for 1 byte at address 75',{...mid,'font-weight':600});
+   [0,1].forEach(r=>{const y=62+r*70;tx(s,x0,y-8,r?'Line 1 · bytes 64–127 → copied into cache':'Line 0 · bytes 0–63 (not needed)',{fill:r?C.accent:C.muted,'font-size':12});
+    for(let i=0;i<64;i++){const a=r*64+i,hit=a===75;rc(s,x0+i*cw,y,cw-1.5,30,{fill:hit?C.a2:r?'rgba(79,179,169,.45)':C.panel2,stroke:'none',rx:1.5})}});
+   const hx=x0+11*cw+cw/2;el('path',{d:`M${hx},40 L${hx},128`,stroke:C.a2,'stroke-width':2,'stroke-dasharray':'3 3'},s);
+   tx(s,x0,200,'1 cell = 1 byte',{fill:C.muted,'font-size':11});tx(s,x0+64*cw,200,'64 bytes per line',{fill:C.muted,'font-size':11,'text-anchor':'end'});}},
+ {n:'Address → set',t:'How does the cache know where to look? It splits each memory address into three fields. The <b>offset</b> picks the byte inside the 64-byte line (6 bits). The <b>index</b> picks which <i>set</i> of the cache the line must live in. The <b>tag</b> is stored with the line and compared to confirm it really is the right address. Example: a 32 KB, 8-way cache with 64-byte lines has 64 sets, so the index is 6 bits. Drag the slider:',
+  d:s=>{const draw=()=>{s.innerHTML='';const bits=addr.toString(2).padStart(16,'0');const x0=64,w=32;
+    tx(s,320,22,`Address ${addr} = 0x${addr.toString(16).toUpperCase().padStart(4,'0')} (16-bit example)`,{...mid,...mono,'font-size':13});
+    for(let i=0;i<16;i++){const b=15-i,col=b>=12?C.a3:b>=6?C.a2:C.accent;rc(s,x0+i*w,40,w-3,40,{fill:col,opacity:.85,stroke:'none',rx:4});tx(s,x0+i*w+w/2-1.5,66,bits[i],{...mid,...mono,'font-size':16,'font-weight':600,fill:'#0b1513'});tx(s,x0+i*w+w/2-1.5,96,String(b),{...mid,...mono,fill:C.muted,'font-size':10})}
+    const tag=addr>>12,idx=(addr>>6)&63,off=addr&63;
+    [[x0,4,'TAG',tag,'compared with stored tag',C.a3],[x0+4*w,6,'INDEX',idx,'→ set '+idx+' of 64',C.a2],[x0+10*w,6,'OFFSET',off,'→ byte '+off+' of the line',C.accent]].forEach(([x,n,lab,v,d,col])=>{const wd=n*w-3;el('path',{d:`M${x},106 L${x},114 L${x+wd},114 L${x+wd},106`,fill:'none',stroke:col,'stroke-width':2},s);tx(s,x+wd/2,136,lab+' = '+v,{...mid,...mono,fill:col,'font-weight':600,'font-size':13});tx(s,x+wd/2,156,d,{...mid,fill:C.muted,'font-size':11})});
+    tx(s,320,196,`Line address = ${addr>>6}  ·  bytes ${(addr>>6)*64}–${(addr>>6)*64+63} are cached together`,{...mid,'font-size':12,fill:C.text});};
+   draw();const r=document.createElement('input');r.type='range';r.min=0;r.max=65535;r.value=addr;r.style.width='100%';r.oninput=()=>{addr=+r.value;draw()};addUI(r);}},
+ {n:'Try it: hit or miss',t:'A tiny <b>direct-mapped</b> cache with 4 slots: memory block <i>n</i> may only go into slot <i>n</i> mod 4. Tap memory blocks to read them. A <b>hit</b> is served instantly; a <b>miss</b> fetches the block from DRAM and evicts whatever was in that slot. Then try the two patterns below. Real caches are 8–16-way <i>set-associative</i> (each set holds several lines) to avoid the ping-pong problem.',
+  d:s=>{const access=b=>{const sl=b%4;if(sim.slots[sl]===b){sim.hits++;sim.res='hit'}else{sim.miss++;sim.res='miss';sim.slots[sl]=b}sim.last=b;drawSim()};
+   const drawSim=()=>{s.innerHTML='';defs(s);tx(s,20,18,'DRAM blocks (tap one)',{fill:C.muted,'font-size':12});
+    for(let i=0;i<16;i++){const x=20+i*37.5,cols=[C.accent,C.a3,C.a2,G];const g=el('g',{style:'cursor:pointer'},s);g.addEventListener('click',()=>access(i));
+     rc(g,x,26,33,36,{fill:sim.last===i?cols[i%4]:C.chip,stroke:cols[i%4],rx:4});tx(g,x+16.5,49,String(i),{...mid,...mono,'font-size':13,fill:sim.last===i?'#0b1513':C.text})}
+    tx(s,20,128,'Cache slots',{fill:C.muted,'font-size':12});
+    for(let j=0;j<4;j++){const x=110+j*120,cols=[C.accent,C.a3,C.a2,G],v=sim.slots[j],act=sim.last!=null&&sim.last%4===j;
+     rc(s,x,136,100,52,{fill:act?(sim.res==='hit'?'rgba(79,179,169,.3)':'rgba(224,108,108,.25)'):C.panel2,stroke:cols[j],'stroke-width':act?3:1.5});tx(s,x+50,156,'slot '+j,{...mid,fill:C.muted,'font-size':11});tx(s,x+50,177,v==null?'empty':'block '+v,{...mid,...mono,'font-size':13,'font-weight':600})}
+    if(sim.last!=null){const bx=20+sim.last*37.5+16.5,sx=110+(sim.last%4)*120+50;ln(s,bx,64,sx,134,{stroke:sim.res==='hit'?C.accent:C.danger,'stroke-width':2.5,'marker-end':'url(#ah)'})}
+    const tot=sim.hits+sim.miss;tx(s,20,216,sim.last==null?'No accesses yet':`Last: block ${sim.last} → ${sim.res.toUpperCase()}`,{'font-weight':600,fill:sim.res==='hit'?C.accent:sim.res==='miss'?C.danger:C.muted});
+    tx(s,620,216,`hits ${sim.hits} · misses ${sim.miss}${tot?` · hit rate ${Math.round(sim.hits/tot*100)}%`:''}`,{'text-anchor':'end',...mono,'font-size':12});};
+   const run=seq=>{timers.forEach(clearTimeout);timers=[];seq.forEach((b,i)=>timers.push(setTimeout(()=>access(b),i*380)))};
+   const reset=()=>{timers.forEach(clearTimeout);sim={slots:[null,null,null,null],hits:0,miss:0,last:null,res:''};drawSim()};
+   drawSim();addUI(btn('Loop over 0–3, three times',()=>{reset();run([0,1,2,3,0,1,2,3,0,1,2,3])}),btn('Ping-pong 0 ↔ 4',()=>{reset();run([0,4,0,4,0,4,0,4])}),btn('Reset',reset));}},
+ {n:'SRAM cell',t:'Cache is built from <b>SRAM</b> (static RAM). Each bit is a flip-flop (two cross-coupled inverters, like a register) plus two access transistors: <b>6 transistors per bit</b>. It holds its value without refresh and switches in well under a nanosecond. DRAM instead uses <b>1 transistor + 1 capacitor</b>, so it packs several times more bits into the same silicon area but is slower and must be refreshed. That trade-off is exactly why caches are megabytes and RAM is gigabytes.',
+  d:s=>{rc(s,10,8,300,214,{stroke:C.accent,fill:'rgba(79,179,169,.05)'});tx(s,160,30,'SRAM · 6 transistors',{...mid,'font-weight':600,fill:C.accent});
+   ln(s,30,52,290,52,{stroke:C.a3});tx(s,290,46,'word line',{'text-anchor':'end',fill:C.a3,'font-size':11});
+   ln(s,40,40,40,200,{stroke:C.a2});ln(s,280,40,280,200,{stroke:C.a2});tx(s,40,214,'BL',{...mid,fill:C.a2,'font-size':11});tx(s,280,214,'BL̄',{...mid,fill:C.a2,'font-size':11});
+   rc(s,60,110,34,22,{fill:C.chip,stroke:C.accent,rx:3});rc(s,226,110,34,22,{fill:C.chip,stroke:C.accent,rx:3});ln(s,77,52,77,110,{stroke:C.a3,'stroke-width':1.5});ln(s,243,52,243,110,{stroke:C.a3,'stroke-width':1.5});ln(s,40,121,60,121,{'stroke-width':1.5});ln(s,260,121,280,121,{'stroke-width':1.5});
+   inverter(s,130,100,1,C.accent);inverter(s,190,148,-1,C.accent);
+   el('path',{d:'M176,100 L205,100 L205,148 L190,148 M144,148 L115,148 L115,100 L130,100',fill:'none',stroke:C.muted,'stroke-width':1.5},s);
+   ln(s,94,121,115,121,{'stroke-width':1.5});ln(s,205,121,226,121,{'stroke-width':1.5});
+   tx(s,160,188,'2 access + 4 in the inverter loop',{...mid,fill:C.muted,'font-size':11});
+   rc(s,330,8,300,214,{stroke:C.a2,fill:'rgba(224,168,79,.05)'});tx(s,480,30,'DRAM · 1 transistor + 1 capacitor',{...mid,'font-weight':600,fill:C.a2});
+   ln(s,350,70,610,70,{stroke:C.a3});tx(s,610,64,'word line',{'text-anchor':'end',fill:C.a3,'font-size':11});ln(s,380,50,380,200,{stroke:C.a2});
+   rc(s,430,96,44,26,{fill:C.chip,stroke:C.a2,rx:3});ln(s,452,70,452,96,{stroke:C.a3,'stroke-width':1.5});ln(s,380,109,430,109,{'stroke-width':1.5});ln(s,474,109,520,109,{'stroke-width':1.5});
+   ln(s,520,100,520,118,{stroke:C.text,'stroke-width':3});ln(s,530,100,530,118,{stroke:C.text,'stroke-width':3});tx(s,525,140,'capacitor',{...mid,fill:C.muted,'font-size':11});
+   tx(s,160,210,'~1 ns · no refresh · large',{...mid,'font-size':12,fill:C.accent});
+   ['~60+ ns access','refresh every ~64 ms','several × denser'].forEach((t,i)=>tx(s,480,172+i*18,t,{...mid,'font-size':12,fill:C.a2}));}}
+]};
+
+/* storage */
+let ssd;function ssdReset(){ssd={b:[Array(8).fill('v'),['v','s','v','s','s','v','s','v'],['v','v','v','f','f','f','f','f'],Array(8).fill('f')],msg:'Grey pages are free. Try editing a file.'}}ssdReset();
+const STOR={title:'Inside storage: SSD & HDD',intro:'Storage keeps data with the power off. Hard drives (HDD) store bits magnetically on spinning platters; solid-state drives (SSD) store them as trapped electric charge in NAND flash cells.',steps:[
+ {n:'SSD vs HDD',t:'Both are <b>non-volatile</b> and connect to the system as block devices. The difference is mechanics: a hard drive has to physically move a head and wait for the platter to spin round, so random access takes milliseconds. An SSD has no moving parts and reaches any cell electronically in tens of microseconds. HDDs still win on cost per terabyte for bulk storage.',
+  d:s=>{const col=(x,title,c,rows,icon)=>{rc(s,x,8,300,214,{stroke:c,fill:'rgba(255,255,255,.02)'});tx(s,x+150,30,title,{...mid,'font-weight':600,fill:c,'font-size':15});icon(x);rows.forEach(([k,v],i)=>{tx(s,x+16,128+i*20,k,{fill:C.muted,'font-size':12});tx(s,x+284,128+i*20,v,{'text-anchor':'end','font-size':12})})};
+   col(10,'Hard disk drive (HDD)',C.a2,[['Moving parts','yes: platters + head'],['Sequential speed','~150–280 MB/s'],['Random access','~5–12 ms'],['Typical sizes','2–30+ TB'],['Weak spot','shock, vibration']],x=>{el('circle',{cx:x+120,cy:72,r:34,fill:C.panel2,stroke:C.a2,'stroke-width':2},s);el('circle',{cx:x+120,cy:72,r:6,fill:C.a2},s);ln(s,x+200,98,x+138,58,{stroke:C.text,'stroke-width':3});el('circle',{cx:x+200,cy:98,r:6,fill:C.text},s)});
+   col(330,'Solid-state drive (SSD)',C.accent,[['Moving parts','none'],['Sequential speed','~0.5–14 GB/s'],['Random access','~0.02–0.1 ms'],['Typical sizes','0.25–8 TB'],['Weak spot','finite write cycles']],x=>{rc(s,x+60,44,180,56,{fill:'#1b2a22',stroke:C.accent,rx:4});for(let i=0;i<3;i++)rc(s,x+72+i*46,54,38,36,{fill:C.chip,stroke:C.accent,rx:3});rc(s,x+214,58,18,28,{fill:C.chip,stroke:C.a3,rx:2})});}},
+ {n:'HDD: platters & heads',t:'Inside a hard drive, aluminium or glass <b>platters</b> coated with magnetic material spin at a constant speed (5400–7200 RPM in PCs, 7200 RPM = 120 turns per second). Data is laid out in concentric <b>tracks</b>, each split into <b>sectors</b> (usually 4 KB). A <b>read/write head</b> on an <b>actuator arm</b> flies a few nanometres above the surface, magnetising tiny regions one way or the other to write 1s and 0s. Big drives stack several platters with a head for each surface.',
+  d:s=>{const cx=200,cy=115;el('circle',{cx,cy,r:104,fill:'#1c1f26',stroke:C.a2,'stroke-width':2},s);for(let r=30;r<=98;r+=13)el('circle',{cx,cy,r,fill:'none',stroke:C.line},s);
+   const g=el('g',{},s);const pol=(r,a)=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)];const [a1,b1]=pol(69,-12),[a2,b2]=pol(69,12),[a3,b3]=pol(82,12),[a4,b4]=pol(82,-12);
+   el('path',{d:`M${a1},${b1} A69,69 0 0 1 ${a2},${b2} L${a3},${b3} A82,82 0 0 0 ${a4},${b4} Z`,fill:C.accent,opacity:.85},g);
+   el('animateTransform',{attributeName:'transform',type:'rotate',from:`0 ${cx} ${cy}`,to:`360 ${cx} ${cy}`,dur:'1.6s',repeatCount:'indefinite'},g);
+   el('circle',{cx,cy,r:13,fill:C.panel2,stroke:C.muted},s);
+   const [hx,hy]=pol(75,-40);ln(s,470,190,hx,hy,{stroke:C.text,'stroke-width':5,'stroke-linecap':'round'});el('circle',{cx:470,cy:190,r:13,fill:C.panel2,stroke:C.text,'stroke-width':2},s);rc(s,hx-7,hy-5,14,10,{fill:C.a2,stroke:'none',rx:2});
+   const lab=(x,y,lx,ly,t)=>{ln(s,x,y,lx,ly,{stroke:C.muted,'stroke-width':1});tx(s,lx+(lx>x?4:-4),ly+4,t,{'font-size':12,'text-anchor':lx>x?'start':'end'})};
+   lab(hx+6,hy-4,400,40,'Read/write head');lab(400,140,520,140,'Actuator arm');lab(470,203,500,222,'Voice-coil pivot');tx(s,cx,cy+30,'spindle',{...mid,'font-size':11,fill:C.muted});
+   lab(cx-95,cy+30,40,215,'');tx(s,30,222,'Platter',{'font-size':12});lab(cx+60,cy+60,330,215,'');tx(s,334,219,'Track',{'font-size':12});tx(s,630,16,'Teal: one sector spinning past the head',{fill:C.accent,'font-size':12,'text-anchor':'end'});}},
+ {n:'HDD: why it\'s slow',t:'Reading a random sector takes three steps: <b>seek</b> (swing the arm to the right track), <b>rotational latency</b> (wait for the sector to come round, half a revolution on average), then <b>transfer</b>. At 7200 RPM one revolution takes 8.3 ms, so the average wait alone is ~4.2 ms. Add ~8 ms of seek and a random read costs ~12 ms, roughly 100,000× slower than DRAM. Sequential reads avoid most seeks, which is why defragmenting used to help.',
+  d:s=>{const rows=[['5400 RPM laptop HDD',12,5.6],['7200 RPM desktop HDD',8.5,4.2],['15,000 RPM server HDD',3.5,2.0],['NVMe SSD',0,0.08]];const x0=190,sc=440/20;
+   tx(s,x0,18,'Average random access time (ms)',{fill:C.muted,'font-size':12});
+   rows.forEach(([n,sk,rt],i)=>{const y=34+i*44;tx(s,180,y+19,n,{'text-anchor':'end','font-size':12});if(sk)rc(s,x0,y+4,sk*sc,22,{fill:C.a3,stroke:'none',rx:3});rc(s,x0+sk*sc,y+4,Math.max(3,rt*sc),22,{fill:sk?C.a2:C.accent,stroke:'none',rx:3});tx(s,x0+(sk+rt)*sc+8,y+20,(sk+rt).toFixed(sk?1:2)+' ms',{...mono,'font-size':12})});
+   const lg=[[C.a3,'seek'],[C.a2,'rotational latency'],[C.accent,'flash read']];lg.forEach(([c,t],i)=>{rc(s,x0+i*140,212,12,12,{fill:c,stroke:'none',rx:2});tx(s,x0+i*140+18,222,t,{fill:C.muted,'font-size':12})});}},
+ {n:'SSD: flash cells',t:'An SSD stores bits in <b>NAND flash</b> cells: transistors with an insulated layer that traps electrons. Trapped charge shifts the voltage at which the transistor turns on, and the controller reads that voltage. Storing <b>more bits per cell</b> means splitting the voltage window into more levels: SLC = 2 levels (1 bit), MLC = 4 (2 bits), TLC = 8 (3 bits), QLC = 16 (4 bits). More levels give cheaper, denser drives, but they are slower to write and wear out sooner. Endurance figures are rough program/erase (P/E) cycles.',
+  d:s=>{[['SLC',1,'~50–100k P/E'],['MLC',2,'~3–10k P/E'],['TLC',3,'~1–3k P/E'],['QLC',4,'~0.3–1k P/E']].forEach(([n,b,e],i)=>{const x=18+i*154,L=2**b,top=52,H=130,h=H/L;
+    rc(s,x,8,140,214,{stroke:C.line,fill:'rgba(255,255,255,.02)'});tx(s,x+70,28,`${n} · ${b} bit${b>1?'s':''}`,{...mid,'font-weight':600});tx(s,x+70,44,L+' voltage levels',{...mid,fill:C.muted,'font-size':11});
+    for(let k=0;k<L;k++){rc(s,x+14,top+H-(k+1)*h+1,112,Math.max(1.5,h-2.5),{fill:[C.accent,C.a3,C.a2,G][k%4],opacity:.35+.6*(k/L),stroke:'none',rx:2});if(L<=8)tx(s,x+70,top+H-k*h-h/2+4,(L-1-k).toString(2).padStart(b,'0'),{...mid,...mono,'font-size':11,fill:'#0b1513','font-weight':600})}
+    tx(s,x+70,206,e,{...mid,'font-size':12,fill:C.muted})});}},
+ {n:'SSD: pages & blocks',t:'Flash has an awkward rule: you can <b>write</b> in small <b>pages</b> (~16 KB), but you can only <b>erase</b> whole <b>blocks</b> (hundreds of pages, several MB), and a page can\'t be overwritten until its block is erased. So when a file changes, the SSD writes the new data to a free page and marks the old page <b>stale</b>. The controller\'s <b>flash translation layer</b> tracks where everything really lives. <b>Garbage collection</b> later copies the still-valid pages out of a mostly-stale block and erases it. <b>Wear levelling</b> spreads writes so no block wears out early. Try it:',
+  d:s=>{const draw=()=>{s.innerHTML='';const fill={f:C.panel2,v:C.accent,s:C.danger};
+    ssd.b.forEach((bl,i)=>{const x=16+i*154;rc(s,x,8,146,190,{stroke:C.line,fill:'rgba(255,255,255,.02)'});tx(s,x+73,26,'Block '+i,{...mid,'font-weight':600,'font-size':13});
+     bl.forEach((p,j)=>rc(s,x+12,36+j*19.5,122,16,{fill:fill[p],opacity:p==='s'?.6:p==='v'?.85:1,stroke:p==='f'?C.line:'none',rx:3}))});
+    [['f','free'],['v','valid data'],['s','stale (old copy)']].forEach(([k,t],i)=>{rc(s,16+i*150,208,12,12,{fill:fill[k],stroke:k==='f'?C.line:'none',rx:2});tx(s,34+i*150,218,t,{fill:C.muted,'font-size':12})});
+    $('#ssdMsg').textContent=ssd.msg;};
+   const free=()=>{const r=[];ssd.b.forEach((bl,i)=>bl.forEach((p,j)=>{if(p==='f')r.push([i,j])}));return r};
+   const edit=()=>{const valid=[];ssd.b.forEach((bl,i)=>bl.forEach((p,j)=>{if(p==='v')valid.push([i,j])}));const fr=free();const n=Math.min(3,valid.length,fr.length);
+    if(!n){ssd.msg='No free pages left. The drive must run garbage collection before it can write.';return draw()}
+    for(let k=0;k<n;k++){const [i,j]=valid.splice(Math.floor(Math.random()*valid.length),1)[0];ssd.b[i][j]='s';const [fi,fj]=fr[k];ssd.b[fi][fj]='v'}
+    ssd.msg=`Edited ${n} pages: new versions written to free pages, old copies marked stale (they can\'t be overwritten in place).`;draw()};
+   const gc=()=>{let best=-1,most=0;ssd.b.forEach((bl,i)=>{const st=bl.filter(p=>p==='s').length;if(st>most){most=st;best=i}});
+    if(best<0){ssd.msg='Nothing to collect: no stale pages.';return draw()}
+    const keep=ssd.b[best].filter(p=>p==='v').length;const fr=free().filter(([i])=>i!==best);
+    if(fr.length<keep){ssd.msg='Not enough free space elsewhere to move the valid pages.';return draw()}
+    for(let k=0;k<keep;k++){const [i,j]=fr[k];ssd.b[i][j]='v'}ssd.b[best]=Array(8).fill('f');
+    ssd.msg=`Garbage collection: copied ${keep} valid page${keep===1?'':'s'} out of block ${best}, then erased the whole block (${most} stale pages reclaimed). Copying data the host never asked to write is called write amplification.`;draw()};
+   const m=document.createElement('p');m.id='ssdMsg';m.className='muted';m.style.cssText='margin:10px 0 0;font-size:14px';$('#drillTxt').appendChild(m);
+   addUI(btn('Edit a file',edit),btn('Garbage collect',gc),btn('Reset',()=>{ssdReset();draw()}));draw();}},
+ {n:'Interfaces',t:'How fast a drive feels also depends on its connection. <b>SATA</b> was designed for hard drives and tops out around 550 MB/s. <b>NVMe</b> SSDs talk directly over <b>PCIe</b>, usually using 4 lanes (x4), and each PCIe generation roughly doubles the per-lane speed. Note that these PCIe lanes are fast <i>serial</i> links, unlike the parallel DQ data lanes of DRAM in section 5. Figures are typical peak sequential reads.',
+  d:s=>{const rows=[['HDD (SATA)',0.25,C.a2],['SATA SSD',0.55,C.a2],['NVMe · PCIe 3.0 x4',3.5,C.accent],['NVMe · PCIe 4.0 x4',7,C.accent],['NVMe · PCIe 5.0 x4',14,C.accent]];const x0=180,sc=380/14;
+   tx(s,x0,18,'Peak sequential read (GB/s)',{fill:C.muted,'font-size':12});
+   rows.forEach(([n,v,c],i)=>{const y=30+i*38;tx(s,170,y+19,n,{'text-anchor':'end','font-size':12});rc(s,x0,y+4,Math.max(4,v*sc),22,{fill:c,stroke:'none',rx:3,opacity:.85});tx(s,x0+Math.max(4,v*sc)+8,y+20,(v<1?(v*1000)+' MB/s':v+' GB/s'),{...mono,'font-size':12})});
+   tx(s,x0,222,'For comparison: dual-channel DDR5-6000 ≈ 96 GB/s',{fill:C.muted,'font-size':12});}}
+]};
+
+/* DRAM */
+const DRAM={title:'Inside DRAM',intro:'A DRAM bit is a tiny <b>capacitor</b> (charged = 1, empty = 0) plus one <b>transistor</b> acting as a switch. The charge leaks away within milliseconds, so the memory controller must <b>refresh</b> every row regularly: that\'s the “Dynamic” in DRAM. Billions of these cells are organized in layers. Tap each level:',steps:[
+ {n:'Cell',t:'<b>Cell</b>: one transistor + one capacitor = one bit. Reading a cell drains its charge, so the value is sensed by a <i>sense amplifier</i> and written back. Every cell must be refreshed roughly every 32–64 ms.',
+  d:s=>{const A=C.accent,T=C.text,M=C.muted;
+   ln(s,120,40,520,40,{stroke:A,'stroke-width':3});tx(s,525,45,'word line',{fill:M});
+   ln(s,200,20,200,210,{stroke:C.a2,'stroke-width':3});tx(s,150,224,'bit line',{fill:M});
+   rc(s,260,70,70,44,{stroke:A});tx(s,268,97,'transistor');
+   ln(s,295,40,295,70,{stroke:A});ln(s,200,92,260,92,{stroke:C.a2});
+   ln(s,330,92,400,92,{stroke:T});ln(s,400,70,400,114,{stroke:T,'stroke-width':3});ln(s,412,70,412,114,{stroke:T,'stroke-width':3});
+   ln(s,412,92,450,92,{stroke:T});ln(s,450,92,450,140,{stroke:T});ln(s,435,140,465,140,{stroke:T});
+   tx(s,380,136,'capacitor',{fill:M});tx(s,470,145,'ground',{fill:M,'font-size':12});
+   tx(s,385,62,'+ + +',{fill:A,'font-size':16,'font-weight':600});
+   tx(s,180,190,'Charged = 1 · Empty = 0 · Charge leaks → must be refreshed',{'font-size':14});}},
+ {n:'Row / column',t:'<b>Rows &amp; columns</b>: cells form a grid. The controller first <i>activates</i> a whole row (copying it into the row buffer of sense amps), then reads or writes columns from that open row. Accessing a different row means closing the current one first, which is why random access is slower than sequential.',
+  d:s=>{const r=8,c=16,cw=26,chh=16,x0=110,y0=20;
+   for(let i=0;i<r;i++)for(let j=0;j<c;j++)rc(s,x0+j*cw,y0+i*chh,cw-3,chh-3,{rx:2,fill:i===3?C.accent:C.panel2,opacity:i===3?(j===9?1:.45):1});
+   tx(s,20,y0+3*chh+11,'active row →',{fill:C.accent,'font-size':12});
+   rc(s,x0,y0+r*chh+16,c*cw-3,22,{rx:4,fill:'none',stroke:C.a2});
+   tx(s,x0+8,y0+r*chh+32,'row buffer (sense amplifiers): the whole open row lives here',{fill:C.a2,'font-size':12});
+   tx(s,x0+9*cw-10,y0+r*chh+60,'↑ column read',{'font-size':12});}},
+ {n:'Bank',t:'<b>Bank</b>: an independent grid with its own row buffer. While one bank is busy opening a row, another can be serving data. DDR4 has 16 banks in 4 <i>bank groups</i>; DDR5 has 32 banks in 8 groups.',
+  d:s=>{for(let g=0;g<4;g++){rc(s,30+g*150,20,140,170,{rx:8,fill:'none','stroke-dasharray':'4 4'});tx(s,40+g*150,40,'bank group '+g,{fill:C.muted,'font-size':12});for(let b=0;b<4;b++){const on=g===1&&b===2;rc(s,45+g*150,52+b*33,110,26,{rx:4,fill:on?C.accent:C.panel2});tx(s,58+g*150,70+b*33,'bank '+(g*4+b),{fill:on?'#0b1513':C.muted,'font-size':12})}}
+   tx(s,30,215,'DDR4 example: 4 groups × 4 banks. Banks work independently and in parallel.',{fill:C.muted,'font-size':12});}},
+ {n:'Chip',t:'<b>Chip</b> (device): a package with all the banks, plus I/O circuitry and its data pins (DQ lanes). Chips are sold by density (e.g. 8 Gb, 16 Gb) and width (x4, x8, x16).',
+  d:s=>{rc(s,180,30,280,140,{rx:10,fill:C.chip,stroke:C.accent,'stroke-width':2});tx(s,270,95,'DRAM chip',{'font-size':18,'font-weight':600});tx(s,262,118,'16 banks · 8 Gb · x8',{fill:C.muted});
+   for(let i=0;i<8;i++){ln(s,200+i*33,170,200+i*33,205,{stroke:C.a2});tx(s,192+i*33,220,'DQ'+i,{fill:C.a2,'font-size':11})}}},
+ {n:'Rank',t:'<b>Rank</b>: a set of chips that respond together to fill the full bus width, for example 8 x8 chips = 64 bits. A DIMM may carry 1, 2 or 4 ranks; only one rank drives the bus at a time.',
+  d:s=>{for(let i=0;i<8;i++){rc(s,20+i*76,40,66,80,{fill:C.chip,stroke:C.accent});tx(s,36+i*76,85,'x8');ln(s,53+i*76,120,53+i*76,160,{stroke:C.a2,'stroke-width':4});tx(s,28+i*76,178,`DQ${i*8}–${i*8+7}`,{fill:C.muted,'font-size':11})}
+   ln(s,20,160,620,160,{stroke:C.a2,'stroke-width':1});tx(s,200,210,'8 chips × 8 lanes = 64-bit rank',{'font-size':14});}},
+ {n:'DIMM',t:'<b>DIMM</b> (the stick): a circuit board carrying one or more ranks. SODIMM is the laptop size. On DDR5, each DIMM is split into two independent 32-bit sub-channels.',
+  d:s=>{for(let side=0;side<2;side++){rc(s,30,20+side*100,580,80,{fill:'#1b2a22'});tx(s,40,38+side*100,'rank '+side+(side?' (back side)':' (front side)'),{fill:C.muted,'font-size':12});for(let i=0;i<8;i++)rc(s,55+i*68,46+side*100,56,44,{rx:4,fill:C.chip,stroke:side?C.a3:C.accent})}
+   tx(s,30,218,'A dual-rank DIMM: two sets of 8 chips sharing the same 64 data lines (one rank talks at a time)',{fill:C.muted,'font-size':12});}},
+ {n:'Channel',t:'<b>Channel</b>: an independent 64-bit path between the memory controller and its DIMMs. Desktop CPUs usually have 2 channels, workstations 4–8, servers 8–12. Channels work in parallel, so bandwidth adds up.',
+  d:s=>{rc(s,240,80,160,70,{rx:10,stroke:C.accent,'stroke-width':2});tx(s,262,112,'Memory',{'font-size':14,'font-weight':600});tx(s,262,130,'controller (CPU)',{'font-size':14,'font-weight':600});
+   [[60,'Channel A'],[460,'Channel B']].forEach(([x,n],k)=>{const c=k?C.a3:C.accent;tx(s,x,30,n,{fill:c,'font-weight':600});for(let d=0;d<2;d++)rc(s,x+d*55,45,40,150,{rx:4,fill:'#1b2a22',stroke:c});ln(s,k?400:160,115,k?460:240,115,{stroke:c,'stroke-width':4})});
+   tx(s,230,215,'Two independent 64-bit channels',{fill:C.muted,'font-size':12});}}
+]};
+
+const deep=[REG,CACHE,DRAM,STOR];
+seg('#deepLvl',v=>setLevel(+v));
+function drawDeep(){timers.forEach(clearTimeout);timers=[];
+ const L=deep[pyrSel];$('#deepTitle').textContent=L.title;$('#deepIntro').innerHTML=L.intro;
+ document.querySelectorAll('#deepLvl button').forEach(b=>b.classList.toggle('on',+b.dataset.v===pyrSel));
+ const d=$('#drill');d.innerHTML='';L.steps.forEach((x,i)=>{if(i){const s=document.createElement('span');s.className='arrow';s.textContent='›';d.appendChild(s)}const b=document.createElement('button');b.textContent=x.n;b.className=i===dSel?'on':'';b.onclick=()=>{dSel=i;drawDeep()};d.appendChild(b)});
+ const st=L.steps[dSel],s=$('#drillSvg');s.innerHTML='';$('#drillTxt').innerHTML=st.t;st.d(s);}
+drawPyr();drawDeep();
+
+/* ---------- 3 DDR animation ---------- */
+let ddrMode='ddr',playing=true,t=0,lastTs=null;
+seg('#ddrMode',v=>{ddrMode=v;t=0;$('#ddrRatio').textContent=v==='ddr'?'2×':'1×'});
+seg('#ddrPlay',v=>{playing=v==='play'});
+const dS=$('#ddrSvg');
+function drawDDR(){dS.innerHTML='';const period=80,x0=70,W=560,phase=t%period;
+ el('text',{x:4,y:55,fill:C.muted,'font-size':13},dS,'CLK');el('text',{x:4,y:140,fill:C.muted,'font-size':13},dS,'DATA');
+ let d='';const off=-(t%(period));
+ for(let k=-1;k<9;k++){const x=x0+off+k*period;d+=`M${x},70 L${x},30 L${x+period/2},30 L${x+period/2},70 L${x+period},70 `}
+ const clip=el('clipPath',{id:'cp'},dS);el('rect',{x:x0,y:0,width:W,height:190},clip);
+ const g=el('g',{'clip-path':'url(#cp)'},dS);
+ el('path',{d,fill:'none',stroke:C.accent,'stroke-width':2},g);
+ const per=ddrMode==='ddr'?period/2:period;
+ const startIdx=Math.floor(t/per)-1;
+ for(let k=0;k<20;k++){const idx=startIdx+k;const x=x0-(t-idx*per);if(x>x0+W)break;
+  el('path',{d:`M${x},140 L${x+6},118 L${x+per-6},118 L${x+per},140 L${x+per-6},162 L${x+6},162 Z`,fill:idx%2?C.a3:C.a2,opacity:.75,stroke:'#0f1216'},g);
+  el('text',{x:x+per/2-8,y:145,fill:'#0b1513','font-size':12,'font-weight':600},g,'D'+((idx%100+100)%100));
+  el('line',{x1:x,y1:72,x2:x,y2:116,stroke:C.line,'stroke-dasharray':'2 3'},g)}
+ el('text',{x:x0,y:186,fill:C.muted,'font-size':12},dS,ddrMode==='ddr'?'One data word on the rising edge AND one on the falling edge':'One data word per clock cycle (rising edge only)');
+ $('#ddrCyc').textContent=Math.floor(t/period);$('#ddrXfer').textContent=Math.floor(t/per);}
+function loop(ts){if(lastTs==null)lastTs=ts;const dt=ts-lastTs;lastTs=ts;if(playing){t+=dt*0.04;drawDDR()}requestAnimationFrame(loop)}
+drawDDR();requestAnimationFrame(loop);
+
+/* ---------- 4 generations ---------- */
+const gens=[
+ {g:'SDR SDRAM',y:'1997',v:'3.3 V',p:'1n',min:66,max:133,note:'One transfer per clock'},
+ {g:'DDR',y:'2000',v:'2.5 V',p:'2n',min:200,max:400,note:'Both clock edges'},
+ {g:'DDR2',y:'2004',v:'1.8 V',p:'4n',min:400,max:1066,note:'On-die termination'},
+ {g:'DDR3',y:'2007',v:'1.5 V',p:'8n',min:800,max:2133,note:'Fly-by topology'},
+ {g:'DDR4',y:'2014',v:'1.2 V',p:'8n',min:1600,max:3200,note:'Bank groups'},
+ {g:'DDR5',y:'2021',v:'1.1 V',p:'16n',min:4800,max:8800,note:'2×32-bit sub-channels, on-DIMM PMIC, on-die ECC'}
+];
+let gSel=4,gBus=64;
+const gr=$('#genRate');
+function drawGens(){const tb=$('#genBody');tb.innerHTML='';gens.forEach((x,i)=>{const tr=document.createElement('tr');tr.className=i===gSel?'sel':'';tr.innerHTML=`<td><b>${x.g}</b></td><td>${x.y}</td><td>${x.v}</td><td class="mono">${x.p}</td><td class="mono">${x.min}–${x.max}</td><td>${x.note}</td>`;tr.onclick=()=>{gSel=i;setGen()};tb.appendChild(tr)})}
+const speeds=[[66,100,133],[200,266,333,400],[400,533,667,800,1066],[800,1066,1333,1600,1866,2133],[1600,1866,2133,2400,2666,2933,3200],[4800,5200,5600,6000,6400,7200,8000,8800]];
+function setGen(){const sp=speeds[gSel];gr.min=0;gr.max=sp.length-1;gr.step=1;gr.value=sp.length-1;drawGens();calcGen()}
+function calcGen(){const x=gens[gSel],r=speeds[gSel][+gr.value],ddr=gSel>0;$('#genRateLbl').textContent=`${x.g}${ddr?'-':' '}${r} MT/s`;const bw=r*gBus/8/1000;$('#genBW').textContent=fmtBW(bw);$('#genClk').textContent=(ddr?r/2:r).toFixed(0)+' MHz';$('#genFormula').textContent=`${r} MT/s × ${gBus} bits ÷ 8 bits/byte = ${(r*gBus/8).toLocaleString()} MB/s ≈ ${fmtBW(bw)}`}
+gr.oninput=calcGen;seg('#genBus',v=>{gBus=+v;calcGen()});setGen();
+
+/* ---------- 5 lanes ---------- */
+let lnW=8,lnBus=64;
+seg('#lnW',v=>{lnW=+v;drawLanes()});seg('#lnBus',v=>{lnBus=+v;drawLanes()});
+function drawLanes(){const s=$('#lnSvg');s.innerHTML='';const n=Math.ceil(lnBus/lnW);const W=600,x0=20,laneW=W/lnBus;
+ el('rect',{x:x0,y:178,width:W,height:12,rx:3,fill:C.panel2,stroke:C.line},s);
+ el('text',{x:x0,y:210,fill:C.muted,'font-size':12},s,`Memory controller data bus: ${lnBus} lanes (DQ0–DQ${lnBus-1})`);
+ for(let i=0;i<n;i++){const cx=x0+i*lnW*laneW,cw=lnW*laneW;const ecc=lnBus===72&&i*lnW>=64;
+  const pad=Math.min(4,cw*0.12);
+  el('rect',{x:cx+pad,y:30,width:cw-2*pad,height:80,rx:Math.min(6,cw/5),fill:ecc?'#3a2f1e':C.chip,stroke:ecc?C.a2:C.accent},s);
+  if(cw>26)el('text',{x:cx+cw/2,y:76,fill:C.text,'font-size':cw>50?13:10,'text-anchor':'middle'},s,'x'+lnW);
+  for(let l=0;l<lnW;l++){const lx=cx+(l+.5)*laneW;el('line',{x1:lx,y1:110,x2:lx,y2:178,stroke:ecc?C.a2:C.accent,'stroke-width':Math.max(1,laneW*.45),opacity:.8},s)}}
+ el('text',{x:x0,y:20,fill:C.text,'font-size':14,'font-weight':600},s,`${n} chips × x${lnW} = ${n*lnW} bits`);
+ let msg=`To fill a <b>${lnBus}-bit</b> bus with <b>x${lnW}</b> chips you need <b>${n} chips</b> per rank.`;
+ if(lnBus===72)msg+=` The amber chip(s) carry the 8 extra ECC bits used for error correction.`;
+ if(lnBus===72&&lnW===16)msg+=` (With x16 parts the ECC slice is only half used, which is why ECC DIMMs normally use x4 or x8 chips.)`;
+ if(lnW===4)msg+=' Narrow chips mean more chips per rank, so more total capacity and better tolerance of a failed chip.';
+ if(lnW===16)msg+=' Wide chips mean fewer packages: smaller boards and lower cost, but less capacity per rank.';
+ $('#lnTxt').innerHTML=msg}
+drawLanes();
+
+/* ---------- 6 config builder ---------- */
+let cf={n:2,w:16,d:8,s:3200};
+seg('#cfN',v=>{cf.n=+v;drawCfg()});seg('#cfW',v=>{cf.w=+v;drawCfg()});seg('#cfD',v=>{cf.d=+v;drawCfg()});seg('#cfS',v=>{cf.s=+v;drawCfg()});
+function drawCfg(){const s=$('#cfSvg');s.innerHTML='';const bus=cf.n*cf.w,capGB=cf.n*cf.d/8,bw=cf.s*bus/8/1000;
+ // controller
+ el('rect',{x:220,y:226,width:200,height:56,rx:10,fill:C.panel2,stroke:C.accent,'stroke-width':2},s);
+ el('text',{x:320,y:250,fill:C.text,'font-size':14,'font-weight':600,'text-anchor':'middle'},s,'SoC / CPU');
+ el('text',{x:320,y:268,fill:C.muted,'font-size':12,'text-anchor':'middle'},s,`memory controller · ${bus}-bit`);
+ // shared cmd/addr bus
+ const n=cf.n,gap=10,cw=Math.min(130,(600-(n-1)*gap)/n),total=n*cw+(n-1)*gap,x0=320-total/2;
+ el('line',{x1:x0,y1:18,x2:x0+total,y2:18,stroke:C.a3,'stroke-width':2,'stroke-dasharray':'5 4'},s);
+ el('text',{x:x0,y:12,fill:C.a3,'font-size':11},s,'shared command / address / clock (all chips hear the same command)');
+ const colors=[C.accent,C.a2,C.a3,'#6fbf73','#d9798f','#5aa8e0','#c9b458','#9a9a9a'];
+ for(let i=0;i<n;i++){const x=x0+i*(cw+gap);const col=colors[i%colors.length];
+  el('line',{x1:x+cw/2,y1:18,x2:x+cw/2,y2:40,stroke:C.a3,'stroke-width':1.5},s);
+  el('rect',{x,y:40,width:cw,height:90,rx:8,fill:C.chip,stroke:col,'stroke-width':2},s);
+  el('text',{x:x+cw/2,y:76,fill:C.text,'font-size':cw>70?14:11,'font-weight':600,'text-anchor':'middle'},s,`Chip ${i}`);
+  el('text',{x:x+cw/2,y:96,fill:C.muted,'font-size':cw>70?12:10,'text-anchor':'middle'},s,`${cf.d}Gb x${cf.w}`);
+  el('text',{x:x+cw/2,y:148,fill:col,'font-size':cw>70?11:9,'text-anchor':'middle'},s,`DQ${i*cf.w}–${i*cf.w+cf.w-1}`);
+  // lanes
+  const lanesShown=Math.min(cf.w,8);for(let l=0;l<lanesShown;l++){const lx=x+cw*(.15+.7*l/(lanesShown-1||1));const tx=220+200*((i*cf.w+(l/(lanesShown-1||1))*(cf.w-1))/(bus-1||1));
+   el('path',{d:`M${lx},156 C${lx},195 ${tx},195 ${tx},226`,fill:'none',stroke:col,'stroke-width':1.3,opacity:.75},s)}
+ }
+ $('#cfName').textContent=`${n}×${cf.w}`;$('#cfBus').textContent=bus+'-bit';$('#cfCap').textContent=(capGB<1?capGB*1024+' MB':capGB+' GB');$('#cfBW').textContent=fmtBW(bw);
+ let note=`${n} chip${n>1?'s':''} × ${cf.w} lanes = ${bus} data lanes. Capacity: ${n} × ${cf.d} Gb = ${n*cf.d} Gb = ${capGB<1?capGB*1024+' MB':capGB+' GB'}. Bandwidth: ${cf.s} MT/s × ${bus} bits ÷ 8 = ${fmtBW(bw)}.`;
+ if(bus===64)note+=' This matches a full PC-style 64-bit channel.';
+ if(bus>64)note+=' Wider than one DDR channel: in practice this would be two channels or a wide GPU/SoC bus.';
+ if(cf.s===6400)note+=' (LPDDR5 natively uses 16-bit channels, so each x16 die here would be its own channel.)';
+ if(cf.s===4800&&bus===64)note+=' (On a DDR5 DIMM this 64 bits is split into two independent 32-bit sub-channels.)';
+ $('#cfNote').textContent=note}
+drawCfg();
+
+/* ---------- 7 kits ---------- */
+let k={n:2,s:16,r:6000};
+seg('#kN',v=>{k.n=+v;drawKit()});seg('#kS',v=>{k.s=+v;drawKit()});seg('#kR',v=>{k.r=+v;drawKit()});
+function drawKit(){const s=$('#kSvg');s.innerHTML='';
+ // slots A1 A2 B1 B2 -> recommended population: 1 stick -> A2, 2 -> A2,B2, 4 -> all
+ const slots=[{c:'A',n:'A1'},{c:'A',n:'A2'},{c:'B',n:'B1'},{c:'B',n:'B2'}];
+ const fill={1:['A2'],2:['A2','B2'],4:['A1','A2','B1','B2']}[k.n];
+ el('rect',{x:30,y:60,width:150,height:110,rx:10,fill:C.panel2,stroke:C.accent,'stroke-width':2},s);
+ el('text',{x:105,y:110,fill:C.text,'font-size':15,'font-weight':600,'text-anchor':'middle'},s,'CPU');
+ el('text',{x:105,y:130,fill:C.muted,'font-size':12,'text-anchor':'middle'},s,'2 memory channels');
+ slots.forEach((sl,i)=>{const x=250+i*90+(i>1?30:0),col=sl.c==='A'?C.accent:C.a3,on=fill.includes(sl.n);
+  el('rect',{x,y:20,width:44,height:180,rx:4,fill:on?'#1b2a22':'transparent',stroke:on?col:C.line,'stroke-width':on?2:1,'stroke-dasharray':on?'':'4 4'},s);
+  if(on){for(let c=0;c<4;c++)el('rect',{x:x+8,y:36+c*38,width:28,height:28,rx:3,fill:C.chip,stroke:col},s);el('text',{x:x+22,y:192,fill:C.text,'font-size':11,'text-anchor':'middle'},s,k.s+'GB')}
+  el('text',{x:x+22,y:218,fill:col,'font-size':12,'text-anchor':'middle'},s,sl.n)});
+ el('line',{x1:180,y1:95,x2:250,y2:95,stroke:C.accent,'stroke-width':fill.some(f=>f[0]==='A')?4:1},s);
+ el('line',{x1:180,y1:135,x2:430,y2:135,stroke:C.a3,'stroke-width':fill.some(f=>f[0]==='B')?4:1,opacity:.8},s);
+ el('text',{x:300,y:14,fill:C.accent,'font-size':12,'text-anchor':'middle'},s,'Channel A');el('text',{x:510,y:14,fill:C.a3,'font-size':12,'text-anchor':'middle'},s,'Channel B');
+ const ch=new Set(fill.map(f=>f[0])).size,bw=k.r*64*ch/8/1000;
+ $('#kName').textContent=`${k.n}×${k.s}GB`;$('#kCap').textContent=k.n*k.s+' GB';$('#kMode').textContent=ch===2?'Dual-channel':'Single-channel';$('#kBW').textContent=fmtBW(bw);
+ let note=ch===2?`Each channel gets its own stick, so both 64-bit paths work in parallel: ${k.r} MT/s × 128 bits ÷ 8 = ${fmtBW(bw)}.`:`Only one channel is populated, so you get half the bandwidth a matching pair would give. Buying the same capacity as 2 smaller sticks is usually faster.`;
+ if(k.n===4)note+=' With 4 sticks, two share each channel (2 DIMMs per channel). Capacity doubles but bandwidth does not, and boards often have to run 4 sticks, especially DDR5, at a lower speed than 2.';
+ if(k.n===2)note+=' Motherboard manuals usually say to use slots A2 and B2 for two sticks.';
+ $('#kNote').textContent=note}
+drawKit();
+
+/* ---------- 8 quiz ---------- */
+const qs=[
+ {q:'A board uses a “4×16” DDR4 configuration. How wide is its data bus?',o:['16-bit','32-bit','64-bit','4-bit'],a:2,e:'Four chips × 16 data lanes each = 64 lanes, a 64-bit bus.'},
+ {q:'Four 8 Gb chips give how much memory?',o:['32 GB','4 GB','8 GB','2 GB'],a:1,e:'4 × 8 Gb = 32 Gb, and 32 gigabits ÷ 8 = 4 gigabytes.'},
+ {q:'DDR4-3200 on a 64-bit channel has a peak bandwidth of about…',o:['3.2 GB/s','25.6 GB/s','51.2 GB/s','204.8 GB/s'],a:1,e:'3200 MT/s × 64 bits ÷ 8 = 25,600 MB/s ≈ 25.6 GB/s.'},
+ {q:'Why is DDR4-3200 called “3200” when its I/O clock is 1600 MHz?',o:['Marketing rounding','It transfers on both clock edges','It has two channels','It has 2 ranks'],a:1,e:'Double data rate: two transfers per clock cycle, so 1600 MHz × 2 = 3200 MT/s.'},
+ {q:'You buy a “2×16GB” kit. What is it?',o:['Two x16 chips','Two sticks of 16 GB each','16 sticks of 2 GB','One 32 GB stick in x16 mode'],a:1,e:'In retail kit naming, 2×16GB = two 16 GB modules. Install one per channel for dual-channel.'},
+ {q:'How many x8 chips make one 64-bit rank?',o:['4','8','16','64'],a:1,e:'64 bits ÷ 8 lanes per chip = 8 chips.'}
+];
+const qb=$('#quizBox');let score=0,done=0;
+qs.forEach((x,i)=>{const d=document.createElement('div');d.className='card quizq';d.innerHTML=`<div><b>${i+1}.</b> ${x.q}</div><div class="opts"></div><div class="fb"></div>`;const o=d.querySelector('.opts');
+ x.o.forEach((t,j)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;if(j===x.a)score++;b.classList.add(j===x.a?'right':'wrong');o.children[x.a].classList.add('right');d.querySelector('.fb').textContent=(j===x.a?'✓ Correct. ':'✗ Not quite. ')+x.e;if(done===qs.length)$('#qScore').textContent=`Score: ${score} / ${qs.length}`};o.appendChild(b)});qb.appendChild(d)});
+const sc=document.createElement('p');sc.id='qScore';sc.className='mono';sc.style.color=C.accent;qb.appendChild(sc);
+
+/* toc highlight */
+const links=[...document.querySelectorAll('#toc a')];
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}})},{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
