@@ -176,6 +176,20 @@ canvas#eye { width: 100%; height: 220px; display: block; background: var(--code-
 footer { padding: 36px 0 48px; color: var(--muted); font-size: 0.85rem; display: grid; gap: 8px; }
 footer ul { margin: 0; padding-left: 18px; }
 
+/* Plain-language boxes */
+.simple { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.simple > div { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--surface); display: grid; gap: 6px; align-content: start; font-size: 0.95rem; }
+.simple > div.ex { border-left-color: var(--trace); }
+.simple .lbl { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); }
+.simple .ex .lbl, .simple > div.ex .lbl { color: var(--trace); }
+.simple p { margin: 0; }
+.simple ol, .simple ul { margin: 0; padding-left: 20px; display: grid; gap: 3px; }
+.plain-live { font-size: 0.95rem; border: 1px dashed var(--accent); border-radius: 8px; padding: 10px 12px; background: var(--surface); }
+.plain-live b { color: var(--accent); }
+body.no-simple .simple, body.no-simple .plain-live { display: none; }
+.simple-toggle { margin-left: auto; white-space: nowrap; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; cursor: pointer; color: var(--muted); }
+.simple-toggle[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
 /* 00 intro */
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .fact { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--surface); display: grid; gap: 4px; }
@@ -247,6 +261,7 @@ svg.phone { width: 100%; height: auto; display: block; }
     <a href="#nvme"><span class="n">06</span>On a live system</a>
     <a href="#plan"><span class="n">07</span>Test plan</a>
     <a href="#glossary"><span class="n">08</span>Glossary</a>
+    <button class="simple-toggle" id="simpleToggle" type="button" aria-pressed="true">Plain-language notes: on</button>
   </div>
 </nav>
 
@@ -260,6 +275,10 @@ svg.phone { width: 100%; height: auto; display: block; }
     <p class="muted">PCI Express (PCIe) is the high-speed serial connection between a processor and the chips and cards around it: SSDs, GPUs, network cards, Wi-Fi radios. It replaced the old parallel PCI and AGP buses in the early 2000s, and the standard is maintained by PCI-SIG, an industry consortium of member companies.</p>
   </div>
 
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Think of PCIe as a <b>private highway</b> between the processor and one other chip. Each <b>lane</b> is a two-way road: one side carries data out, the other carries data back, at the same time. More lanes (x1, x4, x16) means a wider highway. A newer <b>generation</b> (Gen3, Gen4, Gen5) raises the speed limit, roughly doubling it each time.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>The SSD in a modern laptop is usually <b>PCIe Gen4 x4</b>: four lanes at Gen4 speed, about <b>8 GB/s</b> each way. That is enough to copy a 50 GB game folder in roughly 7 seconds, if the SSD's own flash chips can keep up. A graphics card uses <b>x16</b>, a four-times-wider highway, because it moves far more data.</p></div>
+  </div>
   <div class="facts">
     <div class="fact"><span class="k">Point-to-point</span><span>Each link joins exactly two devices. There is no shared bus, so a slow device cannot hold up the others; switches fan one link out to many.</span></div>
     <div class="fact"><span class="k">Serial lanes</span><span>A lane is two differential pairs, one per direction, so data flows both ways at once. Links bundle 1, 2, 4, 8 or 16 lanes.</span></div>
@@ -270,6 +289,10 @@ svg.phone { width: 100%; height: auto; display: block; }
   </div>
 
   <h3 style="margin:28px 0 10px">Topology: how devices connect</h3>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>PCIe devices are arranged like a <b>road network around a city</b>. The CPU is the city centre. The <b>root complex</b> is the main interchange where every road starts. A <b>switch</b> is a roundabout that splits one road into several. <b>Endpoints</b> are the houses at the end of each road: the SSD, the graphics card, the network card.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>A storage server with 24 NVMe drives does not have 24 roads leaving the CPU. A few wide roads go to switches, and each switch fans out to many drives. If one drive misbehaves, only its own short road is affected.</p></div>
+  </div>
   <div class="topo-wrap">
     <div class="panel svg-box">
       <svg class="topo" id="topoSvg" viewBox="0 0 640 330" role="img" aria-label="PCIe tree: CPU and root complex, a switch, and endpoints">
@@ -301,6 +324,10 @@ svg.phone { width: 100%; height: auto; display: block; }
   </div>
 
   <h3 style="margin:28px 0 10px">Anatomy of a lane</h3>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>A lane is <b>four wires</b>: two to send and two to receive. Each pair carries opposite copies of the same signal, and the receiver looks only at the <b>difference</b> between them. Noise hits both wires equally, so it cancels out, like two people hearing the same background chatter but only paying attention to what differs.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>There is no separate clock wire. The receiver works out the timing from the data itself, the way you can find the beat of a song just by listening. This is why long runs of identical bits are avoided: the receiver would lose the beat. The encoding (8b/10b or 128b/130b) guarantees enough changes.</p></div>
+  </div>
   <div class="grid2">
     <div class="panel">
       <svg class="lane-svg" viewBox="0 0 520 170" role="img" aria-label="One PCIe lane: a transmit pair and a receive pair between two devices">
@@ -324,6 +351,10 @@ svg.phone { width: 100%; height: auto; display: block; }
   </div>
 
   <h3 style="margin:28px 0 10px">Specification generations</h3>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Each new generation roughly <b>doubles the speed</b> of every lane while still accepting older devices. A newer card in an older slot simply runs at the older, slower speed. From Gen6 on, the signal switches from two voltage levels (0 and 1) to <b>four levels</b> (PAM4), which sends two bits per tick but is easier to disturb with noise.</p></div>
+    <div class="ex"><span class="lbl">Example</span><ul><li>Gen3 x4 SSD: about <b>3.5 GB/s</b> in real use</li><li>Gen4 x4 SSD: about <b>7 GB/s</b></li><li>Gen5 x4 SSD: about <b>14 GB/s</b></li></ul><p>Put a Gen5 SSD in a Gen3 slot and it still works, but tops out near 3.5 GB/s.</p></div>
+  </div>
   <div class="grid2">
     <div class="panel">
       <div class="small muted" style="margin-bottom:8px">Bidirectional bandwidth of an x16 link, log scale. Select a generation.</div>
@@ -341,6 +372,10 @@ svg.phone { width: 100%; height: auto; display: block; }
   <div class="ff-grid" id="ffGrid"></div>
 
   <h3 style="margin:28px 0 10px">PCIe inside a mobile phone</h3>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>A phone uses PCIe only where it really needs speed, mainly to talk to the <b>Wi-Fi chip</b> and sometimes a separate <b>5G modem</b>. Most of the time the link is <b>asleep</b> to save battery, and it wakes up in a few microseconds when data arrives.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>When you download a video over Wi-Fi 7 at 2 Gbit/s, the data comes in through the antenna to the Wi-Fi chip, then crosses a single PCIe lane to the main processor. Between bursts the link drops into its deepest sleep state (L1.2), which is why testing in phones focuses on waking up reliably rather than raw speed.</p></div>
+  </div>
   <div class="phone-wrap">
     <div class="panel" style="display:grid; gap:10px">
       <svg class="phone" id="phoneSvg" viewBox="0 0 360 420" role="img" aria-label="Smartphone block diagram showing which links use PCIe">
@@ -400,6 +435,10 @@ svg.phone { width: 100%; height: auto; display: block; }
     <h2>Four layers, four kinds of test</h2>
     <p class="muted">An NVMe SSD is a PCIe endpoint with a storage protocol on top. Each layer has its own failure modes and its own instruments. Select a layer to see what gets tested there.</p>
   </div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Testing a PCIe device is like <b>testing a delivery service</b>. First check the road surface (are the electrical signals clean?). Then check the traffic rules (do both ends agree on speed and width?). Then check that parcels arrive intact and in order (are the packets correct?). Finally check the business on top (does the SSD store and return your files?).</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>An SSD that is slow may have a problem at any layer: a dirty connector (physical), a link that trained to Gen3 instead of Gen4 (link), packets being resent because of errors (transaction), or a full, hot drive throttling itself (NVMe). Each layer has its own test.</p></div>
+  </div>
   <div class="stack">
     <div class="layers" id="layers" role="group" aria-label="PCIe layers"></div>
     <div class="panel layer-detail" id="layerDetail" aria-live="polite"></div>
@@ -413,6 +452,10 @@ svg.phone { width: 100%; height: auto; display: block; }
     <h2>What your link should deliver</h2>
     <p class="muted">Pick a generation and lane width. Throughput is per direction, after line encoding. Most NVMe drives are x4; add-in cards for enterprise can be x8 or x16.</p>
   </div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p><b>GT/s</b> (gigatransfers per second) is how many symbols travel on one lane each second. Some of those bits are spent on <b>encoding overhead</b> that keeps the link reliable, so you divide by 8 to get bytes and trim a little for the encoding. Multiply by the number of lanes for the total.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p><b>Gen4 x4:</b> 16 GT/s × 128/130 ÷ 8 = 1.97 GB/s per lane. Four lanes give <b>7.88 GB/s</b> each way. A real drive reaches about 7 GB/s, because packet headers take the rest. Use the buttons below and the line under the numbers works it out for any choice.</p></div>
+  </div>
   <div class="panel">
     <div class="controls">
       <div class="ctl"><label id="genL">Generation</label><div class="seg" id="genSeg" role="group" aria-labelledby="genL"></div></div>
@@ -420,6 +463,7 @@ svg.phone { width: 100%; height: auto; display: block; }
     </div>
     <div class="readouts" id="linkRO"></div>
     <div class="note" id="linkNote" style="margin-top:14px"></div>
+    <div class="plain-live" id="linkPlain" style="margin-top:10px"></div>
     <div class="tbl-wrap" style="margin-top:16px">
       <table id="genTable">
         <thead><tr><th>Gen</th><th>Rate</th><th>Signaling</th><th>Encoding</th><th>GB/s per lane</th><th>BER target</th><th>Channel loss @ Nyquist</th></tr></thead>
@@ -435,6 +479,10 @@ svg.phone { width: 100%; height: auto; display: block; }
     <span class="num">03 / LTSSM &amp; loopback entry</span>
     <h2>Steering the link into Loopback</h2>
     <p class="muted">Every PCIe port runs the Link Training and Status State Machine. Loopback is a real LTSSM state: the <b>Lead</b> (formerly "master", usually the test instrument) sets the Loopback bit in its TS1 ordered sets, and the <b>Follower</b> (the NVMe card) starts retransmitting whatever it receives. Click a state, or play the sequence.</p>
+  </div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>When two PCIe devices power up, they go through a short <b>introduction routine</b>, like a phone call: check someone is on the line (Detect), say hello until both hear each other clearly (Polling), agree on how many lanes to use (Configuration), then start talking (L0). <b>Loopback</b> is a special game of <b>"repeat after me"</b>: one side asks the other to echo back everything it hears.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>A lab instrument plugs into the NVMe card and says, in effect, "please enter Loopback" by setting one bit in its training messages. From then on the card sends back every bit it receives. The instrument compares what it sent with what came back. Any difference shows the card's receiver misheard something.</p></div>
   </div>
   <div class="ltssm-wrap">
     <div class="panel svg-box">
@@ -484,6 +532,11 @@ svg.phone { width: 100%; height: auto; display: block; }
     <span class="num">04 / Loopback BER bench</span>
     <h2>Receiver tolerance test, simulated</h2>
     <p class="muted">A BERT plays the Lead. It trains the NVMe card into Loopback.Active through a calibrated lossy channel, injects jitter, sends PRBS and counts errors in what comes back. This is a teaching model with simplified physics; real calibration follows the PCI-SIG Base and CEM specs.</p>
+  </div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>This is an <b>echo test across a noisy room</b>. The tester shouts a long string of random bits through a deliberately bad cable (loss) while shaking the timing (jitter). The NVMe card repeats what it hears. Every bit that comes back wrong is an <b>error</b>. The <b>bit error ratio (BER)</b> is errors divided by bits sent.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>A target of <b>1e-12</b> means at most one wrong bit in a trillion. At 16 GT/s a lane carries 16 billion bits a second, so a lane just meeting that target would make about <b>one error every minute</b>. Try sliding the loss to 130% and watch the errors climb, then back to 100% where it passes.</p></div>
+    <div class="ex"><span class="lbl">How to use the simulator</span><ol><li>Leave the defaults and press <b>Start test</b>.</li><li>Watch <b>Confidence</b> climb to 95% with zero errors: a pass.</li><li>Press <b>Clear counters</b>, drag channel loss to about 130%, start again: it fails.</li><li>Press <b>Inject error burst</b> to see how a single glitch affects the result.</li></ol></div>
   </div>
   <div class="panel bench" id="benchPanel">
     <div class="controls">
@@ -539,6 +592,7 @@ svg.phone { width: 100%; height: auto; display: block; }
           <div class="ro"><div class="k">Confidence BER &lt; target</div><div class="v" id="rConf">0%</div><div class="u" id="rTarget"></div></div>
         </div>
         <div class="note small" id="benchNote"></div>
+        <div class="plain-live" id="benchPlain"></div>
       </div>
     </div>
   </div>
@@ -550,6 +604,10 @@ svg.phone { width: 100%; height: auto; display: block; }
     <span class="num">05 / BER test time</span>
     <h2>How long must the loop run?</h2>
     <p class="muted">You cannot measure 10<sup>−12</sup> directly; you run long enough with few or no errors to claim it statistically. With zero errors, bits needed = −ln(1 − CL) / BER. With <i>k</i> errors allowed, the Poisson sum adds terms.</p>
+  </div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>You can never prove "zero errors forever". Instead you send <b>enough bits</b> with no errors that a bad receiver would almost certainly have shown one. The rarer the errors you want to rule out, the longer you must run. Being 95% sure takes about <b>3 ÷ BER</b> bits.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>To show a Gen4 lane meets 1e-12 at 95% confidence: 3 × 10<sup>12</sup> bits ÷ 16 × 10<sup>9</sup> bits/s ≈ <b>3 minutes</b> per lane with no errors. A x4 NVMe card tested one lane at a time takes about 12 minutes, plus setup. Allowing 1 error raises it to about 4.7 × 10<sup>12</sup> bits.</p></div>
   </div>
   <div class="panel">
     <div class="controls">
@@ -569,6 +627,7 @@ svg.phone { width: 100%; height: auto; display: block; }
       <div class="ro"><div class="k">Time per lane</div><div class="v" id="oTime">—</div></div>
       <div class="ro"><div class="k">Wall time, all lanes</div><div class="v" id="oWall">—</div><div class="u" id="oWallU"></div></div>
     </div>
+    <div class="plain-live" id="timePlain" style="margin-top:12px"></div>
     <p class="small muted" style="margin-top:12px">Most BERTs test one or two lanes at a time, so a x4 NVMe card's Rx test is usually run lane by lane. That is why the wall-time figure assumes lanes run in parallel only when you have that many error detectors.</p>
   </div>
 </section>
@@ -579,6 +638,11 @@ svg.phone { width: 100%; height: auto; display: block; }
     <span class="num">06 / On a live system</span>
     <h2>Checking the NVMe card's link on Linux</h2>
     <p class="muted">Compliance labs prove the electricals. On a server, you confirm the link trained to the right width and speed, watch for correctable errors under load, and exercise the drive. Set your card's address once and every command updates.</p>
+  </div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>On a working computer you cannot attach a lab tester, so you ask the system three questions: <b>Did the link come up at full speed and width?</b> <b>Are errors being counted?</b> <b>Does the drive perform as expected?</b> The commands below answer each one. Start with the read-only ones; they change nothing.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>Reading <code>lspci</code> output for a Gen4 x4 drive:</p><pre style="margin:0;padding:8px;background:var(--code-bg);border-radius:6px;overflow-x:auto;font-family:var(--font-mono);font-size:0.78rem">LnkCap: Speed 16GT/s, Width x4
+LnkSta: Speed 8GT/s (downgraded), Width x4</pre><p><b>LnkCap</b> is what the drive can do; <b>LnkSta</b> is what it is doing. Here it trained to Gen3 instead of Gen4, so it will top out near 3.5 GB/s instead of 7. Reseat the drive, try another slot, or check the BIOS slot speed setting.</p></div>
   </div>
   <div class="panel" style="display:grid; gap:12px">
     <div class="controls" style="margin-bottom:0">
@@ -652,6 +716,19 @@ svg.phone { width: 100%; height: auto; display: block; }
     return (s/86400).toFixed(1) + " days";
   };
   const fmtExp = (x) => x <= 0 ? "0" : x.toExponential(1).replace("e", "e");
+
+  /* ---------- plain-language toggle ---------- */
+  const simpleBtn = $("#simpleToggle");
+  function setSimple(on) {
+    document.body.classList.toggle("no-simple", !on);
+    simpleBtn.setAttribute("aria-pressed", String(on));
+    simpleBtn.textContent = "Plain-language notes: " + (on ? "on" : "off");
+    try { localStorage.setItem("pcie-simple", on ? "1" : "0"); } catch (e) {}
+  }
+  let simpleOn = true;
+  try { simpleOn = localStorage.getItem("pcie-simple") !== "0"; } catch (e) {}
+  setSimple(simpleOn);
+  simpleBtn.addEventListener("click", () => setSimple(document.body.classList.contains("no-simple")));
 
   /* ---------- 00 WHAT IS PCIE ---------- */
   function bindPick(sel, attr, fn) {
@@ -814,6 +891,8 @@ svg.phone { width: 100%; height: auto; display: block; }
     else note += "PAM4 carries 2 bits per symbol, so the eye has three stacked openings and a much higher raw error rate. FEC corrects it, and the BER target becomes a first-bit error rate around 1e-6.";
     note += " TLP headers and DLLPs take a further 5–12% of the link, so measured drive throughput sits below the per-direction figure.";
     $("#linkNote").textContent = note;
+    const gameS = 50 / (total * 0.9);
+    $("#linkPlain").innerHTML = `<b>Worked out:</b> ${G.rate} GT/s × ${G.g <= 2 ? "8/10" : G.g >= 6 ? "1 (FLIT)" : "128/130"} ÷ 8 = ${perLane.toFixed(2)} GB/s per lane × ${selLanes} lane${selLanes > 1 ? "s" : ""} = <b>${total.toFixed(2)} GB/s</b> each way. In everyday terms, a 50 GB game folder would take about <b>${gameS < 10 ? gameS.toFixed(1) : Math.round(gameS)} s</b> to read at this link's limit, and a 5 GB movie about ${(gameS / 10).toFixed(gameS / 10 < 1 ? 2 : 1)} s.`;
   }
   renderLink();
 
@@ -952,6 +1031,11 @@ svg.phone { width: 100%; height: auto; display: block; }
     else if (+$("#bLoss").value > 100) note += "Loss is beyond the spec channel budget: errors here show margin, not a compliance failure.";
     else note += "At 100% loss and the default jitter the eye is just open enough for 1e-12, which mirrors how a stressed eye is calibrated to the pass line.";
     $("#benchNote").textContent = note;
+    const errEvery = 1 / (P.ber * P.B.rate);
+    const pass = P.ber <= P.B.target;
+    let every = errEvery > 3.15e7 * 2 ? "less than once a year" : "about once every " + fmtTime(errEvery);
+    $("#benchPlain").innerHTML = `<b>What this setting means:</b> with ${P.lossDb.toFixed(0)} dB of loss and ${P.sj.toFixed(2)} UI of jitter, the model expects one wrong bit ${every} on this lane. ` +
+      (pass ? `That is within the target, so a long enough run should <b>pass</b>.` : `That is worse than the target of ${fmtExp(P.B.target)}, so the test should <b>fail</b>.`);
     drawEye(P);
     updateReadouts();
   }
@@ -1069,6 +1153,7 @@ svg.phone { width: 100%; height: auto; display: block; }
     $("#oBits").textContent = n.toExponential(2);
     $("#oTime").textContent = fmtTime(tLane);
     $("#oWall").textContent = fmtTime(tLane);
+    $("#timePlain").innerHTML = `<b>In plain words:</b> keep the loopback running for <b>${fmtTime(tLane)}</b> per lane with no more than ${k} error${k === 1 ? "" : "s"}. If it gets there, you can say with ${Math.round(cl * 100)}% confidence that fewer than 1 in ${(1 / ber).toExponential(0).replace("1e+", "10^")} bits is wrong.`;
     $("#oWallU").textContent = lanes > 1 ? `${lanes} lanes checked at once; lane by lane would take ${fmtTime(tLane*lanes)}` : "x4 card lane by lane: " + fmtTime(tLane*4);
   }
   ["tBer","tCl","tK","tRate","tLanes"].forEach(id => $("#" + id).addEventListener("input", renderTime));
