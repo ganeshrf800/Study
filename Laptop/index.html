@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laptop Block Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: schematic sheet, signal-path selector, diagram + inspector side by side, then interface speeds, lane map, ports, firmware stack and power study. Copper = active trace. */
+:root{
+  --bg:#eef1ef; --surface:#fbfcfb; --sunk:#e4e9e6; --ink:#15211c; --muted:#56655f; --line:#c8d1cd; --wire:#8d9c96;
+  --copper:#b8521a; --copper-soft:#f3dccd;
+  --c-ant:#1d7a69; --c-tune:#3f6f78; --c-rffe:#7d4a93; --c-trx:#4054ad; --c-conn:#1f7b98; --c-soc:#3b4a5e; --c-io:#4f6b3a; --c-pwr:#9a7410;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416;
+  --c-ant:#4cc0a8; --c-tune:#79aeb8; --c-rffe:#c08ad6; --c-trx:#8b9cf0; --c-conn:#5bbcd9; --c-soc:#9eb0c8; --c-io:#9dbd7f; --c-pwr:#e2bb4f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1b2521; --ink:#e2eae6; --muted:#93a39c; --line:#2a3732; --wire:#5f726a;
+  --copper:#f08a4b; --copper-soft:#3a2416;
+  --c-ant:#4cc0a8; --c-tune:#79aeb8; --c-rffe:#c08ad6; --c-trx:#8b9cf0; --c-conn:#5bbcd9; --c-soc:#9eb0c8; --c-io:#9dbd7f; --c-pwr:#e2bb4f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0 16px}
+.wrap{max-width:1440px;margin:0 auto;padding-block:28px 56px;display:grid;gap:22px}
+header{display:grid;grid-template-columns:1fr auto;gap:12px 32px;align-items:end;border-bottom:2px solid var(--ink);padding-bottom:14px}
+h1{font-family:var(--display);font-stretch:68%;font-weight:800;font-size:clamp(30px,5vw,52px);line-height:.95;letter-spacing:-.01em;margin:0;text-wrap:balance;text-transform:uppercase}
+header p{margin:8px 0 0;color:var(--muted);max-width:66ch}
+.tb{font-family:var(--mono);font-size:11.5px;display:grid;grid-template-columns:auto auto;border:1px solid var(--line);background:var(--surface)}
+.tb span{padding:4px 10px;border-bottom:1px solid var(--line)}
+.tb span:nth-child(odd){color:var(--muted);border-right:1px solid var(--line);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
+.tb span:nth-last-child(-n+2){border-bottom:0}
+@media (max-width:720px){header{grid-template-columns:1fr}}
+.label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.paths{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.paths .label{margin-right:6px}
+.chip{font:500 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--copper)}
+.chip[aria-pressed="true"]{background:var(--copper);border-color:var(--copper);color:var(--surface)}
+.chip.ghost{background:transparent;color:var(--muted)}
+button:focus-visible,[tabindex]:focus-visible,tr:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+@media (max-width:1100px){.main{grid-template-columns:1fr}}
+.sheet{background:var(--surface);border:1px solid var(--line);min-width:0}
+.sheet-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 18px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid var(--wire);vertical-align:middle;margin-right:6px}
+.legend i.d{border-top-style:dashed}.legend i.p{border-top-style:dotted;border-top-width:3px}
+.legend b{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px;border:1.5px solid}
+.scroll{overflow-x:auto}
+svg.dia{display:block;width:100%;min-width:980px;height:auto}
+.dia text{font-family:var(--body);fill:var(--ink)}
+.dia .sub{font-family:var(--mono);font-size:9.6px;fill:var(--muted)}
+.dia .lbl{font-size:12px;font-weight:650;font-stretch:88%}
+.dia .col{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;fill:var(--muted)}
+.node{cursor:pointer}
+.node rect{fill:color-mix(in oklab,var(--cat) 9%,var(--surface));stroke:var(--cat);stroke-width:1.2;transition:opacity .2s,stroke-width .15s}
+.node:hover rect{stroke-width:2.4}
+.node.sel rect{stroke:var(--copper);stroke-width:2.6}
+.node .pin{fill:var(--cat)}
+.soc-box{fill:none;stroke:var(--c-soc);stroke-width:1.6;stroke-dasharray:0}
+.soc-bg{fill:color-mix(in oklab,var(--c-soc) 5%,var(--surface));cursor:pointer}
+.soc-title{font-family:var(--display)!important;font-stretch:70%;font-weight:800;font-size:13px;letter-spacing:.04em}
+.link{fill:none;stroke:var(--wire);stroke-width:1.5;transition:opacity .2s}
+.link.dig{stroke-dasharray:6 3;stroke-width:1.3}
+.link.pwr{stroke-dasharray:1.5 3;stroke-width:2;stroke-linecap:round}
+.dim .node:not(.on) rect,.dim .node:not(.on) text{opacity:.28}
+.dim .link:not(.on){opacity:.15}
+[hidden]{display:none!important}
+.proto .link{stroke-width:2.2;stroke-dasharray:none}
+.proto .link.pf-rf{stroke:var(--c-ant)}
+.proto .link.pf-hs{stroke:var(--c-trx)}
+.proto .link.pf-ls{stroke:var(--c-io);stroke-dasharray:5 3}
+.proto .link.pf-mem{stroke:var(--c-rffe);stroke-width:3}
+.proto .link.pf-pwr{stroke:var(--c-pwr);stroke-dasharray:1.5 3;stroke-linecap:round}
+.dia .sub.protot{fill:var(--c-trx);font-weight:600}
+.link{pointer-events:visibleStroke}
+.protoleg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);align-items:center}
+.protoleg i{display:inline-block;width:22px;height:0;border-top:3px solid var(--fc);vertical-align:middle;margin-right:6px}
+.ptab{width:100%;min-width:0;border-collapse:collapse;font-size:12.5px}
+.ptab td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.ptab button{all:unset;cursor:pointer;font-weight:650;color:var(--ink);border-bottom:1px dotted var(--muted)}
+.ptab button:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.ptab tr.sel td{background:var(--copper-soft)}
+.fam{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--fc);margin-right:6px;vertical-align:-1px}
+.link.on{stroke:var(--copper);stroke-width:2.6;stroke-dasharray:7 5}
+.link.on.fwd{animation:flow 0.9s linear infinite}
+.link.on.rev{animation:flow 0.9s linear infinite reverse}
+.node.on rect{stroke:var(--copper);stroke-width:2}
+@keyframes flow{to{stroke-dashoffset:-24}}
+@media (prefers-reduced-motion:reduce){.link.on.fwd,.link.on.rev{animation:none}}
+aside{background:var(--surface);border:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto;min-width:0}
+@media (max-width:1100px){aside{position:static;max-height:none}}
+.insp-head{padding:14px 16px 12px;border-bottom:1px solid var(--line);display:grid;gap:4px}
+.insp-head h2{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:26px;line-height:1.05;margin:0;text-transform:uppercase;text-wrap:balance}
+.tag{justify-self:start;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--cat,var(--line));color:var(--cat,var(--muted))}
+.insp-body{padding:14px 16px 18px;display:grid;gap:14px}
+.insp-body p{margin:0}
+.insp-body h3{margin:0 0 6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+dl.spec{margin:0;display:grid;grid-template-columns:auto 1fr;font-size:13px;border-top:1px solid var(--line)}
+dl.spec dt,dl.spec dd{margin:0;padding:6px 0;border-bottom:1px solid var(--line)}
+dl.spec dt{color:var(--muted);padding-right:12px;font-family:var(--mono);font-size:11.5px}
+dl.spec dd{font-variant-numeric:tabular-nums}
+ul.parts{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.fn{font-family:var(--display);font-stretch:85%;font-size:17px;font-weight:650;line-height:1.3;margin:0}
+.cost{display:flex;gap:12px;align-items:end;justify-content:space-between;border:1px solid var(--line);background:var(--sunk);padding:10px 12px}
+.cost h3{margin:0 0 2px}
+.amt{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--copper);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cq{font-size:12px;color:var(--muted);text-align:right;margin:0}
+.inner{background:var(--sunk);padding:6px;border:1px solid var(--line)}
+.isvg{display:block;width:100%;height:auto}
+.isvg .ipkg{fill:var(--surface);stroke:var(--muted);stroke-width:1;stroke-dasharray:5 3}
+.isvg .ipn{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;fill:var(--muted)}
+.isvg .ih{font-family:var(--mono);font-size:9px;letter-spacing:.12em;fill:var(--copper);font-weight:600}
+.isvg .iul{stroke:var(--copper);stroke-width:1}
+.isvg .ib{fill:var(--surface);stroke:var(--ink);stroke-width:1}
+.isvg .ib-ctl{fill:var(--sunk);stroke:var(--wire)}
+.isvg .it{font-family:var(--body);font-size:10.5px;fill:var(--ink)}
+.isvg .isep{stroke:var(--line);stroke-width:1}
+.ig{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+.isvg .ia{stroke:var(--muted);stroke-width:1.2}
+.isvg .iah{fill:var(--muted)}
+.isvg .iband{fill:none;stroke:var(--wire);stroke-width:1;stroke-dasharray:2 3}
+.isvg .ictl{stroke:var(--wire);stroke-width:1;stroke-dasharray:2 3}
+.ikey{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.ikey span{display:inline-flex;align-items:center;gap:5px}
+.dia .sub.costt{fill:var(--copper);font-weight:600}
+.sheet-head .chip{padding:3px 10px;font-size:12px}
+.note{font-size:13px;background:var(--copper-soft);padding:9px 11px;border-left:3px solid var(--copper)}
+section.block{background:var(--surface);border:1px solid var(--line);min-width:0}
+section.block>.hd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
+section.block h2{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:22px;margin:0;text-transform:uppercase}
+.hd p{margin:0;color:var(--muted);font-size:13px;max-width:70ch}
+svg.ruler{display:block;width:100%;min-width:760px;height:auto}
+.ruler text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.ruler .lane{font-family:var(--body);font-size:11.5px;font-weight:650;fill:var(--ink)}
+.bar{cursor:pointer;transition:opacity .2s}
+.ruler.dim .bar:not(.on){opacity:.18}
+.bar.on rect{stroke:var(--copper);stroke-width:1.6}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk);position:sticky;top:0}
+td.num{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.b{font-weight:700;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--sunk)}
+tbody tr.on{background:var(--copper-soft)}
+.ft{display:inline-block;font-family:var(--mono);font-size:11px;padding:1px 6px;border:1px solid var(--line);margin:0 4px 2px 0;white-space:nowrap}
+.tblwrap{overflow:auto;max-height:520px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border-top:1px solid var(--line)}
+.filters div{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px;min-width:0}
+.filters b{display:block;font-family:var(--display);font-stretch:75%;font-size:16px;text-transform:uppercase}
+.filters .r{font-family:var(--mono);font-size:11px;color:var(--copper)}
+.modpages{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.modpages .label{margin-right:6px;min-width:96px}
+.modpages a{font-size:13px;text-decoration:none;color:var(--ink);border:1px solid var(--ink);background:var(--surface);padding:5px 11px}
+.modpages a:hover{background:var(--ink);color:var(--surface)}
+.pagelink{justify-self:start;font-weight:650;font-size:14px;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.pagelink:hover{border-bottom-width:3px}
+.dnav{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.dnav .chip{padding:4px 10px;font-size:12.5px}
+.deeplink{justify-self:start;font-size:12.5px}
+.dgrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:0}
+@media (max-width:1000px){.dgrid{grid-template-columns:1fr}}
+.dmain{padding:16px 18px 20px;border-right:1px solid var(--line);display:grid;gap:10px;align-content:start;min-width:0}
+@media (max-width:1000px){.dmain{border-right:0;border-bottom:1px solid var(--line)}}
+.dmain p{margin:0;max-width:68ch}
+.dt{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:30px;line-height:1;margin:2px 0 4px;text-transform:uppercase;text-wrap:balance}
+.dgrid h4{margin:6px 0 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--copper);font-weight:600}
+.darch{padding:16px 18px 20px;min-width:0;display:grid;gap:10px;align-content:start}
+.tblwrap.noh{max-height:none;border:1px solid var(--line)}
+.atbl{min-width:620px}
+.atbl tbody tr{cursor:default}
+.atbl tbody tr:hover{background:transparent}
+.atbl td{font-size:13px;line-height:1.45}
+.atbl td:nth-child(4){color:var(--muted)}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+
+.pwr{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);gap:0}
+@media (max-width:900px){.pwr{grid-template-columns:1fr}}
+.pwrctl{padding:14px;border-right:1px solid var(--line);display:grid;gap:12px;align-content:start;min-width:0}
+@media (max-width:900px){.pwrctl{border-right:0;border-bottom:1px solid var(--line)}}
+.pwrctl input{width:100%;accent-color:var(--copper)}
+.pwrctl label b{color:var(--ink);font-family:var(--mono);margin-left:6px}
+.pwrout{padding:14px;display:grid;gap:12px;min-width:0}
+.pwrhead{display:flex;flex-wrap:wrap;gap:12px 32px}
+.pwrhead>div{display:grid;gap:2px}
+.stack{display:flex;height:22px;border:1px solid var(--line);background:var(--sunk)}
+.stack span{min-width:2px;border-right:1px solid var(--surface)}
+.ptab.pw td.num{text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap}
+#bw svg.ruler .lane{font-size:11px}
+tbody tr:focus-visible{outline:2px solid var(--copper);outline-offset:-2px}
+</style>
+<link rel="stylesheet" href="../back.css">
+
+<div class="wrap">
+<a class="study-back" href="../">← Study home</a>
+<header>
+  <div>
+    <h1>Inside a 2026 premium laptop</h1>
+    <p>A representative block diagram of a current 14-inch Windows laptop built on a Core Ultra Series 3 (Panther Lake)-class processor: the tiled SoC, LPDDR5X memory, NVMe SSD, optional discrete GPU and 5G, the USB-C power path, the embedded controller and every port. Click any block, trace a path, switch on costs or protocols, or pick a link speed below.</p>
+  </div>
+  <div class="tb" aria-label="Sheet details">
+    <span>Sheet</span><span>System · rev 2026</span>
+    <span>SoC</span><span>16-core · 18A · 50 TOPS NPU</span>
+    <span>Memory</span><span>32 GB LPDDR5X-8533</span>
+    <span>I/O</span><span>2× TB4 · HDMI 2.1 · USB-A · SD</span>
+  </div>
+</header>
+
+<nav class="modpages" aria-label="On this page"><span class="label">On this page</span>
+  <a href="#deep">Implementation &amp; architectures</a><a href="#bw">Interface speeds</a><a href="#lanemap">PCIe lane map</a><a href="#portmap">Ports</a><a href="#sw">Firmware &amp; software</a><a href="#power">Power &amp; battery life</a>
+</nav>
+<nav class="modpages" aria-label="Related pages"><span class="label">Related</span>
+  <a href="../PCIe/">PCIe guide</a><a href="../Memory/">Memory &amp; DDR guide</a><a href="../Mobile/">Phone block diagram</a><a href="../Mobile/software-stack.html">Phone software stack</a><a href="../Mobile/thermal.html">Thermal study (phone)</a>
+</nav>
+
+<div class="paths" role="group" aria-label="Signal paths">
+  <span class="label">Trace a path</span>
+  <div id="presets" style="display:contents"></div>
+</div>
+
+<div class="main">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span class="label">Block diagram · click a block</span>
+      <div class="protoleg" id="protoLeg" hidden></div>
+      <div class="legend">
+        <span><i></i>RF</span><span><i class="d"></i>Data / bus</span><span><i class="p"></i>Power</span>
+        <span><b style="border-color:var(--c-tune)"></b>Port</span><span><b style="border-color:var(--c-conn)"></b>Port / radio chip</span><span><b style="border-color:var(--c-soc)"></b>SoC / GPU</span><span><b style="border-color:var(--c-rffe)"></b>Memory</span><span><b style="border-color:var(--c-trx)"></b>Display &amp; audio</span><span><b style="border-color:var(--c-io)"></b>Platform</span><span><b style="border-color:var(--c-pwr)"></b>Power</span>
+      </div>
+    </div>
+    <div class="scroll"><svg class="dia" id="dia" viewBox="0 0 1022 700" role="img" aria-label="Laptop block diagram"></svg></div>
+  </div>
+  <aside id="insp" aria-live="polite"></aside>
+</div>
+
+<section class="block" id="deep">
+  <div class="hd"><h2>Implementation &amp; architectures</h2><p>How the selected block is built, and the architecture choices laptop makers have. Click any block in the diagram, or jump to one here.</p></div>
+  <div class="dnav" id="dnav" role="group" aria-label="Jump to block"></div>
+  <div id="deepbody"></div>
+</section>
+
+<section class="block" id="bw">
+  <div class="hd"><h2>Interface speeds</h2><p>Peak raw rate of every link in the diagram on a log scale, from the 100 kbit/s battery bus to 448 GB/s graphics memory. Click a bar to light up that protocol in the diagram.</p></div>
+  <div class="scroll"><svg class="ruler" id="bwsvg" role="img" aria-label="Interface bandwidth on a log scale"></svg></div>
+</section>
+
+<section class="block" id="lanemap">
+  <div class="hd"><h2>PCIe lane map</h2><p>Where the SoC's 12 Gen5 and 8 Gen4 lanes go in a 20-lane H-class design. Click a row to see it in the diagram.</p></div>
+  <div class="tblwrap"><table><thead><tr><th>Lanes</th><th>From</th><th>To</th><th>Bandwidth (each way)</th><th>Notes</th></tr></thead><tbody id="lanes"></tbody></table></div>
+</section>
+
+<section class="block" id="portmap">
+  <div class="hd"><h2>Ports</h2><p>What each external connector carries and which chips sit behind it.</p></div>
+  <div class="tblwrap"><table><thead><tr><th>Port</th><th>Data</th><th>Video</th><th>Power</th><th>Behind it</th></tr></thead><tbody id="ports"></tbody></table></div>
+</section>
+
+<section class="block" id="sw">
+  <div class="hd"><h2>Firmware &amp; software layers</h2><p>A laptop runs a dozen separate pieces of firmware before and beside the operating system. Each block's panel lists its own firmware and drivers.</p></div>
+  <div class="tblwrap noh" style="border:0"><table class="atbl"><thead><tr><th>Layer</th><th>Runs on</th><th>What it does</th><th>Examples</th></tr></thead><tbody>
+   <tr><td class="b">Applications</td><td>CPU, GPU, NPU</td><td>User programs, using OS APIs for graphics, media and AI.</td><td>Browser, Office, Teams; DirectX, Vulkan; Windows ML, OpenVINO, ONNX Runtime</td></tr>
+   <tr><td class="b">OS services</td><td>CPU</td><td>Scheduling across P/E/LP-E cores, power policy, Modern Standby, device management.</td><td>Windows 11 / Linux; Thread Director hints; Windows Studio Effects</td></tr>
+   <tr><td class="b">Kernel drivers</td><td>CPU</td><td>Talk to each hardware block through its registers, DMA rings and interrupts.</td><td>stornvme / nvme, WDDM graphics, NPU (MCDM), Wi-Fi, MBIM WWAN, USB4 connection manager, SoundWire audio, IPU camera, HID-I²C</td></tr>
+   <tr><td class="b">ACPI tables &amp; runtime</td><td>CPU (interpreted by OS)</td><td>Describe the board to the OS: which devices exist, how to power them, battery and thermal methods via the EC.</td><td>DSDT / SSDT, _PSx / _PRx power methods, EC operation region, UEFI runtime services</td></tr>
+   <tr><td class="b">UEFI firmware (BIOS)</td><td>CPU, from SPI flash</td><td>Initialises the platform, trains memory, enumerates PCIe, draws the logo and loads the OS boot manager. Updated by capsule.</td><td>SEC → PEI (Intel FSP / AMD openSIL) → DXE → BDS; Insyde, AMI, Phoenix; coreboot on Chromebooks</td></tr>
+   <tr><td class="b">Security firmware</td><td>Security engine in SoC</td><td>Starts first, verifies the UEFI image, provides the firmware TPM and secure key storage.</td><td>Intel CSME + Boot Guard + PTT; AMD PSP; Microsoft Pluton</td></tr>
+   <tr><td class="b">SoC internal firmware</td><td>Microcontrollers inside the SoC</td><td>Power management, GPU scheduling, display power states, audio and sensor processing.</td><td>Microcode, pcode (PMC), GuC/HuC, DMC, audio DSP firmware, ISH firmware</td></tr>
+   <tr><td class="b">Embedded controller</td><td>EC microcontroller</td><td>Keyboard, battery, charger, fans, lid, power button and power sequencing; always on.</td><td>OEM EC firmware on ITE / Nuvoton / Microchip; Chromium EC (Zephyr)</td></tr>
+   <tr><td class="b">Device firmware</td><td>Controllers inside each peripheral</td><td>Each smart peripheral runs its own code, often updated through Windows Update or vendor tools.</td><td>SSD FTL, Wi-Fi/BT RF, 5G modem, USB4 retimer NVM, PD controller, touchpad, fingerprint, dGPU VBIOS + GSP</td></tr>
+  </tbody></table></div>
+  <div class="filters">
+    <div><b>1 · Standby power</b><span class="r">battery or adapter present</span><br>The EC and always-on rails are live. The EC watches the power button, lid and charger.</div>
+    <div><b>2 · Power sequencing</b><span class="r">≈ 10–50 ms</span><br>On a button press the EC switches on the system rails in order and releases the SoC from reset.</div>
+    <div><b>3 · Root of trust</b><span class="r">security engine</span><br>CSME or PSP boots from ROM, loads its firmware from SPI flash and verifies the first UEFI code (Boot Guard).</div>
+    <div><b>4 · Memory training</b><span class="r">PEI · FSP-M</span><br>UEFI trains the LPDDR5X interface. Results are cached so later boots skip most of it.</div>
+    <div><b>5 · Device discovery</b><span class="r">DXE</span><br>PCIe is enumerated, the NVMe and graphics (GOP) drivers load, USB and the keyboard come up.</div>
+    <div><b>6 · Secure Boot</b><span class="r">BDS</span><br>The signed Windows Boot Manager is loaded from the SSD's EFI partition; each stage is measured into the TPM.</div>
+    <div><b>7 · OS hand-off</b><span class="r">kernel</span><br>Windows reads ACPI tables, loads drivers, unlocks BitLocker from the TPM and starts the desktop.</div>
+  </div>
+</section>
+
+<section class="block" id="power">
+  <div class="hd"><h2>Power &amp; battery life</h2><p>Typical system power by subsystem for a 14-inch OLED laptop on battery, and the resulting runtime. Pick a workload and battery size.</p></div>
+  <div class="pwr">
+    <div class="pwrctl">
+      <div class="paths" id="loads" role="group" aria-label="Workload"></div>
+      <label class="label" for="wh">Battery capacity <b id="whv"></b></label>
+      <input type="range" id="wh" min="40" max="99" value="70" step="1">
+      <p class="cq" style="text-align:left">Estimates for a thin 2026 laptop at moderate brightness. Real results vary with panel, brightness, background apps and power mode. Batteries over 100 Wh need airline approval to fly.</p>
+    </div>
+    <div id="pout" class="pwrout"></div>
+  </div>
+</section>
+
+<footer>Representative architecture, not a teardown of one model. Part classes reflect 2026 premium laptops built on Intel Core Ultra Series 3 (Panther Lake) H-class processors, with AMD Ryzen AI and Qualcomm Snapdragon X2 alternatives noted. Costs are high-volume OEM estimates and DRAM and NAND prices moved sharply during 2025–26.</footer>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const CAT={port:["--c-tune","Port & connector"],ant:["--c-ant","Antenna"],conn:["--c-conn","Port & radio chip"],soc:["--c-soc","SoC block"],gpu:["--c-soc","Discrete GPU"],mem:["--c-rffe","Memory & storage"],av:["--c-trx","Display, camera & audio"],io:["--c-io","Input, sensors & platform"],pwr:["--c-pwr","Power"]};
+
+// id, x, y, w, h, cat, label, sub, parent   (outer rows y = 30 + 58k, SoC rows y = 40 + 58k)
+const NODES=[
+ ["p_tb1",16,30,134,46,"port","USB-C port 1","TB4 · 40 Gbps · PD"],
+ ["p_tb2",16,88,134,46,"port","USB-C port 2","TB4 · DP Alt · PD"],
+ ["p_usba",16,146,134,46,"port","USB-A port","USB 3.2 · 10 Gbps"],
+ ["p_hdmi",16,204,134,46,"port","HDMI 2.1 port","4K 120 Hz · FRL"],
+ ["a_wifi",16,262,134,46,"ant","Wi-Fi/BT antennas","2× tri-band · lid"],
+ ["a_wwan",16,320,134,46,"ant","5G antennas","4× sub-6 · lid+base"],
+ ["p_sd",16,378,134,46,"port","SD card slot","UHS-II · 312 MB/s"],
+ ["p_jack",16,436,134,46,"port","3.5 mm jack","headset · CTIA"],
+ ["spk",16,494,134,46,"av","Speakers","2–4 drivers"],
+ ["mics",16,552,134,46,"av","Mic array","2–4 MEMS DMIC"],
+ ["batt",16,610,134,46,"pwr","Battery pack","4S · 70 Wh Li-ion"],
+
+ ["ret",176,30,150,46,"conn","USB4 retimers","×2 · one per port"],
+ ["pdc",176,88,150,46,"pwr","USB-PD controllers","PD 3.2 · VBUS FETs"],
+ ["redrv",176,146,150,46,"conn","USB redriver","10 Gbps linear EQ"],
+ ["pcon",176,204,150,46,"conn","DP→HDMI PCON","HDMI 2.1 FRL"],
+ ["wifi",176,262,150,46,"conn","Wi-Fi 7 + BT 6","M.2 2230 · CNVi RF"],
+ ["wwan",176,320,150,46,"conn","5G WWAN module","M.2 3042 · PCIe"],
+ ["cardr",176,378,150,46,"conn","Card reader","PCIe SD host"],
+ ["codec",176,436,150,46,"av","Audio codec","SoundWire · jack"],
+ ["amp",176,494,150,46,"av","Smart amps","class-D · I/V sense"],
+ ["vr",176,552,150,46,"pwr","Core VRs","multiphase · DrMOS"],
+ ["chg",176,610,150,46,"pwr","Charger","NVDC buck-boost"],
+
+ ["tbt",372,40,125,50,"soc","Thunderbolt host","USB4 · 4 ports","soc"],
+ ["cpu",372,98,125,50,"soc","CPU cores","4P + 8E + 4LPE","soc"],
+ ["xhci",372,156,125,50,"soc","USB host","xHCI 3.2 + 2.0","soc"],
+ ["sec",372,214,125,50,"soc","Security engine","CSME · fTPM","soc"],
+ ["cnvi",372,272,125,50,"soc","Wi-Fi MAC (CNVi)","Wi-Fi 7 R2 · BT 6","soc"],
+ ["pcie4",372,330,125,50,"soc","PCIe Gen4 ports","8 lanes","soc"],
+ ["pmc",372,388,125,50,"soc","Power controller","PMC · DVFS · S0ix","soc"],
+ ["adsp",372,446,125,50,"soc","Audio DSP","SoundWire · DMIC","soc"],
+ ["noc",372,504,125,50,"soc","Fabric + cache","18 MB L3 · NoC","soc"],
+ ["disp",507,40,125,50,"soc","Display engine","eDP · DP · HDMI","soc"],
+ ["ipu",507,98,125,50,"soc","Image processor","IPU 7.5 ISP","soc"],
+ ["ish",507,156,125,50,"soc","Sensor hub","ISH · always-on","soc"],
+ ["pcie5",507,214,125,50,"soc","PCIe Gen5 ports","12 lanes","soc"],
+ ["gpu",507,272,125,50,"soc","Integrated GPU","4 Xe3 cores","soc"],
+ ["npu",507,330,125,50,"soc","NPU","NPU 5 · 50 TOPS","soc"],
+ ["espi",507,388,125,50,"soc","Platform I/O","eSPI · SPI flash","soc"],
+ ["lpss",507,446,125,50,"soc","Serial I/O","I²C · SPI · UART","soc"],
+ ["media",507,504,125,50,"soc","Media engine","AV1 · HEVC · VVC","soc"],
+ ["memc",372,562,260,50,"soc","Memory controller","LPDDR5X-8533 · 128-bit","soc"],
+
+ ["panel",676,30,150,46,"av","14″ OLED panel","2.8K 120 Hz · eDP"],
+ ["cam",676,88,150,46,"av","Webcam + IR","5 MP · MIPI CSI-2"],
+ ["sens",676,146,150,46,"io","Sensors","ALS · IMU · hall"],
+ ["ssd",676,204,150,46,"mem","NVMe SSD","1 TB · Gen5 x4"],
+ ["dgpu",676,262,150,46,"gpu","Discrete GPU","RTX 50-class · x8"],
+ ["fp",676,320,150,46,"io","Fingerprint","match-on-chip · USB"],
+ ["ec",676,378,150,46,"io","Embedded controller","keys · fans · battery"],
+ ["tpad",676,436,150,46,"io","Haptic touchpad","HID over I²C/SPI"],
+ ["flash",676,494,150,46,"mem","SPI flash","32 MB · UEFI + ME"],
+ ["dram",676,552,150,46,"mem","LPDDR5X DRAM","32 GB · 4 packages"],
+
+ ["gddr",856,262,150,46,"mem","GDDR7 VRAM","8 GB · 128-bit"],
+ ["kbd",856,378,150,46,"io","Keyboard","matrix · backlight"],
+ ["fan",856,436,150,46,"io","Fans & thermals","2 fans · sensors"]
+];
+const SOC={x:356,y:20,w:290,h:670};
+
+// from, to, type, mx, explicit path (drawn from → to)
+const LINKS=[
+ ["p_tb1","ret","dig"],["p_tb2","ret","dig",null,"M150 102 H168 V64 H176"],
+ ["p_tb1","pdc","pwr",null,"M150 44 H160 V118 H176"],["p_tb2","pdc","pwr"],
+ ["pdc","chg","pwr",null,"M326 111 H341 V633 H326"],
+ ["p_usba","redrv","dig"],["p_hdmi","pcon","dig"],["a_wifi","wifi","rf"],["a_wwan","wwan","rf"],
+ ["p_sd","cardr","dig"],["p_jack","codec","dig"],["spk","amp","dig"],["mics","codec","dig",163],
+ ["batt","chg","pwr"],["chg","vr","pwr"],["vr","soc","pwr"],
+ ["ret","tbt","dig"],["redrv","xhci","dig"],["pcon","soc","dig"],["wifi","cnvi","dig"],["wwan","pcie4","dig"],["cardr","pcie4","dig"],["codec","adsp","dig"],["amp","adsp","dig"],
+ ["disp","panel","dig"],["ipu","cam","dig"],["ish","sens","dig"],["pcie5","ssd","dig"],["pcie5","dgpu","dig"],["soc","fp","dig"],["espi","ec","dig"],["lpss","tpad","dig"],["espi","flash","dig"],["memc","dram","dig"],
+ ["dgpu","gddr","dig"],["ec","kbd","dig"],["ec","fan","dig"]
+];
+
+const D={
+ soc:{t:"Laptop SoC",cat:"soc",role:"A tiled processor: a compute tile with CPU cores and NPU, a GPU tile, and a platform-controller tile with PCIe, Thunderbolt, USB, Wi-Fi MAC, audio and security. Tiles are stacked on a base die with Foveros packaging, so the old separate chipset (PCH) is now inside the package.",parts:["Intel Core Ultra Series 3 (Panther Lake), Intel 18A compute tile","AMD Ryzen AI 300/400 (monolithic TSMC N4P)","Qualcomm Snapdragon X2 Elite (Arm, TSMC N3)","Apple M5 (TSMC N3P, unified memory)"],specs:[["CPU cores","16 (4 P + 8 E + 4 LP-E)"],["Base / turbo power","25 W / 65–80 W"],["PCIe lanes","12 Gen5 + 8 Gen4"],["Memory","LPDDR5X-8533, 128-bit"],["NPU","50 TOPS (INT8)"]],note:"Laptop SoCs run from ~5 W in light use to 80 W bursts. The cooling system, not the silicon, sets how long turbo lasts."},
+ cpu:{t:"CPU cores",cat:"soc",role:"Three core types share the work. Performance cores run bursty foreground tasks, efficient cores run throughput work, and low-power E-cores on the platform tile handle background tasks so the compute tile can sleep. Thread Director hardware tells the OS scheduler which thread fits which core.",parts:["Cougar Cove P-cores","Darkmont E-cores and LP E-cores"],specs:[["Max clock","≈ 4.9–5.1 GHz (P)"],["L3","18 MB shared"],["ISA","x86-64 with AVX2, AVX-VNNI"]]},
+ gpu:{t:"Integrated GPU",cat:"soc",role:"Renders the desktop, video and games when the discrete GPU is off. It shares system LPDDR5X, so its speed depends on memory bandwidth. In hybrid graphics it also owns the display: the dGPU's frames are copied into its memory before scan-out unless a MUX switch is fitted.",parts:["Intel Xe3 (4 cores, or 12 as Arc B390)","AMD RDNA 3.5 (Radeon 890M)","Qualcomm Adreno X2"],specs:[["APIs","DirectX 12 Ultimate, Vulkan 1.4"],["AI","≈ 40–120 TOPS (XMX units)"]]},
+ npu:{t:"Neural processing unit",cat:"soc",role:"A low-power matrix engine for sustained AI work: background blur, eye-contact, noise suppression, live captions and local small language models. It runs at a few watts where the GPU would take tens.",parts:["Intel NPU 5","AMD XDNA 2","Qualcomm Hexagon"],specs:[["Throughput","≈ 50 TOPS INT8"],["Copilot+ PC bar","40 TOPS"]]},
+ ipu:{t:"Image processor (ISP)",cat:"soc",role:"Takes raw Bayer data from the webcam over MIPI CSI-2 and turns it into a clean image: demosaic, noise reduction, HDR merge, auto-exposure and white balance. Moving the ISP into the SoC lets the webcam be a cheap raw sensor.",parts:["Intel IPU 7.5","AMD and Qualcomm Spectra ISPs"],specs:[["Input","MIPI CSI-2 D-PHY / C-PHY"]]},
+ disp:{t:"Display engine",cat:"soc",role:"Composites planes and scans frames out to the built-in panel over eDP and to external screens over DisplayPort, HDMI or USB4 tunnels. Panel Self Refresh and Panel Replay let it stop sending frames when the screen is static.",parts:["4 display pipes"],specs:[["Internal","eDP 1.5, up to HBR3"],["External","DP 2.1 UHBR20, HDMI 2.1"]]},
+ media:{t:"Media engine",cat:"soc",role:"Fixed-function video decode and encode. Playing a 4K AV1 stream here costs well under a watt, versus many watts on the CPU.",parts:["AV1, HEVC, VP9, AVC; VVC decode"],specs:[["Decode","up to 8K60 10-bit"]]},
+ tbt:{t:"Thunderbolt 4 / USB4 host",cat:"soc",role:"The integrated USB4 router. It tunnels PCIe, DisplayPort and USB 3 over one 40 Gbps link per port, and runs the connection manager that sets up those tunnels when a dock or drive is plugged in.",parts:["Integrated in Panther Lake (4 ports)","Thunderbolt 5 needs a discrete Barlow Ridge controller"],specs:[["Link","40 Gbps (2 × 20 Gbps lanes)"],["PCIe tunnel","≈ 32 Gbps"],["Display","2 × 4K60 or 1 × 8K"]]},
+ xhci:{t:"USB host controller",cat:"soc",role:"The xHCI controller for USB 3.2 and USB 2.0 ports that are not USB4. It also carries internal USB devices: fingerprint reader, Bluetooth and sometimes the camera.",parts:["2 × USB 3.2 + 8 × USB 2.0 ports"],specs:[["USB 3.2 Gen 2","10 Gbps"],["USB 2.0","480 Mbps"]]},
+ cnvi:{t:"Wi-Fi MAC (CNVi)",cat:"soc",role:"Intel splits Wi-Fi: the MAC and most digital logic live in the SoC, and only the radio (RF companion) sits on the small M.2 card, linked by the CNVio interface. AMD and Qualcomm laptops put a full Wi-Fi chip on PCIe instead.",parts:["Intel Wi-Fi 7 R2 (BE2xx RF companion)"],specs:[["Peak PHY","≈ 5.8 Gbps (2×2, 320 MHz, 4K-QAM)"]]},
+ pcie4:{t:"PCIe Gen4 root ports",cat:"soc",role:"Eight Gen4 lanes from the platform tile for slower devices: the 5G module, card reader, a second SSD or a Thunderbolt 5 controller. Each lane is 16 GT/s.",parts:["Configurable as x1, x2 or x4 ports"],specs:[["Per lane","≈ 1.97 GB/s each way"]]},
+ pcie5:{t:"PCIe Gen5 root ports",cat:"soc",role:"Twelve Gen5 lanes for the fastest devices: an x4 port for the main NVMe SSD and an x8 port for the discrete GPU. Gen5 runs at 32 GT/s per lane, which needs short traces and often retimers.",parts:["x4 + x8 typical split"],specs:[["Per lane","≈ 3.94 GB/s each way"],["x4 SSD","≈ 15.8 GB/s"]]},
+ sec:{t:"Security engine",cat:"soc",role:"A separate small processor that starts before the CPU, checks the UEFI firmware signature (Boot Guard), holds the firmware TPM and runs management features. AMD calls it the PSP; Microsoft's Pluton can sit beside it.",parts:["Intel CSME with PTT (fTPM 2.0)","AMD PSP + Pluton","Qualcomm SPU + Pluton"],specs:[["Roots of trust","fused keys, Boot Guard"]]},
+ pmc:{t:"Power management controller",cat:"soc",role:"Firmware-driven controller that gates power to idle tiles, sets voltage and frequency per domain, asks the external VRs for new voltages over SVID, and runs Modern Standby (S0ix) entry and exit.",parts:["PMC + pcode microcontroller"],specs:[["S0ix floor","≈ tens of mW SoC"]]},
+ adsp:{t:"Audio DSP",cat:"soc",role:"Runs audio pipelines without waking the CPU: mic beam-forming, echo cancellation, wake-word detection, speaker protection. Connects to codec and smart amps over SoundWire.",parts:["Intel Smart Sound Technology DSP","AMD ACP"],specs:[["Links","4 SoundWire + DMIC"]]},
+ ish:{t:"Integrated sensor hub",cat:"soc",role:"An always-on microcontroller that reads the accelerometer, lid hall sensor, ambient-light and human-presence sensors, so the laptop can dim or lock as you walk away without waking the CPU.",parts:["Intel ISH","AMD Sensor Fusion Hub"],specs:[["Bus","I²C / I3C / SPI"]]},
+ espi:{t:"Platform I/O",cat:"soc",role:"The slow but essential links: eSPI to the embedded controller and SPI to the firmware flash. These carry boot code, keyboard events, power-button and lid signals.",parts:["eSPI host, SPI controller, GPIOs"],specs:[["eSPI","up to 66 MHz × 4 bits"]]},
+ lpss:{t:"Serial I/O (LPSS)",cat:"soc",role:"Low-power I²C, SPI and UART controllers for touchpad, touchscreen and other small peripherals.",parts:["I²C ×6, SPI ×3, UART ×3 typical"],specs:[["I²C","up to 1 MHz (Fm+)"]]},
+ noc:{t:"Fabric and cache",cat:"soc",role:"The network-on-chip and die-to-die links joining tiles, plus the shared last-level cache. A memory-side cache lets the GPU and NPU avoid some DRAM trips.",parts:["Foveros die-to-die interconnect"],specs:[["L3","18 MB"]]},
+ memc:{t:"Memory controller",cat:"soc",role:"Drives a 128-bit LPDDR5X bus (eight 16-bit channels). LPDDR5X must be soldered or on CAMM2 modules because its signalling cannot pass through classic SO-DIMM sockets at these speeds.",parts:["LPDDR5X-8533/9600 or DDR5-7200"],specs:[["Peak bandwidth","8533 MT/s × 16 B ≈ 136.5 GB/s"],["Max capacity","96 GB LPDDR5X"]]},
+ dram:{t:"LPDDR5X DRAM",cat:"mem",role:"Main memory shared by CPU, GPU and NPU. Four ×32 packages (or one CAMM2 module) beside the SoC give 32 GB. Runs self-refresh in standby to keep content at a few milliwatts.",parts:["Samsung, SK hynix, Micron LPDDR5X","LPCAMM2 module (replaceable)"],specs:[["Capacity","16–64 GB"],["Voltage","VDD2H 1.05 V, VDDQ 0.5 V"]]},
+ ssd:{t:"NVMe SSD",cat:"mem",role:"An M.2 2280 card with an NVMe controller (Arm cores, LDPC ECC, flash translation layer), TLC NAND and often no DRAM (it borrows host memory via HMB). Talks NVMe over PCIe.",parts:["Samsung 9100 Pro-class (Gen5)","WD SN8100, Phison E31T controller","Micron 4600"],specs:[["Seq. read","≈ 10–14 GB/s (Gen5)"],["Idle (L1.2)","< 5 mW"]]},
+ dgpu:{t:"Discrete GPU",cat:"gpu",role:"A separate graphics processor with its own GDDR7 memory for games and heavy rendering. It powers off completely (D3cold) when not needed, and the integrated GPU drives the screen.",parts:["NVIDIA GeForce RTX 5060/5070 Laptop","AMD Radeon RX 9000M-class"],specs:[["Link","PCIe Gen5 x8"],["Power","35–115 W TGP"]]},
+ gddr:{t:"GDDR7 VRAM",cat:"mem",role:"Graphics memory for the discrete GPU: very wide and fast, but power-hungry compared with LPDDR.",parts:["Samsung, SK hynix, Micron GDDR7 2 GB chips"],specs:[["Speed","28 Gbps per pin"],["Bandwidth","≈ 448 GB/s at 128-bit"]]},
+ panel:{t:"Built-in display",cat:"av",role:"The panel receives frames over eDP. Its timing controller (TCON) drives rows and columns; Panel Self Refresh keeps a copy so the SoC link can sleep. OLED panels use more power on bright white pages and less on dark ones.",parts:["Samsung Display / LG Display 14″ OLED","Mini-LED or IPS LCD alternatives"],specs:[["Resolution","2880 × 1800"],["Refresh","1–120 Hz VRR"],["Link","eDP 1.5, 4 lanes"]]},
+ cam:{t:"Webcam + IR",cat:"av",role:"A raw image sensor plus an IR camera and IR LED for Windows Hello face login. The raw stream goes over MIPI CSI-2 to the SoC's ISP; older designs used a USB camera with its own ISP.",parts:["OmniVision / Sony 5 MP sensor","IR sensor + 940 nm LED"],specs:[["Interface","MIPI CSI-2, 2–4 lanes"],["Privacy","hardware shutter or kill switch"]]},
+ sens:{t:"Sensors",cat:"io",role:"Accelerometer for orientation and drop, hall sensor for lid open, ambient light for brightness, and sometimes a human-presence (radar or ToF) sensor for walk-away lock.",parts:["Bosch / ST IMU","AMS ALS","Infineon presence radar"],specs:[["Bus","I²C / I3C"]]},
+ fp:{t:"Fingerprint reader",cat:"io",role:"A match-on-chip sensor in the power button. The template never leaves the chip; it reports only a signed yes or no to Windows Hello.",parts:["Goodix, Synaptics, ELAN"],specs:[["Interface","USB 2.0 / SPI"]]},
+ ec:{t:"Embedded controller",cat:"io",role:"A small always-on microcontroller that is the first thing awake. It scans the keyboard, talks to the battery and charger over SMBus, runs fan curves, watches the lid and power button, and sequences the power rails at boot.",parts:["ITE IT5570 / IT8xxx","Microchip MEC17xx","Nuvoton NPCX"],specs:[["Link to SoC","eSPI"],["Firmware","OEM, or open-source (Chromebook EC)"]]},
+ tpad:{t:"Haptic touchpad",cat:"io",role:"A large glass touchpad with piezo or solenoid actuators instead of a mechanical click. It reports as a precision touchpad using HID over I²C or SPI.",parts:["Cirque, Synaptics, Sensel controllers"],specs:[["Report rate","≈ 125–240 Hz"]]},
+ flash:{t:"SPI flash",cat:"mem",role:"Holds everything that runs before the SSD is available: security-engine firmware, UEFI BIOS, microcode patches and often the EC firmware. Regions are locked so the OS cannot rewrite them.",parts:["Winbond W25R256 / Macronix MX25"],specs:[["Size","32 MB"],["Bus","Quad SPI, ≈ 50 MHz"]]},
+ kbd:{t:"Keyboard",cat:"io",role:"A matrix of rows and columns scanned by the EC; it turns each key event into a scan code sent over eSPI. The backlight is a PWM-driven LED string.",parts:["Membrane matrix + LED backlight"],specs:[["Matrix","≈ 16 × 8"]]},
+ fan:{t:"Fans and thermal sensors",cat:"io",role:"Two blower fans and a vapor chamber or heat pipes move 25–45 W out of a thin chassis. Thermistors near the SoC, battery and skin surface feed the EC's fan curve and the OS's power limits.",parts:["Blower fans with PWM + tach","NTC thermistors"],specs:[["Noise target","< 35 dBA in office use"]]},
+ p_tb1:{t:"USB-C / Thunderbolt 4 port",cat:"port",role:"One connector carries 40 Gbps data, DisplayPort video and up to 140 W charging (or 240 W with PD EPR). The CC pins negotiate power and alternate modes before the high-speed lanes start.",parts:["24-pin USB Type-C receptacle"],specs:[["Data","USB4 / TB4 40 Gbps"],["Power in","up to 100–140 W"]]},
+ p_tb2:{t:"USB-C / Thunderbolt 4 port",cat:"port",role:"Second USB-C port, identical to the first. Either port can charge the laptop or drive a display.",parts:["24-pin USB Type-C receptacle"],specs:[["Data","USB4 / TB4 40 Gbps"]]},
+ p_usba:{t:"USB-A port",cat:"port",role:"Legacy rectangular USB for mice, keys and drives, running USB 3.2 Gen 2.",parts:["USB 3.x Type-A receptacle"],specs:[["Data","10 Gbps"],["Power out","5 V 0.9–1.5 A"]]},
+ p_hdmi:{t:"HDMI 2.1 port",cat:"port",role:"For TVs and projectors. HDMI 2.1 FRL signalling needs a protocol converter (PCON) fed by DisplayPort from the SoC.",parts:["HDMI Type-A receptacle"],specs:[["Max","4K 120 Hz / 8K 60 Hz"]]},
+ a_wifi:{t:"Wi-Fi / Bluetooth antennas",cat:"ant",role:"Two tri-band antennas (2.4, 5 and 6 GHz) in the lid bezel, as high as possible and away from the metal base. Thin coax runs through the hinge to the M.2 card.",parts:["Flex or LDS antennas, 2× u.FL coax"],specs:[["Bands","2.4 / 5 / 6 GHz"]]},
+ a_wwan:{t:"5G antennas",cat:"ant",role:"Four cellular antennas for 4×4 MIMO, usually two in the lid and two in the base. Specific absorption rate (SAR) sensors reduce power when a lap or hand is close.",parts:["LDS / flex antennas, 4× coax","Capacitive SAR sensors"],specs:[["Bands","600 MHz – 6 GHz"]]},
+ p_sd:{t:"SD card slot",cat:"port",role:"A full-size SD slot for cameras. UHS-II cards add a second row of pins for faster differential signalling.",parts:["SD 7.0 push-push socket"],specs:[["UHS-II","up to 312 MB/s"]]},
+ p_jack:{t:"3.5 mm headset jack",cat:"port",role:"Four-pole (CTIA) jack for headphones and headset mics, with detection pins read by the codec.",parts:["TRRS jack"],specs:[["Output","≈ 30 mW into 32 Ω"]]},
+ spk:{t:"Speakers",cat:"av",role:"Two to four micro-speakers in tuned enclosures, often a pair of woofers and a pair of tweeters, driven by the smart amps.",parts:["AAC / Goertek micro-speakers"],specs:[["Power","≈ 2–4 W each"]]},
+ mics:{t:"Microphone array",cat:"av",role:"Two to four digital MEMS microphones in the lid. Their PDM bit-streams are beam-formed and noise-suppressed by the audio DSP or the NPU.",parts:["Knowles / Infineon / Goertek MEMS mics"],specs:[["SNR","≈ 65–70 dB"]]},
+ batt:{t:"Battery pack",cat:"pwr",role:"Four lithium-ion cells in series (4S, ≈ 15.4 V nominal) with a pack-side fuel gauge and protection board. It reports state of charge, temperature and cycle count over SMBus.",parts:["ATL / Sunwoda / LG cells","TI BQ40Z50 gauge"],specs:[["Capacity","60–99.9 Wh (100 Wh air-travel limit)"],["Voltage","12–17.6 V"]]},
+ ret:{t:"USB4 retimers",cat:"conn",role:"One retimer per Type-C port fully recovers and re-transmits the 20 Gbps signals so they survive the trace from SoC to connector. It also handles the cable orientation flip.",parts:["Intel JHL9040R, Parade PS8830, TI TUSB1046 (redriver)"],specs:[["Lanes","2 × 20 Gbps each way"]]},
+ pdc:{t:"USB Power Delivery controllers",cat:"pwr",role:"Each port's PD controller talks over the CC wire to the charger or device, agrees on voltage (5–20 V, or 28–48 V EPR) and current, and switches the VBUS power path FETs. It reports to the EC over I²C.",parts:["TI TPS65994, Infineon CCG8, Realtek RTS5453"],specs:[["Contract","20 V × 5 A = 100 W; EPR 28 V × 5 A = 140 W"]]},
+ redrv:{t:"USB redriver",cat:"conn",role:"A linear equalizer that boosts the 10 Gbps USB signal over a long trace to the USB-A port. Cheaper and lower power than a retimer.",parts:["Diodes PI3EQX, Parade PS8742"],specs:[["Gain","≈ 6–12 dB EQ"]]},
+ pcon:{t:"DP-to-HDMI protocol converter",cat:"conn",role:"Converts a DisplayPort stream from the SoC into HDMI 2.1 FRL, the only way to reach 4K 120 Hz on HDMI from most laptop chips.",parts:["Parade PS196, Realtek RTD2173"],specs:[["Output","HDMI 2.1 FRL up to 48 Gbps"]]},
+ wifi:{t:"Wi-Fi 7 + Bluetooth module",cat:"conn",role:"A small M.2 2230 card holding the RF companion: transceivers, PAs, LNAs and front-end switches for 2×2 Wi-Fi 7 and Bluetooth 6. The digital MAC sits in the SoC (CNVi).",parts:["Intel BE211/BE201 (CNVi)","MediaTek MT7925 / Qualcomm FastConnect 7800 (PCIe)"],specs:[["Peak","≈ 5 Gbps"],["Channels","up to 320 MHz at 6 GHz"]]},
+ wwan:{t:"5G WWAN module",cat:"conn",role:"An optional M.2 3042 card containing a full 5G modem, transceiver and RF front-end, essentially the RF section of a phone. It enumerates over PCIe using the MBIM protocol.",parts:["Quectel RM520N / Fibocom FM350","Qualcomm Snapdragon X65/X72-based"],specs:[["Peak DL","≈ 2.4–4.7 Gbps"],["Host link","PCIe Gen3/4 x1 + USB 2.0"]]},
+ cardr:{t:"SD card reader",cat:"conn",role:"A PCIe-attached SD host controller with card-detect and power switching.",parts:["Realtek RTS5261, Genesys GL9767"],specs:[["Host link","PCIe Gen3/4 x1"]]},
+ codec:{t:"Audio codec",cat:"av",role:"Converts digital audio to analog for the headphone jack and back for the headset mic, and detects plug insertion. Connects to the SoC over MIPI SoundWire.",parts:["Realtek ALC711/RT722","Cirrus Logic CS42L43"],specs:[["DAC SNR","≈ 100–110 dB"]]},
+ amp:{t:"Smart amplifiers",cat:"av",role:"Class-D amplifiers that sense speaker voltage and current in real time so the DSP can push speakers hard without overheating the voice coil.",parts:["Cirrus Logic CS35L56, TI TAS2783, Realtek RT1318"],specs:[["Output","≈ 3–8 W per channel"]]},
+ vr:{t:"Core voltage regulators",cat:"pwr",role:"Multiphase buck converters that step the ≈ 7–20 V system rail down to ≈ 0.6–1.3 V for the CPU, GPU and other SoC rails, changing voltage in microseconds when the SoC asks over SVID.",parts:["Renesas / MPS / Infineon controllers","DrMOS power stages"],specs:[["Peak current","≈ 100–150 A"],["Efficiency","≈ 85–92 %"]]},
+ chg:{t:"Battery charger",cat:"pwr",role:"A narrow-voltage-DC (NVDC) buck-boost charger. It powers the system from the adapter, charges the 4S battery, and lets the battery top up the adapter during turbo peaks.",parts:["TI BQ25770 / BQ25731, Renesas ISL9241"],specs:[["Input","5–48 V from USB-C"],["Charge","up to 6 A"]]}
+};
+
+// Main function, cost [lo,hi] USD (high-volume OEM estimates), cost note, internal blocks, firmware/software
+const X={
+ soc:{fn:"Runs the OS, apps, graphics and AI on one tiled package",c:[220,380],q:"Largest single BOM item; includes former chipset",in:[["Compute tile",["P-cores","E-cores","NPU","L3 cache"]],["GPU tile",["Xe3 cores","Render + ray tracing"]],["Platform tile",["LP E-cores","PCIe / TB4 / USB","Wi-Fi MAC","Audio DSP","Security engine","Memory controller"]]],sw:"Microcode, pcode (PMC firmware), CSME firmware, Intel FSP during boot; Windows/Linux drivers per block."},
+ cpu:{fn:"Executes the operating system and application code",c:null,q:"Included in SoC price",in:[["Clusters",["4 P-cores","8 E-cores","4 LP E-cores"]],["Shared",["18 MB L3","Thread Director","Ring / mesh"]]],sw:"Microcode updates (UEFI + OS), Thread Director hints read by the Windows or Linux scheduler."},
+ gpu:{fn:"Draws the desktop, video and games without the dGPU",c:null,q:"Included in SoC price",in:[["Front end",["Command streamer","Geometry"]],["Cores",["Xe3 vector engines","XMX matrix","Ray tracing units"]],["Back end",["L2 cache","Memory-side cache"]]],sw:"GuC/HuC firmware loaded by the kernel driver; WDDM driver (Windows) or i915/Xe (Linux); DirectX, Vulkan, OpenCL."},
+ npu:{fn:"Runs AI models efficiently at a few watts",c:null,q:"Included in SoC price",in:[["Engine",["DMA in","MAC arrays","SHAVE DSPs","DMA out"]],["Memory",["Scratchpad SRAM"]]],sw:"NPU firmware + MCDM driver; OpenVINO, DirectML / Windows ML, ONNX Runtime."},
+ ipu:{fn:"Turns raw camera pixels into a clean video image",c:null,q:"Included in SoC price",in:[["Pipeline",["CSI-2 receiver","Demosaic","Noise reduction","HDR + 3A","Scaler"]]],sw:"IPU firmware + camera driver; per-module tuning files from the OEM; Windows Studio Effects on NPU."},
+ disp:{fn:"Composes and sends frames to every screen",c:null,q:"Included in SoC price",in:[["Pipes",["Plane blending","Scaler","Color + HDR"]],["Outputs",["eDP PHY","DP / HDMI PHY","USB4 DP tunnel"]]],sw:"DMC firmware for display power states; part of the graphics driver; UEFI GOP driver at boot."},
+ media:{fn:"Decodes and encodes video in hardware",c:null,q:"Included in SoC price",in:[["Engines",["Bitstream parser","Decode","Encode","Video post-processing"]]],sw:"Media SDK / oneVPL, Media Foundation, VA-API."},
+ tbt:{fn:"Tunnels PCIe, DisplayPort and USB over each USB-C port",c:null,q:"Included in SoC price",in:[["Router",["DP adapters","PCIe adapters","USB3 adapters","Switch"]],["Ports",["USB4 lane adapters ×4"]]],sw:"USB4 connection manager in the OS; retimer and router NVM firmware updated through Windows Update."},
+ xhci:{fn:"Serves standard USB ports and internal USB devices",c:null,q:"Included in SoC price",in:[["Host",["xHCI rings","USB 3.2 PHYs","USB 2.0 PHYs"]]],sw:"Inbox USB xHCI driver; class drivers (HID, mass storage, video)."},
+ sec:{fn:"Verifies boot firmware and stores keys",c:null,q:"Included in SoC price",in:[["Engine",["Boot ROM","Crypto engine","Fuses + keys","fTPM / PTT"]]],sw:"CSME (or PSP) firmware in SPI flash; Boot Guard; TPM base services; BitLocker."},
+ cnvi:{fn:"Holds the Wi-Fi and Bluetooth digital logic",c:null,q:"Included in SoC price",in:[["MAC",["Wi-Fi 7 MAC","BT controller","Coex"]],["Link",["CNVio3 to RF card"]]],sw:"Wi-Fi firmware loaded by the Netwtw driver; Bluetooth firmware via USB; WPA3 supplicant in the OS."},
+ pcie4:{fn:"Connects slower PCIe devices",c:null,q:"Included in SoC price",in:[["Root ports",["Link layer","Transaction layer","8 × Gen4 PHY lanes"]]],sw:"PCI bus driver + ASPM / L1 substates set in UEFI and ACPI."},
+ pcie5:{fn:"Connects the SSD and discrete GPU",c:null,q:"Included in SoC price",in:[["Root ports",["Link layer","Transaction layer","12 × Gen5 PHY lanes"]]],sw:"PCI bus driver; UEFI enumerates and assigns resources before boot."},
+ pmc:{fn:"Controls power states, clocks and voltages",c:null,q:"Included in SoC price",in:[["Controller",["pcode CPU","Power gates","Clock control","SVID master"]]],sw:"pcode / PMC firmware inside the SoC; OS power framework (Modern Standby, P-states via HWP)."},
+ adsp:{fn:"Processes audio without waking the CPU",c:null,q:"Included in SoC price",in:[["DSP",["DSP cores","SRAM","SoundWire masters","DMIC input"]]],sw:"SOF or Intel SST firmware with topology files; audio class drivers; OEM tuning."},
+ ish:{fn:"Reads sensors while the CPU sleeps",c:null,q:"Included in SoC price",in:[["Hub",["MCU","I²C / I3C","Sensor fusion"]]],sw:"ISH firmware; HID sensor class driver."},
+ espi:{fn:"Links the SoC to the EC and boot flash",c:null,q:"Included in SoC price",in:[["Controllers",["eSPI host","SPI flash controller","GPIO"]]],sw:"Used by UEFI and ACPI (EC operation region); flash regions locked after boot."},
+ lpss:{fn:"Talks to touchpad and other small peripherals",c:null,q:"Included in SoC price",in:[["Controllers",["I²C","SPI","UART"]]],sw:"Serial I/O drivers; HID-over-I²C class driver for touchpads."},
+ noc:{fn:"Moves data between tiles, cache and memory",c:null,q:"Included in SoC price",in:[["Fabric",["Die-to-die links","Coherent fabric","L3 / side cache"]]],sw:"Configured by firmware; no OS driver."},
+ memc:{fn:"Reads and writes the system DRAM",c:null,q:"Included in SoC price",in:[["Controller",["Scheduler","Refresh","Inline ECC"]],["PHY",["8 × 16-bit LP5X channels","Training"]]],sw:"Memory training in UEFI (FSP-M); results saved so later boots are fast."},
+ dram:{fn:"Holds running programs and data",c:[110,240],q:"32 GB; prices volatile in the 2025–26 DRAM shortage",in:[["Package",["4 × 32-bit dies stacks","On-die ECC"]]],sw:"SPD data read by UEFI; no runtime firmware."},
+ ssd:{fn:"Stores the OS, apps and files",c:[60,130],q:"1 TB TLC; Gen5 costs more",in:[["Controller",["PCIe Gen5 x4","Arm cores","LDPC ECC","NAND channels"]],["Media",["TLC NAND dies"]]],sw:"SSD firmware (FTL, wear levelling) updated by vendor tools; stornvme / nvme driver."},
+ dgpu:{fn:"Renders games and heavy 3D on its own memory",c:[260,450],q:"Gaming / creator SKUs only",in:[["GPU",["PCIe Gen5 x8","Shader cores","RT + tensor cores","GDDR7 controller"]]],sw:"VBIOS + GSP firmware; NVIDIA/AMD driver; Optimus or Advanced Optimus for MUX switching."},
+ gddr:{fn:"Feeds the discrete GPU with high bandwidth",c:[50,90],q:"4 × 2 GB chips",in:[["Chips",["4 × 32-bit GDDR7 devices"]]],sw:"Training by the dGPU's VBIOS."},
+ panel:{fn:"Shows the picture",c:[90,190],q:"14″ 2.8K OLED; LCD cheaper",in:[["Panel",["eDP receiver","TCON + PSR buffer","Row / column drivers","OLED stack"]]],sw:"Panel EDID/DisplayID; TCON firmware; OS brightness and VRR control."},
+ cam:{fn:"Captures video and IR images for face login",c:[10,25],q:"RGB + IR module",in:[["Module",["Lens","Image sensor","IR sensor","IR LED driver"]]],sw:"Sensor driver + tuning on the IPU; Windows Hello face."},
+ sens:{fn:"Senses lid, orientation, light and presence",c:[2,8],q:"ALS, IMU, hall; radar extra",in:[["Sensors",["Accelerometer","Hall sensor","Ambient light","Presence"]]],sw:"ISH firmware and HID sensor drivers."},
+ fp:{fn:"Unlocks with a fingerprint",c:[3,8],q:"Power-button module",in:[["Chip",["Sensor array","Match engine","Secure storage"]]],sw:"Sensor firmware; Windows Biometric Framework (ESS)."},
+ ec:{fn:"Keeps the laptop's housekeeping running",c:[1.5,3],q:"Plus flash region",in:[["MCU",["Arm / 8051 core","Keyboard scanner","SMBus masters","PWM + tach","eSPI slave"]]],sw:"EC firmware from the OEM; talks to ACPI through the EC operation region."},
+ tpad:{fn:"Tracks fingers and simulates clicks",c:[12,30],q:"Haptic glass pad",in:[["Pad",["Capacitive sensor","Controller MCU","Haptic driver","Actuators"]]],sw:"Touch controller firmware; Windows Precision Touchpad (HID)."},
+ flash:{fn:"Stores the firmware that runs before the OS",c:[0.8,1.6],q:"32 MB SPI NOR",in:[["Regions",["Descriptor","CSME firmware","UEFI BIOS","EC firmware"]]],sw:"Updated by UEFI capsule updates; regions protected."},
+ kbd:{fn:"Turns key presses into scan codes",c:[12,25],q:"Backlit keyboard",in:[["Matrix",["Rows","Columns","Backlight LEDs"]]],sw:"EC firmware keyboard scanner; i8042 / HID path to the OS."},
+ fan:{fn:"Removes heat from the SoC and dGPU",c:[8,20],q:"2 fans + heat pipes",in:[["Thermal",["Fans","Heat pipes / vapor chamber","Thermistors"]]],sw:"EC fan curves; Intel DTT / AMD PMF power-limit policies; OS thermal zones."},
+ p_tb1:{fn:"Data, video and charging through one connector",c:[0.6,1.5],q:"Connector only",in:[["Pins",["SuperSpeed pairs","USB 2.0 pair","CC1/CC2","SBU","VBUS"]]],sw:"Managed by PD controller firmware and the USB4 connection manager."},
+ p_tb2:{fn:"Data, video and charging through one connector",c:[0.6,1.5],q:"Connector only",in:[["Pins",["SuperSpeed pairs","USB 2.0 pair","CC1/CC2","SBU","VBUS"]]],sw:"As port 1."},
+ p_usba:{fn:"Legacy USB for accessories",c:[0.3,0.8],q:"Connector only",in:[["Pins",["VBUS","USB 2.0 pair","SuperSpeed pairs"]]],sw:"xHCI driver."},
+ p_hdmi:{fn:"Video out to TVs and projectors",c:[0.4,1],q:"Connector only",in:[["Pins",["4 data pairs","DDC","HPD","CEC"]]],sw:"Graphics driver reads EDID over DDC."},
+ a_wifi:{fn:"Radiates and receives Wi-Fi and Bluetooth",c:[1,3],q:"Pair with coax",in:[["Path",["Radiator","Coax through hinge","u.FL connector"]]],sw:"SAR and regulatory tables in the Wi-Fi driver."},
+ a_wwan:{fn:"Radiates and receives 5G",c:[3,8],q:"Four antennas + coax",in:[["Path",["Radiator","SAR sensor","Coax"]]],sw:"Antenna tuning and SAR back-off in modem firmware."},
+ p_sd:{fn:"Accepts SD camera cards",c:[0.5,1],q:"Socket",in:[["Socket",["UHS-I pins","UHS-II row","Card detect"]]],sw:"sdbus / sdhci driver."},
+ p_jack:{fn:"Connects wired headphones",c:[0.2,0.5],q:"Jack",in:[["Jack",["Tip / ring","Sleeve mic","Detect switch"]]],sw:"Jack detection reported by codec."},
+ spk:{fn:"Produces sound",c:[3,8],q:"Set of 2–4",in:[["Driver",["Coil + magnet","Enclosure"]]],sw:"Speaker protection and EQ on the audio DSP."},
+ mics:{fn:"Picks up voice",c:[1,3],q:"2–4 MEMS mics",in:[["Mic",["MEMS membrane","ADC","PDM output"]]],sw:"Beam-forming and noise suppression on DSP or NPU."},
+ batt:{fn:"Stores energy and reports its state",c:[35,70],q:"70 Wh pack with gauge",in:[["Pack",["4 cells in series","Protection FETs","Fuel gauge","Thermistor"]]],sw:"Gauge firmware; EC reads it over SMBus; ACPI battery driver."},
+ ret:{fn:"Cleans up high-speed signals at each USB-C port",c:[5,12],q:"Two retimers",in:[["Retimer",["CDR + EQ","Mux / orientation","Re-transmit"]]],sw:"Retimer NVM firmware updated via USB4 or capsule."},
+ pdc:{fn:"Negotiates charging power and port roles",c:[3,7],q:"Two controllers",in:[["Controller",["CC PHY","PD policy MCU","VBUS FET drivers"]]],sw:"PD firmware (OEM config); UCSI interface to the OS via EC."},
+ redrv:{fn:"Boosts the USB-A 10 Gbps signal",c:[0.5,1.5],q:"One chip",in:[["Lanes",["Linear EQ","Driver"]]],sw:"Pin-strapped; no software."},
+ pcon:{fn:"Turns DisplayPort into HDMI 2.1",c:[2,5],q:"One chip",in:[["Converter",["DP receiver","Stream converter","HDMI FRL TX"]]],sw:"Converter firmware; graphics driver handles mode set."},
+ wifi:{fn:"Wi-Fi 7 and Bluetooth radios",c:[10,20],q:"M.2 2230 card",in:[["RF",["Transceiver","PA","LNA","T/R switch","Filter"]],["Link",["CNVio3","USB 2.0 (BT)"]]],sw:"RF firmware and calibration, loaded by the Wi-Fi driver."},
+ wwan:{fn:"Cellular 5G data",c:[60,120],q:"Optional module",in:[["Modem",["Baseband","RF transceiver","PA modules","Filters"]],["Host",["PCIe x1","USB 2.0"]]],sw:"Modem firmware + carrier configs; MBIM driver; Windows Mobile Broadband."},
+ cardr:{fn:"Reads SD cards",c:[1.5,3],q:"One chip",in:[["Controller",["PCIe endpoint","SD host","Card power switch"]]],sw:"Vendor driver or SD host class driver."},
+ codec:{fn:"Analog audio for the headset jack",c:[1.5,3],q:"One chip",in:[["Codec",["SoundWire slave","DAC","Headphone amp","ADC","Jack detect"]]],sw:"Codec settings via audio driver topology."},
+ amp:{fn:"Drives and protects the speakers",c:[2,5],q:"Two amps",in:[["Amp",["SoundWire slave","Class-D stage","V/I sense ADC"]]],sw:"Speaker-protection algorithm on the DSP."},
+ vr:{fn:"Supplies precise, fast-changing core voltages",c:[12,30],q:"Controller + power stages",in:[["Regulator",["PWM controller","DrMOS phases","Inductors","Output caps"]],["Control",["SVID"]]],sw:"Configured by UEFI; voltage requests from pcode."},
+ chg:{fn:"Charges the battery and powers the system",c:[2,4],q:"One chip + FETs",in:[["Charger",["Input current sense","Buck-boost FETs","Battery FET"]]],sw:"EC writes charge current and limits over SMBus."}
+};
+const fmt=c=>c?(c[0]<1?"$"+c[0].toFixed(1):"$"+c[0])+"–"+(c[1]<1?c[1].toFixed(1):c[1]):"in SoC";
+
+// dir = animation along the drawn path; flip lists links that run the other way on this path
+const PRESETS=[
+ {id:"charge",n:"USB-C charging",dir:"fwd",flip:["batt>chg","chg>vr"],set:["p_tb1","pdc","chg","batt","vr","soc","pmc"],note:"The PD controller and the charger negotiate over the CC wire (say 20 V × 5 A), close the VBUS switch, and the NVDC charger feeds the system rail while charging the 4S pack. The core VRs step the rail down to under 1 V for the SoC. The EC supervises everything over SMBus."},
+ {id:"boot",n:"Power-on & boot",dir:"rev",set:["ec","espi","flash","sec","cpu","pmc","memc","dram","pcie5","ssd","noc"],note:"The EC wakes first and sequences the power rails. The security engine loads its firmware from SPI flash and verifies the UEFI image (Boot Guard). The CPU runs UEFI, which trains LPDDR5X, enumerates PCIe and finally loads Windows Boot Manager from the NVMe SSD."},
+ {id:"nvme",n:"NVMe file read",dir:"rev",flip:["memc>dram"],set:["ssd","pcie5","noc","memc","dram","cpu"],note:"The CPU writes a command to a queue in DRAM and rings the SSD's doorbell. The SSD controller reads NAND, then writes the data straight into DRAM by DMA over PCIe Gen5 x4 (up to ≈ 15 GB/s) and posts a completion."},
+ {id:"dock",n:"Thunderbolt dock",dir:"rev",set:["p_tb1","ret","tbt","disp","xhci","pcie4","noc"],note:"One cable carries two 4K monitors as DisplayPort tunnels, the dock's USB and Ethernet as a PCIe tunnel, and returns up to 100 W of charging, all over 40 Gbps."},
+ {id:"call",n:"Video call",dir:null,set:["cam","ipu","npu","mics","codec","adsp","amp","spk","cnvi","wifi","a_wifi","disp","panel","media","cpu"],note:"Camera frames pass through the ISP; the NPU applies background blur and eye contact; the audio DSP beam-forms the mics and cancels echo; video is encoded by the media engine and leaves over Wi-Fi 7."},
+ {id:"game",n:"Gaming on the dGPU",dir:"fwd",set:["cpu","pcie5","dgpu","gddr","gpu","disp","panel","fan"],note:"The CPU sends draw calls over PCIe Gen5 x8; the dGPU renders from its GDDR7. Without a MUX switch the finished frame is copied back to the integrated GPU's memory and its display engine scans it out over eDP."},
+ {id:"g5",n:"5G download",dir:"fwd",set:["a_wwan","wwan","pcie4","cpu","noc"],note:"Four antennas feed the M.2 5G module's modem, which passes IP packets to the SoC over a PCIe Gen4 x1 link using MBIM."},
+ {id:"input",n:"Keyboard & touchpad",dir:"rev",set:["kbd","ec","espi","tpad","lpss","cpu"],note:"The EC scans the key matrix and forwards scan codes over eSPI. The touchpad reports finger positions as HID over I²C directly to the SoC's serial I/O."}
+];
+
+const DEEP={
+ soc:{tech:["Intel 18A compute tile; TSMC N3E GPU tile; Intel 7 / TSMC N6 platform tile","Foveros 3D tiles on a base die; BGA ≈ 50 × 25 mm"],
+  impl:["Laptop processors stopped being one chip plus a chipset. Panther Lake puts the CPU and NPU on a compute tile, graphics on a GPU tile and all I/O on a platform-controller tile, stacked on a passive base die with Foveros. Each tile can be made on the process that suits it: dense logic on 18A, analog-heavy I/O on an older node.","Power is managed per domain: idle tiles are gated, the LP E-cores on the platform tile can run light work while the compute tile is off, and the PMC drives Modern Standby. Sustained performance is set by the laptop's cooling (often 25–45 W), not the 80 W turbo limit."],
+  arch:[["Tiled x86 (Intel)","CPU, GPU and I/O on separate tiles joined by Foveros.","Mix-and-match nodes and GPU sizes; packaging cost.","Core Ultra Series 2/3"],["Monolithic x86 (AMD)","One die with CPU, GPU, NPU and I/O.","Simple, low latency; one node for all.","Ryzen AI 300/400"],["Arm SoC (Qualcomm)","Phone-style SoC scaled up, Windows on Arm.","Excellent battery life; x86 apps emulated.","Snapdragon X / X2"],["Unified-memory SoC (Apple)","CPU, GPU and NPU share very wide on-package LPDDR.","Huge bandwidth; no upgrades, macOS only.","M4 / M5"]]},
+ cpu:{tech:["Intel 18A (RibbonFET + PowerVia)","Inside compute tile"],impl:["Hybrid CPUs mix big P-cores with smaller E-cores. A P-core has a wide out-of-order engine for single-thread speed; an E-core gives about half the speed at a quarter of the area, so many of them win on multi-threaded throughput per watt.","Thread Director monitors each thread's instruction mix and tells the OS which core class suits it. Background tasks go to LP E-cores on the low-power island first."],
+  arch:[["P + E + LP-E hybrid","Three core classes.","Best efficiency range; scheduler complexity.","Intel Core Ultra"],["Zen 5 + Zen 5c","Same core design, compact variant with less cache.","Same ISA behaviour; smaller gain at idle.","AMD Ryzen AI"],["Oryon Arm cores","Uniform high-IPC Arm cores.","Low idle power; emulation for x86 apps.","Snapdragon X2"]]},
+ gpu:{tech:["TSMC N3E (Xe3)","GPU tile"],impl:["The iGPU is built from Xe cores, each with vector engines, XMX matrix engines and a ray-tracing unit. It has no memory of its own and shares the LPDDR5X bus, so memory speed directly limits frame rates.","In laptops with a dGPU the iGPU still owns the internal screen in hybrid mode, saving power on the desktop and letting the dGPU power off completely."],arch:[["Hybrid (Optimus)","dGPU renders, iGPU displays.","Saves power; small copy overhead.","Most gaming laptops"],["MUX switch","Panel wired directly to dGPU when gaming.","Lower latency, higher FPS; needs restart or Advanced Optimus.","Higher-end gaming laptops"],["iGPU only","No dGPU.","Lighter, cheaper, longer battery.","Thin-and-light"]]},
+ npu:{tech:["Intel 18A","Inside compute tile"],impl:["An NPU is a grid of multiply-accumulate arrays fed by DMA engines, plus programmable DSPs for layers the arrays cannot run. Weights and activations stay in local SRAM as long as possible because each DRAM access costs far more energy than a multiply.","Windows assigns sustained effects (camera, mic, captions, Recall) to the NPU and bursts of heavy AI to the GPU."],arch:[["NPU","Fixed matrix engines + DSP.","Best TOPS per watt; narrower op support.","Copilot+ features"],["GPU","General shaders with matrix units.","Highest throughput; tens of watts.","Image generation, large models"],["CPU (VNNI/AMX)","Vector instructions.","Lowest latency for small models.","Light inference"]]},
+ memc:{tech:["Platform / compute tile","LPDDR5X on board or CAMM2"],impl:["The controller drives eight 16-bit LPDDR5X channels. At 8533 MT/s that is 8533 × 16 bytes ≈ 136.5 GB/s peak, shared by every block in the SoC.","LPDDR runs at low voltage with short point-to-point traces. That is why laptops solder it beside the SoC or use the new CAMM2 compression-mount module instead of SO-DIMMs."],arch:[["Soldered LPDDR5X","Packages on the main board.","Fast, low power; not upgradeable.","Most thin laptops"],["LPCAMM2","Compression-mount LPDDR module.","Fast and replaceable; new.","Some business laptops"],["DDR5 SO-DIMM","Two sockets, 64-bit each.","Upgradeable; slower, more power.","Gaming and workstation laptops"],["On-package LPDDR","Memory inside the SoC package.","Shortest wires; fixed size.","Lunar Lake, Apple M-series"]]},
+ dram:{tech:["1β / 1γ DRAM nodes","4 × LPDDR5X BGA or 1 × LPCAMM2"],impl:["Each LPDDR5X package holds several stacked dies. In standby the DRAM enters self-refresh and keeps its contents for a few milliwatts.","Memory is the least upgradeable and, during 2025–26, one of the most price-volatile parts of a laptop."],arch:[]},
+ ssd:{tech:["NAND: 200–300+ layer 3D TLC","M.2 2280 single-sided"],impl:["An NVMe SSD is a small computer: Arm cores run the flash translation layer, LDPC engines correct errors, and 4–8 NAND channels are read in parallel. DRAM-less designs use a slice of host memory (HMB) for mapping tables.","NVMe uses up to 64K queues of 64K commands, so many CPU cores can issue I/O at once without locking. Power states and PCIe L1.2 bring idle power under 5 mW."],arch:[["Gen5 x4","≈ 14 GB/s read.","Fast; hotter, needs a heatsink.","Premium and creator laptops"],["Gen4 x4","≈ 7 GB/s read.","Cool and cheap; plenty for most users.","Mainstream"],["M.2 2230","Short card.","Fits small designs; less capacity.","Handhelds, ultra-thin"]]},
+ tbt:{tech:["Integrated in platform tile","Retimer per port"],impl:["USB4 is a tunnelling protocol. The host router packetizes PCIe, DisplayPort and USB 3 traffic and sends it over two 20 Gbps lanes in each direction. A dock contains a matching router that unpacks it.","DisplayPort tunnels get priority bandwidth; whatever remains goes to PCIe and USB. Thunderbolt 4 is USB4 with mandatory minimums (40 Gbps, two 4K screens, PCIe tunnelling, 15 W bus power)."],arch:[["Integrated TB4","USB4 router in the SoC.","Cheapest, lowest power.","Intel Core Ultra, AMD Ryzen AI (USB4)"],["Discrete TB5","Barlow Ridge controller on PCIe.","80 Gbps (120 boost); extra chip and power.","Premium creator laptops"],["USB 3.2 only","No tunnelling.","Cheap; no PCIe docks.","Budget laptops"]]},
+ pdc:{tech:["Mixed-signal BCD","QFN / WCSP"],impl:["USB-C power starts at 5 V. The PD controller exchanges messages with the charger over the CC wire, picks a contract (for example 20 V at 3.25 A for 65 W) and only then switches VBUS through to the charger. With PD 3.1/3.2 EPR it can request 28, 36 or 48 V for up to 240 W.","The controller also decides data role and alternate modes (DisplayPort, Thunderbolt) and reports everything to the EC, which exposes it to the OS through UCSI."],arch:[["Dedicated PD per port","One controller each.","Simple, flexible.","Most laptops"],["Dual-port PD","One chip for two ports.","Cheaper, less board area.","Thin designs"]]},
+ chg:{tech:["BCD power process","QFN + external FETs"],impl:["Narrow-voltage DC (NVDC) chargers regulate the system rail close to battery voltage, so the system keeps running instantly if the adapter is pulled. A buck-boost stage accepts anything from 5 V to 48 V USB-C input.","During turbo the charger can let the battery add current on top of the adapter (hybrid boost), which is how a laptop briefly draws more than its adapter rating."],arch:[["NVDC buck-boost","Single stage handles all USB-C voltages.","Flexible; slightly less efficient at 20 V.","USB-C laptops"],["Barrel-jack buck","Fixed 19–20 V input.","Simple; needs a proprietary adapter.","High-power gaming laptops"]]},
+ vr:{tech:["Controller + DrMOS power stages","Inductors and capacitors near the SoC"],impl:["The SoC's core rails need up to ≈ 150 A at under 1 V, changing in microseconds. A multiphase buck converter spreads this over several phases that switch at staggered times, reducing ripple and heat.","The SoC sends voltage targets over SVID (Intel) or SVI3 (AMD). In light load the controller sheds phases to stay efficient."],arch:[["Multiphase external VR","Controller + DrMOS per phase.","Handles high current; board area.","Most x86 laptops"],["Integrated VR (FIVR / DLVR)","Regulators inside the SoC package.","Fine-grain control; heat in package.","Intel (partial)"],["PMIC","One chip with many bucks.","Compact; lower current.","Arm laptops"]]},
+ ec:{tech:["40–90 nm microcontroller","LQFP / BGA"],impl:["The EC is powered whenever the battery is connected. It scans the keyboard, reads the battery gauge and charger over SMBus, runs fan curves from thermistor readings and sequences power rails when you press the power button.","The OS talks to it through ACPI: the EC exposes an operation region over eSPI, and ACPI methods read battery state, lid state and thermal values from it."],arch:[["Proprietary EC firmware","OEM code on ITE / Nuvoton / Microchip MCU.","Mature; closed.","Most Windows laptops"],["Open-source EC","Chromium EC / Zephyr.","Auditable; fewer vendors.","Chromebooks, Framework"]]},
+ wifi:{tech:["RF CMOS transceiver + FEM","M.2 2230 card"],impl:["With CNVi the card carries only radio parts: transceivers, PAs, LNAs, switches and filters. The MAC and protocol logic run inside the SoC. This makes the card cheaper and lets the SoC power-manage Wi-Fi closely.","Wi-Fi 7 adds 320 MHz channels at 6 GHz, 4096-QAM and Multi-Link Operation, which lets one connection use two bands at once."],arch:[["CNVi (Intel)","MAC in SoC, RF on card.","Cheap, efficient; Intel-only.","Intel laptops"],["PCIe Wi-Fi card","Full chip on M.2 PCIe.","Any platform; more power.","AMD / Qualcomm laptops"],["Soldered combo chip","Chip on the main board.","Thinnest; not replaceable.","Ultra-thin designs"]]},
+ wwan:{tech:["4 nm modem + RF transceiver","M.2 3042 / 3052 card"],impl:["A WWAN module is the cellular half of a phone on a card: baseband, transceiver, PA modules, filters and its own power management. The laptop only provides antennas, a SIM or eSIM and a PCIe link.","The host sees a network adapter using MBIM. Carrier certification is done per module, which is why laptop makers offer only a few WWAN options."],arch:[["M.2 PCIe module","Full modem on a card.","Certified, swappable; costs $60–120.","Business laptops"],["Integrated modem","Modem in the SoC.","Lower power; rare in PCs.","Some Arm laptops"],["Phone tethering","Uses a phone's modem.","Free; extra battery drain.","Most users"]]},
+ panel:{tech:["LTPS or oxide TFT backplane + OLED","Panel module with TCON"],impl:["The SoC sends frames over eDP 1.5, four lanes at up to 8.1 Gbps. The panel's TCON buffers the last frame so that, with Panel Self Refresh or Panel Replay, the SoC link and display engine can sleep while the image is static.","Variable refresh (down to 1–30 Hz) and OLED's per-pixel emission let the display, usually the biggest power user at idle, drop well below 2 W on a dark static screen."],arch:[["OLED","Self-emissive pixels.","Perfect black, low power on dark content; burn-in risk.","Premium thin laptops"],["Mini-LED LCD","LCD with thousands of local-dimming zones.","Very bright HDR; thicker, more power.","Creator laptops"],["IPS LCD","Uniform LED backlight.","Cheap, no burn-in; power constant.","Mainstream"]]},
+ dgpu:{tech:["TSMC 4N / N4P","BGA on main board"],impl:["The dGPU sits on PCIe Gen5 x8 with four GDDR7 chips around it and its own multiphase VR. It is power-gated completely (D3cold) when idle, which is essential for battery life.","Its power budget (TGP) is set by the laptop maker from 35 to 115+ W, so the same GPU name can perform very differently in different laptops."],arch:[["Soldered dGPU","GPU chip on the board.","Standard for laptops.","Gaming laptops"],["External GPU","Desktop card in a Thunderbolt/OCuLink box.","Big performance; PCIe bandwidth limit.","Thin laptop + dock"]]},
+ cam:{tech:["Stacked BSI CMOS sensor","Camera module on lid flex"],impl:["Modern laptops send raw sensor data over MIPI CSI-2 to the SoC's ISP instead of using a USB webcam with its own processor. This gives better image quality and lets the NPU apply effects.","An IR sensor and 940 nm LED in the same bezel give Windows Hello face login."],arch:[["MIPI camera + SoC ISP","Raw data to the SoC.","Better image, lower cost; complex drivers.","Current premium laptops"],["USB camera","Module with own ISP.","Simple, universal; weaker image.","Budget laptops"]]},
+ adsp:{tech:["Inside platform tile","SoundWire to codec and amps"],impl:["SoundWire is a two-wire bus carrying audio and control for several devices. The DSP runs echo cancellation, beam-forming and speaker protection so the CPU cores can stay asleep during calls and music.","Smart amps feed back voice-coil current and voltage; the DSP models coil temperature and excursion to play louder without damage."],arch:[["SoundWire codec + amps","Digital bus, multiple devices.","Fewer wires, low power.","New laptops"],["HDA codec","Intel High Definition Audio link.","Mature; more power.","Older laptops"]]},
+ sec:{tech:["Inside platform tile","Firmware in SPI flash"],impl:["At power-on the security engine runs from ROM, loads its own firmware from SPI flash, then checks the signature of the first UEFI code before the CPU may run it (Boot Guard). Each later stage is measured into the TPM.","BitLocker seals its key in the TPM, so a changed firmware or boot loader means the disk will not unlock without the recovery key."],arch:[["Firmware TPM","TPM inside the security engine.","Free; shares the SoC.","Most laptops"],["Discrete TPM","Separate TPM chip on SPI.","Isolated; extra cost.","Business laptops"],["Pluton","Microsoft security processor.","Updated by Windows; fewer bus attacks.","AMD, Qualcomm, some Intel"]]},
+ batt:{tech:["Li-ion pouch or prismatic cells","4S1P pack with gauge"],impl:["Four cells in series give ≈ 15.4 V nominal. The pack's gauge counts charge in and out (coulomb counting) and tracks cell impedance to estimate capacity and remaining time.","Charging to 80% (battery-care modes) roughly doubles cycle life. Packs must stay under 100 Wh to fly as carry-on without airline approval."],arch:[]},
+ fan:{tech:["Blower fans + copper heat pipes or vapor chamber","—"],impl:["A thin laptop can remove about 25–45 W continuously. Heat pipes carry heat from the SoC and dGPU to fin stacks at the rear or side, where blower fans push it out.","The EC sets fan speed from temperatures; the OS and Intel DTT or AMD PMF lower power limits when the chassis surface gets too hot."],arch:[]}
+};
+NODES.forEach(n=>{const id=n[0];if(!DEEP[id])DEEP[id]=byIdParentDeep(id)});
+function byIdParentDeep(id){return {tech:[id.startsWith("p_")||id.startsWith("a_")?"Connector / passive":"Inside SoC or discrete IC","—"],impl:[D[id].role],arch:[]}}
+
+const PAGEOF={};
+[["../PCIe/","PCIe",["pcie4","pcie5","ssd","cardr","dgpu","wwan"]],
+ ["../Memory/","Memory",["memc","dram","gddr","noc"]],
+ ["../Mobile/wifi-bluetooth.html","phone Wi-Fi & Bluetooth",["wifi","cnvi","a_wifi"]],
+ ["../Mobile/modem.html","phone 5G modem",["a_wwan"]],
+ ["../Mobile/power.html","phone power & charging",["pdc","chg","batt","vr"]],
+ ["../Mobile/thermal.html","phone thermal",["fan"]]].forEach(([f,n,ids])=>ids.forEach(i=>PAGEOF[i]=[f,n]));
+const SWOF={};NODES.forEach(n=>SWOF[n[0]]=["#sw","firmware & software layers"]);SWOF.soc=["#sw","firmware & software layers"];
+
+// ---------- protocols ----------
+const FAM={rf:["RF signal","--c-ant"],hs:["High-speed serial","--c-trx"],ls:["Low-speed control / data bus","--c-io"],mem:["Memory interface","--c-rffe"],pwr:["Power","--c-pwr"]};
+// id, name, family, speed, standard body, what it carries
+const PROTOS=[
+ ["rf","RF (analog)","rf","2.4–7.1 GHz Wi-Fi; 0.6–6 GHz 5G","—","Radio signals on thin coax from the M.2 cards through the hinge to the antennas."],
+ ["usb4","USB4 / Thunderbolt 4","hs","40 Gbps (2 × 20 Gbps lanes); TB5 80/120 Gbps","USB-IF, Intel","Tunnelled PCIe, DisplayPort and USB 3 traffic between the SoC's USB4 router and docks, drives and eGPUs."],
+ ["dp","DisplayPort 2.1 (Alt Mode / tunnel)","hs","UHBR10–UHBR20, up to 80 Gbps","VESA","Video to external monitors, either as DP Alt Mode on the USB-C pins or tunnelled inside USB4."],
+ ["hdmi","HDMI 2.1 FRL","hs","Up to 48 Gbps (4 × 12 Gbps)","HDMI Forum","Video and audio to TVs and projectors."],
+ ["edp","eDP 1.5 + Panel Replay","hs","HBR3 8.1 Gbps × 4 lanes","VESA","Frames from the display engine to the built-in panel; supports self-refresh and adaptive sync."],
+ ["usb32","USB 3.2 Gen 2","hs","10 Gbps","USB-IF","SuperSpeed data to the USB-A port."],
+ ["usb2","USB 2.0","ls","480 Mbps","USB-IF","Bluetooth, fingerprint reader and the USB 2.0 side of each port."],
+ ["pcie4","PCIe Gen 4","hs","16 GT/s per lane ≈ 1.97 GB/s","PCI-SIG","Links to the 5G module, card reader and optional second SSD."],
+ ["pcie5","PCIe Gen 5","hs","32 GT/s per lane ≈ 3.94 GB/s","PCI-SIG","Links to the main SSD (x4) and the discrete GPU (x8)."],
+ ["nvme","NVMe 2.x","hs","Runs over PCIe","NVM Express","Storage command set: submission and completion queues in host memory."],
+ ["cnvio","CNVio3","hs","Multi-Gbps serial","Intel","Proprietary link between the Wi-Fi MAC in the SoC and the RF companion on the M.2 card."],
+ ["lpddr","LPDDR5X","mem","8533 MT/s × 128-bit ≈ 136.5 GB/s","JEDEC","Main memory bus between SoC and DRAM."],
+ ["gddr","GDDR7","mem","28 Gbps per pin × 128-bit ≈ 448 GB/s","JEDEC","Graphics memory bus between the dGPU and its VRAM."],
+ ["csi","MIPI CSI-2","hs","D-PHY ≈ 2.5 Gbps per lane","MIPI Alliance","Raw camera frames from the webcam sensors to the ISP."],
+ ["sndw","MIPI SoundWire","ls","Up to ≈ 12.288 Mbps per link","MIPI Alliance","Audio samples and control to the codec and smart amps."],
+ ["pdm","PDM digital microphone","ls","≈ 2.4–3.1 MHz bit stream","—","1-bit audio from each MEMS microphone."],
+ ["analog","Analog audio","rf","Line / speaker level","—","Headphone and speaker drive signals and the headset mic."],
+ ["sdx","SD UHS-II","hs","Up to 312 MB/s","SD Association","Data between the card and the reader."],
+ ["espi","eSPI","ls","Up to 66 MHz × 4 bits","Intel","Link between the SoC and the EC: virtual wires, keyboard events, flash sharing."],
+ ["spi","SPI flash (Quad SPI)","ls","≈ 50 MHz × 4 bits","JEDEC SFDP","Boot firmware read from the SPI NOR flash."],
+ ["hid","HID over I²C / SPI","ls","I²C up to 1 MHz; SPI ≈ 10–20 MHz","Microsoft, USB-IF HID","Touchpad and touchscreen reports."],
+ ["i2c","I²C / I3C","ls","100 kHz – 12.5 MHz","NXP, MIPI Alliance","Sensors, camera control and other small devices."],
+ ["smbus","SMBus / Smart Battery","ls","100 kHz","SBS-IF","EC talks to the battery gauge, charger and PD controllers."],
+ ["kscan","Keyboard matrix scan","ls","GPIO rows and columns","—","The EC scans the key matrix to find pressed keys."],
+ ["pwm","PWM + tachometer","ls","≈ 25 kHz PWM","—","Fan speed control and feedback."],
+ ["pd","USB Power Delivery 3.2","ls","BMC on the CC wire, 300 kbps","USB-IF","Negotiates voltage, current, data role and alternate modes."],
+ ["svid","SVID / SVI3","ls","≈ 25–50 MHz serial","Intel / AMD","SoC asks the VR controller for new core voltages."],
+ ["power","DC power","pwr","Adapter 5–48 V; system ≈ 12–17 V; cores < 1.3 V","—","Power path from USB-C through the charger and battery to the regulators."],
+ ["noc","On-package fabric","mem","Hundreds of GB/s","Intel Foveros / AMD Infinity Fabric","Links between tiles, cache and memory controller."]
+];
+const PBY=Object.fromEntries(PROTOS.map(p=>[p[0],p]));
+const LPROTO={"p_tb1>ret":["usb4","dp"],"p_tb2>ret":["usb4","dp"],"p_tb1>pdc":["pd","power"],"p_tb2>pdc":["pd","power"],"pdc>chg":["power"],"p_usba>redrv":["usb32"],"p_hdmi>pcon":["hdmi"],"p_sd>cardr":["sdx"],"p_jack>codec":["analog"],"spk>amp":["analog"],"mics>codec":["pdm"],
+ "batt>chg":["power"],"chg>vr":["power"],"vr>soc":["power","svid"],"ret>tbt":["usb4","dp"],"redrv>xhci":["usb32"],"pcon>soc":["dp"],"wifi>cnvi":["cnvio","usb2"],"wwan>pcie4":["pcie4"],"cardr>pcie4":["pcie4"],"codec>adsp":["sndw"],"amp>adsp":["sndw"],
+ "disp>panel":["edp"],"ipu>cam":["csi","i2c"],"ish>sens":["i2c"],"pcie5>ssd":["pcie5","nvme"],"pcie5>dgpu":["pcie5"],"soc>fp":["usb2"],"espi>ec":["espi"],"lpss>tpad":["hid"],"espi>flash":["spi"],"memc>dram":["lpddr"],"dgpu>gddr":["gddr"],"ec>kbd":["kscan"],"ec>fan":["pwm"]};
+const lproto=l=>LPROTO[l.f+">"+l.t]||(l.p.classList.contains("rf")?["rf"]:[]);
+const XPROTO=[["smbus","Embedded controller",["batt","chg","pdc","ec"],{ec:"Battery gauge, charger, PD controllers"}],["i2c","Embedded controller (sensors, thermistors)",["fan"],{}],["usb2","Thunderbolt / USB host",["p_tb1","p_tb2","p_usba"],{}],["noc","Other SoC tiles and memory",["cpu","gpu","npu","ipu","disp","media","tbt","xhci","sec","cnvi","pcie4","pcie5","pmc","adsp","ish","espi","lpss","noc","memc"],{noc:"Every SoC block"}],["spi","SPI flash (shared via eSPI)",["sec"],{}]];
+const BP={p_tb1:"USB4 · DP Alt · PD",p_tb2:"USB4 · DP Alt · PD",p_usba:"USB 3.2 Gen 2",p_hdmi:"HDMI 2.1 FRL",a_wifi:"RF coax",a_wwan:"RF coax",p_sd:"SD UHS-II",p_jack:"analog audio",spk:"analog from amps",mics:"PDM to codec",batt:"power · SMBus",
+ ret:"USB4 in/out",pdc:"PD (CC) · SMBus",redrv:"USB 3.2",pcon:"DP in · HDMI out",wifi:"RF · CNVio3 · USB 2",wwan:"RF · PCIe Gen4",cardr:"SD · PCIe Gen4",codec:"SoundWire · analog",amp:"SoundWire · analog",vr:"power · SVID",chg:"power · SMBus",
+ tbt:"USB4 router",cpu:"fabric",xhci:"USB 3.2 / 2.0",sec:"fabric · SPI",cnvi:"CNVio3",pcie4:"PCIe Gen4 ×8",pmc:"SVID master",adsp:"SoundWire",noc:"Foveros fabric",disp:"eDP · DP",ipu:"MIPI CSI-2",ish:"I²C / I3C",pcie5:"PCIe Gen5 ×12",gpu:"fabric",npu:"fabric",espi:"eSPI · SPI",lpss:"I²C · SPI · UART",media:"fabric",memc:"LPDDR5X PHY · 128-bit",
+ panel:"eDP 1.5",cam:"CSI-2 · I²C",sens:"I²C / I3C",ssd:"PCIe Gen5 x4 · NVMe",dgpu:"PCIe Gen5 x8",fp:"USB 2.0",ec:"eSPI · SMBus · PWM",tpad:"HID over I²C",flash:"Quad SPI",dram:"LPDDR5X",gddr:"GDDR7",kbd:"matrix scan",fan:"PWM + tach"};
+
+function bomHtml(){
+  const grp={"SoC":["soc"],"Memory & storage":["dram","ssd","flash"],"Display, camera & audio":["panel","cam","codec","amp","spk","mics"],"Ports & port chips":["p_tb1","p_tb2","p_usba","p_hdmi","p_sd","p_jack","ret","pdc","redrv","pcon","cardr"],"Wireless":["wifi","a_wifi"],"Power":["batt","chg","vr"],"Input, sensors & thermal":["ec","kbd","tpad","fp","sens","fan"],"Options: 5G and dGPU":["wwan","a_wwan","dgpu","gddr"]};
+  let tl=0,th=0;const rows=Object.entries(grp).map(([g,ids])=>{let l=0,h=0;ids.forEach(i=>{const c=X[i]&&X[i].c;if(c){l+=c[0];h+=c[1]}});tl+=l;th+=h;return `<dt>${g}</dt><dd>$${Math.round(l)}–${Math.round(h)}</dd>`}).join("");
+  return `<div><h3>Estimated bill of materials</h3><dl class="spec">${rows}<dt><b>Chips & modules shown</b></dt><dd><b>$${Math.round(tl)}–${Math.round(th)}</b></dd></dl><p class="cq" style="margin-top:6px">High-volume OEM estimates in USD, excluding chassis, PCB, assembly, OS licence and royalties. Without the 5G and dGPU options subtract about $370–670.</p></div>`;
+}
+
+const byId={}; NODES.forEach(n=>byId[n[0]]={id:n[0],x:n[1],y:n[2],w:n[3],h:n[4],cat:n[5],label:n[6],sub:n[7],parent:n[8]});
+byId.soc={id:"soc",...SOC,cat:"soc",label:"SoC package"};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function route(a,b,mx){
+  let L,R;
+  if(b.x>=a.x+a.w){L=a;R=b}else if(a.x>=b.x+b.w){L=b;R=a}else{
+    const t=a.y<b.y?a:b,o=t===a?b:a;const x=(Math.max(a.x,b.x)+Math.min(a.x+a.w,b.x+b.w))/2;
+    return `M${x} ${t.y+t.h} V${o.y}`;
+  }
+  const sx=L.x+L.w,ex=R.x,lo=Math.max(L.y,R.y),hi=Math.min(L.y+L.h,R.y+R.h);
+  if(hi-lo>=4){const y=(lo+hi)/2;return `M${sx} ${y} H${ex}`}
+  const m=mx??(sx+ex)/2,sy=clamp(R.y+R.h/2,L.y+8,L.y+L.h-8),ey=clamp(L.y+L.h/2,R.y+8,R.y+R.h-8);
+  return `M${sx} ${sy} H${m} V${ey} H${ex}`;
+}
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+
+const svg=document.getElementById("dia");
+// column labels
+[["PORTS & ANTENNAS",16],["PORT, RADIO & POWER ICs",176],["MEMORY & PERIPHERALS",676],["PLATFORM",856]].forEach(([t,x])=>{const e=el("text",{x,y:18,class:"col"},svg);e.textContent=t});
+// soc container
+const sg=el("g",{"data-id":"soc",class:"socg"},svg);
+const sbg=el("rect",{x:SOC.x,y:SOC.y+10,width:SOC.w,height:SOC.h-10,class:"soc-bg",rx:4},sg);
+el("rect",{x:SOC.x,y:SOC.y+10,width:SOC.w,height:SOC.h-10,class:"soc-box",rx:4},sg);
+const st=el("text",{x:SOC.x+16,y:SOC.y+SOC.h-12,class:"soc-title"},sg);st.textContent="SoC PACKAGE · 3 TILES";
+sbg.addEventListener("click",()=>select("soc"));
+const linkG=el("g",{},svg),nodeG=el("g",{},svg);
+const linkEls=LINKS.map(([f,t,ty,mx,pth])=>{const p=el("path",{d:pth||route(byId[f],byId[t],mx??undefined),class:"link "+ty},linkG);return{f,t,p}});
+const nodeEls={};
+NODES.forEach(n=>{const o=byId[n[0]];
+  const g=el("g",{class:"node",tabindex:"0",role:"button","aria-label":o.label,style:`--cat:var(${CAT[o.cat][0]})`},nodeG);
+  el("rect",{x:o.x,y:o.y,width:o.w,height:o.h,rx:3},g);
+  el("rect",{x:o.x,y:o.y+o.h/2-6,width:3,height:12,class:"pin"},g);
+  const cy=o.y+o.h/2;
+  const t1=el("text",{x:o.x+10,y:cy-2,class:"lbl"},g);t1.textContent=o.label;
+  const t2=el("text",{x:o.x+10,y:cy+12,class:"sub"},g);t2.textContent=o.sub;
+  g.addEventListener("click",e=>{e.stopPropagation();select(o.id)});
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(o.id)}});
+  nodeEls[o.id]=g;
+});
+nodeEls.soc=sg;
+
+const insp=document.getElementById("insp");
+function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function panel(id,extra){
+  const d=D[id];if(!d)return;const c=CAT[d.cat];const x=X[id]||{};
+  insp.innerHTML=`<div class="insp-head" style="--cat:var(${c[0]})"><span class="tag">${c[1]}</span><h2>${esc(d.t)}</h2></div>
+  <div class="insp-body">${extra?`<p class="note">${esc(extra)}</p>`:""}
+  ${x.fn?`<div><h3>Main function</h3><p class="fn">${esc(x.fn)}</p></div>`:""}
+  <div class="cost"><div><h3>Typical cost</h3><span class="amt">${x.c?fmt(x.c):"Included"}</span></div><span class="cq">${esc(x.q||"")}</span></div>
+  ${x.in?`<div><h3>Internal block diagram</h3><div class="inner">${innerSvg(d.t,x.in)}</div>${symKey(x.in)}</div>`:""}
+  <div><h3>How it works</h3><p>${esc(d.role)}</p></div>
+  ${interfacesHtml(id)}
+  ${PAGEOF[id]?`<a class="pagelink" href="${PAGEOF[id][0]}">Open the ${esc(PAGEOF[id][1])} page →</a>`:""}
+  ${x.sw?`<div><h3>Firmware &amp; drivers</h3><p>${esc(x.sw)}</p></div><a class="pagelink" href="#sw">All firmware &amp; software layers ↓</a>`:""}
+  ${DEEP[id]?`<button class="chip deeplink" type="button" onclick="document.getElementById('deep').scrollIntoView({behavior:'smooth'})">Implementation &amp; architectures ↓</button>`:""}
+  ${d.specs?`<div><h3>Key figures</h3><dl class="spec">${d.specs.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></div>`:""}
+  ${d.parts?`<div><h3>Typical parts</h3><ul class="parts">${d.parts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>`:""}
+  ${d.note?`<p class="note">${esc(d.note)}</p>`:""}</div>`;
+  deep(id);
+}
+function overview(){
+  insp.innerHTML=`<div class="insp-head"><span class="tag">Overview</span><h2>How a laptop is put together</h2></div>
+  <div class="insp-body"><p>Almost everything that used to be a separate chipset now lives in one tiled SoC package: CPU, GPU, NPU, memory controller, PCIe, Thunderbolt, USB, the Wi-Fi MAC, audio DSP and security engine.</p>
+  <p>Around it sit memory and storage, the display and camera, an embedded controller that runs the keyboard, battery and fans, and the USB-C power path that charges a 4-cell battery and feeds the core voltage regulators.</p>
+  ${bomHtml()}
+  <dl class="spec"><dt>PCIe lanes</dt><dd>12 Gen5 + 8 Gen4</dd><dt>Memory bandwidth</dt><dd>≈ 136.5 GB/s</dd><dt>USB-C</dt><dd>2 × 40 Gbps, PD up to 140 W</dd><dt>Sustained SoC power</dt><dd>≈ 25–45 W (chassis-limited)</dd><dt>Idle system power</dt><dd>≈ 4 W screen on</dd></dl>
+  <p class="note">Pick a path above, click any block, or switch on protocols to see how the blocks talk.</p></div>`;
+}
+function deep(id){
+ const d=DEEP[id],b=D[id];if(!d||!b)return;
+ const c=CAT[b.cat];
+ document.getElementById("deepbody").innerHTML=`<div class="dgrid">
+  <div class="dmain"><span class="tag" style="--cat:var(${c[0]})">${c[1]}</span><h3 class="dt">${esc(b.t)}</h3>${PAGEOF[id]?`<a class="pagelink" href="${PAGEOF[id][0]}">Open the full ${esc(PAGEOF[id][1])} page →</a>`:""}
+   <dl class="spec dtech"><dt>Process</dt><dd>${esc(d.tech[0])}</dd><dt>Package</dt><dd>${esc(d.tech[1])}</dd></dl>
+   <h4>How it is implemented</h4>${d.impl.map(p=>`<p>${esc(p)}</p>`).join("")}${d.extra?`<p class="note">${esc(d.extra)}</p>`:""}</div>
+  ${d.arch.length?`<div class="darch"><h4>Architecture options</h4><div class="tblwrap noh"><table class="atbl"><thead><tr><th>Architecture</th><th>How it works</th><th>Trade-off</th><th>Where used</th></tr></thead><tbody>${d.arch.map(a=>`<tr><td class="b">${esc(a[0])}</td><td>${esc(a[1])}</td><td>${esc(a[2])}</td><td>${esc(a[3])}</td></tr>`).join("")}</tbody></table></div></div>`:""}
+ </div>`;
+ document.querySelectorAll("#dnav .chip").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.id===id)));
+}
+// ---------- internal schematic renderer ----------
+const G={
+ amp:'<path d="M1 1 H17 L9 17 Z"/>',
+ filter:'<rect x="0.5" y="0.5" width="17" height="17"/><path d="M3 5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 9.5 q1.5 -2.5 3 0 t3 0 t3 0 t3 0 M3 14 q1.5 -2.5 3 0 t3 0 t3 0 t3 0"/>',
+ mixer:'<circle cx="9" cy="9" r="8"/><path d="M3.4 3.4 L14.6 14.6 M14.6 3.4 L3.4 14.6"/>',
+ conv:'<path d="M1 1 H11 L17 9 L11 17 H1 Z"/>',
+ sw:'<circle cx="3" cy="14" r="1.8"/><circle cx="15" cy="14" r="1.8"/><path d="M3 4 V12.2 M4.4 12.8 L14 5.5"/>',
+ ant:'<path d="M9 17 V7 M2 1 L9 7 L16 1 M2 1 H16"/>',
+ cpl:'<path d="M1 6 H17 M1 12 H17 M5 6 V12 M13 6 V12" stroke-dasharray="0"/>',
+ phase:'<circle cx="9" cy="9" r="8"/><path d="M9 2.5 V15.5 M5.5 9 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0"/>',
+ sum:'<circle cx="9" cy="9" r="8"/><path d="M9 4 V14 M4 9 H14"/>',
+ osc:'<circle cx="9" cy="9" r="8"/><path d="M4 9 q2.5 -5 5 0 t5 0"/>',
+ pwr:'<rect x="0.5" y="3" width="17" height="12"/><path d="M4 9 H8 M6 7 V11 M11 9 H15"/>'
+};
+const SYMNAME={amp:"Amplifier",filter:"Filter",mixer:"Mixer",conv:"Data converter",sw:"Switch",ant:"Antenna",cpl:"Coupler",phase:"Phase shifter",sum:"Splitter / combiner",osc:"Oscillator / PLL",pwr:"Power stage"};
+function sym(s){
+ if(/OIS|Driver IC|controller|Touch/i.test(s))return null;
+ if(/phase shifter/i.test(s))return "phase";
+ if(/splitter|combiner/i.test(s))return "sum";
+ if(/\b(ADC|DAC)\b/.test(s))return "conv";
+ if(/mixer|up-converter|down-converter/i.test(s))return "mixer";
+ if(/coupler/i.test(s))return "cpl";
+ if(/filter|SAW|BAW|duplexer|plexer|LTCC|XBAW/i.test(s))return "filter";
+ if(/(^|\s)(PA|LNA)\b|amplif|\bamp\b|^Driver$|driver amp|GaAs|power stage|Final stage|Smart amp/i.test(s))return "amp";
+ if(/switch|select|\bmux\b|T\/R|crossbar|FET stacks/i.test(s))return "sw";
+ if(/^antenna$|radiator|patch|dipole|frame (slot|segment)|copper loop|^coil$|^Antenna port$/i.test(s))return "ant";
+ if(/PLL|synth|LO \/|XO|oscillator/i.test(s))return "osc";
+ if(/buck|charge pump|LDO|boost/i.test(s))return "pwr";
+ return null;
+}
+const CTRL=/^(Control|Support|Shared|Monitor|Coex)$/;
+function wrapT(s,max){const w=s.split(" ");const L=[];let c="";w.forEach(t=>{if(c&&(c+" "+t).length>max){L.push(c);c=t}else c=c?c+" "+t:t});if(c)L.push(c);return L}
+function innerSvg(name,rows){
+ const W=340,P=14,GAP=18,AR=16;
+ let cols=rows.filter(r=>!CTRL.test(r[0])),bands=rows.filter(r=>CTRL.test(r[0]));
+ if(!cols.length){cols=bands;bands=[]}
+ const n=cols.length;let cw=(W-2*P-(n-1)*GAP)/n;cw=Math.min(cw,210);
+ const ox=(W-(n*cw+(n-1)*GAP))/2;
+ let s="",bottoms=[];const top=44;
+ cols.forEach(([lab,st],ci)=>{
+  const x=ox+ci*(cw+GAP);
+  s+=`<text x="${x+cw/2}" y="${top-10}" text-anchor="middle" class="ih">${esc(lab.toUpperCase())}</text>`;
+  s+=`<line x1="${x+6}" x2="${x+cw-6}" y1="${top-5}" y2="${top-5}" class="iul"/>`;
+  let y=top+4;
+  st.forEach((t,i)=>{
+   const g=sym(t),gw=28,lines=wrapT(t,Math.max(8,Math.floor((cw-gw-14)/5.6))),h=Math.max(30,lines.length*12.5+12);
+   if(i>0)s+=`<line x1="${x+cw/2}" x2="${x+cw/2}" y1="${y-AR}" y2="${y-2}" class="ia" marker-end="url(#iarr)"/>`;
+   s+=`<rect x="${x}" y="${y}" width="${cw}" height="${h}" rx="2" class="ib${g?" ib-"+g:""}"/>`;
+   if(g)s+=`<g class="ig" transform="translate(${x+5} ${y+h/2-9})">${G[g]}</g>`;
+   s+=`<line x1="${x+gw}" x2="${x+gw}" y1="${y+4}" y2="${y+h-4}" class="isep"/>`;
+   lines.forEach((ln,k)=>{s+=`<text x="${x+gw+7}" y="${y+h/2+4+(k-(lines.length-1)/2)*12.5}" class="it">${esc(ln)}</text>`});
+   y+=h+AR;
+  });
+  bottoms.push([x+cw/2,y-AR]);
+ });
+ let yb=Math.max(...bottoms.map(b=>b[1]));
+ if(bands.length){
+  const by=yb+26;let yy=by+20;
+  bands.forEach(([lab,st],bi)=>{
+   s+=`<text x="${P}" y="${yy-6}" class="ih" text-anchor="start">${esc(lab.toUpperCase())} BUS</text>`;
+   let xx=P,rowH=26;
+   st.forEach(t=>{const g=sym(t),w=Math.min(W-2*P,t.length*5.6+(g?34:16));
+    if(xx+w>W-P){xx=P;yy+=rowH+6}
+    s+=`<rect x="${xx}" y="${yy}" width="${w}" height="${rowH}" rx="2" class="ib ib-ctl"/>`;
+    if(g)s+=`<g class="ig" transform="translate(${xx+5} ${yy+4}) scale(.95)">${G[g]}</g>`;
+    s+=`<text x="${xx+(g?27:8)}" y="${yy+17}" class="it">${esc(t)}</text>`;
+    xx+=w+6;});
+   yy+=rowH+22;
+  });
+  s+=`<rect x="${P-6}" y="${by}" width="${W-2*P+12}" height="${yy-by-12}" rx="3" class="iband"/>`;
+  bottoms.forEach(([bx,bt])=>{s+=`<line x1="${bx}" x2="${bx}" y1="${bt}" y2="${by}" class="ictl"/>`});
+  yb=yy-12;
+ }
+ const H=yb+16;
+ return `<svg viewBox="0 0 ${W} ${H}" class="isvg" role="img" aria-label="Internal block diagram of ${esc(name)}"><defs><marker id="iarr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 Z" class="iah"/></marker></defs>
+ <rect x="3" y="3" width="${W-6}" height="${H-6}" rx="5" class="ipkg"/><text x="12" y="17" class="ipn">${esc(name.toUpperCase())} · INTERNAL</text>${s}</svg>`;
+}
+function symKey(rows){
+ const used=[...new Set(rows.flatMap(r=>r[1]).map(sym).filter(Boolean))];
+ if(!used.length)return "";
+ return `<div class="ikey">${used.map(k=>`<span><svg viewBox="-1 -1 20 20" width="15" height="15" class="ig">${G[k]}</svg>${SYMNAME[k]}</span>`).join("")}</div>`;
+}
+linkEls.forEach(l=>{const ps=lproto(l);if(!ps.length)return;l.p.classList.add("pf-"+PBY[ps[0]][2]);const t=el("title",{},l.p);t.textContent=`${byId[l.f].label||"SoC"} ↔ ${byId[l.t].label||"SoC"}: ${ps.map(i=>PBY[i][1]).join(" + ")}`});
+function interfacesHtml(id){
+ const rows=[];
+ linkEls.forEach(l=>{if(l.f!==id&&l.t!==id)return;const peer=l.f===id?l.t:l.f;const ps=lproto(l);if(!ps.length)return;rows.push([byId[peer].label||"Application SoC",ps])});
+ XPROTO.forEach(([pid,peer,ids,ov])=>{if(ids.includes(id))rows.push([ov[id]||peer,[pid]])});
+ if(!rows.length)return "";
+ return `<div><h3>Interfaces</h3><table class="ptab">${rows.map(([peer,ps])=>`<tr><td>${esc(peer)}</td><td>${ps.map(p=>`<span class="fam" style="--fc:var(${FAM[PBY[p][2]][1]})"></span>${esc(PBY[p][1])}`).join("<br>")}</td></tr>`).join("")}</table></div>`;
+}
+let showProto=false,selProto=null;
+function hiProto(pid){
+ selProto=pid;curPreset=null;setChips();clearBands();
+ const nodes=new Set();
+ linkEls.forEach(l=>{const on=lproto(l).includes(pid);l.p.classList.toggle("on",on);l.p.classList.remove("fwd","rev");if(on){nodes.add(l.f);nodes.add(l.t)}});
+ XPROTO.forEach(([p,,ids])=>{if(p===pid)ids.forEach(i=>nodes.add(i))});
+ if([...nodes].some(i=>byId[i]&&byId[i].parent==="soc"))nodes.add("soc");
+ svg.classList.add("dim");
+ Object.entries(nodeEls).forEach(([id,g])=>{g.classList.toggle("on",nodes.has(id));g.classList.remove("sel")});
+ protoPanel();
+}
+function protoPanel(){
+ const p=selProto?PBY[selProto]:null;
+ insp.innerHTML=`<div class="insp-head" style="--cat:var(--c-trx)"><span class="tag">Protocols</span><h2>${p?esc(p[1]):"Interfaces between blocks"}</h2></div>
+ <div class="insp-body">${p?`<p>${esc(p[5])}</p><dl class="spec"><dt>Type</dt><dd>${esc(FAM[p[2]][0])}</dd><dt>Speed</dt><dd>${esc(p[3])}</dd><dt>Defined by</dt><dd>${esc(p[4])}</dd></dl>`:`<p>Each block's label now shows the interface it uses, and lines are coloured by protocol type. Hover a line to name it. Pick a protocol below to light up every block and connection that uses it.</p>`}
+ <div><h3>All protocols</h3><table class="ptab">${PROTOS.map(q=>`<tr class="${q[0]===selProto?"sel":""}"><td><span class="fam" style="--fc:var(${FAM[q[2]][1]})"></span><button type="button" data-p="${q[0]}">${esc(q[1])}</button></td><td class="m" style="color:var(--muted)">${esc(q[3])}</td></tr>`).join("")}</table></div></div>`;
+ insp.querySelectorAll("button[data-p]").forEach(b=>b.onclick=()=>hiProto(b.dataset.p));
+}
+let showCost=false;
+function relabel(){NODES.forEach(n=>{const g=nodeEls[n[0]];const t=g.querySelectorAll("text")[1];const x=X[n[0]];t.textContent=showProto?(BP[n[0]]||n[7]):showCost?(x?(x.c?fmt(x.c):x.q.startsWith("Included in AiP")?"in AiP":"in SoC"):""):n[7];t.classList.toggle("costt",showCost&&!showProto);t.classList.toggle("protot",showProto)});
+ svg.classList.toggle("proto",showProto);document.getElementById("protoLeg").hidden=!showProto;document.querySelector(".sheet-head .legend").hidden=showProto}
+let curPreset=null;
+function apply(set,dir,sel,flip){
+  const S=new Set(set);
+  if([...S].some(i=>byId[i]&&byId[i].parent==="soc"))S.add("soc");
+  svg.classList.toggle("dim",!!set.length);
+  Object.entries(nodeEls).forEach(([id,g])=>{g.classList.toggle("on",S.has(id));g.classList.toggle("sel",id===sel)});
+  linkEls.forEach(l=>{const on=S.has(l.f)&&S.has(l.t)&&!(l.f==="soc"&&!S.has(l.t))&&!(l.t==="soc"&&!S.has(l.f));
+    const fl=!!(flip&&flip.includes(l.f+">"+l.t));
+    l.p.classList.toggle("on",on);l.p.classList.toggle("fwd",on&&!!dir&&((dir==="fwd")!==fl));l.p.classList.toggle("rev",on&&!!dir&&((dir==="rev")!==fl))});
+}
+function neighbors(id){
+  const s=[id];const node=byId[id];
+  linkEls.forEach(l=>{
+    if(l.f===id)s.push(l.t);if(l.t===id)s.push(l.f);
+    if(node&&node.parent==="soc"){}
+  });
+  if(id==="soc")return ["soc"];
+  return s;
+}
+function select(id,extra){
+  selProto=null;
+  curPreset=null;setChips();clearBands();
+  apply(neighbors(id),null,id);panel(id,extra);
+}
+function runPreset(p){
+  clearBands();
+  if(curPreset===p.id){curPreset=null;setChips();apply([],null);overview();return}
+  curPreset=p.id;setChips();apply(p.set,p.dir,null,p.flip);
+  insp.innerHTML=`<div class="insp-head" style="--cat:var(--copper)"><span class="tag">Signal path</span><h2>${esc(p.n)}</h2></div>
+  <div class="insp-body"><p>${esc(p.note)}</p><div><h3>Blocks on this path</h3><ul class="parts">${p.set.map(i=>`<li>${esc(byId[i].label)}</li>`).join("")}</ul></div>
+  <p class="label">${p.dir?"Animation shows the direction data or power flows":"All of these blocks work together at once"}</p></div>`;
+}
+const pc=document.getElementById("presets");
+PRESETS.forEach(p=>{const b=document.createElement("button");b.className="chip";b.textContent=p.n;b.dataset.id=p.id;b.setAttribute("aria-pressed","false");b.onclick=()=>runPreset(p);pc.appendChild(b)});
+const cb=document.createElement("button");cb.className="chip ghost";cb.textContent="Show costs on diagram";cb.setAttribute("aria-pressed","false");
+const pbtn=document.createElement("button");pbtn.className="chip ghost";pbtn.textContent="Show protocols";pbtn.setAttribute("aria-pressed","false");
+function syncBtns(){cb.setAttribute("aria-pressed",String(showCost));cb.textContent=showCost?"Show descriptions":"Show costs on diagram";pbtn.setAttribute("aria-pressed",String(showProto));pbtn.textContent=showProto?"Hide protocols":"Show protocols"}
+cb.onclick=()=>{showCost=!showCost;if(showCost&&showProto){showProto=false;selProto=null;apply([],null);overview()}syncBtns();relabel()};
+pbtn.onclick=()=>{showProto=!showProto;if(showProto)showCost=false;selProto=null;syncBtns();relabel();apply([],null);if(showProto)protoPanel();else overview()};
+const sh=document.querySelector(".sheet-head");sh.insertBefore(cb,sh.querySelector(".legend"));sh.insertBefore(pbtn,sh.querySelector(".legend"));
+document.getElementById("protoLeg").innerHTML=Object.values(FAM).map(([n,c])=>`<span style="--fc:var(${c})"><i></i>${n}</span>`).join("")+`<span>Hover a line to name its protocol</span>`;
+const clr=document.createElement("button");clr.className="chip ghost";clr.textContent="Clear";clr.onclick=()=>{curPreset=null;setChips();clearBands();apply([],null);overview()};pc.appendChild(clr);
+function setChips(){pc.querySelectorAll(".chip[data-id]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.id===curPreset)))}
+svg.addEventListener("click",e=>{if(e.target===svg){curPreset=null;setChips();clearBands();apply([],null);overview()}});
+// ---------- bandwidth ladder ----------
+const BW=[
+ ["SMBus (battery, charger)",0.0001,"smbus","100 kbit/s"],
+ ["I²C touchpad (Fm+)",0.001,"hid","1 Mbit/s"],
+ ["SoundWire link",0.0123,"sndw","12.3 Mbit/s"],
+ ["Quad-SPI boot flash",0.2,"spi","≈ 25 MB/s"],
+ ["eSPI to EC",0.264,"espi","≈ 33 MB/s"],
+ ["USB 2.0",0.48,"usb2","60 MB/s"],
+ ["SD UHS-II card",2.5,"sdx","312 MB/s"],
+ ["5G module peak downlink",4.7,"pcie4","≈ 590 MB/s"],
+ ["Wi-Fi 7 2×2, 320 MHz PHY",5.8,"cnvio","≈ 725 MB/s"],
+ ["MIPI CSI-2, 4 lanes",10,"csi","1.25 GB/s"],
+ ["USB 3.2 Gen 2",10,"usb32","1.25 GB/s"],
+ ["eDP 1.5 HBR3 × 4",32.4,"edp","4 GB/s"],
+ ["USB4 / Thunderbolt 4",40,"usb4","5 GB/s"],
+ ["HDMI 2.1 FRL",48,"hdmi","6 GB/s"],
+ ["PCIe Gen4 x4",63,"pcie4","7.9 GB/s"],
+ ["DP 2.1 UHBR20 / TB5",80,"dp","10 GB/s"],
+ ["PCIe Gen5 x4 (SSD)",126,"pcie5","15.8 GB/s"],
+ ["PCIe Gen5 x8 (dGPU)",252,"pcie5","31.5 GB/s"],
+ ["LPDDR5X-8533, 128-bit",1092,"lpddr","136.5 GB/s"],
+ ["GDDR7 28 Gbps, 128-bit",3584,"gddr","448 GB/s"]
+];
+const bw=document.getElementById("bwsvg");const bwEls=[];
+(function(){
+ const L0=Math.log10(0.0001),L1=Math.log10(10000),X0=230,XW=600,RH=24,top=34;
+ const bx=v=>X0+(Math.log10(v)-L0)/(L1-L0)*XW;
+ const H=top+BW.length*RH+10;bw.setAttribute("viewBox",`0 0 1000 ${H}`);
+ [0.0001,0.001,0.01,0.1,1,10,100,1000,10000].forEach(v=>{const x=bx(v);el("line",{x1:x,x2:x,y1:top-6,y2:H-6,stroke:"var(--line)"},bw);const t=el("text",{x,y:top-12,"text-anchor":"middle"},bw);t.textContent=v>=1000?v/1000+" Tb/s":v>=1?v+" Gb/s":v*1000+" Mb/s"});
+ BW.forEach(([n,v,pid,b],i)=>{const y=top+i*RH;const g=el("g",{class:"bar",tabindex:"0",role:"button","aria-label":n},bw);
+  const fam=FAM[PBY[pid][2]][1];
+  const t=el("text",{x:X0-10,y:y+14,"text-anchor":"end",class:"lane"},g);t.textContent=n;
+  el("rect",{x:X0,y:y+3,width:Math.max(2,bx(v)-X0),height:RH-8,rx:2,fill:`color-mix(in oklab,var(${fam}) 55%,var(--surface))`},g);
+  const r=el("text",{x:bx(v)+6,y:y+14},g);r.textContent=(v>=1?v+" Gb/s":v*1000+" Mb/s")+" · "+b;
+  const go=()=>pickBw(i);g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}});
+  bwEls.push(g)});
+})();
+function clearBands(){bw.classList.remove("dim");bwEls.forEach(g=>g.classList.remove("on"));document.querySelectorAll("#lanes tr.on,#ports tr.on").forEach(r=>r.classList.remove("on"))}
+function pickBw(i){
+ const pid=BW[i][2];
+ if(!showProto){showProto=true;showCost=false;syncBtns();relabel()}
+ hiProto(pid);
+ bw.classList.add("dim");bwEls.forEach((g,k)=>g.classList.toggle("on",k===i));
+ document.querySelector(".sheet").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// ---------- lane map ----------
+const LANES=[
+ ["Gen5 x4","CPU (compute tile)","NVMe SSD, M.2 2280","15.8 GB/s","Fastest consumer SSDs reach ≈ 14 GB/s reads; needs a thin heatsink.",["pcie5","ssd"]],
+ ["Gen5 x8","CPU (compute tile)","Discrete GPU","31.5 GB/s","Only on 20-lane SKUs. Thin laptops without a dGPU leave these lanes unused or run 4 more for a second SSD.",["pcie5","dgpu"]],
+ ["Gen4 x4","Platform tile","Thunderbolt 5 controller or second SSD","7.9 GB/s","OEM choice. A discrete TB5 chip needs PCIe Gen4 x4 back to the SoC.",["pcie4"]],
+ ["Gen4 x1","Platform tile","5G WWAN module (M.2 3042)","1.97 GB/s","Far more than a 5G modem needs; USB 2.0 also routed for firmware updates.",["pcie4","wwan"]],
+ ["Gen4 x1","Platform tile","SD card reader","1.97 GB/s","UHS-II cards top out at 312 MB/s.",["pcie4","cardr"]],
+ ["Gen4 x2","Platform tile","Spare: 2.5G Ethernet, Wi-Fi card on non-CNVi designs","3.9 GB/s","Often unused in thin laptops.",["pcie4"]],
+ ["Tunnelled","USB4 router","Docks, eGPUs, external NVMe","≈ 4 GB/s (32 Gbps)","PCIe travels inside the USB4 link; shares 40 Gbps with DisplayPort.",["tbt","ret","p_tb1"]],
+ ["CNVio3","Platform tile","Wi-Fi 7 RF card","—","Not PCIe: Intel's proprietary link. AMD and Qualcomm laptops use PCIe x1 for Wi-Fi.",["cnvi","wifi"]]
+];
+const lt=document.getElementById("lanes");
+LANES.forEach(r=>{const tr=document.createElement("tr");tr.tabIndex=0;tr.innerHTML=`<td class="b">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class="num">${esc(r[3])}</td><td>${esc(r[4])}</td>`;
+ const go=()=>{showSet(r[5],r[2]);lt.querySelectorAll("tr").forEach(x=>x.classList.toggle("on",x===tr))};tr.onclick=go;tr.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go()}};lt.appendChild(tr)});
+function showSet(set,title){
+ curPreset=null;setChips();bw.classList.remove("dim");bwEls.forEach(g=>g.classList.remove("on"));
+ apply(set,null,set[set.length-1]);panel(set[set.length-1]);
+ document.querySelector(".sheet").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// ---------- ports ----------
+const PORTS=[
+ ["USB-C 1 & 2 (Thunderbolt 4)","40 Gbps USB4, PCIe tunnel","DP 2.1 Alt Mode / tunnel, 2 × 4K60","In 100–140 W (EPR up to 240 W); out 15 W","Retimer, PD controller, USB4 router in SoC",["p_tb1","p_tb2","ret","pdc","tbt"]],
+ ["USB-A","USB 3.2 Gen 2, 10 Gbps","—","Out 5 V 0.9–1.5 A","Redriver, xHCI in SoC",["p_usba","redrv","xhci"]],
+ ["HDMI 2.1","—","4K 120 Hz / 8K 60 Hz with DSC","—","PCON fed by DisplayPort",["p_hdmi","pcon"]],
+ ["SD card","UHS-II, 312 MB/s","—","3.3 V card power","PCIe card reader",["p_sd","cardr"]],
+ ["3.5 mm jack","Analog audio","—","—","SoundWire codec",["p_jack","codec"]],
+ ["Nano-SIM / eSIM","5G data","—","—","WWAN module",["wwan","a_wwan"]]
+];
+const pt=document.getElementById("ports");
+PORTS.forEach(r=>{const tr=document.createElement("tr");tr.tabIndex=0;tr.innerHTML=`<td class="b">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td>`;
+ const go=()=>{showSet(r[5],r[0]);pt.querySelectorAll("tr").forEach(x=>x.classList.toggle("on",x===tr))};tr.onclick=go;tr.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go()}};pt.appendChild(tr)});
+
+// ---------- power study ----------
+const SUBS=[["SoC package","--c-soc"],["Display","--c-trx"],["Memory","--c-rffe"],["Storage","--c-tune"],["Wireless","--c-conn"],["Discrete GPU","--c-ant"],["Platform (VR loss, EC, audio, camera, fans)","--c-pwr"]];
+const LOADS=[
+ ["Modern Standby",[0.05,0,0.05,0.005,0.05,0,0.15],"Screen off, DRAM in self-refresh, SSD in L1.2, Wi-Fi keeping the connection alive, dGPU in D3cold."],
+ ["Idle desktop",[1.0,2.2,0.3,0.05,0.15,0,0.6],"Static screen at 150 nits with Panel Self Refresh; most SoC tiles power-gated."],
+ ["Web & office",[3.0,2.5,0.5,0.2,0.4,0,0.9],"Bursty single-thread work; the LP E-cores and P-cores share the load."],
+ ["Video call",[5.5,2.5,0.8,0.1,0.9,0,1.5],"Camera, ISP, NPU effects, audio DSP, video encode and Wi-Fi all active."],
+ ["4K video playback",[1.3,2.8,0.4,0.1,0.1,0,0.7],"Hardware AV1 decode; CPU nearly idle."],
+ ["Code compile (all cores)",[35,2.5,1.5,1.5,0.2,0,4],"SoC at its sustained limit; fans at speed."],
+ ["Gaming on dGPU",[15,3.5,1.2,0.5,0.6,55,8],"dGPU capped on battery; VR and fan losses rise."]
+];
+let curLoad=1;
+const lc=document.getElementById("loads"),wh=document.getElementById("wh"),whv=document.getElementById("whv"),pout=document.getElementById("pout");
+LOADS.forEach((l,i)=>{const b=document.createElement("button");b.className="chip";b.textContent=l[0];b.setAttribute("aria-pressed",String(i===curLoad));b.onclick=()=>{curLoad=i;lc.querySelectorAll(".chip").forEach((x,k)=>x.setAttribute("aria-pressed",String(k===i)));drawPower()};lc.appendChild(b)});
+wh.oninput=drawPower;
+function hrs(p,w){const h=w*0.92/p;return h>=48?(h/24).toFixed(1)+" days":h>=10?h.toFixed(0)+" h":h.toFixed(1)+" h"}
+function drawPower(){
+ const w=+wh.value;whv.textContent=w+" Wh";
+ const [n,v,note]=LOADS[curLoad];const P=v.reduce((a,b)=>a+b,0);
+ const seg=v.map((x,i)=>x>0?`<span style="flex:${x};background:color-mix(in oklab,var(${SUBS[i][1]}) 60%,var(--surface))" title="${esc(SUBS[i][0])}: ${x} W"></span>`:"").join("");
+ pout.innerHTML=`<div class="pwrhead"><div><span class="label">Total system power</span><b class="amt">${P.toFixed(P<1?2:1)} W</b></div><div><span class="label">Battery life (92% usable)</span><b class="amt">${hrs(P,w)}</b></div></div>
+ <div class="stack">${seg}</div>
+ <table class="ptab pw"><tbody>${v.map((x,i)=>`<tr><td><span class="fam" style="--fc:var(${SUBS[i][1]})"></span>${esc(SUBS[i][0])}</td><td class="num">${x} W</td><td class="num">${(x/P*100).toFixed(0)} %</td></tr>`).join("")}</tbody></table>
+ <p class="note">${esc(note)}</p>
+ <div><h3 class="label" style="margin:4px 0 6px">All workloads at ${w} Wh</h3><table class="ptab pw"><tbody>${LOADS.map((l,i)=>{const p=l[1].reduce((a,b)=>a+b,0);return `<tr class="${i===curLoad?"sel":""}"><td>${esc(l[0])}</td><td class="num">${p.toFixed(p<1?2:1)} W</td><td class="num">${hrs(p,w)}</td></tr>`}).join("")}</tbody></table></div>`;
+}
+drawPower();
+
+const dn=document.getElementById("dnav");
+[["soc","SoC"],["cpu","CPU"],["gpu","iGPU"],["npu","NPU"],["memc","Memory"],["ssd","NVMe SSD"],["dgpu","Discrete GPU"],["tbt","Thunderbolt / USB4"],["pdc","USB-C power"],["chg","Charger"],["vr","Core VRs"],["batt","Battery"],["ec","Embedded controller"],["sec","Security"],["wifi","Wi-Fi 7"],["wwan","5G module"],["panel","Display"],["cam","Camera"],["adsp","Audio"],["fan","Cooling"]].forEach(([id,n])=>{
+ const b=document.createElement("button");b.className="chip";b.textContent=n;b.dataset.id=id;b.setAttribute("aria-pressed","false");b.onclick=()=>{curPreset=null;setChips();clearBands();apply(neighbors(id),null,id);panel(id)};dn.appendChild(b)});
+overview();deep("soc");
+
+})();
+</script>
+</html>
