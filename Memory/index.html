@@ -111,7 +111,11 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
     </div>
     <div class="card" id="pyrInfo"></div>
   </div>
-  <div class="callout"><b>Volatile vs. non-volatile:</b> registers, cache (SRAM) and DRAM lose their contents when power is cut. SSDs (flash) and hard drives keep data. That's why programs are <i>loaded</i> from storage into RAM to run.</div>
+  <h3>Think of it like your brain 🧠</h3>
+  <p>You already use a memory hierarchy every day. Imagine doing math homework: <b>what is 7 × 8 + 15?</b> Tap a row (it stays in sync with the pyramid above).</p>
+  <div class="card" id="brainBox" style="padding:8px"></div>
+  <p class="muted" style="font-size:13px">The time column stretches computer time so that 1 register access = 1 second. Same ratios, human-sized numbers. The brain doesn't really work in neat layers, but the trade-off is the same: what's closest to your attention is fastest, and what holds the most takes longest to reach.</p>
+  <div class="callout"><b>Volatile vs. non-volatile:</b> registers, cache (SRAM) and DRAM lose their contents when power is cut. SSDs (flash) and hard drives keep data. That's why programs are <i>loaded</i> from storage into RAM to run. In brain terms: switching off is like a deep sleep that wipes short-term memory, while long-term memory survives.</div>
 </section>
 
 <!-- 2 DEEP DIVE -->
@@ -319,9 +323,21 @@ const levels=[
  {n:'SSD / HDD storage',w:96,lat:'~0.05–10 ms',size:'TB',d:'Non-volatile: keeps data without power. Thousands of times slower than DRAM, so programs and files are copied into DRAM to be used.'}
 ];
 let pyrSel=2,dSel=0,timers=[];
-function setLevel(i){pyrSel=i;dSel=0;drawPyr();drawDeep()}
+const brain=[
+ {i:'🎯',b:'Your focus right now',ex:'The two numbers you are multiplying this very instant: 7 and 8.',t:'1 second',why:'Instant, but you can only juggle a few things at once.'},
+ {i:'⚡',b:'Short-term memory',ex:'“56”, the answer you just worked out, held in mind while you add 15. Also the question you read a moment ago.',t:'3–40 seconds',why:'Still fresh and quick to recall, but holds only a handful of items and they fade fast.'},
+ {i:'📖',b:'Today\'s working memory',ex:'The method your teacher explained this morning. It takes a moment\'s thought to bring back, and after a night\'s sleep (power off) the details are gone.',t:'~4–5 minutes',why:'Holds a lot more, but reaching it is noticeably slower.'},
+ {i:'📚',b:'Long-term memory',ex:'Your times tables, learned years ago. They survive every night\'s sleep, but digging up an old fact you haven\'t used in ages takes real effort.',t:'SSD ~3 days · HDD ~1 year',why:'Huge and permanent, but by far the slowest to pull from.'}
+];
+function drawBrain(){const box=$('#brainBox');if(!box)return;box.innerHTML='';
+ brain.forEach((x,i)=>{const r=document.createElement('div');const on=i===pyrSel;
+  r.style.cssText=`display:grid;grid-template-columns:36px 1fr;gap:4px 12px;padding:12px;border-radius:10px;cursor:pointer;border:1px solid ${on?'var(--accent)':'transparent'};${on?'background:rgba(79,179,169,.1);':''}`;
+  r.innerHTML=`<div style="font-size:24px;line-height:1">${x.i}</div><div><div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline"><b>${levels[i].n.split(' (')[0]}</b><span class="muted">=</span><b style="color:var(--accent2)">${x.b}</b><span class="pill" style="margin-left:auto">⏱ ${x.t}</span></div><div style="font-size:14px;margin-top:4px">${x.ex}</div>${on?`<div class="muted" style="font-size:13px;margin-top:4px">${x.why}</div>`:''}</div>`;
+  r.onclick=()=>setLevel(i);box.appendChild(r)});}
+
+function setLevel(i){pyrSel=i;dSel=0;drawPyr();drawDeep();drawBrain()}
 function drawPyr(){const p=$('#pyr');p.innerHTML='';levels.forEach((l,i)=>{const b=document.createElement('button');b.style.width=l.w+'%';b.className=i===pyrSel?'on':'';b.innerHTML=`${l.n}<small>${l.lat} · ${l.size}</small>`;b.onclick=()=>setLevel(i);p.appendChild(b)});
- const l=levels[pyrSel];$('#pyrInfo').innerHTML=`<h3 style="margin-top:0">${l.n}</h3><p><span class="pill">latency ${l.lat}</span><span class="pill">${l.size}</span></p><p>${l.d}</p><p><a href="#deep" style="color:var(--accent);font-weight:600;text-decoration:none">Explore inside ${l.n.split(' (')[0]} ↓</a></p><p class="muted" style="font-size:13px;margin:0">↑ faster, smaller, pricier per byte &nbsp;·&nbsp; ↓ slower, larger, cheaper</p>`}
+ const l=levels[pyrSel];$('#pyrInfo').innerHTML=`<h3 style="margin-top:0">${l.n}</h3><p><span class="pill">latency ${l.lat}</span><span class="pill">${l.size}</span></p><p>${l.d}</p><p style="font-size:14px">${brain[pyrSel].i} <b style="color:var(--accent2)">Brain:</b> like your ${brain[pyrSel].b.toLowerCase()}.</p><p><a href="#deep" style="color:var(--accent);font-weight:600;text-decoration:none">Explore inside ${l.n.split(' (')[0]} ↓</a></p><p class="muted" style="font-size:13px;margin:0">↑ faster, smaller, pricier per byte &nbsp;·&nbsp; ↓ slower, larger, cheaper</p>`}
 
 /* ---------- 2 deep dive ---------- */
 function tx(s,x,y,str,o={}){return el('text',Object.assign({x,y,fill:C.text,'font-size':13},o),s,str)}
@@ -558,7 +574,7 @@ function drawDeep(){timers.forEach(clearTimeout);timers=[];
  document.querySelectorAll('#deepLvl button').forEach(b=>b.classList.toggle('on',+b.dataset.v===pyrSel));
  const d=$('#drill');d.innerHTML='';L.steps.forEach((x,i)=>{if(i){const s=document.createElement('span');s.className='arrow';s.textContent='›';d.appendChild(s)}const b=document.createElement('button');b.textContent=x.n;b.className=i===dSel?'on':'';b.onclick=()=>{dSel=i;drawDeep()};d.appendChild(b)});
  const st=L.steps[dSel],s=$('#drillSvg');s.innerHTML='';$('#drillTxt').innerHTML=st.t;st.d(s);}
-drawPyr();drawDeep();
+drawPyr();drawDeep();drawBrain();
 
 /* ---------- 3 DDR animation ---------- */
 let ddrMode='ddr',playing=true,t=0,lastTs=null;
