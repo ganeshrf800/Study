@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCIe Evolution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a guided lesson. One generation stepper at the top, then one hands-on demo per protocol idea (signal, encoding, equalization, packets, reliability), ending with real devices and a quiz. */
+:root {
+  --bg: #eef1f4; --surface: #ffffff; --ink: #15212c; --muted: #586572; --line: #d3dae1;
+  --accent: #0a6e8a; --trace: #b98000; --ok: #1d7f46; --bad: #bf3029; --code-bg: #f5f7f9;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f151b; --surface: #17202a; --ink: #e3e9ef; --muted: #96a3b0; --line: #2a3642; --accent: #4fb6d3; --trace: #f2c14e; --ok: #4cc27f; --bad: #f06b62; --code-bg: #111920; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f151b; --surface: #17202a; --ink: #e3e9ef; --muted: #96a3b0; --line: #2a3642; --accent: #4fb6d3; --trace: #f2c14e; --ok: #4cc27f; --bad: #f06b62; --code-bg: #111920; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 700; }
+h2 { font-size: 1.7rem; font-weight: 600; }
+h3 { font-size: 1.1rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+a { color: var(--accent); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+header.hero { padding: 32px 0 24px; border-bottom: 1px solid var(--line); }
+.hero .wrap { display: grid; gap: 12px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.lede { font-size: 1.08rem; color: var(--muted); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs a { text-decoration: none; padding: 7px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--muted); font-weight: 500; font-size: 0.92rem; }
+.tabs a[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+nav.rail { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+nav.rail .wrap { display: flex; gap: 4px; overflow-x: auto; padding-top: 8px; padding-bottom: 8px; }
+nav.rail a { white-space: nowrap; text-decoration: none; color: var(--muted); font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; }
+nav.rail a:hover { background: var(--surface); color: var(--ink); }
+nav.rail a .n { font-family: var(--font-mono); color: var(--trace); margin-right: 6px; }
+main section { padding: 38px 0 6px; scroll-margin-top: 56px; }
+.sec-head { display: grid; gap: 8px; margin-bottom: 16px; }
+.sec-head .num { font-family: var(--font-mono); color: var(--trace); font-size: 0.85rem; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.muted { color: var(--muted); } .small { font-size: 0.9rem; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--code-bg); }
+.seg button { border: 0; background: transparent; padding: 6px 12px; cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--surface); padding: 7px 14px; border-radius: 7px; cursor: pointer; font-weight: 500; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; margin-bottom: 14px; }
+.ctl { display: grid; gap: 6px; }
+.ctl label, .ctl .lab { font-size: 0.82rem; color: var(--muted); font-family: var(--font-mono); }
+input[type="range"] { accent-color: var(--accent); width: 200px; }
+.readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.ro { border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: var(--code-bg); }
+.ro .k { font-size: 0.74rem; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.03em; }
+.ro .v { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.simple { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.simple > div { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--surface); display: grid; gap: 6px; align-content: start; font-size: 0.95rem; }
+.simple > div.ex { border-left-color: var(--trace); }
+.simple .lbl { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); }
+.simple > div.ex .lbl { color: var(--trace); }
+.plain-live { font-size: 0.95rem; border: 1px dashed var(--accent); border-radius: 8px; padding: 10px 12px; background: var(--surface); }
+.plain-live b { color: var(--accent); }
+canvas { width: 100%; display: block; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; }
+figure { margin: 0; display: grid; gap: 6px; }
+figcaption { font-size: 0.85rem; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.tbl-wrap { overflow-x: auto; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 0.76rem; color: var(--muted); text-transform: uppercase; font-weight: 500; white-space: nowrap; }
+td.g { font-family: var(--font-mono); white-space: nowrap; color: var(--trace); }
+
+/* generation stepper */
+.gens { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.gens button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; cursor: pointer; display: grid; gap: 1px; text-align: left; min-width: 84px; }
+.gens button .a { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+.gens button .b { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.gens button[aria-pressed="true"] { border-color: var(--trace); box-shadow: inset 0 -3px 0 var(--trace); }
+.gen-body { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+@media (max-width: 800px) { .gen-body { grid-template-columns: 1fr; } }
+.gen-body ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.speedbars { display: grid; gap: 5px; }
+.sb { display: grid; grid-template-columns: 50px 1fr 84px; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 0.78rem; }
+.sb .bar { height: 12px; border-radius: 3px; background: var(--line); }
+.sb.on .bar { background: var(--trace); } .sb.past .bar { background: var(--accent); }
+.sb .r { text-align: right; font-variant-numeric: tabular-nums; }
+.stepnav { display: flex; gap: 8px; margin-top: 12px; }
+
+/* bits */
+.bits { display: flex; flex-wrap: wrap; gap: 4px; }
+.bits button { width: 30px; height: 34px; border: 1px solid var(--line); border-radius: 6px; background: var(--code-bg); cursor: pointer; font-family: var(--font-mono); font-weight: 600; }
+.bits button.one { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+
+/* packet */
+.pkt { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 4px; }
+.pkt button { flex: 0 0 auto; border: 1px solid var(--line); background: var(--code-bg); border-radius: 6px; padding: 10px 8px; cursor: pointer; display: grid; gap: 2px; text-align: center; min-width: 64px; }
+.pkt button .n { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }
+.pkt button .s { font-size: 0.7rem; color: var(--muted); font-family: var(--font-mono); }
+.pkt button.ov { border-style: dashed; }
+.pkt button.pay { background: color-mix(in srgb, var(--accent) 16%, var(--code-bg)); }
+.pkt button[aria-pressed="true"] { border-color: var(--trace); border-style: solid; box-shadow: inset 0 -3px 0 var(--trace); }
+.effrow { display: grid; grid-template-columns: 120px 1fr 56px; gap: 10px; align-items: center; font-family: var(--font-mono); font-size: 0.82rem; margin-top: 6px; }
+.effrow .track { height: 14px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.effrow .fill { height: 100%; background: var(--accent); }
+
+/* reliability */
+.link-vis { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin: 12px 0; }
+.end { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--code-bg); display: grid; gap: 6px; font-size: 0.85rem; }
+.end b { font-family: var(--font-display); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 26px; }
+.chip { font-family: var(--font-mono); font-size: 0.74rem; border: 1px solid var(--trace); color: var(--trace); border-radius: 999px; padding: 1px 8px; }
+.credit { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--accent); display: inline-block; }
+.credit.full { background: var(--accent); }
+.log { font-family: var(--font-mono); font-size: 0.8rem; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; height: 170px; overflow-y: auto; display: grid; align-content: start; gap: 4px; }
+.log .ok { color: var(--ok); } .log .bad { color: var(--bad); }
+
+/* devices */
+.devs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.dev { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 14px; display: grid; gap: 8px; align-content: start; }
+.dev svg { width: 100%; height: 84px; }
+.dev .tag { font-family: var(--font-mono); font-size: 0.76rem; color: var(--trace); }
+.pic rect, .pic circle, .pic path { stroke: var(--muted); stroke-width: 1.5; fill: var(--code-bg); }
+.pic .hi { fill: var(--trace); stroke: var(--trace); }
+.pic .ac { fill: var(--accent); stroke: var(--accent); }
+.pic text { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+svg.slots { width: 100%; min-width: 520px; height: auto; display: block; }
+
+/* quiz */
+.q { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 14px; display: grid; gap: 8px; }
+.q .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.q .opts button { border: 1px solid var(--line); background: var(--code-bg); border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+.q .opts button.right { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+.q .opts button.wrong { border-color: var(--bad); color: var(--bad); }
+.q .fb { font-size: 0.9rem; min-height: 1.2em; }
+.quiz { display: grid; gap: 12px; }
+footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
+</style>
+<!--site--><link rel="stylesheet" href="../back.css"><!--/site-->
+<script>try{var t=localStorage.getItem("tb-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <!--site--><a class="study-back" href="../">← Study home</a>
+    <div class="tabs"><a href="./">Testing guide</a><a href="evolution.html" aria-current="page">Evolution &amp; protocol</a></div><!--/site-->
+    <div class="eyebrow">Interactive lesson · PCIe 1.0 (2003) → 8.0 (2028 target)</div>
+    <h1>How PCIe evolved, one idea at a time</h1>
+    <p class="lede">Every generation doubled the speed, and each time something in the protocol had to change to make that possible. Step through the generations, then try each idea yourself: the signal, the encoding, equalization, the packet format and error recovery.</p>
+  </div>
+</header>
+<nav class="rail" aria-label="Sections"><div class="wrap">
+  <a href="#timeline"><span class="n">01</span>Generations</a>
+  <a href="#signal"><span class="n">02</span>Signal</a>
+  <a href="#encoding"><span class="n">03</span>Encoding</a>
+  <a href="#eq"><span class="n">04</span>Equalization</a>
+  <a href="#packets"><span class="n">05</span>Packets</a>
+  <a href="#reliability"><span class="n">06</span>Reliability</a>
+  <a href="#features"><span class="n">07</span>Features</a>
+  <a href="#practice"><span class="n">08</span>In practice</a>
+  <a href="#quiz"><span class="n">09</span>Quiz</a>
+</div></nav>
+
+<main class="wrap">
+
+<section id="timeline">
+  <div class="sec-head"><span class="num">01 / Generations</span><h2>Step through the generations</h2>
+  <p class="muted">Pick a generation or use Next. Each card says what changed, why it had to, and where you would meet it.</p></div>
+  <div class="gens" id="gens" role="group" aria-label="PCIe generations"></div>
+  <div class="panel">
+    <div class="gen-body">
+      <div style="display:grid; gap:12px; align-content:start" aria-live="polite">
+        <h3 id="gTitle"></h3>
+        <div class="readouts" id="gRO"></div>
+        <div class="simple" style="margin:0"><div><span class="lbl">In plain words</span><span id="gSimple"></span></div><div class="ex"><span class="lbl">Where you meet it</span><span id="gEx"></span></div></div>
+        <div><div class="eyebrow" style="margin-bottom:6px">Technical changes</div><ul id="gTech" class="small"></ul></div>
+      </div>
+      <div style="display:grid; gap:10px; align-content:start">
+        <div class="eyebrow">Speed of an x4 link, one direction</div>
+        <div class="speedbars" id="speedbars"></div>
+        <p class="small muted">Bars are drawn to one linear scale, so each doubling is visible. An x4 link is what an NVMe SSD uses.</p>
+      </div>
+    </div>
+    <div class="stepnav"><button class="btn ghost" id="gPrev">← Previous</button><button class="btn" id="gNext">Next generation →</button></div>
+  </div>
+</section>
+
+<section id="signal">
+  <div class="sec-head"><span class="num">02 / Signal</span><h2>NRZ and PAM4: how bits become voltage</h2></div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Gen1 to Gen5 use <b>NRZ</b>: the wire is either high or low, one bit per tick, like a light switch. Gen6 onward use <b>PAM4</b>: four voltage levels, so each tick carries <b>two bits</b>, like a dimmer with four positions. You get double the data without doubling the tick rate, but the levels sit three times closer together, so noise causes more mistakes.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>Gen5 sends 32 billion ticks a second at one bit each. Gen6 keeps 32 billion ticks but sends two bits per tick, giving 64 Gbit/s. The price: raw errors rise from about 1 in a trillion bits to about 1 in a million, which is why Gen6 adds error correction (section 06).</p></div>
+  </div>
+  <div class="panel" style="display:grid; gap:12px">
+    <div class="ctl"><span class="lab">Click bits to flip them</span><div class="bits" id="bits"></div></div>
+    <div><button class="btn ghost" id="bitsRand">Random bits</button></div>
+    <figure><canvas id="wave" height="300"></canvas><figcaption>Top: NRZ, one bit per symbol. Bottom: PAM4, two bits per symbol (Gray coded: 00, 01, 11, 10 from lowest to highest level). The same 16 bits finish in half the symbols.</figcaption></figure>
+    <div class="plain-live" id="wavePlain"></div>
+  </div>
+</section>
+
+<section id="encoding">
+  <div class="sec-head"><span class="num">03 / Encoding</span><h2>8b/10b, 128b/130b and FLITs</h2></div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Raw data can contain long runs of zeros, and the receiver needs regular changes to keep time. <b>Encoding</b> adds extra bits to guarantee changes and to mark where things start. <b>8b/10b</b> spends 2 extra bits on every 8, a 20% tax. <b>128b/130b</b> spends 2 bits on every 128 and scrambles the rest, a 1.5% tax. Gen6 drops the per-block bits and packs everything into fixed 256-byte <b>FLITs</b>.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>Gen2 runs at 5 GT/s but delivers only 4 Gbit/s of data. If Gen3 had kept 8b/10b it would have needed 10 GT/s to double Gen2. By changing the encoding, 8 GT/s was enough: 8 × 128/130 = 7.88 Gbit/s. A slower signal was far easier to send over cheap circuit boards.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="panel" style="display:grid; gap:10px">
+      <h3>How much of the line is your data?</h3>
+      <div id="encBars"></div>
+      <p class="small muted">Dark part is data; the light remainder is encoding overhead. FLIT overhead is the CRC and error-correction bytes in each 256-byte unit.</p>
+    </div>
+    <div class="panel" style="display:grid; gap:8px">
+      <h3>The three schemes side by side</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Scheme</th><th>Used by</th><th>How it marks boundaries</th><th>How it keeps transitions</th></tr></thead>
+        <tbody>
+          <tr><td class="g">8b/10b</td><td>Gen1, Gen2</td><td>Special K-characters, such as K28.5 (COM), STP and END</td><td>Every 10-bit code is balanced; never more than 5 equal bits in a row</td></tr>
+          <tr><td class="g">128b/130b</td><td>Gen3, Gen4, Gen5</td><td>2-bit sync header on every block says data block or ordered-set block; framing tokens inside</td><td>Scrambling with a 23-bit LFSR, seeded differently per lane</td></tr>
+          <tr><td class="g">FLIT (1b/1b)</td><td>Gen6, Gen7, Gen8</td><td>Fixed 256-byte units, so position alone tells the receiver what each byte is</td><td>Scrambling, plus Gray coding and optional precoding for PAM4</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section id="eq">
+  <div class="sec-head"><span class="num">04 / Equalization</span><h2>Fixing a signal smeared by the board</h2></div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>A circuit-board trace acts like a <b>muffler</b>: fast changes get weaker than slow ones. After a long run of 1s, a single 0 barely dips before the signal goes back up. The cure is to <b>exaggerate the changes</b> at the transmitter (shout the first bit after a change, then ease off) and to <b>boost and clean up</b> at the receiver. Gen1 and Gen2 use one fixed setting. From Gen3, the two ends negotiate the best setting every time the link trains.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>Move the loss slider right until the grey received signal no longer crosses the centre line on lone bits. Then add de-emphasis: the coloured trace crosses cleanly again. That is what the link does by itself during training, trying presets P0 to P10 until the receiver is happy.</p></div>
+  </div>
+  <div class="panel" style="display:grid; gap:12px">
+    <div class="controls" style="margin:0">
+      <div class="ctl"><label for="eqLoss">Board loss: <span id="eqLossV" class="mono"></span></label><input type="range" id="eqLoss" min="0" max="100" value="70"></div>
+      <div class="ctl"><label for="eqDe">Tx de-emphasis: <span id="eqDeV" class="mono"></span></label><input type="range" id="eqDe" min="0" max="45" value="0"></div>
+      <div class="ctl"><label for="eqPre">Tx preshoot: <span id="eqPreV" class="mono"></span></label><input type="range" id="eqPre" min="0" max="20" value="0"></div>
+      <button class="btn ghost" id="eqAuto">Find best setting</button>
+    </div>
+    <figure><canvas id="eqc" height="260"></canvas><figcaption>Dashed: what the transmitter intends. Grey: received with no equalization. Coloured: received with your Tx settings. Dots mark where the receiver samples each bit.</figcaption></figure>
+    <div class="readouts" id="eqRO"></div>
+    <div class="plain-live" id="eqPlain"></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Gen</th><th>Transmitter</th><th>Reference receiver</th><th>Loss budget</th></tr></thead>
+      <tbody>
+        <tr><td class="g">Gen1</td><td>Fixed −3.5 dB de-emphasis</td><td>No equalizer</td><td>—</td></tr>
+        <tr><td class="g">Gen2</td><td>−3.5 or −6 dB, chosen by the port</td><td>No equalizer</td><td>—</td></tr>
+        <tr><td class="g">Gen3</td><td>3-tap FIR, presets P0–P10, negotiated in 4 phases</td><td>CTLE + 1-tap DFE</td><td>~22 dB at 4 GHz</td></tr>
+        <tr><td class="g">Gen4</td><td>Same 3-tap FIR, retrained at 16 GT/s</td><td>CTLE + 2-tap DFE</td><td>~28 dB at 8 GHz</td></tr>
+        <tr><td class="g">Gen5</td><td>Same, with optional bypass straight to 32 GT/s</td><td>CTLE + 3-tap DFE</td><td>~36 dB at 16 GHz</td></tr>
+        <tr><td class="g">Gen6</td><td>4-tap FIR for PAM4</td><td>CTLE + 16-tap DFE</td><td>~32 dB at 16 GHz</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="packets">
+  <div class="sec-head"><span class="num">05 / Packets</span><h2>Anatomy of a packet, then and now</h2></div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Every read or write travels as a <b>TLP</b> (Transaction Layer Packet): an envelope with an address (header), contents (data) and a tamper seal (CRC). The lower layers add a serial number and start/end markers. Up to Gen5, each packet is framed individually. In Gen6, packets are poured into fixed-size <b>256-byte containers (FLITs)</b>, like parcels loaded into identical crates.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>When an NVMe SSD returns a 4 KB block, it sends a "completion with data" TLP. With a 512-byte Max Payload Size, that is 8 TLPs, each with its own header and checks. Raising the payload size means fewer headers and less overhead; try the slider below.</p></div>
+  </div>
+  <div class="panel" style="display:grid; gap:12px">
+    <div class="seg" id="pktSeg" role="group" aria-label="Packet format"></div>
+    <div class="pkt" id="pkt"></div>
+    <div class="plain-live" id="pktInfo" aria-live="polite"></div>
+    <h3 style="margin-top:6px">Efficiency for your payload size</h3>
+    <div class="ctl"><label for="pay">Data per packet: <span id="payV" class="mono"></span></label><input type="range" id="pay" min="0" max="6" value="3" step="1"></div>
+    <div id="effBars"></div>
+    <p class="small muted">Share of the line rate that carries your data, counting headers, framing, CRC and encoding. An approximation: it assumes a 16-byte header and ignores flow-control packets and SKP ordered sets.</p>
+  </div>
+</section>
+
+<section id="reliability">
+  <div class="sec-head"><span class="num">06 / Reliability</span><h2>Credits, ACK/NAK and error correction</h2></div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>Two rules keep data safe. <b>Flow control:</b> the sender may only send when the receiver has announced free space (credits), like only sending as many parcels as there are empty shelves. <b>ACK/NAK:</b> the sender keeps a copy of each packet until the receiver confirms it arrived intact; if the check fails, the receiver says NAK and the sender replays it. Gen6 adds <b>FEC</b>, which repairs most errors on the spot without a resend.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>A marginal riser cable corrupts one packet in a million. You never see wrong data: the link replays it within microseconds. What you do see is a rising "correctable error" count in the system log and slightly worse latency. That count is the early warning.</p></div>
+  </div>
+  <div class="panel" style="display:grid; gap:10px">
+    <div class="controls" style="margin:0">
+      <div class="ctl"><span class="lab">Link mode</span><div class="seg" id="relSeg" role="group" aria-label="Link mode"></div></div>
+      <button class="btn" id="relSend">Send a packet</button>
+      <button class="btn ghost" id="relBad">Send with a bit error</button>
+      <button class="btn ghost" id="relFree">Receiver frees buffers</button>
+      <button class="btn ghost" id="relReset">Reset</button>
+    </div>
+    <div class="link-vis">
+      <div class="end"><b>Sender</b><span class="small muted">Replay buffer (unconfirmed copies)</span><div class="chips" id="replay"></div></div>
+      <div class="mono muted" aria-hidden="true">⇄</div>
+      <div class="end"><b>Receiver</b><span class="small muted">Credits available to sender</span><div id="credits" style="display:flex; gap:3px; flex-wrap:wrap"></div></div>
+    </div>
+    <div class="log" id="relLog" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="sec-head"><span class="num">07 / Features</span><h2>What each generation added beyond speed</h2>
+  <p class="muted">Filter by generation. Each row says what the feature is for in everyday terms.</p></div>
+  <div class="panel" style="display:grid; gap:12px">
+    <div class="seg" id="featSeg" role="group" aria-label="Filter features by generation"></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Since</th><th>Feature</th><th>What it does</th></tr></thead><tbody id="featBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="practice">
+  <div class="sec-head"><span class="num">08 / In practice</span><h2>Real devices and what they use</h2></div>
+  <div class="devs" id="devs"></div>
+  <h3 style="margin:26px 0 10px">Slot sizes you can recognise by eye</h3>
+  <div class="panel" style="overflow-x:auto">
+    <svg class="slots pic" viewBox="0 0 640 190" role="img" aria-label="Relative lengths of x1, x4, x8 and x16 PCIe slots">
+      <g id="slotG"></g>
+    </svg>
+    <p class="small muted" style="margin-top:8px">Connector lengths are drawn to scale. A shorter card fits a longer slot. The slot's physical length does not guarantee its electrical width: an x16-length slot is sometimes wired for only x4 or x8, so check the board manual.</p>
+  </div>
+  <div class="simple" style="margin-top:16px">
+    <div><span class="lbl">Rule of thumb</span><p>The link runs at the <b>lower</b> generation and the <b>narrower</b> width of the two ends. A Gen5 x4 SSD in a Gen3 x4 slot runs Gen3 x4. A Gen4 x16 GPU in a slot wired x8 runs Gen4 x8.</p></div>
+    <div class="ex"><span class="lbl">Worked example</span><p>You buy a Gen5 SSD rated 14 GB/s for a 2021 laptop whose slot is Gen4. Ceiling: 16 GT/s × 128/130 ÷ 8 × 4 lanes = 7.9 GB/s. The drive works, but you get about 7 GB/s, half of what you paid for.</p></div>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="sec-head"><span class="num">09 / Quiz</span><h2>Check what stuck</h2><p class="muted" id="score">0 of 6 answered correctly</p></div>
+  <div class="quiz" id="quizEl"></div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>Figures follow the PCI Express Base Specifications and PCI-SIG announcements. The waveform, equalization and efficiency demos are simplified teaching models. Device pictures are drawn diagrams, not photographs. PCIe 8.0 is still in draft (draft 0.5, May 2026), so its details may change.</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  function seg(el, items, get, set) {
+    items.forEach(([k, l]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = l; b.dataset.k = k; b.addEventListener("click", () => { set(k); paint(); }); el.appendChild(b); });
+    function paint() { el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === String(get())))); }
+    paint(); return paint;
+  }
+  function setupCanvas(c) {
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth || 600, h = +c.getAttribute("height");
+    c.style.height = h + "px";
+    if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, h);
+    return { x, w, h };
+  }
+
+  /* ---------- 01 generations ---------- */
+  const G = [
+    { n: "1.0", y: "2003", rate: 2.5, eff: 0.8, sig: "NRZ", enc: "8b/10b",
+      simple: "The first PCI Express. It replaced a wide parallel bus of dozens of shared wires with a few fast serial lanes, each a private connection.",
+      ex: "Early graphics cards and network cards around 2004 to 2007. Rare today, but every link still starts training at this speed.",
+      tech: ["2.5 GT/s per lane, 8b/10b encoding (250 MB/s of data per lane)", "Fixed −3.5 dB transmitter de-emphasis, no receiver equalizer", "Three layers defined: Physical, Data Link (ACK/NAK, LCRC), Transaction (TLPs, credit flow control)", "LTSSM link training, lane reversal and polarity inversion", "ASPM L0s and L1 power states, hot-plug, Advanced Error Reporting"] },
+    { n: "2.0", y: "2007", rate: 5, eff: 0.8, sig: "NRZ", enc: "8b/10b",
+      simple: "Same design, twice the speed. The link now trains at Gen1 speed first, then both ends agree to shift up.",
+      ex: "The single PCIe lane on a Raspberry Pi 5 is officially Gen2. Many Wi-Fi cards still use Gen2 x1 because it is plenty.",
+      tech: ["5 GT/s, still 8b/10b (500 MB/s per lane)", "Speed change through the Recovery state; Link Control 2 register sets the target speed", "Selectable de-emphasis: −3.5 dB or −6 dB", "Added Function Level Reset, Access Control Services, completion timeout control", "2.1 added Latency Tolerance Reporting, TLP Processing Hints, Resizable BAR and atomic operations"] },
+    { n: "3.0", y: "2010", rate: 8, eff: 128 / 130, sig: "NRZ", enc: "128b/130b",
+      simple: "The big redesign. Instead of jumping to 10 GT/s, it went to 8 GT/s and cut the encoding tax from 20% to 1.5%. The two ends now tune the signal together every time they connect.",
+      ex: "The first mainstream NVMe SSDs (about 3.5 GB/s). Still the most common speed in servers and PCs built before 2020.",
+      tech: ["8 GT/s with 128b/130b encoding: 2-bit sync header + 128 scrambled bits", "23-bit LFSR scrambler replaces 8b/10b for transition density", "Framing tokens (STP with length field, SDP, IDL, EDS) replace K-characters", "Transmitter equalization with presets P0–P10, negotiated in equalization phases 0–3", "Reference receiver gains a CTLE and 1-tap DFE", "3.1 added L1 PM substates (L1.1, L1.2), SRIS clocking and Downstream Port Containment"] },
+    { n: "4.0", y: "2017", rate: 16, eff: 128 / 130, sig: "NRZ", enc: "128b/130b",
+      simple: "Double again, same encoding. Signals now fade so fast on a circuit board that helper chips called retimers were formally defined, and links gained a built-in way to measure their own safety margin.",
+      ex: "PlayStation 5 internal SSD slot, most 2020 to 2024 laptops and desktops, NVMe SSDs around 7 GB/s.",
+      tech: ["16 GT/s, 128b/130b; loss budget about 28 dB at 8 GHz", "Retimers defined in the base spec (up to two per link)", "Lane margining at the receiver: measure eye margin on a live link", "10-bit tags and scaled flow control for more outstanding requests", "Equalization runs at 8 GT/s, then again at 16 GT/s"] },
+    { n: "5.0", y: "2019", rate: 32, eff: 128 / 130, sig: "NRZ", enc: "128b/130b",
+      simple: "The last generation that uses simple high/low signalling. Mostly a faster Gen4, with shortcuts to train quicker and a hook that lets other protocols such as CXL share the same wires.",
+      ex: "Current high-end desktop SSDs (about 14 GB/s, often with a heatsink), recent graphics cards, AI servers and 400G network cards.",
+      tech: ["32 GT/s, 128b/130b; loss budget about 36 dB at 16 GHz", "Equalization bypass: go straight to the highest rate to shorten training", "Alternate protocol negotiation, the basis of CXL", "Optional precoding to limit DFE burst errors", "Reference receiver: CTLE + 3-tap DFE"] },
+    { n: "6.0", y: "2022", rate: 64, eff: 236 / 256, sig: "PAM4", enc: "FLIT + FEC",
+      simple: "The second big redesign. Four voltage levels send two bits per tick. Because that makes raw errors far more common, data now travels in fixed 256-byte crates with built-in error correction.",
+      ex: "AI and data-centre hardware from 2025: accelerators, switches, retimers and the first enterprise Gen6 SSDs.",
+      tech: ["64 GT/s using PAM4 at 32 GBaud (same Nyquist frequency as Gen5)", "FLIT mode: 256 bytes = 236 TLP + 6 data-link + 8 CRC + 6 FEC", "Lightweight 3-way interleaved FEC, then CRC, then FLIT replay if needed", "First-bit error rate target of 1e-6 before correction", "L0p: shrink the number of active lanes without stopping traffic", "14-bit tags, shared flow control, new TLP header layout; L0s removed in FLIT mode"] },
+    { n: "7.0", y: "2025", rate: 128, eff: 236 / 256, sig: "PAM4", enc: "FLIT + FEC",
+      simple: "Gen6 at double speed. Same four-level signal and same crates. The work went into making such a fast signal survive real boards and cables, and into saving power.",
+      ex: "Specification published in 2025; products are expected in AI clusters and 800G networking later this decade.",
+      tech: ["128 GT/s using PAM4 at 64 GBaud", "FLIT mode only at this rate", "Tighter channel and jitter parameters, focus on reach and power efficiency", "Optical links considered alongside copper through retimer extensions"] },
+    { n: "8.0", y: "2028 target", rate: 256, eff: 236 / 256, sig: "PAM4", enc: "FLIT + FEC",
+      simple: "Still being written. The goal is to double once more while staying compatible with everything before it.",
+      ex: "No products yet. Draft 0.5 went to PCI-SIG members in May 2026; the full specification is targeted for 2028.",
+      tech: ["Target of 256 GT/s, up to 1 TB/s both ways on x16", "Keeps PAM4 signalling", "New connector technologies under evaluation", "Protocol changes for bandwidth efficiency and lower power under study"] }
+  ];
+  const x4 = (g) => g.rate * g.eff / 8 * 4;
+  let gi = 2;
+  const gensEl = $("#gens"), sbEl = $("#speedbars");
+  G.forEach((g, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.i = i;
+    b.innerHTML = `<span class="a">Gen${g.n[0]}</span><span class="b">${g.y}</span>`;
+    b.addEventListener("click", () => { gi = i; renderGen(); }); gensEl.appendChild(b);
+    const r = document.createElement("div"); r.className = "sb"; r.dataset.i = i;
+    r.innerHTML = `<span>Gen${g.n[0]}</span><span class="bar" style="width:${Math.max(0.6, x4(g) / x4(G[7]) * 100)}%"></span><span class="r">${x4(g) < 10 ? x4(g).toFixed(1) : Math.round(x4(g))} GB/s</span>`;
+    sbEl.appendChild(r);
+  });
+  function renderGen() {
+    const g = G[gi];
+    gensEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.i === gi)));
+    sbEl.querySelectorAll(".sb").forEach(r => { r.classList.toggle("on", +r.dataset.i === gi); r.classList.toggle("past", +r.dataset.i < gi); });
+    $("#gTitle").textContent = `PCIe ${g.n} · ${g.y}`;
+    $("#gRO").innerHTML = [["Rate", g.rate + " GT/s"], ["Signal", g.sig], ["Encoding", g.enc], ["x4 one way", x4(g).toFixed(1) + " GB/s"]].map(([k, v]) => `<div class="ro"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+    $("#gSimple").textContent = g.simple; $("#gEx").textContent = g.ex;
+    $("#gTech").innerHTML = g.tech.map(t => `<li>${t}</li>`).join("");
+    $("#gPrev").disabled = gi === 0; $("#gNext").disabled = gi === G.length - 1;
+  }
+  $("#gPrev").addEventListener("click", () => { if (gi > 0) { gi--; renderGen(); } });
+  $("#gNext").addEventListener("click", () => { if (gi < G.length - 1) { gi++; renderGen(); } });
+  renderGen();
+
+  /* ---------- 02 signal ---------- */
+  let bits = [1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0];
+  const bitsEl = $("#bits");
+  bits.forEach((_, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", "Bit " + (i + 1)); b.addEventListener("click", () => { bits[i] ^= 1; drawWave(); }); bitsEl.appendChild(b); });
+  $("#bitsRand").addEventListener("click", () => { bits = bits.map(() => Math.random() < 0.5 ? 1 : 0); drawWave(); });
+  const PAM = { "00": 0, "01": 1, "11": 2, "10": 3 };
+  function drawWave() {
+    bitsEl.querySelectorAll("button").forEach((b, i) => { b.textContent = bits[i]; b.classList.toggle("one", !!bits[i]); });
+    const { x, w, h } = setupCanvas($("#wave"));
+    const L = 60, R = 12, sw = (w - L - R) / 16, ink = css("--ink"), mut = css("--muted"), line = css("--line");
+    x.font = "11px " + css("--font-mono"); x.textBaseline = "middle";
+    function lane(y0, hh, levels, syms, labels, col, title) {
+      x.fillStyle = mut; x.fillText(title, 4, y0 - 12);
+      levels.forEach((lv, k) => { const y = y0 + hh - lv * hh; x.strokeStyle = line; x.setLineDash([3, 4]); x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke(); x.setLineDash([]); x.fillStyle = mut; x.fillText(labels[k], 4, y); });
+      x.strokeStyle = col; x.lineWidth = 2.5; x.beginPath();
+      syms.forEach((s, i) => { const y = y0 + hh - levels[s] * hh, xa = L + i * sw, xb = xa + sw; if (i === 0) x.moveTo(xa, y); else x.lineTo(xa, y); x.lineTo(xb, y); });
+      x.stroke(); x.lineWidth = 1;
+      for (let i = 0; i <= syms.length; i++) { x.strokeStyle = line; x.beginPath(); x.moveTo(L + i * sw, y0 - 2); x.lineTo(L + i * sw, y0 + hh + 2); x.stroke(); }
+    }
+    lane(34, 70, [0, 1], bits, ["0", "1"], css("--accent"), "NRZ · 16 symbols");
+    x.fillStyle = ink; x.textAlign = "center"; bits.forEach((b, i) => x.fillText(b, L + i * sw + sw / 2, 120)); x.textAlign = "left";
+    const syms = []; for (let i = 0; i < 16; i += 2) syms.push(PAM["" + bits[i] + bits[i + 1]]);
+    lane(178, 90, [0, 1 / 3, 2 / 3, 1], syms, ["00", "01", "11", "10"], css("--trace"), "PAM4 · 8 symbols");
+    x.fillStyle = ink; x.textAlign = "center"; syms.forEach((s, i) => x.fillText("" + bits[2 * i] + bits[2 * i + 1], L + i * sw + sw / 2, 284)); x.textAlign = "left";
+    x.fillStyle = mut; x.fillText("← time saved →", L + 8 * sw + 10, 223);
+    $("#wavePlain").innerHTML = `<b>What you are seeing:</b> NRZ needed 16 ticks for these 16 bits; PAM4 needed 8. At the same tick rate that is double the data. The gap between neighbouring PAM4 levels is one third of the NRZ swing, which is why PAM4 needs about 9.5 dB more signal-to-noise ratio and relies on error correction.`;
+  }
+
+  /* ---------- 03 encoding bars ---------- */
+  $("#encBars").innerHTML = [["8b/10b · Gen1–2", 0.8, "8 of every 10 bits"], ["128b/130b · Gen3–5", 128 / 130, "128 of every 130 bits"], ["FLIT · Gen6+", 236 / 256, "236 of every 256 bytes"]]
+    .map(([n, e, d]) => `<div class="effrow" style="grid-template-columns:150px 1fr 56px"><span>${n}</span><span class="track"><span class="fill" style="display:block;width:${(e * 100).toFixed(1)}%"></span></span><span>${(e * 100).toFixed(1)}%</span></div><div class="small muted" style="margin:2px 0 8px 160px">${d} are yours</div>`).join("");
+
+  /* ---------- 04 equalization ---------- */
+  const PATTERN = [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1];
+  const OS = 16;
+  function simulate(loss, de, pre) {
+    const sym = PATTERN.map(b => b ? 1 : -1), n = sym.length;
+    const tx = [];
+    for (let i = 0; i < n; i++) {
+      const prev = sym[i - 1] !== undefined ? sym[i - 1] : sym[i], next = sym[i + 1] !== undefined ? sym[i + 1] : sym[i];
+      const v = (1 - de - pre) * sym[i] - de * prev - pre * next;
+      for (let k = 0; k < OS; k++) tx.push(v);
+    }
+    const a = 0.5 * Math.exp(-3.6 * loss); // per-sample low-pass coefficient
+    const rx = []; let y = tx[0];
+    for (let i = 0; i < tx.length; i++) { y += a * (tx[i] - y); rx.push(y); }
+    let worst = Infinity; const pts = [];
+    for (let i = 1; i < n; i++) { const idx = i * OS + OS - 2, v = rx[idx] * sym[i]; pts.push([idx, rx[idx]]); if (v < worst) worst = v; }
+    return { tx, rx, worst, pts };
+  }
+  function eqVals() { return { loss: +$("#eqLoss").value / 100, de: +$("#eqDe").value / 100, pre: +$("#eqPre").value / 100 }; }
+  function drawEq() {
+    const v = eqVals();
+    const dB = (c) => c <= 0 ? "0 dB" : "−" + (20 * Math.log10(1 / (1 - 2 * c))).toFixed(1) + " dB";
+    $("#eqLossV").textContent = Math.round(v.loss * 100) + "%"; $("#eqDeV").textContent = dB(v.de); $("#eqPreV").textContent = v.pre <= 0 ? "0 dB" : "+" + (20 * Math.log10(1 / (1 - 2 * v.pre))).toFixed(1) + " dB";
+    const raw = simulate(v.loss, 0, 0), eq = simulate(v.loss, v.de, v.pre);
+    const { x, w, h } = setupCanvas($("#eqc"));
+    const L = 10, R = 10, mid = h / 2, amp = h * 0.4, N = raw.rx.length, X = (i) => L + i / (N - 1) * (w - L - R), Y = (val) => mid - val * amp;
+    x.strokeStyle = css("--line"); x.beginPath(); x.moveTo(L, mid); x.lineTo(w - R, mid); x.stroke();
+    for (let i = 0; i <= PATTERN.length; i++) { x.beginPath(); x.moveTo(X(Math.min(N - 1, i * OS)), 8); x.lineTo(X(Math.min(N - 1, i * OS)), h - 8); x.globalAlpha = 0.5; x.stroke(); x.globalAlpha = 1; }
+    function trace(arr, col, lw, dash) { x.strokeStyle = col; x.lineWidth = lw; x.setLineDash(dash || []); x.beginPath(); arr.forEach((val, i) => i ? x.lineTo(X(i), Y(val)) : x.moveTo(X(i), Y(val))); x.stroke(); x.setLineDash([]); x.lineWidth = 1; }
+    trace(PATTERN.flatMap(b => Array(OS).fill(b ? 1 : -1)), css("--muted"), 1, [4, 4]);
+    trace(raw.rx, css("--muted"), 2);
+    trace(eq.rx, css("--trace"), 2.5);
+    x.fillStyle = css("--trace"); eq.pts.forEach(([i, val]) => { x.beginPath(); x.arc(X(i), Y(val), 3, 0, 6.3); x.fill(); });
+    x.fillStyle = css("--muted"); x.font = "11px " + css("--font-mono"); x.textAlign = "center";
+    PATTERN.forEach((b, i) => x.fillText(b, X(i * OS + OS / 2), h - 6)); x.textAlign = "left";
+    const pct = (m) => (m * 100).toFixed(0) + "%";
+    const st = (m) => m > 0.12 ? "readable" : m > 0 ? "marginal" : "bits misread";
+    $("#eqRO").innerHTML = [["Worst bit, no EQ", pct(raw.worst) + " · " + st(raw.worst)], ["Worst bit, with EQ", pct(eq.worst) + " · " + st(eq.worst)], ["Change", (eq.worst - raw.worst >= 0 ? "+" : "") + pct(eq.worst - raw.worst)]].map(([k, val]) => `<div class="ro"><div class="k">${k}</div><div class="v">${val}</div></div>`).join("");
+    let msg;
+    if (v.de === 0 && v.pre === 0) msg = raw.worst <= 0 ? "With this much loss and no equalization, at least one lone bit never crosses the centre line, so the receiver reads it wrong. Add de-emphasis." : "No equalization applied. The worst lone bit reaches " + pct(raw.worst) + " of full height. Raise the loss to see it fail, or add de-emphasis to see it improve.";
+    else if (eq.worst > raw.worst + 0.01) msg = "Equalization helps: the worst bit improved from " + pct(raw.worst) + " to " + pct(eq.worst) + " of full height. The transmitter is sending less total voltage, but the bits that matter arrive clearer.";
+    else msg = "This setting is too strong for this board: de-emphasis lowers every bit that follows a repeat, and here that costs more than it gains. Real links search for the best preset during training for exactly this reason.";
+    $("#eqPlain").innerHTML = "<b>Result:</b> " + msg;
+  }
+  ["eqLoss", "eqDe", "eqPre"].forEach(id => $("#" + id).addEventListener("input", drawEq));
+  $("#eqAuto").addEventListener("click", () => {
+    const loss = +$("#eqLoss").value / 100; let best = [-9, 0, 0];
+    for (let d = 0; d <= 45; d++) for (let p = 0; p <= 20; p += 2) { const r = simulate(loss, d / 100, p / 100).worst; if (r > best[0]) best = [r, d, p]; }
+    $("#eqDe").value = best[1]; $("#eqPre").value = best[2]; drawEq();
+  });
+
+  /* ---------- 05 packets ---------- */
+  const PK = {
+    a: { label: "Gen1–2 · 8b/10b", f: [
+      ["STP", "1 byte", "ov", "Start-of-packet marker. A special K-character (K27.7) that cannot appear in normal data, so the receiver knows a TLP begins here."],
+      ["Sequence", "2 bytes", "ov", "A 12-bit serial number added by the Data Link Layer. The receiver uses it to ACK or NAK specific packets."],
+      ["Header", "12–16 bytes", "", "Type (memory read, write, completion…), length, requester ID, tag and address. 16 bytes when a 64-bit address is used."],
+      ["Data", "0–4096 bytes", "pay", "The payload. Its maximum is set by Max Payload Size, commonly 128 to 512 bytes on PCs."],
+      ["ECRC", "4 bytes", "ov", "Optional end-to-end check that survives passing through switches."],
+      ["LCRC", "4 bytes", "ov", "Link CRC covering sequence number, header and data. Checked at every hop; a failure triggers a NAK and replay."],
+      ["END", "1 byte", "ov", "End-of-packet K-character (K29.7)."]] },
+    b: { label: "Gen3–5 · 128b/130b", f: [
+      ["STP token", "4 bytes", "ov", "Replaces STP, the sequence number and END. Holds the packet length (so no end marker is needed), the 12-bit sequence number, and its own small CRC and parity so a corrupted length is caught."],
+      ["Header", "12–16 bytes", "", "Same TLP header as before. Gen4 widened the tag to 10 bits so more requests can be outstanding at once."],
+      ["Data", "0–4096 bytes", "pay", "The payload, scrambled and carried inside 130-bit blocks across the lanes."],
+      ["ECRC", "4 bytes", "ov", "Optional end-to-end CRC."],
+      ["LCRC", "4 bytes", "ov", "Link CRC, checked per hop, as in Gen1–2."]] },
+    c: { label: "Gen6+ · FLIT", f: [
+      ["TLP bytes", "236 bytes", "pay", "Space for transaction packets: headers and data back to back. A TLP can span several FLITs, and several small TLPs can share one. Individual TLPs no longer carry their own LCRC or sequence number."],
+      ["DLP", "6 bytes", "ov", "Data Link payload: flow-control credits, FLIT sequence number and ACK/NAK information, sent in every FLIT instead of as separate small packets."],
+      ["CRC", "8 bytes", "ov", "A strong check over the whole FLIT. If it fails after correction, the FLIT is replayed."],
+      ["FEC", "6 bytes", "ov", "Forward error correction: three interleaved 2-byte codes, each able to fix one corrupted byte. Most PAM4 errors are repaired here with no resend."]] }
+  };
+  let pk = "a", pf = 0;
+  const pktPaint = seg($("#pktSeg"), Object.entries(PK).map(([k, v]) => [k, v.label]), () => pk, (k) => { pk = k; pf = 0; renderPkt(); });
+  function renderPkt() {
+    const F = PK[pk].f;
+    $("#pkt").innerHTML = F.map((f, i) => `<button type="button" class="${f[2]}" data-i="${i}" aria-pressed="${i === pf}" style="flex-grow:${f[2] === "pay" ? 4 : 1}"><span class="n">${f[0]}</span><span class="s">${f[1]}</span></button>`).join("");
+    $("#pktInfo").innerHTML = `<b>${F[pf][0]}:</b> ${F[pf][3]}`;
+  }
+  $("#pkt").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; pf = +b.dataset.i; renderPkt(); });
+  renderPkt();
+  const PAYS = [64, 128, 256, 512, 1024, 2048, 4096];
+  function renderEff() {
+    const p = PAYS[+$("#pay").value]; $("#payV").textContent = p + " bytes";
+    const rows = [["Gen1–2", p / (p + 16 + 2 + 4 + 2) * 0.8], ["Gen3–5", p / (p + 16 + 4 + 4) * 128 / 130], ["Gen6+ FLIT", p / (p + 16) * 236 / 256]];
+    $("#effBars").innerHTML = rows.map(([n, e]) => `<div class="effrow"><span>${n}</span><span class="track"><span class="fill" style="display:block;width:${(e * 100).toFixed(1)}%"></span></span><span>${(e * 100).toFixed(1)}%</span></div>`).join("") +
+      `<div class="plain-live" style="margin-top:10px"><b>Reading this:</b> ${p <= 128 ? "With small packets, headers dominate, so every scheme loses efficiency. FLIT mode pays a fixed 20 bytes per 256 for CRC and error correction, which is why it sits slightly below Gen3–5 here; the reward is surviving PAM4's higher error rate." : "With larger packets the header matters less and the encoding tax decides the result: 20% lost in Gen1–2, about 1.5% in Gen3–5, about 8% in FLIT mode (the cost of built-in error correction)."}</div>`;
+  }
+  $("#pay").addEventListener("input", renderEff); renderEff();
+
+  /* ---------- 06 reliability ---------- */
+  let mode = "ack", seq = 1, replay = [], credits = 6; const MAXC = 6;
+  const logEl = $("#relLog");
+  function log(t, c) { const d = document.createElement("div"); if (c) d.className = c; d.textContent = t; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; }
+  function relPaint() {
+    $("#replay").innerHTML = replay.length ? replay.map(s => `<span class="chip">#${s}</span>`).join("") : '<span class="small muted">empty</span>';
+    $("#credits").innerHTML = Array.from({ length: MAXC }, (_, i) => `<span class="credit${i < credits ? " full" : ""}"></span>`).join("");
+    $("#relSend").disabled = $("#relBad").disabled = credits === 0;
+  }
+  function send(bad) {
+    if (credits === 0) return;
+    const s = seq++, unit = mode === "flit" ? "FLIT" : "TLP"; credits--; replay.push(s);
+    log(`→ ${unit} #${s} sent. Copy kept in replay buffer. Credits left: ${credits}.`);
+    if (!bad) { replay = replay.filter(v => v !== s); log(`← Receiver: CRC good, ACK #${s}. Sender discards its copy.`, "ok"); }
+    else if (mode === "flit") {
+      if (Math.random() < 0.8) { replay = replay.filter(v => v !== s); log(`← Receiver: FEC found 1 bad byte and fixed it. CRC good, ACK #${s}. No resend needed.`, "ok"); }
+      else { log(`← Receiver: burst too large for FEC, CRC fails, NAK #${s}.`, "bad"); log(`→ Sender replays FLIT #${s} from the buffer.`); replay = replay.filter(v => v !== s); log(`← Receiver: CRC good, ACK #${s}.`, "ok"); }
+    } else { log(`← Receiver: LCRC mismatch, packet dropped, NAK sent.`, "bad"); log(`→ Sender replays TLP #${s} from the buffer.`); replay = replay.filter(v => v !== s); log(`← Receiver: LCRC good, ACK #${s}. Software never saw the error.`, "ok"); }
+    if (credits === 0) log("Sender is out of credits and must wait. This is back-pressure, not an error.", "bad");
+    relPaint();
+  }
+  function relReset() { seq = 1; replay = []; credits = MAXC; logEl.innerHTML = ""; log(mode === "flit" ? "FLIT mode (Gen6+): FEC first, then CRC, then replay." : "Gen1–5: each TLP has a sequence number and LCRC; errors cause NAK and replay."); relPaint(); }
+  seg($("#relSeg"), [["ack", "Gen1–5 ACK/NAK"], ["flit", "Gen6+ FLIT + FEC"]], () => mode, (k) => { mode = k; relReset(); });
+  $("#relSend").addEventListener("click", () => send(false)); $("#relBad").addEventListener("click", () => send(true));
+  $("#relFree").addEventListener("click", () => { credits = MAXC; log("← Receiver processed its buffers and sent UpdateFC. Credits restored.", "ok"); relPaint(); });
+  $("#relReset").addEventListener("click", relReset); relReset();
+
+  /* ---------- 07 features ---------- */
+  const FEAT = [
+    [1, "ASPM L0s / L1", "Lets an idle link doze and wake quickly, saving power in laptops."],
+    [1, "Advanced Error Reporting", "Logs which kind of link error happened, so software can tell a bad cable from a bad device."],
+    [1, "Hot-plug", "Add or remove a device while the system is running, as with server drive bays."],
+    [2, "Function Level Reset", "Reset one device function without resetting the whole link. Used when handing devices to virtual machines."],
+    [2, "Access Control Services", "Stops devices behind a switch from talking to each other directly, needed for safe virtualisation."],
+    [2, "Latency Tolerance Reporting (2.1)", "A device tells the system how long a delay it can tolerate, so deeper sleep states can be used safely."],
+    [2, "Resizable BAR (2.1)", "Lets a graphics card expose all its memory to the CPU at once; a setting gamers switch on in the BIOS."],
+    [3, "Dynamic equalization", "Both ends tune the signal together at every link-up."],
+    [3, "L1 PM substates (3.1)", "L1.1 and L1.2 switch off more circuitry while idle. Essential for phones and thin laptops."],
+    [3, "SRIS (3.1)", "Each end may use its own clock with spread spectrum, allowing cables without a clock wire."],
+    [3, "Downstream Port Containment (3.1)", "Isolates a failing device so one bad SSD does not crash the server."],
+    [4, "Lane margining", "A live link measures how much timing and voltage margin it has. Used in factory tests and fleet health checks."],
+    [4, "Retimers", "Standardised helper chips that regenerate the signal mid-way on long routes."],
+    [4, "10-bit tags, scaled flow control", "More requests in flight at once, so fast SSDs and NICs are not held back by bookkeeping."],
+    [5, "Equalization bypass", "Skip intermediate speeds during training for faster link-up."],
+    [5, "Alternate protocol negotiation", "Lets CXL use the same wires and connector as PCIe."],
+    [5, "Precoding", "Limits runs of errors caused by the receiver's feedback equalizer."],
+    [6, "FLIT mode with FEC", "Fixed 256-byte units with built-in error correction, making PAM4 usable."],
+    [6, "L0p", "Run on fewer lanes when traffic is light, then widen again, without stopping data."],
+    [6, "IDE and DOE", "Encrypts and authenticates link traffic, and gives a standard mailbox for security handshakes."],
+    [6, "14-bit tags, shared flow control", "Many more outstanding requests and better buffer sharing between traffic classes."],
+    [7, "128 GT/s PAM4", "Double Gen6 on the same protocol, with tighter electrical rules."],
+    [7, "Optical-aware retimers", "Groundwork for carrying PCIe over optical fibre between racks."]
+  ];
+  let ff = "all";
+  function renderFeat() { $("#featBody").innerHTML = FEAT.filter(f => ff === "all" || String(f[0]) === ff).map(f => `<tr><td class="g">Gen${f[0]}</td><td><b>${f[1]}</b></td><td>${f[2]}</td></tr>`).join(""); }
+  seg($("#featSeg"), [["all", "All"]].concat([1, 2, 3, 4, 5, 6, 7].map(n => [String(n), "Gen" + n])), () => ff, (k) => { ff = k; renderFeat(); });
+  renderFeat();
+
+  /* ---------- 08 devices ---------- */
+  const PIC = {
+    ssd: '<rect x="20" y="28" width="200" height="30" rx="3"/><rect class="ac" x="40" y="34" width="34" height="18"/><rect x="84" y="34" width="50" height="18"/><rect x="142" y="34" width="50" height="18"/><path class="hi" d="M20,32 h-8 v22 h8z"/><circle cx="212" cy="43" r="4"/>',
+    gpu: '<rect x="20" y="14" width="200" height="46" rx="5"/><circle cx="75" cy="37" r="17"/><circle cx="165" cy="37" r="17"/><path class="hi" d="M40,60 h120 v10 h-120z"/><rect x="8" y="10" width="6" height="64"/>',
+    pi: '<rect x="50" y="12" width="140" height="62" rx="5"/><rect class="ac" x="96" y="30" width="26" height="26"/><rect x="158" y="18" width="26" height="14"/><rect x="158" y="38" width="26" height="14"/><path class="hi" d="M58,58 h22 v10 h-22z"/><circle cx="58" cy="20" r="3"/><circle cx="182" cy="66" r="3"/>',
+    phone: '<rect x="92" y="4" width="56" height="78" rx="8"/><rect class="ac" x="108" y="34" width="24" height="18"/><rect class="hi" x="102" y="14" width="16" height="10"/><path d="M118,24 v10" /><rect x="124" y="60" width="16" height="10"/>',
+    server: '<rect x="20" y="10" width="200" height="22" rx="3"/><rect x="20" y="36" width="200" height="22" rx="3"/><rect x="20" y="62" width="200" height="18" rx="3"/><rect class="hi" x="30" y="15" width="70" height="12"/><rect class="hi" x="110" y="15" width="70" height="12"/><rect class="ac" x="30" y="41" width="20" height="12"/><rect class="ac" x="56" y="41" width="20" height="12"/><rect class="ac" x="82" y="41" width="20" height="12"/><circle cx="206" cy="71" r="3"/>',
+    console: '<rect x="30" y="20" width="180" height="46" rx="8"/><rect class="hi" x="46" y="34" width="70" height="12" rx="2"/><circle cx="170" cy="43" r="9"/><text x="46" y="60">M.2 bay</text>'
+  };
+  const DEV = [
+    ["console", "Game console SSD bay", "Gen4 x4", "The PlayStation 5 expansion slot takes an M.2 NVMe SSD and asks for Gen4 x4 with about 5.5 GB/s or more. A Gen3 drive is not accepted."],
+    ["gpu", "Graphics card", "Gen4 or Gen5 x16", "The long gold edge is 16 lanes. Most games lose only a few percent when a card runs at x8, because textures load once and then stay in the card's memory."],
+    ["ssd", "Desktop Gen5 SSD", "Gen5 x4", "About 14 GB/s. The controller runs hot at 32 GT/s, so these drives usually ship with a heatsink and will slow down if they overheat."],
+    ["pi", "Raspberry Pi 5", "Gen2 x1", "One lane on a small ribbon connector, officially Gen2 (about 0.5 GB/s). Enough for an NVMe boot drive that is far faster than an SD card."],
+    ["phone", "Smartphone", "Gen2–Gen4 x1 or x2", "A short lane from the main chip to the Wi-Fi chip, and in iPhones to NVMe storage. Uses the L1.2 sleep state heavily to save battery."],
+    ["server", "AI server", "Gen5 and Gen6, x16", "Several accelerators each on x16, switches and retimers between boards, and CXL memory sharing the same physical layer."]
+  ];
+  $("#devs").innerHTML = DEV.map(d => `<div class="dev"><svg class="pic" viewBox="0 0 240 86" role="img" aria-label="Drawing of ${d[1]}">${PIC[d[0]]}</svg><span class="tag">${d[2]}</span><h3>${d[1]}</h3><p class="small">${d[3]}</p></div>`).join("");
+  const SL = [["x1", 25, "Wi-Fi, sound, USB cards"], ["x4", 39, "NVMe adapter cards, 10G network"], ["x8", 56, "RAID and fast network cards"], ["x16", 89, "Graphics cards, accelerators"]];
+  $("#slotG").innerHTML = SL.map((s, i) => { const y = 14 + i * 44, sc = 4.2, a = 11.65 * sc; return `<text x="6" y="${y + 18}" style="font-size:13px">${s[0]}</text><rect x="50" y="${y}" width="${a}" height="26" rx="3"/><rect x="${50 + a + 6}" y="${y}" width="${(s[1] - 11.65) * sc - 6}" height="26" rx="3"/><rect class="hi" x="${50 + a + 1}" y="${y}" width="4" height="26"/><text x="${50 + s[1] * sc + 12}" y="${y + 12}">${s[1]} mm</text><text x="${50 + s[1] * sc + 12}" y="${y + 24}">${s[2]}</text>`; }).join("");
+
+  /* ---------- 09 quiz ---------- */
+  const QZ = [
+    ["Why did Gen3 run at 8 GT/s instead of 10 GT/s?", ["It changed the encoding to waste far fewer bits", "It used four voltage levels", "It added more lanes"], 0, "128b/130b cut the overhead from 20% to 1.5%, so 8 GT/s was enough to double Gen2."],
+    ["What does PAM4 change compared with NRZ?", ["It sends two bits per symbol using four levels", "It uses four wires per lane instead of two pairs", "It removes the need for a clock"], 0, "Four levels carry two bits each tick. The wiring stays the same."],
+    ["A Gen5 x4 SSD is fitted in a Gen3 x4 slot. What happens?", ["It will not work", "It runs at Gen3 x4 speed", "It runs at Gen5 on two lanes"], 1, "The link trains to the highest speed and width both ends support."],
+    ["In Gen1–5, what happens when a packet arrives corrupted?", ["The software gets wrong data", "The receiver sends NAK and the sender replays it", "The link shuts down"], 1, "The LCRC check fails, a NAK is sent, and the copy in the replay buffer is sent again."],
+    ["Why does Gen6 need forward error correction?", ["PAM4 levels are closer together, so raw errors are far more common", "FLITs are larger than TLPs", "Encryption requires it"], 0, "The raw error rate target moves from 1e-12 to about 1e-6; FEC repairs most errors without a resend."],
+    ["What is equalization for?", ["Making all lanes the same length", "Compensating for the board weakening fast signal changes", "Balancing power between devices"], 1, "Traces attenuate high frequencies; the transmitter and receiver boost them back."]
+  ];
+  let right = 0;
+  const qEl = $("#quizEl");
+  QZ.forEach((q, qi) => {
+    const d = document.createElement("div"); d.className = "q";
+    d.innerHTML = `<h3>${qi + 1}. ${q[0]}</h3><div class="opts">${q[1].map((o, oi) => `<button type="button" data-o="${oi}">${o}</button>`).join("")}</div><div class="fb" aria-live="polite"></div>`;
+    let done = false;
+    d.querySelector(".opts").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const ok = +b.dataset.o === q[2]; b.classList.add(ok ? "right" : "wrong");
+      d.querySelector(".fb").textContent = ok ? "Correct. " + q[3] : "Not quite. Try another answer.";
+      if (ok && !done) { done = true; right++; $("#score").textContent = `${right} of ${QZ.length} answered correctly`; d.querySelectorAll("button").forEach(x => { x.disabled = true; }); }
+    });
+    qEl.appendChild(d);
+  });
+
+  function redraw() { drawWave(); drawEq(); }
+  window.addEventListener("resize", redraw);
+  new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  redraw();
+})();
+</script>
+</body>
+</html>
