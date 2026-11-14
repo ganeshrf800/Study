@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCIe NVMe Loopback Testing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a lab-bench notebook. Sticky section rail, then stacked "instrument panels" that each teach one layer of PCIe/NVMe testing. Scope-trace yellow marks signals; teal marks controls. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #15212c;
+  --muted: #586572;
+  --line: #d3dae1;
+  --accent: #0a6e8a;
+  --trace: #b98000;
+  --ok: #1d7f46;
+  --bad: #bf3029;
+  --warn: #a8690f;
+  --code-bg: #f5f7f9;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #17202a; --ink: #e3e9ef; --muted: #96a3b0; --line: #2a3642;
+    --accent: #4fb6d3; --trace: #f2c14e; --ok: #4cc27f; --bad: #f06b62; --warn: #e3a64a; --code-bg: #111920;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #17202a; --ink: #e3e9ef; --muted: #96a3b0; --line: #2a3642;
+  --accent: #4fb6d3; --trace: #f2c14e; --ok: #4cc27f; --bad: #f06b62; --warn: #e3a64a; --code-bg: #111920;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 600; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+a { color: var(--accent); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+header.hero { padding: 40px 0 28px; border-bottom: 1px solid var(--line); }
+.hero .wrap { display: grid; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.lede { font-size: 1.1rem; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--font-mono); font-size: 0.78rem; border: 1px solid var(--line); background: var(--surface); padding: 3px 9px; border-radius: 999px; color: var(--muted); }
+
+nav.rail { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+nav.rail .wrap { display: flex; gap: 4px; overflow-x: auto; padding-top: 8px; padding-bottom: 8px; }
+nav.rail a { white-space: nowrap; text-decoration: none; color: var(--muted); font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; }
+nav.rail a:hover { background: var(--surface); color: var(--ink); }
+nav.rail a .n { font-family: var(--font-mono); color: var(--trace); margin-right: 6px; }
+
+main section { padding: 40px 0 8px; scroll-margin-top: 56px; }
+.sec-head { display: grid; gap: 8px; margin-bottom: 18px; }
+.sec-head .num { font-family: var(--font-mono); color: var(--trace); font-size: 0.85rem; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.88rem; }
+
+/* Segmented controls */
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--code-bg); }
+.seg button { border: 0; background: transparent; padding: 6px 12px; cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.ctl { display: grid; gap: 6px; }
+.ctl label { font-size: 0.82rem; color: var(--muted); font-family: var(--font-mono); }
+.controls { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: end; margin-bottom: 16px; }
+input[type="range"] { accent-color: var(--accent); width: 200px; }
+select, input[type="number"] { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--surface); padding: 7px 14px; border-radius: 7px; cursor: pointer; font-weight: 500; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+/* Layer stack */
+.stack { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 16px; }
+@media (max-width: 720px) { .stack { grid-template-columns: 1fr; } }
+.layers { display: grid; gap: 8px; }
+.layer { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 12px 14px; cursor: pointer; display: grid; gap: 2px; border-left: 4px solid var(--line); }
+.layer .t { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.layer .s { font-size: 0.82rem; color: var(--muted); }
+.layer[aria-pressed="true"] { border-left-color: var(--trace); box-shadow: 0 1px 0 var(--line); }
+.layer-detail { display: grid; gap: 12px; align-content: start; }
+.layer-detail ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 0.92rem; }
+.kv dt { color: var(--muted); font-family: var(--font-mono); font-size: 0.82rem; padding-top: 2px; }
+.kv dd { margin: 0; }
+
+/* Readouts */
+.readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.ro { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--code-bg); }
+.ro .k { font-size: 0.76rem; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.03em; }
+.ro .v { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ro .u { font-size: 0.8rem; color: var(--muted); }
+.note { border-left: 3px solid var(--trace); padding: 6px 12px; background: var(--code-bg); border-radius: 0 6px 6px 0; font-size: 0.92rem; }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.tbl-wrap { overflow-x: auto; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--font-mono); font-size: 0.76rem; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+tr.sel td { background: color-mix(in srgb, var(--trace) 14%, transparent); }
+
+/* LTSSM */
+.ltssm-wrap { display: grid; grid-template-columns: 1fr minmax(240px, 320px); gap: 16px; }
+@media (max-width: 860px) { .ltssm-wrap { grid-template-columns: 1fr; } }
+.svg-box { overflow-x: auto; }
+svg.ltssm { width: 100%; min-width: 620px; height: auto; display: block; }
+.st rect { fill: var(--code-bg); stroke: var(--line); stroke-width: 1.5; rx: 8; transition: fill .25s, stroke .25s; }
+.st text { fill: var(--ink); font-family: var(--font-mono); font-size: 13px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+.st { cursor: pointer; }
+.st:hover rect { stroke: var(--accent); }
+.st.on rect { fill: var(--trace); stroke: var(--trace); }
+.st.on text { fill: #111; font-weight: 600; }
+.st.lb rect { stroke: var(--trace); stroke-dasharray: 4 3; }
+.edge { stroke: var(--muted); stroke-width: 1.4; fill: none; opacity: 0.55; }
+.edge.on { stroke: var(--trace); opacity: 1; stroke-width: 2.4; }
+.log { font-family: var(--font-mono); font-size: 0.8rem; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; height: 180px; overflow-y: auto; display: grid; align-content: start; gap: 4px; }
+.log .ln { color: var(--muted); }
+.log .ln b { color: var(--ink); font-weight: 600; }
+
+/* Bench */
+.bench { display: grid; gap: 16px; }
+svg.path { width: 100%; min-width: 640px; height: auto; display: block; }
+.blk rect { fill: var(--code-bg); stroke: var(--line); stroke-width: 1.5; }
+.blk text { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; text-anchor: middle; }
+.blk .sub { fill: var(--muted); font-size: 10.5px; }
+.wire { stroke: var(--muted); stroke-width: 2; fill: none; }
+.flow { stroke: var(--trace); stroke-width: 3; fill: none; stroke-dasharray: 6 10; }
+.running .flow { animation: dash 0.8s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -32; } }
+canvas#eye { width: 100%; height: 220px; display: block; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; }
+.verdict { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-weight: 600; padding: 4px 10px; border-radius: 999px; font-size: 0.85rem; border: 1px solid currentColor; }
+.verdict.ok { color: var(--ok); } .verdict.bad { color: var(--bad); } .verdict.warn { color: var(--warn); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* Commands */
+.cmds { display: grid; gap: 12px; }
+.cmd { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.cmd-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.cmd-h .t { font-weight: 600; font-size: 0.95rem; }
+.cmd pre { margin: 0; padding: 12px; background: var(--code-bg); overflow-x: auto; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5; }
+.cmd .why { padding: 9px 12px; font-size: 0.88rem; color: var(--muted); border-top: 1px solid var(--line); }
+.copy { border: 1px solid var(--line); background: var(--code-bg); border-radius: 6px; padding: 3px 10px; font-size: 0.8rem; cursor: pointer; font-family: var(--font-mono); }
+.tag { font-family: var(--font-mono); font-size: 0.7rem; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; }
+.tag.safe { color: var(--ok); } .tag.caution { color: var(--warn); } .tag.danger { color: var(--bad); }
+.filter { margin-bottom: 12px; }
+
+/* Checklist */
+.progress { height: 8px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.cl-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 14px; }
+.cl-group h3 { margin-bottom: 8px; font-size: 1rem; }
+.cl-item { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 0.92rem; border-bottom: 1px dashed var(--line); }
+.cl-item input { margin-top: 4px; accent-color: var(--accent); }
+.gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 20px; }
+.gloss div { font-size: 0.9rem; }
+.gloss b { font-family: var(--font-mono); font-size: 0.85rem; }
+footer { padding: 36px 0 48px; color: var(--muted); font-size: 0.85rem; display: grid; gap: 8px; }
+footer ul { margin: 0; padding-left: 18px; }
+
+/* 00 intro */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.fact { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--surface); display: grid; gap: 4px; }
+.fact .k { font-family: var(--font-mono); font-size: 0.76rem; color: var(--trace); text-transform: uppercase; letter-spacing: 0.03em; }
+.topo-wrap { display: grid; grid-template-columns: 1fr minmax(240px, 320px); gap: 16px; }
+@media (max-width: 860px) { .topo-wrap { grid-template-columns: 1fr; } }
+svg.topo { width: 100%; min-width: 560px; height: auto; display: block; }
+.tn rect { fill: var(--code-bg); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
+.tn text { fill: var(--ink); font-family: var(--font-mono); font-size: 12.5px; text-anchor: middle; pointer-events: none; }
+.tn .sub { fill: var(--muted); font-size: 10.5px; }
+.tn { cursor: pointer; }
+.tn:hover rect { stroke: var(--accent); }
+.tn.on rect { stroke: var(--trace); stroke-width: 2.5; }
+.tl { stroke: var(--muted); stroke-width: 2; }
+.tl-lbl { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.lane-svg { width: 100%; max-width: 520px; height: auto; display: block; }
+.timeline { display: grid; gap: 6px; }
+.tl-row { display: grid; grid-template-columns: 74px 1fr 92px; gap: 10px; align-items: center; border: 0; background: transparent; padding: 4px 6px; border-radius: 6px; cursor: pointer; text-align: left; }
+.tl-row:hover { background: var(--code-bg); }
+.tl-row[aria-pressed="true"] { background: color-mix(in srgb, var(--trace) 14%, transparent); }
+.tl-row .g { font-family: var(--font-mono); font-size: 0.85rem; }
+.tl-row .bar { height: 14px; border-radius: 3px; background: var(--accent); min-width: 3px; }
+.tl-row .bar.draft { background: repeating-linear-gradient(45deg, var(--accent) 0 6px, transparent 6px 10px); border: 1px solid var(--accent); }
+.tl-row .bw { font-family: var(--font-mono); font-size: 0.8rem; text-align: right; font-variant-numeric: tabular-nums; }
+.ff-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.ff { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--surface); display: grid; gap: 6px; align-content: start; }
+.ff .where { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.ff-filter { margin-bottom: 12px; }
+.phone-wrap { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 16px; }
+@media (max-width: 760px) { .phone-wrap { grid-template-columns: 1fr; } }
+svg.phone { width: 100%; height: auto; display: block; }
+.pb rect { fill: var(--code-bg); stroke: var(--line); stroke-width: 1.5; }
+.pb text { fill: var(--ink); font-family: var(--font-mono); font-size: 11.5px; text-anchor: middle; pointer-events: none; }
+.pb .sub { fill: var(--muted); font-size: 9.5px; }
+.pb { cursor: pointer; }
+.pb.on rect { stroke: var(--trace); stroke-width: 2.5; }
+.plink { stroke-width: 3; fill: none; }
+.plink.pcie { stroke: var(--trace); }
+.plink.mphy { stroke: var(--accent); stroke-dasharray: 5 4; }
+.plink.other { stroke: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; font-family: var(--font-mono); color: var(--muted); }
+.legend i { display: inline-block; width: 22px; height: 3px; vertical-align: middle; margin-right: 6px; }
+</style>
+<link rel="stylesheet" href="../back.css">
+<script>try{var t=localStorage.getItem("tb-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a class="study-back" href="../">← Study home</a>
+    <div class="eyebrow">Interactive field guide · PCIe Gen3 → Gen6 · NVMe SSD validation</div>
+    <h1>Testing PCIe on an NVMe card, with loopback</h1>
+    <p class="lede">How an NVMe SSD's PCIe link is validated from the copper up: what each layer tests, how the link state machine is steered into Loopback, how a bit-error-rate tester uses that loop to prove a receiver, and the commands you run on a live system afterwards.</p>
+    <div class="chips">
+      <span class="chip">LTSSM</span><span class="chip">Loopback Lead / Follower</span><span class="chip">PRBS &amp; BER</span><span class="chip">Stressed eye</span><span class="chip">AER</span><span class="chip">nvme-cli</span><span class="chip">fio</span>
+    </div>
+  </div>
+</header>
+
+<nav class="rail" aria-label="Sections">
+  <div class="wrap">
+    <a href="#what"><span class="n">00</span>What is PCIe</a>
+    <a href="#stack"><span class="n">01</span>Test layers</a>
+    <a href="#link"><span class="n">02</span>Link speeds</a>
+    <a href="#ltssm"><span class="n">03</span>LTSSM &amp; loopback entry</a>
+    <a href="#bench"><span class="n">04</span>Loopback BER bench</a>
+    <a href="#bertime"><span class="n">05</span>BER test time</a>
+    <a href="#nvme"><span class="n">06</span>On a live system</a>
+    <a href="#plan"><span class="n">07</span>Test plan</a>
+    <a href="#glossary"><span class="n">08</span>Glossary</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- 00 WHAT IS PCIE -->
+<section id="what">
+  <div class="sec-head">
+    <span class="num">00 / What is PCIe</span>
+    <h2>PCI Express in one page</h2>
+    <p class="muted">PCI Express (PCIe) is the high-speed serial connection between a processor and the chips and cards around it: SSDs, GPUs, network cards, Wi-Fi radios. It replaced the old parallel PCI and AGP buses in the early 2000s, and the standard is maintained by PCI-SIG, an industry consortium of member companies.</p>
+  </div>
+
+  <div class="facts">
+    <div class="fact"><span class="k">Point-to-point</span><span>Each link joins exactly two devices. There is no shared bus, so a slow device cannot hold up the others; switches fan one link out to many.</span></div>
+    <div class="fact"><span class="k">Serial lanes</span><span>A lane is two differential pairs, one per direction, so data flows both ways at once. Links bundle 1, 2, 4, 8 or 16 lanes.</span></div>
+    <div class="fact"><span class="k">Packet based</span><span>Reads, writes and interrupts travel as Transaction Layer Packets (TLPs) with CRC and automatic retry, much like a tiny network.</span></div>
+    <div class="fact"><span class="k">Backward compatible</span><span>A Gen5 card works in a Gen3 slot; the link trains to the fastest speed and widest width both ends support.</span></div>
+    <div class="fact"><span class="k">Software compatible</span><span>It keeps the PCI configuration model, so operating systems enumerate devices the same way they did in the 1990s.</span></div>
+    <div class="fact"><span class="k">Carries other protocols</span><span>NVMe (storage), CXL (memory and accelerators) and Thunderbolt / USB4 tunnels all ride on PCIe.</span></div>
+  </div>
+
+  <h3 style="margin:28px 0 10px">Topology: how devices connect</h3>
+  <div class="topo-wrap">
+    <div class="panel svg-box">
+      <svg class="topo" id="topoSvg" viewBox="0 0 640 330" role="img" aria-label="PCIe tree: CPU and root complex, a switch, and endpoints">
+        <line class="tl" x1="320" y1="62" x2="320" y2="98"></line>
+        <line class="tl" x1="250" y1="140" x2="110" y2="200"></line>
+        <line class="tl" x1="320" y1="140" x2="320" y2="200"></line>
+        <line class="tl" x1="390" y1="140" x2="530" y2="200"></line>
+        <line class="tl" x1="320" y1="242" x2="200" y2="272"></line>
+        <line class="tl" x1="320" y1="242" x2="440" y2="272"></line>
+        <text class="tl-lbl" x="138" y="168">x16 Gen5</text>
+        <text class="tl-lbl" x="328" y="176">x8</text>
+        <text class="tl-lbl" x="468" y="168">x4 Gen4</text>
+        <text class="tl-lbl" x="238" y="254">x4</text>
+        <text class="tl-lbl" x="390" y="254">x4</text>
+        <g class="tn" data-k="cpu" tabindex="0" role="button" aria-label="CPU and memory"><rect x="240" y="16" width="160" height="46" rx="8"></rect><text x="320" y="36">CPU + memory</text><text x="320" y="52" class="sub">host</text></g>
+        <g class="tn" data-k="rc" tabindex="0" role="button" aria-label="Root complex"><rect x="200" y="98" width="240" height="42" rx="8"></rect><text x="320" y="118">Root complex</text><text x="320" y="132" class="sub">root ports: start of every link</text></g>
+        <g class="tn" data-k="gpu" tabindex="0" role="button" aria-label="GPU endpoint"><rect x="40" y="200" width="140" height="42" rx="8"></rect><text x="110" y="220">GPU</text><text x="110" y="234" class="sub">endpoint</text></g>
+        <g class="tn" data-k="sw" tabindex="0" role="button" aria-label="PCIe switch"><rect x="250" y="200" width="140" height="42" rx="8"></rect><text x="320" y="220">Switch</text><text x="320" y="234" class="sub">fans out lanes</text></g>
+        <g class="tn" data-k="nvme" tabindex="0" role="button" aria-label="NVMe SSD endpoint"><rect x="460" y="200" width="140" height="42" rx="8"></rect><text x="530" y="220">NVMe SSD</text><text x="530" y="234" class="sub">endpoint</text></g>
+        <g class="tn" data-k="nic" tabindex="0" role="button" aria-label="Network card endpoint"><rect x="130" y="272" width="140" height="42" rx="8"></rect><text x="200" y="292">NIC</text><text x="200" y="306" class="sub">endpoint</text></g>
+        <g class="tn" data-k="retimer" tabindex="0" role="button" aria-label="Retimer"><rect x="370" y="272" width="140" height="42" rx="8"></rect><text x="440" y="292">Retimer → SSD</text><text x="440" y="306" class="sub">extends reach</text></g>
+      </svg>
+    </div>
+    <div class="panel" style="display:grid; gap:8px; align-content:start" aria-live="polite">
+      <h3 id="topoName">Root complex</h3>
+      <p class="small" id="topoDesc"></p>
+      <p class="small muted">Run <code>lspci -tv</code> on Linux to see this tree on a real machine.</p>
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 10px">Anatomy of a lane</h3>
+  <div class="grid2">
+    <div class="panel">
+      <svg class="lane-svg" viewBox="0 0 520 170" role="img" aria-label="One PCIe lane: a transmit pair and a receive pair between two devices">
+        <g class="blk"><rect x="10" y="30" width="110" height="110" rx="8"></rect><text x="65" y="80">Device A</text><text x="65" y="98" class="sub">Tx / Rx</text></g>
+        <g class="blk"><rect x="400" y="30" width="110" height="110" rx="8"></rect><text x="455" y="80">Device B</text><text x="455" y="98" class="sub">Rx / Tx</text></g>
+        <path class="flow" d="M120,55 H400"></path><path class="flow" d="M120,67 H400" style="opacity:.55"></path>
+        <path class="wire" d="M400,105 H120" style="stroke:var(--accent)"></path><path class="wire" d="M400,117 H120" style="stroke:var(--accent);opacity:.55"></path>
+        <text x="260" y="46" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-mono);font-size:11px">Tx+ / Tx− differential pair → </text>
+        <text x="260" y="138" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-mono);font-size:11px">← Rx+ / Rx− differential pair</text>
+        <text x="260" y="88" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-mono);font-size:12px">1 lane = 4 wires, full duplex</text>
+      </svg>
+    </div>
+    <div class="panel" style="display:grid; gap:8px">
+      <dl class="kv">
+        <dt>Differential pair</dt><dd>Two wires carry opposite voltages; the receiver reads the difference, which rejects noise. Data are AC-coupled through capacitors on the Tx side.</dd>
+        <dt>Embedded clock</dt><dd>No clock wire per lane. The receiver's CDR recovers timing from the data transitions; a 100 MHz reference clock is shared or generated locally.</dd>
+        <dt>Sideband pins</dt><dd>PERST# (reset), CLKREQ# (clock request for power saving), WAKE#, plus SMBus on many slots.</dd>
+        <dt>Lane striping</dt><dd>Bytes are spread across lanes in turn, so an x4 link is roughly four times an x1.</dd>
+      </dl>
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 10px">Specification generations</h3>
+  <div class="grid2">
+    <div class="panel">
+      <div class="small muted" style="margin-bottom:8px">Bidirectional bandwidth of an x16 link, log scale. Select a generation.</div>
+      <div class="timeline" id="timeline" role="group" aria-label="PCIe generations"></div>
+    </div>
+    <div class="panel" style="display:grid; gap:10px; align-content:start" aria-live="polite">
+      <h3 id="genName"></h3>
+      <div class="readouts" id="genRO"></div>
+      <p class="small" id="genDesc"></p>
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 10px">Form factors and connectors</h3>
+  <div class="ff-filter"><div class="seg" id="ffSeg" role="group" aria-label="Filter form factors"></div></div>
+  <div class="ff-grid" id="ffGrid"></div>
+
+  <h3 style="margin:28px 0 10px">PCIe inside a mobile phone</h3>
+  <div class="phone-wrap">
+    <div class="panel" style="display:grid; gap:10px">
+      <svg class="phone" id="phoneSvg" viewBox="0 0 360 420" role="img" aria-label="Smartphone block diagram showing which links use PCIe">
+        <rect x="8" y="8" width="344" height="404" rx="34" style="fill:none;stroke:var(--line);stroke-width:2"></rect>
+        <path class="plink pcie" d="M180,200 V120 H95 V100"></path>
+        <path class="plink pcie" d="M180,200 V120 H265 V100"></path>
+        <path class="plink mphy" d="M180,240 V320 H95 V330"></path>
+        <path class="plink pcie" d="M180,240 V320 H265 V330" style="stroke-dasharray:2 5"></path>
+        <path class="plink other" d="M110,220 H60"></path>
+        <path class="plink other" d="M250,220 H300"></path>
+        <g class="pb" data-k="ap" tabindex="0" role="button" aria-label="Application processor"><rect x="110" y="190" width="140" height="60" rx="8"></rect><text x="180" y="214">Application</text><text x="180" y="230">processor (SoC)</text><text x="180" y="244" class="sub">PCIe root complex</text></g>
+        <g class="pb" data-k="wifi" tabindex="0" role="button" aria-label="Wi-Fi and Bluetooth chip"><rect x="35" y="56" width="120" height="44" rx="8"></rect><text x="95" y="76">Wi-Fi / BT</text><text x="95" y="90" class="sub">PCIe Gen2–3 x1</text></g>
+        <g class="pb" data-k="modem" tabindex="0" role="button" aria-label="Discrete cellular modem"><rect x="205" y="56" width="120" height="44" rx="8"></rect><text x="265" y="76">5G modem</text><text x="265" y="90" class="sub">if discrete</text></g>
+        <g class="pb" data-k="ufs" tabindex="0" role="button" aria-label="UFS storage"><rect x="35" y="330" width="120" height="44" rx="8"></rect><text x="95" y="350">UFS storage</text><text x="95" y="364" class="sub">MIPI M-PHY</text></g>
+        <g class="pb" data-k="nvme" tabindex="0" role="button" aria-label="NVMe storage"><rect x="205" y="330" width="120" height="44" rx="8"></rect><text x="265" y="350">NVMe storage</text><text x="265" y="364" class="sub">some designs</text></g>
+        <g class="pb" data-k="other" tabindex="0" role="button" aria-label="Camera and display"><rect x="14" y="200" width="46" height="40" rx="6"></rect><text x="37" y="224">Cam</text></g>
+        <g class="pb" data-k="other" tabindex="0" role="button" aria-label="Display"><rect x="300" y="200" width="46" height="40" rx="6"></rect><text x="323" y="224">Disp</text></g>
+      </svg>
+      <div class="legend"><span><i style="background:var(--trace)"></i>PCIe</span><span><i style="background:var(--accent)"></i>UFS over M-PHY</span><span><i style="background:var(--muted)"></i>MIPI CSI / DSI</span></div>
+    </div>
+    <div style="display:grid; gap:12px; align-content:start">
+      <div class="panel" aria-live="polite"><h3 id="phName">Application processor</h3><p class="small" id="phDesc" style="margin-top:6px"></p></div>
+      <div class="panel" style="display:grid; gap:8px">
+        <h3>Why phones use PCIe sparingly</h3>
+        <dl class="kv">
+          <dt>Power</dt><dd>A PCIe PHY burns more idle power than mobile-native links. Phones rely on ASPM L1 and the L1.1 / L1.2 substates, with CLKREQ# gating the reference clock, so the link sleeps between bursts.</dd>
+          <dt>Storage</dt><dd>Most Android phones use UFS, a JEDEC standard on the MIPI M-PHY. Apple has used NVMe over PCIe for iPhone storage since the iPhone 6s.</dd>
+          <dt>M-PCIe</dt><dd>A PCI-SIG and MIPI variant that runs the PCIe protocol over M-PHY. Silicon was demonstrated, but it saw little adoption.</dd>
+          <dt>Short channels</dt><dd>Links are a few centimetres of board trace with one or two endpoints, so equalization is light and lane counts are x1 or x2.</dd>
+        </dl>
+      </div>
+      <div class="panel" style="display:grid; gap:8px">
+        <h3>What changes when you test PCIe in a phone</h3>
+        <ul style="margin:0; padding-left:20px; display:grid; gap:4px" class="small">
+          <li>L1.2 entry and exit thousands of times per minute: exit latency and errors on wake matter more than peak bandwidth.</li>
+          <li>No slot or CBB fixture: signals are probed on board vias or interposers, and Rx testing often relies on loopback driven by the SoC's own PHY test modes.</li>
+          <li>RF coexistence: PCIe harmonics can desensitize the cellular and Wi-Fi radios sitting millimetres away, so spread-spectrum clocking and emissions are checked.</li>
+          <li>Thermal and battery: link power is measured per state (L0, L1, L1.2) and against throttling.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 10px">Where else PCIe shows up</h3>
+  <div class="facts">
+    <div class="fact"><span class="k">Laptops and tablets</span><span>M.2 NVMe SSDs and Wi-Fi cards; Thunderbolt and USB4 tunnel PCIe over USB-C for external GPUs and docks.</span></div>
+    <div class="fact"><span class="k">Data centres and AI</span><span>GPUs, accelerators, 400–800G NICs, U.2 / EDSFF SSDs, and CXL memory expanders sharing the PCIe PHY.</span></div>
+    <div class="fact"><span class="k">Automotive</span><span>Links between domain controllers, ADAS processors and storage; extended temperature ranges and long harnesses.</span></div>
+    <div class="fact"><span class="k">Embedded</span><span>Single-board computers such as the Raspberry Pi 5 expose an x1 lane for NVMe or AI accelerators.</span></div>
+  </div>
+</section>
+
+<!-- 01 STACK -->
+<section id="stack">
+  <div class="sec-head">
+    <span class="num">01 / Test layers</span>
+    <h2>Four layers, four kinds of test</h2>
+    <p class="muted">An NVMe SSD is a PCIe endpoint with a storage protocol on top. Each layer has its own failure modes and its own instruments. Select a layer to see what gets tested there.</p>
+  </div>
+  <div class="stack">
+    <div class="layers" id="layers" role="group" aria-label="PCIe layers"></div>
+    <div class="panel layer-detail" id="layerDetail" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- 02 LINK -->
+<section id="link">
+  <div class="sec-head">
+    <span class="num">02 / Link speeds</span>
+    <h2>What your link should deliver</h2>
+    <p class="muted">Pick a generation and lane width. Throughput is per direction, after line encoding. Most NVMe drives are x4; add-in cards for enterprise can be x8 or x16.</p>
+  </div>
+  <div class="panel">
+    <div class="controls">
+      <div class="ctl"><label id="genL">Generation</label><div class="seg" id="genSeg" role="group" aria-labelledby="genL"></div></div>
+      <div class="ctl"><label id="lanesL">Lane width</label><div class="seg" id="laneSeg" role="group" aria-labelledby="lanesL"></div></div>
+    </div>
+    <div class="readouts" id="linkRO"></div>
+    <div class="note" id="linkNote" style="margin-top:14px"></div>
+    <div class="tbl-wrap" style="margin-top:16px">
+      <table id="genTable">
+        <thead><tr><th>Gen</th><th>Rate</th><th>Signaling</th><th>Encoding</th><th>GB/s per lane</th><th>BER target</th><th>Channel loss @ Nyquist</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 03 LTSSM -->
+<section id="ltssm">
+  <div class="sec-head">
+    <span class="num">03 / LTSSM &amp; loopback entry</span>
+    <h2>Steering the link into Loopback</h2>
+    <p class="muted">Every PCIe port runs the Link Training and Status State Machine. Loopback is a real LTSSM state: the <b>Lead</b> (formerly "master", usually the test instrument) sets the Loopback bit in its TS1 ordered sets, and the <b>Follower</b> (the NVMe card) starts retransmitting whatever it receives. Click a state, or play the sequence.</p>
+  </div>
+  <div class="ltssm-wrap">
+    <div class="panel svg-box">
+      <svg class="ltssm" id="ltssmSvg" viewBox="0 0 760 400" role="img" aria-label="Simplified LTSSM state diagram">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path></marker>
+        </defs>
+        <g id="edges"></g>
+        <g id="nodes"></g>
+      </svg>
+    </div>
+    <div class="panel" style="display:grid; gap:12px; align-content:start">
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn" id="playSeq">Play loopback sequence</button>
+        <button class="btn ghost" id="resetSeq">Reset</button>
+      </div>
+      <div id="stateInfo" aria-live="polite">
+        <h3 id="stName">Loopback</h3>
+        <p class="small muted" id="stDesc"></p>
+      </div>
+      <div class="log" id="seqLog" aria-live="polite"><div class="ln">Sequence log appears here.</div></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel" style="display:grid; gap:8px">
+      <h3>Loopback substates</h3>
+      <dl class="kv">
+        <dt>Loopback.Entry</dt><dd>Lead sends TS1s with the Loopback bit set. Follower enters Loopback.Active after receiving two consecutive TS1s with the bit set. At 8 GT/s and above the Lead can first move to a target rate and Tx preset.</dd>
+        <dt>Loopback.Active</dt><dd>Follower retransmits received symbols on its own Tx. It may add or drop SKP symbols for clock compensation, so checkers must tolerate SKP changes. The Lead (or BERT) compares what returns against what it sent.</dd>
+        <dt>Loopback.Exit</dt><dd>Lead sends Electrical Idle Ordered Sets and goes idle. Follower echoes and exits to Detect, so the link retrains from scratch afterwards.</dd>
+      </dl>
+    </div>
+    <div class="panel" style="display:grid; gap:8px">
+      <h3>Loopback is not the only test mode</h3>
+      <dl class="kv">
+        <dt>Polling.Compliance</dt><dd>Used for <b>transmitter</b> tests. With no link partner the card sends a compliance pattern; a 100 MHz burst on the fixture's toggle input steps it through rates and Tx presets (P0–P10).</dd>
+        <dt>Loopback</dt><dd>Used for <b>receiver</b> tests and BER/jitter tolerance. Errors in the returned stream mean the card's Rx (CTLE, DFE, CDR) failed to recover the stressed signal.</dd>
+        <dt>Lane margining</dt><dd>Gen4+ in-system receiver margining. Steps the sampling point in time and voltage on a live link; good for production and fleet screening, without a BERT.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- 04 BENCH -->
+<section id="bench">
+  <div class="sec-head">
+    <span class="num">04 / Loopback BER bench</span>
+    <h2>Receiver tolerance test, simulated</h2>
+    <p class="muted">A BERT plays the Lead. It trains the NVMe card into Loopback.Active through a calibrated lossy channel, injects jitter, sends PRBS and counts errors in what comes back. This is a teaching model with simplified physics; real calibration follows the PCI-SIG Base and CEM specs.</p>
+  </div>
+  <div class="panel bench" id="benchPanel">
+    <div class="controls">
+      <div class="ctl"><label for="bGen">Rate</label>
+        <select id="bGen"><option value="3">Gen3 · 8 GT/s</option><option value="4" selected>Gen4 · 16 GT/s</option><option value="5">Gen5 · 32 GT/s</option><option value="6">Gen6 · 64 GT/s PAM4</option></select>
+      </div>
+      <div class="ctl"><label for="bPat">Pattern</label>
+        <select id="bPat"><option>PRBS7</option><option>PRBS15</option><option selected>PRBS31</option><option>Modified compliance</option></select>
+      </div>
+      <div class="ctl"><label for="bLoss">Channel loss: <span id="bLossV" class="mono"></span></label><input type="range" id="bLoss" min="0" max="150" value="100"></div>
+      <div class="ctl"><label for="bSj">Sinusoidal jitter: <span id="bSjV" class="mono"></span></label><input type="range" id="bSj" min="0" max="40" value="10"></div>
+      <div class="ctl"><label for="bLb">Follower loop point</label>
+        <select id="bLb"><option value="retimed" selected>After CDR / elastic buffer</option><option value="analog">Analog near-end (debug)</option></select>
+      </div>
+    </div>
+    <div class="svg-box">
+      <svg class="path" id="pathSvg" viewBox="0 0 760 190" role="img" aria-label="Loopback signal path from BERT through NVMe card and back">
+        <g class="blk"><rect x="10" y="50" width="150" height="90" rx="8"></rect><text x="85" y="78">BERT (Lead)</text><text x="85" y="98" class="sub">Pattern generator</text><text x="85" y="114" class="sub">Error detector</text></g>
+        <g class="blk"><rect x="220" y="20" width="130" height="44" rx="8"></rect><text x="285" y="40">ISI channel</text><text x="285" y="55" class="sub" id="svgLoss">—</text></g>
+        <g class="blk"><rect x="220" y="126" width="130" height="44" rx="8"></rect><text x="285" y="146">Return path</text><text x="285" y="161" class="sub">fixture + cable</text></g>
+        <g class="blk"><rect x="410" y="10" width="340" height="170" rx="10"></rect><text x="580" y="30">NVMe card (Follower) on CBB fixture</text></g>
+        <g class="blk"><rect x="430" y="44" width="90" height="40" rx="6"></rect><text x="475" y="68">Rx CTLE/DFE</text></g>
+        <g class="blk"><rect x="540" y="44" width="80" height="40" rx="6"></rect><text x="580" y="68">CDR</text></g>
+        <g class="blk"><rect x="640" y="44" width="96" height="40" rx="6"></rect><text x="688" y="68">Elastic buf</text></g>
+        <g class="blk"><rect x="560" y="118" width="96" height="40" rx="6"></rect><text x="608" y="142">Tx driver</text></g>
+        <path class="wire" d="M160,75 H220"></path><path class="wire" d="M350,42 H390 V64 H430"></path>
+        <path class="wire" d="M520,64 H540"></path><path class="wire" d="M620,64 H640"></path>
+        <path class="wire" d="M560,138 H390 V148 H350"></path><path class="wire" d="M220,148 H190 V120 H160"></path>
+        <path class="flow" d="M160,75 H220 M350,42 H390 V64 H430"></path>
+        <path class="flow" id="loopRet" d="M736,64 H745 V138 H656"></path>
+        <path class="flow" id="loopAna" d="M475,84 V100 H608 V118" style="display:none"></path>
+        <path class="flow" d="M560,138 H390 V148 H350 M220,148 H190 V120 H160"></path>
+      </svg>
+    </div>
+    <div class="grid2">
+      <div style="display:grid; gap:8px">
+        <canvas id="eye" width="640" height="220" aria-label="Simulated eye diagram at the card's receiver"></canvas>
+        <div class="small muted">Simulated eye at the card's receiver after equalization. Width shrinks with jitter; height shrinks with loss.</div>
+      </div>
+      <div style="display:grid; gap:12px; align-content:start">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <button class="btn" id="bRun">Start test</button>
+          <button class="btn ghost" id="bInj">Inject error burst</button>
+          <button class="btn ghost" id="bClr">Clear counters</button>
+          <span class="verdict warn" id="bVerdict"><span class="dot"></span>Idle</span>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Test time</div><div class="v" id="rTime">0.0 s</div><div class="u">simulated, 25× speed</div></div>
+          <div class="ro"><div class="k">Bits compared</div><div class="v" id="rBits">0</div></div>
+          <div class="ro"><div class="k">Errors</div><div class="v" id="rErr">0</div></div>
+          <div class="ro"><div class="k">Measured BER</div><div class="v" id="rBer">—</div></div>
+          <div class="ro"><div class="k">Model BER</div><div class="v" id="rModel">—</div><div class="u">from eye margin</div></div>
+          <div class="ro"><div class="k">Confidence BER &lt; target</div><div class="v" id="rConf">0%</div><div class="u" id="rTarget"></div></div>
+        </div>
+        <div class="note small" id="benchNote"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 BER TIME -->
+<section id="bertime">
+  <div class="sec-head">
+    <span class="num">05 / BER test time</span>
+    <h2>How long must the loop run?</h2>
+    <p class="muted">You cannot measure 10<sup>−12</sup> directly; you run long enough with few or no errors to claim it statistically. With zero errors, bits needed = −ln(1 − CL) / BER. With <i>k</i> errors allowed, the Poisson sum adds terms.</p>
+  </div>
+  <div class="panel">
+    <div class="controls">
+      <div class="ctl"><label for="tBer">Target BER</label>
+        <select id="tBer"><option value="1e-6">1e-6 (Gen6 FBER)</option><option value="1e-9">1e-9</option><option value="1e-12" selected>1e-12 (Gen1–5)</option><option value="1e-15">1e-15</option></select></div>
+      <div class="ctl"><label for="tCl">Confidence level</label>
+        <select id="tCl"><option value="0.9">90%</option><option value="0.95" selected>95%</option><option value="0.99">99%</option></select></div>
+      <div class="ctl"><label for="tK">Errors allowed</label>
+        <select id="tK"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      <div class="ctl"><label for="tRate">Lane rate</label>
+        <select id="tRate"><option value="8e9">8 GT/s</option><option value="16e9" selected>16 GT/s</option><option value="32e9">32 GT/s</option><option value="128e9">64 GT/s (PAM4, 128 Gb/s raw bits)</option></select></div>
+      <div class="ctl"><label for="tLanes">Lanes in parallel</label>
+        <select id="tLanes"><option value="1" selected>1 (one BERT channel)</option><option value="4">4</option><option value="8">8</option><option value="16">16</option></select></div>
+    </div>
+    <div class="readouts">
+      <div class="ro"><div class="k">Bits per lane</div><div class="v" id="oBits">—</div></div>
+      <div class="ro"><div class="k">Time per lane</div><div class="v" id="oTime">—</div></div>
+      <div class="ro"><div class="k">Wall time, all lanes</div><div class="v" id="oWall">—</div><div class="u" id="oWallU"></div></div>
+    </div>
+    <p class="small muted" style="margin-top:12px">Most BERTs test one or two lanes at a time, so a x4 NVMe card's Rx test is usually run lane by lane. That is why the wall-time figure assumes lanes run in parallel only when you have that many error detectors.</p>
+  </div>
+</section>
+
+<!-- 06 NVME -->
+<section id="nvme">
+  <div class="sec-head">
+    <span class="num">06 / On a live system</span>
+    <h2>Checking the NVMe card's link on Linux</h2>
+    <p class="muted">Compliance labs prove the electricals. On a server, you confirm the link trained to the right width and speed, watch for correctable errors under load, and exercise the drive. Set your card's address once and every command updates.</p>
+  </div>
+  <div class="panel" style="display:grid; gap:12px">
+    <div class="controls" style="margin-bottom:0">
+      <div class="ctl"><label for="bdf">Endpoint BDF (from <code>lspci | grep -i nvme</code>)</label><input id="bdf" class="mono" value="0000:01:00.0" style="background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:180px"></div>
+      <div class="ctl"><label for="dev">Controller</label><input id="dev" class="mono" value="/dev/nvme0" style="background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:140px"></div>
+      <div class="ctl"><label id="fL">Show</label><div class="seg" id="cmdFilter" role="group" aria-labelledby="fL"></div></div>
+    </div>
+    <div class="cmds" id="cmds"></div>
+  </div>
+</section>
+
+<!-- 07 PLAN -->
+<section id="plan">
+  <div class="sec-head">
+    <span class="num">07 / Test plan</span>
+    <h2>NVMe card PCIe validation checklist</h2>
+    <p class="muted">A typical order of work from bring-up to sign-off. Ticks are remembered in this browser only.</p>
+  </div>
+  <div class="panel">
+    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:8px">
+      <span class="mono small" id="clCount">0 / 0 complete</span>
+      <button class="btn ghost" id="clReset">Clear ticks</button>
+    </div>
+    <div class="progress"><div id="clBar"></div></div>
+    <div class="cl-groups" id="clGroups"></div>
+  </div>
+</section>
+
+<!-- 08 GLOSSARY -->
+<section id="glossary">
+  <div class="sec-head"><span class="num">08 / Glossary</span><h2>Terms you will meet</h2></div>
+  <div class="panel gloss" id="gloss"></div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p>Figures follow the PCI Express Base Specification generations 1.0 through 7.0 and common practice; x16 bandwidths are PCI-SIG's headline round numbers. The BER bench is a simplified model for teaching, not a substitute for spec-defined stressed-eye calibration. Write tests in section 06 destroy data on the target drive.</p>
+  <p>Sources:</p>
+  <ul>
+    <li><a href="https://www.hpcwire.com/off-the-wire/pci-sig-pcie-8-0-specification-version-0-3-now-available-to-members/">HPCwire: PCIe 8.0 specification v0.3 available to members</a></li>
+    <li><a href="https://www.itechguides.com/?p=715391">iTechGuides: PCIe 8.0 Draft 0.5 status</a></li>
+    <li><a href="https://uk.marketscreener.com/quote/stock/PHISON-ELECTRONICS-CORP-6497570/news/Phison-Electronics-PCIe-NVMe-BGA-SSDs-in-Mobile-Devices-37521593">Phison: PCIe NVMe BGA SSDs in mobile devices</a></li>
+    <li><a href="https://hackaday.com/2016/11/18/iphone-nvme-chip-reversed-with-custom-breakout-boards">Hackaday: iPhone NVMe chip reversed</a></li>
+    <li><a href="https://us.design-reuse.com/news/32348/pcie-takes-on-mobile-thunderbolt-more.html">Design &amp; Reuse: M-PCIe over MIPI M-PHY</a></li>
+  </ul>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const fmtSI = (n) => {
+    if (!isFinite(n)) return "—";
+    const u = [["e15","P"],["e12","T"],["e9","G"],["e6","M"],["e3","k"]];
+    const a = Math.abs(n);
+    if (a >= 1e15) return (n/1e15).toFixed(2) + " P";
+    if (a >= 1e12) return (n/1e12).toFixed(2) + " T";
+    if (a >= 1e9) return (n/1e9).toFixed(2) + " G";
+    if (a >= 1e6) return (n/1e6).toFixed(2) + " M";
+    if (a >= 1e3) return (n/1e3).toFixed(1) + " k";
+    return String(Math.round(n));
+  };
+  const fmtTime = (s) => {
+    if (!isFinite(s)) return "—";
+    if (s < 1) return (s*1000).toFixed(1) + " ms";
+    if (s < 120) return s.toFixed(1) + " s";
+    if (s < 7200) return (s/60).toFixed(1) + " min";
+    if (s < 172800) return (s/3600).toFixed(1) + " h";
+    return (s/86400).toFixed(1) + " days";
+  };
+  const fmtExp = (x) => x <= 0 ? "0" : x.toExponential(1).replace("e", "e");
+
+  /* ---------- 00 WHAT IS PCIE ---------- */
+  function bindPick(sel, attr, fn) {
+    document.querySelectorAll(sel).forEach(g => {
+      const go = () => fn(g.dataset[attr], g);
+      g.addEventListener("click", go);
+      g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
+  }
+  const TOPO = {
+    cpu: ["CPU + memory", "The host. Software on the CPU reads and writes device registers through memory-mapped addresses that the root complex turns into PCIe transactions."],
+    rc: ["Root complex", "Lives inside the CPU or SoC. It owns one or more root ports, each the upstream end of a link. Enumeration starts here at boot: the OS walks every bus, device and function number to discover what is attached."],
+    gpu: ["GPU (endpoint)", "An endpoint terminates the tree. GPUs usually take a full x16 link because they move large textures and model weights."],
+    sw: ["Switch", "Has one upstream port and several downstream ports, each a separate link with its own LTSSM. Lets one root port serve many devices, as in servers with 24 NVMe bays."],
+    nvme: ["NVMe SSD (endpoint)", "Typically x4. The NVMe protocol sits on top: submission and completion queues in host memory, doorbell registers in the SSD's BAR space, MSI-X interrupts back to the CPU."],
+    nic: ["Network card (endpoint)", "A 400G NIC needs Gen5 x16. NICs often support SR-IOV, presenting many virtual functions to virtual machines."],
+    retimer: ["Retimer", "A protocol-aware repeater that fully recovers and re-transmits the signal, splitting one long channel into two short ones. Common at Gen5 and Gen6 on server risers and backplanes. It participates in link training and loopback."]
+  };
+  function showTopo(k) {
+    document.querySelectorAll("#topoSvg .tn").forEach(g => g.classList.toggle("on", g.dataset.k === k));
+    $("#topoName").textContent = TOPO[k][0]; $("#topoDesc").textContent = TOPO[k][1];
+  }
+  bindPick("#topoSvg .tn", "k", showTopo); showTopo("rc");
+
+  const TL = [
+    { g: "1.0", y: "2003", rate: 2.5, bw: 8, sig: "NRZ", enc: "8b/10b", d: "First PCI Express release, replacing parallel PCI and AGP. 250 MB/s per lane per direction." },
+    { g: "2.0", y: "2007", rate: 5, bw: 16, sig: "NRZ", enc: "8b/10b", d: "Doubled the rate with the same encoding. Added software-controlled speed changes." },
+    { g: "3.0", y: "2010", rate: 8, bw: 32, sig: "NRZ", enc: "128b/130b", d: "Switched to 128b/130b encoding to cut overhead from 20% to about 1.5%, and introduced Tx/Rx equalization during link training." },
+    { g: "4.0", y: "2017", rate: 16, bw: 64, sig: "NRZ", enc: "128b/130b", d: "Added lane margining at the receiver, defined retimers formally, and extended tags and credits for higher throughput. The generation behind most mainstream NVMe SSDs of the early 2020s." },
+    { g: "5.0", y: "2019", rate: 32, bw: 128, sig: "NRZ", enc: "128b/130b", d: "Last NRZ generation. Channel loss budget around 36 dB, so retimers became common in servers. Basis for CXL 1.x and 2.0." },
+    { g: "6.0", y: "2022", rate: 64, bw: 256, sig: "PAM4", enc: "FLIT + FEC", d: "Moved to PAM4 signaling (two bits per symbol) with fixed-size FLITs, lightweight forward error correction and CRC. Added the L0p low-power state." },
+    { g: "7.0", y: "2025", rate: 128, bw: 512, sig: "PAM4", enc: "FLIT + FEC", d: "Doubles Gen6 with the same PAM4 and FLIT approach, aimed at AI, data-centre and 800G networking. Optical links are being explored alongside copper." },
+    { g: "8.0", y: "2028 (target)", rate: 256, bw: 1024, sig: "PAM4", enc: "FLIT", d: "In development. Draft 0.5 reached PCI-SIG members in May 2026; the full specification is targeted for 2028. PCI-SIG is evaluating new connector technologies and power-reduction techniques.", draft: true }
+  ];
+  const tlEl = $("#timeline");
+  const maxLog = Math.log2(1024), minLog = Math.log2(4);
+  TL.forEach((t, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "tl-row"; b.dataset.i = i;
+    const pct = ((Math.log2(t.bw) - minLog) / (maxLog - minLog)) * 100;
+    b.innerHTML = `<span class="g">PCIe ${t.g}</span><span><span class="bar${t.draft ? " draft" : ""}" style="display:block;width:${pct.toFixed(1)}%"></span></span><span class="bw">${t.bw >= 1024 ? "1 TB/s" : t.bw + " GB/s"}</span>`;
+    b.addEventListener("click", () => showGen(i));
+    tlEl.appendChild(b);
+  });
+  function showGen(i) {
+    const t = TL[i];
+    tlEl.querySelectorAll(".tl-row").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+    $("#genName").textContent = `PCIe ${t.g} · ${t.y}`;
+    $("#genRO").innerHTML = [["Rate", t.rate + " GT/s"], ["Signaling", t.sig], ["Encoding", t.enc], ["x1, one way", "≈ " + (t.bw / 32 >= 1 ? (t.bw / 32).toFixed(t.bw / 32 < 10 ? 2 : 0) + " GB/s" : (t.bw / 32 * 1000).toFixed(0) + " MB/s")]]
+      .map(([k, v]) => `<div class="ro"><div class="k">${k}</div><div class="v" style="font-size:1rem">${v}</div></div>`).join("");
+    $("#genDesc").textContent = t.d;
+  }
+  showGen(4);
+
+  const FF = [
+    { c: ["desk"], t: "CEM add-in card", w: "Desktops, servers", d: "The classic edge-connector slot in x1, x4, x8 and x16 sizes. Enterprise NVMe add-in cards and GPUs use it. Tested on the PCI-SIG CBB and CLB fixtures." },
+    { c: ["storage", "compact"], t: "M.2 (M key)", w: "Laptops, desktops, consoles", d: "The common gumstick SSD, up to x4. Sizes such as 2230, 2242 and 2280 give width and length in millimetres." },
+    { c: ["compact"], t: "M.2 (E key)", w: "Laptops, mini PCs", d: "Small x1 slot for Wi-Fi and Bluetooth modules; also carries USB and other interfaces." },
+    { c: ["storage", "desk"], t: "U.2 / U.3", w: "Servers", d: "2.5-inch hot-swap drives on the SFF-8639 connector, x4 (or dual-port x2+x2). U.3 lets one bay accept SAS, SATA or NVMe." },
+    { c: ["storage", "desk"], t: "EDSFF (E1.S, E3.S)", w: "Data centres", d: "Ruler-style drives designed for airflow and density, with x4 to x16 links and room for CXL devices." },
+    { c: ["storage", "compact"], t: "BGA SSD", w: "Thin laptops, tablets, phones", d: "The whole SSD in one soldered package. No connector to test, so validation happens on the board." },
+    { c: ["compact"], t: "CFexpress", w: "Cameras", d: "Removable memory cards that are NVMe over PCIe inside; Type B uses x2 lanes." },
+    { c: ["cable"], t: "OCuLink / CopprLink", w: "Servers, external GPUs", d: "Internal and external PCIe cables. CopprLink is PCI-SIG's cable specification for Gen5 and Gen6." },
+    { c: ["cable"], t: "Thunderbolt / USB4", w: "Laptops, tablets, docks", d: "Tunnels PCIe through a USB-C cable, so external SSDs and GPU enclosures appear as ordinary PCIe devices." }
+  ];
+  const FFC = [["all", "All"], ["desk", "Desktop & server"], ["storage", "Storage"], ["compact", "Compact & mobile"], ["cable", "Cables"]];
+  let ffc = "all"; const ffSeg = $("#ffSeg");
+  FFC.forEach(([k, l]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = l; b.dataset.k = k; b.onclick = () => { ffc = k; renderFF(); }; ffSeg.appendChild(b); });
+  function renderFF() {
+    ffSeg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === ffc)));
+    $("#ffGrid").innerHTML = FF.filter(f => ffc === "all" || f.c.includes(ffc)).map(f => `<div class="ff"><h3>${f.t}</h3><span class="where">${f.w}</span><p class="small">${f.d}</p></div>`).join("");
+  }
+  renderFF();
+
+  const PH = {
+    ap: ["Application processor", "The phone's SoC contains the CPU, GPU and modem or NPU, plus a small PCIe root complex with one or two root ports. Most traffic inside the SoC uses on-chip buses; PCIe is used only to reach a few separate chips."],
+    wifi: ["Wi-Fi / Bluetooth chip", "The most common PCIe device in a phone. A separate Wi-Fi 6E or Wi-Fi 7 combo chip connects over a short x1 link, because multi-gigabit Wi-Fi needs more than SDIO can carry."],
+    modem: ["Cellular modem", "When the 5G modem is a separate chip rather than built into the SoC, PCIe is a typical link between them, carrying IP packets at multi-gigabit rates."],
+    ufs: ["UFS storage", "The standard for Android phones: a JEDEC storage protocol on the MIPI M-PHY, not PCIe. It is tuned for low idle power."],
+    nvme: ["NVMe storage", "Apple has used NVMe over PCIe storage since the iPhone 6s. Some vendors have also tried pairing a BGA NVMe SSD with UFS, because PCIe often reaches a given bandwidth a generation before UFS does."],
+    other: ["Camera and display", "These use MIPI CSI-2 (camera) and DSI (display) links, not PCIe."]
+  };
+  function showPh(k) {
+    document.querySelectorAll("#phoneSvg .pb").forEach(g => g.classList.toggle("on", g.dataset.k === k));
+    $("#phName").textContent = PH[k][0]; $("#phDesc").textContent = PH[k][1];
+  }
+  bindPick("#phoneSvg .pb", "k", showPh); showPh("ap");
+
+  /* ---------- 01 LAYERS ---------- */
+  const LAYERS = [
+    { id: "phy", t: "Physical / electrical", s: "Tx eye, jitter, Rx tolerance",
+      what: "Whether the card's SerDes can send and recover bits across a worst-case channel.",
+      tests: ["Transmitter compliance: eye height/width, jitter (RJ, DJ), de-emphasis and Tx presets P0–P10, measured in Polling.Compliance", "Receiver tolerance: stressed-eye BER test with the card in Loopback (section 04)", "Reference clock jitter, common vs. separate refclk (SRIS) modes", "Lane-to-lane skew, polarity inversion, lane reversal"],
+      tools: "Real-time oscilloscope ≥ 4× Nyquist, BERT with jitter injection, PCI-SIG CBB (card under test) and CLB (system under test) fixtures, ISI boards" },
+    { id: "link", t: "Data link / LTSSM", s: "Training, retry, power states",
+      what: "Whether the link trains reliably to the right width and speed and recovers from errors.",
+      tests: ["Link-up across hundreds of power cycles and resets (cold, warm, hot, FLR)", "Speed changes and equalization phases 0–3 at 8 GT/s and above", "Recovery-state entries, replay timer and NAK counts, LCRC errors", "ASPM L0s / L1 and L1 PM Substates (L1.1, L1.2) entry and exit latency"],
+      tools: "Protocol analyzer or interposer, exerciser, LTSSM trace from the root port, Linux AER counters" },
+    { id: "txn", t: "Transaction / protocol", s: "TLPs, config space, ordering",
+      what: "Whether the card behaves as a correct PCIe endpoint.",
+      tests: ["Config-space capabilities (PCIe, MSI-X, PM, AER, L1SS, DOE) match the spec and datasheet", "Max Payload / Max Read Request size handling, completion timeouts", "TLP ordering, poisoned TLPs, unsupported requests", "PCI-SIG compliance workshop / interoperability (Gold suite) test lists"],
+      tools: "Protocol analyzer, exerciser, PCI-SIG compliance software, lspci / setpci" },
+    { id: "nvme", t: "NVMe / application", s: "Queues, commands, performance",
+      what: "Whether storage traffic runs correctly and at expected speed over the link.",
+      tests: ["Admin and I/O command compliance (identify, get-log, format, sanitize)", "Queue depth scaling, MSI-X interrupt steering", "Sustained throughput and latency vs. link capacity", "Error injection and recovery, hot-plug / surprise removal on U.2 and EDSFF"],
+      tools: "nvme-cli, fio, UNH-IOL NVMe conformance suite, vendor tools" }
+  ];
+  const layersEl = $("#layers"), detailEl = $("#layerDetail");
+  function showLayer(id) {
+    const L = LAYERS.find(l => l.id === id);
+    layersEl.querySelectorAll(".layer").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+    detailEl.innerHTML = `<h3>${L.t}</h3><p>${L.what}</p><div><div class="eyebrow" style="margin-bottom:6px">What gets tested</div><ul>${L.tests.map(t => `<li>${t}</li>`).join("")}</ul></div><dl class="kv"><dt>Instruments</dt><dd>${L.tools}</dd></dl>`;
+  }
+  LAYERS.forEach(L => {
+    const b = document.createElement("button");
+    b.className = "layer"; b.dataset.id = L.id; b.type = "button";
+    b.innerHTML = `<span class="t">${L.t}</span><span class="s">${L.s}</span>`;
+    b.addEventListener("click", () => showLayer(L.id));
+    layersEl.appendChild(b);
+  });
+  showLayer("phy");
+
+  /* ---------- 02 LINK ---------- */
+  const GENS = [
+    { g: 1, rate: 2.5, sig: "NRZ", enc: "8b/10b", eff: 0.8, ber: "1e-12", loss: "—" },
+    { g: 2, rate: 5, sig: "NRZ", enc: "8b/10b", eff: 0.8, ber: "1e-12", loss: "—" },
+    { g: 3, rate: 8, sig: "NRZ", enc: "128b/130b", eff: 128/130, ber: "1e-12", loss: "~22 dB" },
+    { g: 4, rate: 16, sig: "NRZ", enc: "128b/130b", eff: 128/130, ber: "1e-12", loss: "~28 dB" },
+    { g: 5, rate: 32, sig: "NRZ", enc: "128b/130b", eff: 128/130, ber: "1e-12", loss: "~36 dB" },
+    { g: 6, rate: 64, sig: "PAM4", enc: "FLIT (1b/1b + FEC/CRC)", eff: 1, ber: "1e-6 FBER (pre-FEC)", loss: "~32 dB" }
+  ];
+  let selGen = 4, selLanes = 4;
+  const genSeg = $("#genSeg"), laneSeg = $("#laneSeg");
+  GENS.forEach(G => { const b = document.createElement("button"); b.type = "button"; b.textContent = "Gen" + G.g; b.dataset.g = G.g; b.onclick = () => { selGen = G.g; renderLink(); }; genSeg.appendChild(b); });
+  [1,2,4,8,16].forEach(n => { const b = document.createElement("button"); b.type = "button"; b.textContent = "x" + n; b.dataset.n = n; b.onclick = () => { selLanes = n; renderLink(); }; laneSeg.appendChild(b); });
+  const tbody = $("#genTable tbody");
+  GENS.forEach(G => {
+    const tr = document.createElement("tr"); tr.dataset.g = G.g;
+    tr.innerHTML = `<td class="num">Gen${G.g}</td><td class="num">${G.rate} GT/s</td><td>${G.sig}</td><td>${G.enc}</td><td class="num">${(G.rate*G.eff/8).toFixed(3)}</td><td class="num">${G.ber}</td><td class="num">${G.loss}</td>`;
+    tbody.appendChild(tr);
+  });
+  function renderLink() {
+    const G = GENS.find(x => x.g === selGen);
+    genSeg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.g === selGen)));
+    laneSeg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.n === selLanes)));
+    tbody.querySelectorAll("tr").forEach(tr => tr.classList.toggle("sel", +tr.dataset.g === selGen));
+    const perLane = G.rate * G.eff / 8;
+    const total = perLane * selLanes;
+    const ui = 1000 / (G.sig === "PAM4" ? G.rate/2 : G.rate);
+    const nyq = G.sig === "PAM4" ? G.rate/4 : G.rate/2;
+    $("#linkRO").innerHTML = [
+      ["Per direction", total.toFixed(2), "GB/s"],
+      ["Bidirectional", (total*2).toFixed(2), "GB/s"],
+      ["Unit interval", ui.toFixed(1), "ps per symbol"],
+      ["Nyquist", nyq.toFixed(1), "GHz"],
+      ["Realistic NVMe seq. read", (total * (G.g >= 6 ? 0.88 : 0.9)).toFixed(1), "GB/s ceiling after TLP overhead"]
+    ].map(([k,v,u]) => `<div class="ro"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`).join("");
+    let note = `Gen${G.g} x${selLanes}: ${G.enc} encoding. `;
+    if (G.g <= 2) note += "8b/10b costs 20% of the raw rate. NVMe drives this slow are rare; seeing Gen1/Gen2 on a modern drive usually means a link-training fallback worth investigating.";
+    else if (G.g <= 5) note += "Above 8 GT/s the link runs Tx/Rx equalization during training. A drive that trains to a lower speed than its LnkCap advertises often has a marginal channel, riser or connector.";
+    else note += "PAM4 carries 2 bits per symbol, so the eye has three stacked openings and a much higher raw error rate. FEC corrects it, and the BER target becomes a first-bit error rate around 1e-6.";
+    note += " TLP headers and DLLPs take a further 5–12% of the link, so measured drive throughput sits below the per-direction figure.";
+    $("#linkNote").textContent = note;
+  }
+  renderLink();
+
+  /* ---------- 03 LTSSM ---------- */
+  const ST = {
+    Detect:   { x: 70,  y: 200, d: "Tx checks for a receiver termination on each lane. No partner, no link. After Loopback.Exit the Follower comes back here." },
+    Polling:  { x: 210, y: 200, d: "Exchange TS1/TS2 ordered sets at 2.5 GT/s, establish bit and symbol lock, fix lane polarity." },
+    Compliance:{ x: 210, y: 330, d: "Polling.Compliance. Entered when a termination is seen but no TS1s arrive. The port transmits the compliance pattern for Tx eye measurement; a 100 MHz toggle steps rates and presets." },
+    Config:   { x: 370, y: 200, d: "Configuration: negotiate link width, lane numbering and lane reversal. A Lead can set the Loopback bit here to go straight to Loopback." },
+    L0:       { x: 530, y: 200, d: "Normal operation. TLPs and DLLPs flow. NVMe I/O happens here." },
+    Recovery: { x: 530, y: 70,  d: "Retrain without going back to Detect: speed changes, equalization at 8 GT/s and above, error recovery. A Lead can also request Loopback from Recovery after first moving the link to the target speed." },
+    Loopback: { x: 370, y: 70,  d: "Follower retransmits what it receives. Used by BERTs and exercisers for receiver testing. Substates: Entry, Active, Exit." },
+    L0s:      { x: 690, y: 140, d: "Low-latency standby, one direction at a time. Not supported in FLIT mode (Gen6)." },
+    L1:       { x: 690, y: 220, d: "ASPM or PCI-PM low power, both directions idle. L1.1 / L1.2 substates turn off more circuitry; exit latency matters for NVMe APST." },
+    L2:       { x: 690, y: 300, d: "Main power removed, auxiliary power only (D3cold)." },
+    HotReset: { x: 690, y: 50,  d: "Hot Reset, signalled through TS1s, drops back to Detect." },
+    Disabled: { x: 530, y: 330, d: "Link disabled by software. Lanes go to electrical idle." }
+  };
+  const LABEL = { Config: "Configuration", HotReset: "Hot Reset" };
+  const EDGES = [["Detect","Polling"],["Polling","Config"],["Polling","Compliance"],["Config","L0"],["L0","Recovery"],["Recovery","L0"],["Recovery","Config"],["Config","Loopback"],["Recovery","Loopback"],["Loopback","Detect"],["L0","L0s"],["L0","L1"],["L0","L2"],["Recovery","HotReset"],["Recovery","Disabled"],["Compliance","Polling"]];
+  const W = 120, H = 40;
+  const edgesG = $("#edges"), nodesG = $("#nodes");
+  const NS = "http://www.w3.org/2000/svg";
+  function edgePath(a, b) {
+    const A = ST[a], B = ST[b];
+    if (a === "Loopback" && b === "Detect") return `M${A.x - W/2},${A.y} H${B.x} V${B.y - H/2}`;
+    if (a === "L0" && b === "Recovery") return `M${A.x - 18},${A.y - H/2} V${B.y + H/2}`;
+    if (a === "Recovery" && b === "L0") return `M${A.x + 18},${A.y + H/2} V${B.y - H/2}`;
+    if (a === "Recovery" && b === "Config") return `M${A.x - W/2 + 10},${A.y + H/2} L${B.x + W/2 - 10},${B.y - H/2}`;
+    if (a === "Compliance" && b === "Polling") return `M${A.x + 18},${A.y - H/2} V${B.y + H/2}`;
+    if (a === "Polling" && b === "Compliance") return `M${A.x - 18},${A.y + H/2} V${B.y - H/2}`;
+    if (a === "Recovery" && b === "Disabled") return `M${A.x + W/2},${A.y + 10} H${A.x + 80} V${B.y} H${B.x + W/2}`;
+    const dx = B.x - A.x, dy = B.y - A.y;
+    const sx = A.x + (Math.abs(dx) > Math.abs(dy) * 2 ? Math.sign(dx) * W/2 : (dx ? Math.sign(dx) * W/2 : 0));
+    const sy = A.y + (Math.abs(dx) > Math.abs(dy) * 2 ? 0 : Math.sign(dy) * (dx ? 0 : H/2));
+    const ex = B.x - (Math.abs(dx) > Math.abs(dy) * 2 ? Math.sign(dx) * W/2 : (dx ? Math.sign(dx) * W/2 : 0));
+    const ey = B.y - (Math.abs(dx) > Math.abs(dy) * 2 ? 0 : Math.sign(dy) * (dx ? 0 : H/2));
+    return `M${sx},${sy} L${ex},${ey}`;
+  }
+  const edgeEls = {};
+  EDGES.forEach(([a,b]) => {
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", edgePath(a,b)); p.setAttribute("class", "edge");
+    p.setAttribute("marker-end", "url(#arr)"); p.style.color = "var(--muted)";
+    edgesG.appendChild(p); edgeEls[a + ">" + b] = p;
+  });
+  const nodeEls = {};
+  Object.entries(ST).forEach(([k, s]) => {
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "st" + (k === "Loopback" ? " lb" : ""));
+    g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
+    g.setAttribute("aria-label", (LABEL[k] || k) + " state");
+    const r = document.createElementNS(NS, "rect");
+    r.setAttribute("x", s.x - W/2); r.setAttribute("y", s.y - H/2); r.setAttribute("width", W); r.setAttribute("height", H); r.setAttribute("rx", 8);
+    const t = document.createElementNS(NS, "text"); t.setAttribute("x", s.x); t.setAttribute("y", s.y + 1); t.textContent = LABEL[k] || k;
+    g.append(r, t);
+    const pick = () => { stopSeq(); highlight([k], []); showState(k); };
+    g.addEventListener("click", pick);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+    nodesG.appendChild(g); nodeEls[k] = g;
+  });
+  function highlight(states, edges) {
+    Object.entries(nodeEls).forEach(([k, g]) => g.classList.toggle("on", states.includes(k)));
+    Object.entries(edgeEls).forEach(([k, p]) => { const on = edges.includes(k); p.classList.toggle("on", on); p.style.color = on ? "var(--trace)" : "var(--muted)"; });
+  }
+  function showState(k) { $("#stName").textContent = LABEL[k] || k; $("#stDesc").textContent = ST[k].d; }
+  showState("Loopback"); highlight(["Loopback"], []);
+
+  const SEQ = [
+    { s: "Detect", e: null, log: "<b>Detect</b> · BERT Tx sees the card's 50 Ω Rx termination on lane 0." },
+    { s: "Polling", e: "Detect>Polling", log: "<b>Polling.Active</b> · TS1s exchanged at 2.5 GT/s, bit/symbol lock achieved." },
+    { s: "Config", e: "Polling>Config", log: "<b>Configuration</b> · width negotiated. Lead wants a Gen4 loop, so it finishes training first." },
+    { s: "L0", e: "Config>L0", log: "<b>L0</b> · link up at 2.5 GT/s." },
+    { s: "Recovery", e: "L0>Recovery", log: "<b>Recovery.Speed</b> · rate change to 16 GT/s. Equalization phases run; BERT sets the card's Tx preset." },
+    { s: "Loopback", e: "Recovery>Loopback", log: "<b>Loopback.Entry</b> · Lead sends TS1 with Loopback bit = 1. Follower sees two in a row." },
+    { s: "Loopback", e: "Recovery>Loopback", log: "<b>Loopback.Active</b> · card retransmits received bits. BERT switches to PRBS31 plus stressed-eye jitter and counts errors." },
+    { s: "Loopback", e: "Recovery>Loopback", log: "<b>Loopback.Exit</b> · Lead sends EIOS and goes to electrical idle." },
+    { s: "Detect", e: "Loopback>Detect", log: "<b>Detect</b> · Follower exits to Detect. A new link training is needed for normal traffic." }
+  ];
+  let seqTimer = null, seqI = 0;
+  const logEl = $("#seqLog");
+  function stopSeq() { if (seqTimer) { clearInterval(seqTimer); seqTimer = null; } $("#playSeq").disabled = false; }
+  function stepSeq() {
+    const st = SEQ[seqI];
+    const visited = SEQ.slice(0, seqI + 1).map(x => x.e).filter(Boolean);
+    highlight([st.s], visited); showState(st.s);
+    const d = document.createElement("div"); d.className = "ln"; d.innerHTML = `${String(seqI+1).padStart(2,"0")} · ${st.log}`;
+    logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
+    seqI++;
+    if (seqI >= SEQ.length) stopSeq();
+  }
+  $("#playSeq").addEventListener("click", () => {
+    stopSeq(); logEl.innerHTML = ""; seqI = 0; $("#playSeq").disabled = true;
+    stepSeq(); seqTimer = setInterval(stepSeq, 1300);
+  });
+  $("#resetSeq").addEventListener("click", () => { stopSeq(); logEl.innerHTML = '<div class="ln">Sequence log appears here.</div>'; highlight(["Loopback"], []); showState("Loopback"); });
+
+  /* ---------- 04 BENCH ---------- */
+  const BG = { 3: { rate: 8e9, budget: 22, pam: false, target: 1e-12 }, 4: { rate: 16e9, budget: 28, pam: false, target: 1e-12 }, 5: { rate: 32e9, budget: 36, pam: false, target: 1e-12 }, 6: { rate: 128e9, budget: 32, pam: true, target: 1e-6 } };
+  function erfc(x) { // Abramowitz-Stegun 7.1.26 with tail via asymptotic
+    const z = Math.abs(x);
+    if (z > 5) { const v = Math.exp(-z*z) / (z * Math.sqrt(Math.PI)) * (1 - 1/(2*z*z)); return x >= 0 ? v : 2 - v; }
+    const t = 1 / (1 + 0.3275911 * z);
+    const y = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-z*z);
+    return x >= 0 ? y : 2 - y;
+  }
+  const bState = { running: false, t: 0, bits: 0, errs: 0, last: 0, raf: 0 };
+  function benchParams() {
+    const g = +$("#bGen").value, B = BG[g];
+    const lossPct = +$("#bLoss").value / 100;              // fraction of spec budget
+    const sj = +$("#bSj").value / 100;                     // UI p-p
+    const analog = $("#bLb").value === "analog";
+    const pat = $("#bPat").value;
+    const patPenalty = pat === "PRBS7" ? 1.06 : pat === "PRBS15" ? 1.02 : 1;  // shorter patterns are kinder (less low-frequency content)
+    let eyeH = Math.max(0, 1 - 0.35 * lossPct * lossPct);
+    let eyeW = Math.max(0, 1 - 1.6 * sj);
+    let Q = 13.8 * eyeH * eyeW * patPenalty;
+    if (B.pam) Q /= 1.55;
+    const ber = Q <= 0 ? 0.5 : 0.5 * erfc(Q / Math.SQRT2);
+    return { g, B, lossDb: lossPct * B.budget, sj, eyeH, eyeW, Q, ber, analog, pat };
+  }
+  function poissonCdf(k, lam) { let s = 0, term = Math.exp(-lam); for (let i = 0; i <= k; i++) { s += term; term *= lam / (i + 1); } return s; }
+  function renderBench() {
+    const P = benchParams();
+    $("#bLossV").textContent = `${P.lossDb.toFixed(1)} dB (${Math.round(+$("#bLoss").value)}% of spec)`;
+    $("#bSjV").textContent = `${P.sj.toFixed(2)} UI`;
+    $("#svgLoss").textContent = `${P.lossDb.toFixed(1)} dB @ Nyquist`;
+    $("#loopRet").style.display = P.analog ? "none" : "";
+    $("#loopAna").style.display = P.analog ? "" : "none";
+    $("#rModel").textContent = fmtExp(P.ber);
+    $("#rTarget").textContent = "target " + fmtExp(P.B.target);
+    let note = `Pattern ${P.pat}. `;
+    if (P.analog) note += "Analog near-end loopback skips the CDR and elastic buffer: useful to isolate Rx front-end vs. clock-recovery faults in the lab, but it is not the spec Loopback.Active path and does not count for compliance. ";
+    else note += "Spec loopback re-times through the card's CDR and elastic buffer, so the BERT's checker must tolerate SKP ordered sets being inserted or removed. ";
+    if (P.B.pam) note += "Gen6 PAM4 is judged on first-bit error rate before FEC; the target is around 1e-6.";
+    else if (+$("#bLoss").value > 100) note += "Loss is beyond the spec channel budget: errors here show margin, not a compliance failure.";
+    else note += "At 100% loss and the default jitter the eye is just open enough for 1e-12, which mirrors how a stressed eye is calibrated to the pass line.";
+    $("#benchNote").textContent = note;
+    drawEye(P);
+    updateReadouts();
+  }
+  function updateReadouts() {
+    const P = benchParams();
+    $("#rTime").textContent = bState.t.toFixed(1) + " s";
+    $("#rBits").textContent = fmtSI(bState.bits);
+    $("#rErr").textContent = bState.errs.toLocaleString();
+    $("#rBer").textContent = bState.bits ? (bState.errs ? fmtExp(bState.errs / bState.bits) : "< " + fmtExp(1 / Math.max(bState.bits,1))) : "—";
+    const lam = bState.bits * P.B.target;
+    const conf = bState.bits ? (1 - poissonCdf(bState.errs, lam)) : 0;
+    $("#rConf").textContent = (conf * 100).toFixed(1) + "%";
+    const v = $("#bVerdict");
+    let cls = "warn", txt = bState.running ? "Running" : "Idle";
+    if (bState.bits > 0) {
+      const measured = bState.errs / bState.bits;
+      if (bState.errs > 0 && measured > P.B.target * 3 && bState.errs >= 3) { cls = "bad"; txt = "Fail: BER above target"; }
+      else if (conf >= 0.95) { cls = "ok"; txt = "Pass at 95% confidence"; }
+    }
+    v.className = "verdict " + cls; v.innerHTML = `<span class="dot"></span>${txt}`;
+  }
+  function poissonSample(lam) {
+    if (lam <= 0) return 0;
+    if (lam > 50) return Math.max(0, Math.round(lam + Math.sqrt(lam) * gauss()));
+    let L = Math.exp(-lam), k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1;
+  }
+  function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); }
+  const SPEED = 25;
+  function tick(ts) {
+    if (!bState.running) return;
+    const dt = bState.last ? Math.min(0.1, (ts - bState.last) / 1000) : 0;
+    bState.last = ts;
+    const P = benchParams();
+    const simDt = dt * SPEED;
+    const bits = P.B.rate * simDt;
+    bState.t += simDt; bState.bits += bits; bState.errs += poissonSample(bits * P.ber);
+    updateReadouts();
+    if (Math.random() < 0.25) drawEye(P);
+    bState.raf = requestAnimationFrame(tick);
+  }
+  $("#bRun").addEventListener("click", () => {
+    bState.running = !bState.running;
+    $("#bRun").textContent = bState.running ? "Stop test" : "Start test";
+    $("#benchPanel").classList.toggle("running", bState.running);
+    bState.last = 0;
+    if (bState.running) bState.raf = requestAnimationFrame(tick); else { cancelAnimationFrame(bState.raf); updateReadouts(); }
+  });
+  $("#bInj").addEventListener("click", () => { bState.errs += 12; if (!bState.bits) bState.bits = 1e9; updateReadouts(); });
+  $("#bClr").addEventListener("click", () => { bState.t = 0; bState.bits = 0; bState.errs = 0; updateReadouts(); });
+  ["bGen","bPat","bLoss","bSj","bLb"].forEach(id => $("#" + id).addEventListener("input", () => { if (id === "bGen") { bState.t = 0; bState.bits = 0; bState.errs = 0; } renderBench(); }));
+
+  const eye = $("#eye");
+  function drawEye(P) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = eye.clientWidth || 640, h = eye.clientHeight || 220;
+    if (eye.width !== Math.round(w*dpr)) { eye.width = Math.round(w*dpr); eye.height = Math.round(h*dpr); }
+    const c = eye.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0);
+    c.clearRect(0,0,w,h);
+    const grid = css("--line"), tr = css("--trace"), mut = css("--muted");
+    c.strokeStyle = grid; c.lineWidth = 1;
+    for (let i = 1; i < 10; i++) { c.beginPath(); c.moveTo(i*w/10, 0); c.lineTo(i*w/10, h); c.stroke(); }
+    for (let i = 1; i < 8; i++) { c.beginPath(); c.moveTo(0, i*h/8); c.lineTo(w, i*h/8); c.stroke(); }
+    const levels = P.B.pam ? [-1, -1/3, 1/3, 1] : [-1, 1];
+    const amp = h * 0.36, mid = h / 2, ui = w / 2, x0 = w * 0.0;
+    const noise = (1 - P.eyeH) * (P.B.pam ? 0.16 : 0.42) + 0.02;
+    const jit = P.sj * ui * 0.9 + 0.015 * ui;
+    c.strokeStyle = tr; c.globalAlpha = 0.16; c.lineWidth = 1.2;
+    for (let n = 0; n < 160; n++) {
+      const a = levels[(Math.random()*levels.length)|0], b = levels[(Math.random()*levels.length)|0], d = levels[(Math.random()*levels.length)|0];
+      const j1 = gauss() * jit * 0.35, j2 = gauss() * jit * 0.35;
+      const na = gauss()*noise, nb = gauss()*noise, nd = gauss()*noise;
+      c.beginPath();
+      for (let px = 0; px <= w; px += 4) {
+        // two UI window: transition at 0.5 UI and 1.5 UI
+        const t = px / ui;
+        const s1 = 1/(1+Math.exp(-(t - 0.5 - j1/ui) * 9));
+        const s2 = 1/(1+Math.exp(-(t - 1.5 - j2/ui) * 9));
+        const v = (a+na) * (1-s1) + (b+nb) * s1 * (1-s2) + (d+nd) * s2;
+        const y = mid - v * amp;
+        if (px === 0) c.moveTo(x0 + px, y); else c.lineTo(x0 + px, y);
+      }
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+    // eye mask (center of UI = x = ui)
+    const mw = ui * 0.45 * P.eyeW, mh = (P.B.pam ? amp/3 : amp) * 0.55 * P.eyeH;
+    c.strokeStyle = mut; c.setLineDash([4,3]); c.lineWidth = 1.2;
+    const centers = P.B.pam ? [-2/3, 0, 2/3] : [0];
+    centers.forEach(cy => {
+      const yc = mid - cy * amp;
+      c.beginPath(); c.moveTo(ui - mw, yc); c.lineTo(ui, yc - mh); c.lineTo(ui + mw, yc); c.lineTo(ui, yc + mh); c.closePath(); c.stroke();
+    });
+    c.setLineDash([]);
+    c.fillStyle = mut; c.font = "11px " + css("--font-mono");
+    c.fillText(`eye W ≈ ${(P.eyeW*100).toFixed(0)}%  H ≈ ${(P.eyeH*100).toFixed(0)}%  Q ≈ ${P.Q.toFixed(1)}`, 8, 14);
+    c.fillText(P.B.pam ? "PAM4 · 3 eyes" : "NRZ", 8, h - 8);
+  }
+  window.addEventListener("resize", () => drawEye(benchParams()));
+  const mo = new MutationObserver(() => drawEye(benchParams()));
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => drawEye(benchParams())); } catch (e) {}
+  renderBench();
+
+  /* ---------- 05 BER TIME ---------- */
+  function solveBits(ber, cl, k) {
+    // find N such that P(X<=k | lam=N*ber) = 1-cl
+    let lo = 0, hi = 50; const want = 1 - cl;
+    for (let i = 0; i < 80; i++) { const m = (lo+hi)/2; if (poissonCdf(k, m) > want) lo = m; else hi = m; }
+    return hi / ber;
+  }
+  function renderTime() {
+    const ber = +$("#tBer").value, cl = +$("#tCl").value, k = +$("#tK").value, rate = +$("#tRate").value, lanes = +$("#tLanes").value;
+    const n = solveBits(ber, cl, k);
+    const tLane = n / rate;
+    $("#oBits").textContent = n.toExponential(2);
+    $("#oTime").textContent = fmtTime(tLane);
+    $("#oWall").textContent = fmtTime(tLane);
+    $("#oWallU").textContent = lanes > 1 ? `${lanes} lanes checked at once; lane by lane would take ${fmtTime(tLane*lanes)}` : "x4 card lane by lane: " + fmtTime(tLane*4);
+  }
+  ["tBer","tCl","tK","tRate","tLanes"].forEach(id => $("#" + id).addEventListener("input", renderTime));
+  renderTime();
+
+  /* ---------- 06 COMMANDS ---------- */
+  const CMDS = [
+    { cat: "link", lvl: "safe", t: "Find the drive and its root port",
+      c: (b) => `lspci -nn | grep -i 'non-volatile'\n# parent (upstream) port of the drive:\nbasename "$(dirname "$(readlink -f /sys/bus/pci/devices/${b})")"\nlspci -tv`,
+      w: "Speed and retrain controls live on the upstream port (the root port or switch downstream port), not on the drive." },
+    { cat: "link", lvl: "safe", t: "Negotiated vs. capable speed and width",
+      c: (b) => `sudo lspci -vvv -s ${b} | grep -E 'LnkCap:|LnkSta:|LnkCtl2:'\ncd /sys/bus/pci/devices/${b}\ncat max_link_speed current_link_speed max_link_width current_link_width`,
+      w: "LnkSta below LnkCap, or the word \"(downgraded)\", means the link trained down. Check the slot, riser, retimer and BIOS slot settings." },
+    { cat: "link", lvl: "caution", t: "Force a target speed and retrain",
+      c: (b) => `RP=$(basename "$(dirname "$(readlink -f /sys/bus/pci/devices/${b})")")\n# Target Link Speed = Gen3 (1=2.5, 2=5, 3=8, 4=16, 5=32, 6=64 GT/s)\nsudo setpci -s $RP CAP_EXP+30.w=0003:000F\n# Retrain Link bit in Link Control\nsudo setpci -s $RP CAP_EXP+10.w=0020:0020\nsleep 1; cat /sys/bus/pci/devices/${b}/current_link_speed`,
+      w: "Cycle through speeds to find the highest one that holds with zero AER errors. Run on an idle drive; a failed retrain can drop the device." },
+    { cat: "errors", lvl: "safe", t: "Correctable / uncorrectable error counters (AER)",
+      c: (b) => `cd /sys/bus/pci/devices/${b}\ncat aer_dev_correctable aer_dev_nonfatal aer_dev_fatal\nsudo dmesg | grep -iE 'aer|pcieport|nvme'`,
+      w: "Rising BadTLP, BadDLLP, Rollover or Timeout counts under load mean a marginal link even when throughput looks fine. RxErr points at the electrical layer." },
+    { cat: "errors", lvl: "safe", t: "ASPM and L1 substates",
+      c: (b) => `cat /sys/module/pcie_aspm/parameters/policy\nsudo lspci -vvv -s ${b} | grep -E 'ASPM|L1SubCtl|L1SubCap'`,
+      w: "If errors appear only after idle periods, test with ASPM disabled (pcie_aspm=off on the kernel command line) to isolate L1 exit problems." },
+    { cat: "nvme", lvl: "safe", t: "Identify the controller and health",
+      c: (b, d) => `sudo nvme list\nsudo nvme id-ctrl ${d} -H | head -40\nsudo nvme smart-log ${d}\nsudo nvme error-log ${d} | head -40`,
+      w: "Check critical_warning, media_errors and num_err_log_entries before and after a stress run. Temperature throttling skews throughput results." },
+    { cat: "nvme", lvl: "safe", t: "Device self-test",
+      c: (b, d) => `sudo nvme device-self-test ${d} --self-test-code=1   # 1 = short, 2 = extended\nsudo nvme self-test-log ${d}`,
+      w: "Exercises the drive's internal media and controller path; it does not test the PCIe link itself." },
+    { cat: "perf", lvl: "safe", t: "Sequential read bandwidth (non-destructive)",
+      c: (b, d) => `sudo fio --name=seqread --filename=${d}n1 --rw=read --bs=128k \\\n  --iodepth=32 --numjobs=4 --direct=1 --ioengine=io_uring \\\n  --runtime=60 --time_based --group_reporting`,
+      w: "Compare the result with section 02. A Gen4 x4 drive reading near 3.5 GB/s is likely running at Gen3." },
+    { cat: "perf", lvl: "safe", t: "4K random read IOPS and latency",
+      c: (b, d) => `sudo fio --name=randread --filename=${d}n1 --rw=randread --bs=4k \\\n  --iodepth=64 --numjobs=8 --direct=1 --ioengine=io_uring \\\n  --runtime=60 --time_based --group_reporting --percentile_list=99:99.9:99.99`,
+      w: "Watch tail latency (p99.99). Spikes that coincide with AER entries in dmesg point to link replays." },
+    { cat: "perf", lvl: "danger", t: "Mixed write soak with link watch (destroys data)",
+      c: (b, d) => `# WARNING: overwrites everything on ${d}n1\nsudo fio --name=soak --filename=${d}n1 --rw=randrw --rwmixread=70 --bs=64k \\\n  --iodepth=32 --numjobs=4 --direct=1 --ioengine=io_uring \\\n  --runtime=3600 --time_based --group_reporting &\nwatch -n 10 'cat /sys/bus/pci/devices/${b}/aer_dev_correctable; cat /sys/bus/pci/devices/${b}/current_link_speed'`,
+      w: "A one-hour soak at full traffic is a cheap system-level screen. Any change in link speed or any growing error counter is a failure to chase." }
+  ];
+  const CATS = [["all","All"],["link","Link"],["errors","Errors"],["nvme","NVMe"],["perf","Performance"]];
+  let cat = "all";
+  const fSeg = $("#cmdFilter");
+  CATS.forEach(([k, l]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = l; b.dataset.k = k; b.onclick = () => { cat = k; renderCmds(); }; fSeg.appendChild(b); });
+  function esc(s) { return s.replace(/[&<>]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch])); }
+  function renderCmds() {
+    const b = ($("#bdf").value.trim() || "0000:01:00.0"), d = ($("#dev").value.trim() || "/dev/nvme0");
+    fSeg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.k === cat)));
+    const lbl = { safe: "read-only", caution: "changes link", danger: "destroys data" };
+    $("#cmds").innerHTML = CMDS.filter(c => cat === "all" || c.cat === cat).map((c, i) => {
+      const code = c.c(b, d);
+      return `<div class="cmd"><div class="cmd-h"><span class="t">${c.t}</span><span style="display:flex;gap:8px;align-items:center"><span class="tag ${c.lvl}">${lbl[c.lvl]}</span><button class="copy" type="button" data-code="${encodeURIComponent(code)}">Copy</button></span></div><pre>${esc(code)}</pre><div class="why">${c.w}</div></div>`;
+    }).join("");
+  }
+  $("#cmds").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".copy"); if (!btn) return;
+    try { await navigator.clipboard.writeText(decodeURIComponent(btn.dataset.code)); btn.textContent = "Copied"; }
+    catch (err) { btn.textContent = "Select text to copy"; }
+    setTimeout(() => { btn.textContent = "Copy"; }, 1600);
+  });
+  $("#bdf").addEventListener("input", renderCmds); $("#dev").addEventListener("input", renderCmds);
+  renderCmds();
+
+  /* ---------- 07 CHECKLIST ---------- */
+  const CL = [
+    ["Bring-up", ["Card enumerates in every target slot and BIOS", "LnkSta matches LnkCap (speed and width)", "Config space capabilities match the datasheet", "Link-up across 500+ cold boots and warm resets"]],
+    ["Electrical (lab)", ["Tx compliance at each rate, presets P0–P10 on the CBB", "Refclk jitter in common-clock and SRIS modes", "Rx stressed-eye test in Loopback, every lane, BER ≤ target at 95% CL", "Jitter tolerance sweep (SJ vs. frequency) shows margin above the mask"]],
+    ["Link layer", ["Equalization converges in phases 0–3 with no Recovery loops", "ASPM L1 and L1.1/L1.2 entry/exit with no AER errors", "Hot reset, FLR and surprise-removal recovery", "Lane margining at the receiver logged across temperature"]],
+    ["System and NVMe", ["nvme-cli identify, SMART and self-test clean", "fio throughput within 10% of link ceiling", "1-hour soak: zero AER correctable growth, no speed change", "Thermal throttle behavior recorded at max ambient"]]
+  ];
+  const KEY = "pcie-nvme-checklist-v1";
+  let ticks = {};
+  try { ticks = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { ticks = {}; }
+  const groups = $("#clGroups");
+  let total = 0;
+  CL.forEach(([g, items], gi) => {
+    const div = document.createElement("div"); div.className = "cl-group";
+    div.innerHTML = `<h3>${g}</h3>` + items.map((it, ii) => { total++; const id = `cl-${gi}-${ii}`; return `<label class="cl-item" for="${id}"><input type="checkbox" id="${id}" ${ticks[id] ? "checked" : ""}><span>${it}</span></label>`; }).join("");
+    groups.appendChild(div);
+  });
+  function renderCl() {
+    const done = groups.querySelectorAll("input:checked").length;
+    $("#clCount").textContent = `${done} / ${total} complete`;
+    $("#clBar").style.width = (done / total * 100) + "%";
+  }
+  groups.addEventListener("change", (e) => {
+    if (e.target.type !== "checkbox") return;
+    ticks[e.target.id] = e.target.checked;
+    try { localStorage.setItem(KEY, JSON.stringify(ticks)); } catch (err) {}
+    renderCl();
+  });
+  $("#clReset").addEventListener("click", () => { groups.querySelectorAll("input").forEach(i => i.checked = false); ticks = {}; try { localStorage.removeItem(KEY); } catch (e) {} renderCl(); });
+  renderCl();
+
+  /* ---------- 08 GLOSSARY ---------- */
+  const GL = [
+    ["LTSSM", "Link Training and Status State Machine; every port's link controller."],
+    ["TS1 / TS2", "Training ordered sets exchanged during training. TS1 carries the Loopback, Hot Reset and Disable bits."],
+    ["Loopback Lead / Follower", "The port that requests loopback and checks data, and the port that echoes it. Older specs said master and slave."],
+    ["EIOS", "Electrical Idle Ordered Set; announces that a transmitter is going idle, used to exit Loopback."],
+    ["SKP OS", "Skip ordered set used for clock compensation. A Follower may add or remove SKPs while looping."],
+    ["PRBS", "Pseudo-random binary sequence (PRBS7, 15, 31). Longer sequences stress equalizers with more low-frequency content."],
+    ["BER / FBER", "Bit error ratio. Gen6 uses first-bit error rate measured before FEC correction."],
+    ["CTLE / DFE / CDR", "Receiver blocks: continuous-time linear equalizer, decision-feedback equalizer, clock and data recovery."],
+    ["Tx preset", "Predefined de-emphasis / preshoot settings P0–P10 used for 8 GT/s and faster equalization."],
+    ["CBB / CLB", "PCI-SIG Compliance Base Board (tests an add-in card like an NVMe AIC) and Compliance Load Board (tests the host slot)."],
+    ["SRIS", "Separate Refclk with Independent SSC; the two ends use different reference clocks."],
+    ["AER", "Advanced Error Reporting; the capability that logs correctable and uncorrectable link errors."]
+  ];
+  $("#gloss").innerHTML = GL.map(([k, v]) => `<div><b>${k}</b><br><span class="muted">${v}</span></div>`).join("");
+})();
+</script>
+</body>
+</html>
