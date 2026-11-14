@@ -121,7 +121,37 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
 <!-- 2 DEEP DIVE -->
 <section id="deep">
   <div class="kicker">02 · Deep dive</div>
-  <h2 id="deepTitle">Inside DRAM</h2>
+  <h2>Watch the processor work</h2>
+  <p>Follow one real instruction through the machine. The program below adds up an array (<code>sum += a[i]</code>). Its first instruction, <code>MOV RBX, [RSI]</code>, loads <code>a[i]</code> from memory. Choose where that data currently lives, then step through what the CPU and memory actually do. Timings use the reference desktop in the table below.</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Where is a[i] right now?</label><div class="seg" id="cpuSc"><button data-v="0" class="on">L1 cache</button><button data-v="1">L2</button><button data-v="2">L3</button><button data-v="3">DRAM only</button><button data-v="4">Not in RAM (on SSD)</button></div></div>
+    </div>
+    <svg id="cpuSvg" viewBox="0 0 640 312" width="100%" role="img" aria-label="Processor and memory hierarchy flow"></svg>
+    <div class="stats" id="cpuStats"></div>
+    <div id="cpuNow" style="margin-top:12px;min-height:3.2em"></div>
+    <div id="cpuBtns"></div>
+    <details style="margin-top:12px"><summary class="muted" style="cursor:pointer;font-size:14px">Full timeline</summary><div id="cpuLog" style="font-size:13px;margin-top:8px"></div></details>
+  </div>
+  <div class="callout"><b>What real CPUs do while waiting:</b> a modern out-of-order core doesn't simply freeze during a miss. It keeps running later instructions that don't need <code>a[i]</code>, and it can have dozens of misses in flight at once. For a simple loop like this, the <b>hardware prefetcher</b> notices the sequential pattern and pulls upcoming lines into cache early, so in practice most iterations hit L1. Random access patterns (linked lists, hash tables) can't be predicted, and those pay the full DRAM cost.</div>
+
+  <h3>Practical values: a typical 2025–26 desktop</h3>
+  <p class="muted" style="font-size:14px">Reference: 4.5 GHz core (1 cycle ≈ 0.22 ns), 48 KB L1d and 2 MB L2 per core, 32 MB shared L3, dual-channel DDR5-6000 CL30, PCIe 4.0 NVMe SSD. Values are typical; exact figures vary by CPU model, memory kit and drive.</p>
+  <div class="card tablewrap">
+    <table>
+      <thead><tr><th>Level</th><th>Typical size</th><th>Latency (cycles)</th><th>Latency (time)</th><th>Bandwidth</th><th>If 1 cycle = 1 second</th></tr></thead>
+      <tbody>
+        <tr><td><b>Registers</b></td><td>16 named × 64-bit<br><span class="muted">(~200+ physical)</span></td><td class="mono">0–1</td><td class="mono">~0.2 ns</td><td>several reads/writes per cycle</td><td>1 second</td></tr>
+        <tr><td><b>L1 data cache</b></td><td>32–48 KB per core</td><td class="mono">~4–5</td><td class="mono">~1 ns</td><td>2–3 × 64 B per cycle<br><span class="muted">(hundreds of GB/s per core)</span></td><td>5 seconds</td></tr>
+        <tr><td><b>L2 cache</b></td><td>1–2 MB per core</td><td class="mono">~14–17</td><td class="mono">~3.5 ns</td><td>~64 B per cycle per core</td><td>16 seconds</td></tr>
+        <tr><td><b>L3 cache</b></td><td>16–36 MB shared</td><td class="mono">~45–60</td><td class="mono">~10–13 ns</td><td>~100+ GB/s per core</td><td>~1 minute</td></tr>
+        <tr><td><b>DRAM</b> (DDR5-6000)</td><td>16–64 GB</td><td class="mono">~300–400</td><td class="mono">~65–90 ns</td><td>96 GB/s peak (2 channels)</td><td>~5–6 minutes</td></tr>
+        <tr><td><b>NVMe SSD</b> (PCIe 4.0)</td><td>1–4 TB</td><td class="mono">~250,000+</td><td class="mono">~50–100 µs</td><td>~7 GB/s</td><td>~3–5 days</td></tr>
+        <tr><td><b>Hard drive</b> (7200 RPM)</td><td>4–24 TB</td><td class="mono">~50,000,000</td><td class="mono">~5–12 ms</td><td>~0.25 GB/s</td><td>~1.5 years</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h2 id="deepTitle" style="margin-top:36px">Inside DRAM</h2>
   <div class="ctrl"><div><label>Layer (follows your pick in section 1)</label><div class="seg" id="deepLvl"><button data-v="0">Registers</button><button data-v="1">Cache</button><button data-v="2" class="on">DRAM</button><button data-v="3">SSD / HDD</button></div></div></div>
   <p id="deepIntro"></p>
   <div class="drill" id="drill"></div>
@@ -566,6 +596,73 @@ const DRAM={title:'Inside DRAM',intro:'A DRAM bit is a tiny <b>capacitor</b> (ch
    [[60,'Channel A'],[460,'Channel B']].forEach(([x,n],k)=>{const c=k?C.a3:C.accent;tx(s,x,30,n,{fill:c,'font-weight':600});for(let d=0;d<2;d++)rc(s,x+d*55,45,40,150,{rx:4,fill:'#1b2a22',stroke:c});ln(s,k?400:160,115,k?460:240,115,{stroke:c,'stroke-width':4})});
    tx(s,230,215,'Two independent 64-bit channels',{fill:C.muted,'font-size':12});}}
 ]};
+
+/* ---------- CPU flow simulator ---------- */
+const GHZ=4.5;
+const LV=[{n:'L1 data cache',l:'~5 cycles · 1 ns'},{n:'L2 cache',l:'~16 cycles · 3.5 ns'},{n:'L3 cache (shared)',l:'~50 cycles · 11 ns'},{n:'Memory controller',l:'+ fabric ~15 ns each way'},{n:'DRAM · DDR5-6000',l:'tRCD 12 ns · CL 10 ns'},{n:'NVMe SSD',l:'flash read ~50 µs'}];
+const LY=i=>14+i*49;
+function cpuEvents(sc){const E=[];const c=(cyc,o)=>E.push({...o,cyc}),n=(ns,o)=>E.push({...o,cyc:ns*GHZ});
+ c(1,{st:0,line:0,txt:'<b>Fetch</b>: read the instruction <code>MOV RBX, [RSI]</code> from the L1 <i>instruction</i> cache (it was used last iteration, so it hits).'});
+ c(1,{st:1,line:0,txt:'<b>Decode</b>: it\'s a load: “read 8 bytes from the address held in RSI, put them in RBX”.'});
+ c(1,{st:2,line:0,txt:'<b>Address</b>: RSI = 0x7FFD1040. The TLB (a small cache of page-table entries) translates this program address into a physical RAM address.'});
+ if(sc===4){
+  n(1000,{st:2,line:0,txt:'<b>PAGE FAULT.</b> The page table says this 4 KB page isn\'t in RAM; it was never loaded, or was swapped out. The CPU abandons the instruction and jumps into the operating system (~1 µs).',fault:1});
+  n(2000,{st:2,line:0,lvl:5,dir:1,txt:'<b>OS</b> picks a free page of RAM and sends an NVMe read command to the SSD over PCIe (~2 µs of OS work).',fault:1});
+  n(50000,{st:2,line:0,lvl:5,txt:'<b>SSD</b> controller reads the NAND flash page (tR ≈ 50 µs for TLC flash). This is by far the slowest step: about 225,000 cycles.',fault:1});
+  n(600,{st:2,line:0,lvl:4,dir:-1,txt:'<b>PCIe transfer</b>: 4 KB moves into DRAM over PCIe 4.0 x4 (~7 GB/s ≈ 0.6 µs) using DMA, without the CPU copying it.',fault:1});
+  n(4000,{st:2,line:0,txt:'<b>Interrupt</b>: the SSD signals “done”. The OS updates the page table and restarts <code>MOV RBX, [RSI]</code> from the beginning (~4 µs).',fault:1});
+  c(3,{st:2,line:0,txt:'<b>Retry</b>: fetch, decode and translate again. This time the TLB finds the page in RAM.'});
+ }
+ c(5,{st:3,line:0,lvl:0,dir:1,hit:sc===0,txt:sc===0?'<b>L1d lookup: HIT.</b> The 8 bytes come back after ~5 cycles (~1 ns). This is the common case for a sequential loop.':'<b>L1d lookup: miss</b> (~5 cycles to find out). Ask L2.'});
+ if(sc>=1)c(11,{st:3,line:0,lvl:1,dir:1,hit:sc===1,txt:sc===1?'<b>L2: HIT</b> (~16 cycles total). The 64-byte line is copied up into L1d and the value forwarded to the core.':'<b>L2: miss.</b> Ask the shared L3.'});
+ if(sc>=2)c(34,{st:3,line:0,lvl:2,dir:1,hit:sc===2,txt:sc===2?'<b>L3: HIT</b> (~50 cycles total). The line is copied into L2 and L1d on the way back.':'<b>L3: miss</b> (~50 cycles spent so far). The request leaves the core area and heads for the memory controller.'});
+ if(sc>=3){
+  n(15,{st:3,line:0,lvl:3,dir:1,txt:'<b>Memory controller</b>: the request crosses the on-chip fabric and is queued. Address bits choose channel, rank, bank group, bank, row and column (~15 ns).'});
+  n(12,{st:3,line:0,lvl:4,txt:'<b>ACTIVATE</b>: open the row in the chosen bank, copying it into the sense amplifiers (tRCD ≈ 12 ns on DDR5-6000 CL30-36).'});
+  n(10,{st:3,line:0,lvl:4,txt:'<b>READ</b>: request the column. After the CAS latency (CL30 = 30 clocks at 3000 MHz = 10 ns) data starts to flow.'});
+  n(2.7,{st:3,line:0,lvl:4,dir:-1,txt:'<b>Burst</b>: 64 bytes arrive as 16 transfers × 32 bits on one DDR5 sub-channel (BL16 at 6000 MT/s ≈ 2.7 ns).'});
+  n(15,{st:3,line:0,lvl:3,dir:-1,txt:'<b>Return</b>: the line travels back through the controller and fabric, and is filled into L3, L2 and L1d (~15 ns).',hit:1});
+ }
+ c(1,{st:4,line:0,reg:1,txt:'<b>Write-back</b>: RBX = 42 (the value of a[i]). The load is complete.'});
+ c(1,{st:2,line:1,reg:2,alu:1,txt:'<b>Execute</b> the next instruction, <code>ADD RAX, RBX</code>: the ALU adds in 1 cycle. sum = 100 + 42 = 142.'});
+ return E}
+let cpuSc=0,cpuK=0,cpuTimer=null;
+seg('#cpuSc',v=>{cpuSc=+v;cpuK=0;stopCpu();drawCpu()});
+function stopCpu(){clearInterval(cpuTimer);cpuTimer=null}
+function fmtT(ns){return ns<1000?ns.toFixed(ns<10?2:1)+' ns':ns<1e6?(ns/1000).toFixed(1)+' µs':(ns/1e6).toFixed(2)+' ms'}
+function human(s){return s<90?Math.round(s)+' s':s<5400?(s/60).toFixed(1)+' min':s<172800?(s/3600).toFixed(1)+' hours':(s/86400).toFixed(1)+' days'}
+function drawCpu(){const s=$('#cpuSvg');s.innerHTML='';defs(s);const E=cpuEvents(cpuSc),ev=E[cpuK],done=E.slice(0,cpuK+1);
+ const tot=done.reduce((a,e)=>a+e.cyc,0);
+ // core
+ rc(s,8,6,330,300,{fill:'rgba(143,140,240,.05)',stroke:C.a3,'stroke-width':1.5,rx:12});tx(s,20,24,'CPU core @ 4.5 GHz',{fill:C.a3,'font-size':12,'font-weight':600});
+ ['Fetch','Decode','Execute','Memory','Write-back'].forEach((n,i)=>{const on=ev.st===i;rc(s,18+i*63,34,58,40,{fill:on?C.accent:C.panel2,stroke:on?C.accent:C.line,rx:6});tx(s,47+i*63,58,n,{...mid,'font-size':11,'font-weight':on?700:400,fill:on?'#0b1513':C.text});if(i<4)tx(s,78+i*63,58,'›',{fill:C.muted,'font-size':12})});
+ tx(s,20,94,'Registers',{fill:C.muted,'font-size':11});
+ const regs=[['RAX (sum)',done.some(e=>e.reg===2)?'142':'100',done.some(e=>e.reg===2)&&ev.reg===2],['RBX',done.some(e=>e.reg>=1)?'42':'—',ev.reg===1],['RSI (&a[i])','0x7FFD1040',ev.st===2&&cpuK<=2],['RCX (count)','1000',0]];
+ regs.forEach(([n,v,h],i)=>{const x=18+(i%2)*158,y=100+Math.floor(i/2)*34;rc(s,x,y,150,28,{fill:h?'rgba(79,179,169,.25)':C.chip,stroke:h?C.accent:C.line,rx:4});tx(s,x+8,y+18,n,{...mono,'font-size':10.5,fill:C.muted});tx(s,x+142,y+18,v,{...mono,'font-size':11.5,'text-anchor':'end','font-weight':600})});
+ rc(s,250,174,76,30,{fill:ev.alu?'rgba(79,179,169,.25)':C.panel2,stroke:ev.alu?C.accent:C.line,rx:5});tx(s,288,193,ev.alu?'ALU: +':'ALU',{...mid,'font-size':12});
+ const code=['MOV  RBX, [RSI]   ; load a[i]','ADD  RAX, RBX     ; sum += a[i]','ADD  RSI, 8       ; next element','DEC  RCX          ; count--','JNZ  loop'];
+ tx(s,20,190,'loop:',{...mono,fill:C.muted,'font-size':11});
+ code.forEach((l,i)=>{const on=ev.line===i;if(on)rc(s,16,206+i*19-13,234,17,{fill:'rgba(224,168,79,.2)',stroke:'none',rx:3});tx(s,22,206+i*19,l,{...mono,'font-size':10.5,fill:on?C.a2:C.muted,style:'white-space:pre'})});
+ if(ev.fault){rc(s,180,222,150,40,{fill:'rgba(224,108,108,.18)',stroke:C.danger,rx:6});tx(s,255,239,'⚠ page fault',{...mid,fill:C.danger,'font-size':12,'font-weight':600});tx(s,255,254,'OS handling it',{...mid,fill:C.muted,'font-size':11})}
+ // bus + levels
+ const bx=362;ln(s,338,LY(0)+20,bx,LY(0)+20,{stroke:C.line});ln(s,bx,LY(0)+20,bx,LY(5)+20,{stroke:C.line});
+ const visited=new Set(done.filter(e=>e.lvl!=null).map(e=>e.lvl));const served=done.some(e=>e.hit)?(done.find(e=>e.hit&&e.lvl!=null)||{}).lvl:null;
+ LV.forEach((L,i)=>{const y=LY(i),cur=ev.lvl===i,vis=visited.has(i);let fill=C.panel2,st=C.line;
+  if(vis){fill='rgba(224,108,108,.10)';st='rgba(224,108,108,.6)'}if(i===served||(i===4&&served===3&&cpuSc>=3)){fill='rgba(79,179,169,.18)';st=C.accent}if(cur){st=C.a2;fill='rgba(224,168,79,.18)'}
+  if(cpuSc===4&&i===5&&vis){fill='rgba(224,168,79,.12)';st=C.a2}
+  ln(s,bx,y+20,384,y+20,{stroke:C.line});rc(s,384,y,248,40,{fill,stroke:st,'stroke-width':cur?2.5:1.5,rx:6});
+  tx(s,394,y+17,L.n,{'font-size':12,'font-weight':600});tx(s,394,y+32,L.l,{fill:C.muted,'font-size':10.5,...mono})});
+ // moving dot
+ if(ev.lvl!=null&&ev.dir){const y=LY(ev.lvl)+20,p=`M338,${LY(0)+20} L${bx},${LY(0)+20} L${bx},${y} L384,${y}`;const dot=el('circle',{r:6,fill:ev.dir>0?C.a2:C.accent},s);
+  el('animateMotion',{dur:'0.9s',repeatCount:'indefinite',path:p,keyPoints:ev.dir>0?'0;1':'1;0',keyTimes:'0;1',calcMode:'linear'},dot)}
+ // stats
+ const ns=tot/GHZ,waiting=done.filter(e=>e.st===3||e.fault).reduce((a,e)=>a+e.cyc,0);
+ $('#cpuStats').innerHTML=[[`${cpuK+1} / ${E.length}`,'step'],[Math.round(tot).toLocaleString(),'cycles so far',1],[fmtT(ns),'real time',1],[human(tot),'if 1 cycle = 1 second'],[tot?Math.round(waiting/tot*100)+'%':'0%','spent waiting on memory']].map(([v,l,h])=>`<div class="stat${h?' hi':''}"><div class="v" style="font-size:18px">${v}</div><div class="l">${l}</div></div>`).join('');
+ $('#cpuNow').innerHTML=`<p style="margin:0">${ev.txt}</p><p class="muted mono" style="margin:4px 0 0;font-size:12px">this step: ${ev.cyc<10?ev.cyc.toFixed(ev.cyc%1?1:0):Math.round(ev.cyc).toLocaleString()} cycle${ev.cyc===1?'':'s'} ≈ ${fmtT(ev.cyc/GHZ)}</p>`+(cpuK===E.length-1?`<div class="callout" style="margin:10px 0 0"><b>Result:</b> the add itself took 1 cycle, but getting a[i] took <b>${Math.round(tot-1).toLocaleString()} cycles</b> (${fmtT((tot-1)/GHZ)}). In the time of one ${['L1 hit','L2 hit','L3 hit','DRAM access','page fault'][cpuSc]}, the core could have done roughly ${Math.round(tot*4).toLocaleString()} simple additions (about 4 per cycle).</div>`:'');
+ $('#cpuLog').innerHTML=E.map((e,i)=>`<div style="padding:4px 0;border-bottom:1px solid var(--line);${i===cpuK?'color:var(--accent)':i>cpuK?'opacity:.45':''}"><span class="mono" style="font-size:11px">${fmtT(E.slice(0,i+1).reduce((a,x)=>a+x.cyc,0)/GHZ).padStart(9)}</span> · ${e.txt}</div>`).join('');
+ const b=$('#cpuBtns');b.innerHTML='';
+ b.append(btn('◀ Back',()=>{stopCpu();cpuK=Math.max(0,cpuK-1);drawCpu()}),btn('Step ▶',()=>{stopCpu();cpuK=Math.min(E.length-1,cpuK+1);drawCpu()}),btn(cpuTimer?'⏸ Pause':'▶ Play',()=>{if(cpuTimer){stopCpu();drawCpu();return}if(cpuK>=E.length-1)cpuK=0;cpuTimer=setInterval(()=>{if(cpuK>=E.length-1){stopCpu();drawCpu();return}cpuK++;drawCpu()},1700);drawCpu()}),btn('Reset',()=>{stopCpu();cpuK=0;drawCpu()}));}
+drawCpu();
 
 const deep=[REG,CACHE,DRAM,STOR];
 seg('#deepLvl',v=>setLevel(+v));
