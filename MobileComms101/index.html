@@ -37,8 +37,8 @@ code,.f{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;font-
 .lab h3::before{content:"Try it · ";color:var(--accent)}
 .ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 18px}
 .ctl label{display:grid;gap:3px;font-size:.85rem;color:var(--muted)}
-.ctl input[type=number],.ctl select,table input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:5px 7px;width:100%}
-table input{width:5.2em;text-align:right;padding:3px 5px}
+.ctl input[type=number],.ctl select,table select,table input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:5px 7px;width:100%}
+table select{width:auto;max-width:100%}table input{width:5.2em;text-align:right;padding:3px 5px}
 .ctl input[type=range]{width:100%;accent-color:var(--accent)}
 .out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
 .out div{background:var(--sunk);border-radius:6px;padding:8px 10px;font-size:.8rem;color:var(--muted)}
@@ -56,7 +56,7 @@ button.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 ol.steps li{margin:.35em 0}
 .tabs{position:sticky;top:0;z-index:5;display:flex;gap:4px;overflow-x:auto;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);margin:1.2em 0 0;scrollbar-width:thin}
 .tabs button,.subs button{font-family:inherit;font-weight:600;white-space:nowrap;cursor:pointer}
-.tabs button{font-size:.92rem;padding:9px 13px;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted)}
+.tabs button{font-size:.88rem;padding:9px 10px;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted)}
 .tabs button:hover{color:var(--ink);background:var(--sunk)}
 .tabs button[aria-selected=true]{background:var(--accent);color:var(--bg)}
 .subs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
@@ -267,9 +267,165 @@ ol.steps li{margin:.35em 0}
 <ul>
 <li><b>Channel coding</b> adds redundant bits so the receiver can correct errors. 2G used convolutional codes, 3G and 4G use turbo codes, 5G uses LDPC for data and polar codes for control. The <b>code rate</b> is the fraction of useful bits.</li>
 <li><b>HARQ</b> retransmits only when decoding fails and combines the retry with the first attempt.</li>
-<li><b>MIMO</b> sends different data streams from several antennas on the same frequency at the same time. With enough scattering, N transmit and N receive antennas support up to N streams. Phones typically have 4 receive paths in mid band and 2 in low band.</li>
+<li><b>MIMO</b> sends several data streams from several antennas on the same frequency. It has its own tab: <a href="#mimo">MIMO and CA</a>.</li>
 </ul>
 <p>More on waveforms: <a href="../Mobile/modulation.html">Modulation study</a> in the Mobile section.</p>
+</section>
+</section>
+<section class="tab" id="t-mimo" data-title="MIMO and CA">
+<section class="sub" id="mimo" data-title="MIMO basics">
+<h2>MIMO: using more than one antenna</h2>
+<p>Bandwidth and SNR are the two levers in Shannon's formula. Multiple antennas add a third: <b>space</b>. MIMO stands for multiple-input multiple-output, where "input" and "output" refer to the radio channel. A link is written <b>N<sub>t</sub> × N<sub>r</sub></b>: transmit antennas by receive antennas, so 4 × 4 downlink MIMO means four antennas at the base station port level and four in the phone.</p>
+<div class="tw"><table><thead><tr><th>Configuration</th><th>Antennas</th><th>What it gives</th></tr></thead><tbody>
+<tr><td>SISO</td><td>1 transmit, 1 receive</td><td>The baseline link</td></tr>
+<tr><td>SIMO (receive diversity)</td><td>1 transmit, several receive</td><td>Combining gain and protection against fading</td></tr>
+<tr><td>MISO (transmit diversity, beamforming)</td><td>Several transmit, 1 receive</td><td>Robustness, or a focused beam when the transmitter knows the channel</td></tr>
+<tr><td>MIMO</td><td>Several at both ends</td><td>All of the above, plus several data streams at once</td></tr>
+</tbody></table></div>
+<h3>Three ways to spend extra antennas</h3>
+<div class="tw"><table><thead><tr><th>Technique</th><th>Idea</th><th>Benefit</th><th>Best when</th></tr></thead><tbody>
+<tr><td><b>Diversity</b></td><td>Send or receive the same data over paths that fade independently, and combine them</td><td>Reliability. Two receive antennas give about 3 dB of combining gain and remove most deep fades</td><td>Weak or fast-changing signal, control channels</td></tr>
+<tr><td><b>Spatial multiplexing</b></td><td>Send different data streams (<b>layers</b>) from different antennas on the same frequency at the same time; the receiver separates them using the differences between paths</td><td>Data rate. Up to min(N<sub>t</sub>, N<sub>r</sub>) times the single-stream rate</td><td>Strong signal and rich scattering</td></tr>
+<tr><td><b>Beamforming</b></td><td>Feed the same signal to many antennas with chosen phases so it adds up in one direction</td><td>Range and less interference to others. Gain grows as 10·log₁₀(N)</td><td>Cell edge, high frequencies, many users</td></tr>
+</tbody></table></div>
+<h3>Terms you will meet</h3>
+<ul>
+<li><b>Layer</b>: one independent data stream. <b>Rank</b>: how many layers the channel can support right now.</li>
+<li><b>Precoding</b>: the weights that map layers onto antennas. The phone recommends a precoder from a standard codebook.</li>
+<li><b>CSI feedback</b>: the phone reports rank (RI), preferred precoder (PMI) and channel quality (CQI); the base station then picks layers, precoder and modulation for the next slots.</li>
+<li><b>Reference signals</b>: known symbols used to measure the channel. CSI-RS for downlink measurement, DMRS for demodulating each layer, SRS sent by the phone so the base station can measure the uplink.</li>
+<li><b>SU-MIMO and MU-MIMO</b>: all layers to one phone (single user), or layers shared between phones in different directions (multi user).</li>
+</ul>
+</section>
+<section class="sub" id="layers" data-title="Spatial multiplexing">
+<h2>Spatial multiplexing and layers</h2>
+<p>Every transmit antenna reaches every receive antenna over a slightly different path. Those paths form the <b>channel matrix H</b>. If the paths differ enough, the receiver can solve for the individual streams, like solving simultaneous equations. In an ideal, perfectly separable channel with the transmit power shared equally between layers:</p>
+<span class="f">C = L · B · log₂(1 + SNR · N_r / L) &nbsp;&nbsp;&nbsp; L = layers ≤ min(N_t, N_r)</span>
+<p>Each added layer multiplies the rate but divides the power, so layers pay off only when the SNR is good. At the cell edge one well-combined layer beats four starved ones. This is why the network adapts the rank continuously.</p>
+<div class="lab"><h3>MIMO capacity</h3>
+<div class="ctl">
+<label>Transmit antennas<select id="mi-t"><option>1</option><option>2</option><option selected>4</option><option>8</option></select></label>
+<label>Receive antennas<select id="mi-r"><option>1</option><option>2</option><option selected>4</option></select></label>
+<label>Layers<select id="mi-l"></select></label>
+<label>SNR per receive antenna: <span id="mi-sv"></span><input type="range" id="mi-s" min="-10" max="35" step="0.5" value="20"></label>
+<label>Bandwidth (MHz)<input type="number" id="mi-b" value="100" min="1" step="5"></label>
+</div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="mi-plot"></div><figcaption>Every transmit antenna reaches every receive antenna. Coloured paths carry the layers; grey paths are the extra antennas that add diversity or beamforming gain.</figcaption></figure>
+<div class="out"><div>SNR per layer<b id="mi-ls"></b></div><div>Capacity<b id="mi-c"></b></div><div>Gain over one antenna each end<b id="mi-g"></b></div><div>Best layer count at this SNR<b id="mi-best"></b></div></div>
+<p class="hint">Idealised upper bound. Real channels are partly correlated, so the weaker layers get less than their share; line-of-sight links often support only two layers (one per polarisation).</p>
+</div>
+<h3>What limits the number of layers</h3>
+<ul>
+<li><b>Scattering.</b> Layers need paths that look different. Reflections help; a clear line of sight does not.</li>
+<li><b>Antenna correlation.</b> Antennas closer than about half a wavelength see nearly the same signal. In a phone at 700 MHz (43 cm wavelength) there is only room for two useful antennas; at 3.5 GHz four fit comfortably.</li>
+<li><b>SNR.</b> As the calculator shows, splitting power only pays when there is power to spare.</li>
+</ul>
+</section>
+<section class="sub" id="beamforming" data-title="Beamforming">
+<h2>Beamforming and massive MIMO</h2>
+<p>Feed the same signal to a row of antennas and their waves add up in some directions and cancel in others. Shifting the phase from one element to the next steers the direction in which they add. More elements make the beam narrower and stronger.</p>
+<div class="lab"><h3>Antenna array beam pattern</h3>
+<div class="ctl">
+<label>Elements in a row, half a wavelength apart: <span id="bf-nv"></span><input type="range" id="bf-n" min="1" max="32" step="1" value="8"></label>
+<label>Steering angle: <span id="bf-av"></span><input type="range" id="bf-a" min="-60" max="60" step="1" value="20"></label>
+</div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="bf-plot"></div><figcaption>Relative gain against direction. 0° is straight ahead of the array.</figcaption></figure>
+<div class="out"><div>Array gain<b id="bf-g"></b></div><div>Beam width (−3 dB)<b id="bf-w"></b></div><div>Phase step between elements<b id="bf-p"></b></div></div>
+</div>
+<div class="tw"><table><thead><tr><th>Where</th><th>What is used</th><th>Why</th></tr></thead><tbody>
+<tr><td>4G macro base station</td><td>2 or 4 transmit and receive ports, fixed sector beams</td><td>Spatial multiplexing and diversity</td></tr>
+<tr><td>5G mid-band base station (massive MIMO)</td><td>32 or 64 transceivers behind a panel of 128–192 elements</td><td>Narrow beams per user and MU-MIMO to many phones at once. TDD lets the base station learn the downlink channel from the phone's uplink SRS, because both use the same frequency</td></tr>
+<tr><td>5G millimetre wave</td><td>Phased arrays at both ends; phones carry several small antenna modules</td><td>Array gain makes up for the high path loss. Beams must be found and tracked (beam management) as the phone moves or a hand blocks a module</td></tr>
+</tbody></table></div>
+</section>
+<section class="sub" id="mimophone" data-title="MIMO in the phone">
+<h2>MIMO in the standards and in the phone</h2>
+<div class="tw"><table><thead><tr><th>Standard</th><th>Downlink</th><th>Uplink</th></tr></thead><tbody>
+<tr><td>HSPA+ (3G)</td><td>2 layers</td><td>1 layer</td></tr>
+<tr><td>LTE Rel-8</td><td>Up to 4 layers</td><td>1 layer</td></tr>
+<tr><td>LTE-Advanced Rel-10</td><td>Up to 8 layers</td><td>Up to 4 layers</td></tr>
+<tr><td>NR</td><td>Up to 8 layers to one phone; MU-MIMO across many phones</td><td>Up to 4 layers</td></tr>
+<tr><td>Typical phone today</td><td>4 layers in mid and high bands, 2 in low bands</td><td>1 layer, or 2 in selected TDD bands</td></tr>
+</tbody></table></div>
+<h3>What MIMO costs in hardware</h3>
+<ul>
+<li><b>Four receive chains per band group</b>: four antennas, four filters, four LNAs and four transceiver receive paths. The primary and diversity paths are joined by two more "MIMO" paths.</li>
+<li><b>Antenna design.</b> The antennas must be efficient and also uncorrelated with each other, measured by the envelope correlation coefficient. Isolation between them matters too.</li>
+<li><b>Uplink MIMO</b> needs two power amplifiers transmitting together. A cheaper alternative, <b>uplink transmit switching</b>, moves one transmitter between carriers.</li>
+<li><b>SRS antenna switching</b> (written 1T4R or 2T4R): the phone transmits its sounding signal from each receive antenna in turn so that a TDD base station can beamform to all four.</li>
+<li><b>Baseband load.</b> Channel estimation and separating four layers across 100 MHz is among the heaviest jobs in the modem.</li>
+</ul>
+<h3>How MIMO is tested</h3>
+<ul>
+<li>Receiver sensitivity is measured per antenna port and with all ports combined.</li>
+<li>Demodulation tests (TS 38.101-4) check throughput for 2 and 4 layers through a fading channel emulator with defined correlation between antennas, and check that the reported rank and precoder are sensible.</li>
+<li>Radiated MIMO tests place the whole phone in a chamber that recreates a multipath environment, so the real antennas are included.</li>
+</ul>
+</section>
+<section class="sub" id="ca" data-title="Carrier aggregation">
+<h2>Carrier aggregation</h2>
+<p>An operator rarely owns one wide block of spectrum. It owns pieces: 10 MHz at 700 MHz, 20 MHz at 1800 MHz, 100 MHz at 3.5 GHz. <b>Carrier aggregation (CA)</b> lets one phone use several of these carriers at the same time, as if they were one wide channel. Each carrier is a <b>component carrier (CC)</b>.</p>
+<ul>
+<li>The <b>primary cell (PCell)</b> carries the connection: signalling, mobility and the uplink control channel.</li>
+<li><b>Secondary cells (SCells)</b> are added when there is data to send and switched off within milliseconds when there is not, to save battery.</li>
+<li>One scheduler in the base station spreads the data across all carriers slot by slot, so the benefit is both a higher peak rate and better use of each band: low band for reach, mid band for capacity.</li>
+</ul>
+<figure><div id="d-catypes"></div><figcaption>The three ways component carriers can be arranged.</figcaption></figure>
+<div class="tw"><table><thead><tr><th>Type</th><th>Arrangement</th><th>Radio impact</th></tr></thead><tbody>
+<tr><td>Intra-band contiguous</td><td>Adjacent carriers in the same band</td><td>Easiest: one wider receive and transmit path can cover both</td></tr>
+<tr><td>Intra-band non-contiguous</td><td>Same band, with a gap between the carriers</td><td>Needs a wide path or two paths; intermodulation between the carriers falls in the gap and nearby</td></tr>
+<tr><td>Inter-band</td><td>Carriers in different bands</td><td>Hardest and most common: separate paths per band, sharing antennas through multiplexers</td></tr>
+</tbody></table></div>
+<div class="tw"><table><thead><tr><th>Release</th><th>What was added</th></tr></thead><tbody>
+<tr><td>LTE Rel-10</td><td>Up to 5 carriers of 20 MHz: 100 MHz in total</td></tr>
+<tr><td>LTE Rel-13</td><td>Up to 32 carriers, including unlicensed 5 GHz spectrum</td></tr>
+<tr><td>NR Rel-15</td><td>Up to 16 carriers, each up to 100 MHz (FR1) or 400 MHz (FR2)</td></tr>
+<tr><td>NR Rel-16 onward</td><td>FDD + TDD combinations with faster SCell activation, uplink transmit switching, more band combinations</td></tr>
+</tbody></table></div>
+<div class="lab"><h3>Build a carrier combination</h3>
+<div class="tw"><table id="ca-tab"><thead><tr><th>Carrier</th><th>Band and bandwidth</th><th>MIMO layers</th><th>Modulation</th><th class="n">Peak rate</th></tr></thead><tbody></tbody></table></div>
+<figure style="border:0;padding:0;margin:.6em 0 .4em"><div id="cc-plot"></div><figcaption>Carriers in order of frequency. Widths are proportional to bandwidth; the gaps between bands are not to scale.</figcaption></figure>
+<div class="out"><div>Carriers aggregated<b id="cc-n"></b></div><div>Total bandwidth<b id="cc-bw"></b></div><div>Total data streams<b id="cc-l"></b></div><div>Peak downlink rate<b id="cc-r"></b></div><div>Combination type<b id="cc-t" style="font-size:.95rem"></b></div></div>
+<p class="hint">Peak rate uses the 3GPP formula of TS 38.306: layers × bits per symbol × highest code rate × subcarriers ÷ symbol time, less 14 % overhead. TDD carriers are counted at a 75 % downlink share. It is a ceiling for one phone alone in the cell with a perfect signal.</p>
+</div>
+</section>
+<section class="sub" id="dc" data-title="Dual connectivity">
+<h2>Dual connectivity and naming</h2>
+<p>Carrier aggregation uses one base station and one scheduler. <b>Dual connectivity (DC)</b> connects the phone to two base stations at once, each with its own scheduler, and splits the data higher up the protocol stack.</p>
+<div class="tw"><table><thead><tr><th></th><th>Carrier aggregation</th><th>Dual connectivity</th></tr></thead><tbody>
+<tr><td>Base stations</td><td>One (or tightly linked sites)</td><td>Two: a master node and a secondary node</td></tr>
+<tr><td>Scheduling</td><td>One scheduler, one MAC layer</td><td>Two schedulers; data split at the PDCP layer</td></tr>
+<tr><td>Uplink</td><td>Often on one carrier only</td><td>The phone transmits to both nodes</td></tr>
+<tr><td>Main use</td><td>Combining an operator's bands within 4G or within 5G</td><td><b>EN-DC</b>: an LTE anchor plus an NR carrier, the basis of non-standalone 5G. Also NR-DC, for example FR1 plus millimetre wave</td></tr>
+</tbody></table></div>
+<p>Both are used together: a non-standalone phone may run LTE carrier aggregation on the anchor and NR carrier aggregation on the 5G side at the same time.</p>
+<h3>Reading a band-combination name</h3>
+<div class="tw"><table><thead><tr><th>Name</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>CA_1A-3A-7A</code></td><td>LTE inter-band aggregation of one carrier each in Bands 1, 3 and 7</td></tr>
+<tr><td><code>CA_3C</code></td><td>LTE intra-band contiguous: two adjacent carriers in Band 3</td></tr>
+<tr><td><code>CA_n1A-n78A</code></td><td>NR aggregation of n1 (FDD) with n78 (TDD)</td></tr>
+<tr><td><code>DC_3A_n78A</code></td><td>EN-DC: LTE Band 3 anchor with NR n78</td></tr>
+</tbody></table></div>
+<p>The letter after each band is the <b>bandwidth class</b>: A is a single carrier, later letters are contiguous groups of increasing width. A phone signals to the network exactly which combinations, and how many MIMO layers on each, it supports. Flagship phones support thousands.</p>
+</section>
+<section class="sub" id="cahw" data-title="CA in the phone">
+<h2>What carrier aggregation costs in the phone</h2>
+<div class="tw"><table><thead><tr><th>Area</th><th>Impact</th></tr></thead><tbody>
+<tr><td>Transceiver</td><td>One receive path and one synthesizer per carrier that is not contiguous with another, times the number of MIMO branches. Five downlink carriers with 4 × 4 MIMO on some of them can mean 12 or more receivers running together</td></tr>
+<tr><td>Front-end filters</td><td>Bands that share an antenna must be joined by <b>multiplexers</b> (quadplexers, hexaplexers) in place of simple duplexers, so that each filter looks like an open circuit at the other bands. This adds loss, about 0.5–1 dB</td></tr>
+<tr><td>Switches and LNAs</td><td>Several paths are on at once, so switches need multiple simultaneous throws and LNAs are grouped in banks</td></tr>
+<tr><td>Self-interference</td><td>The phone's own transmitter can land on one of its own receive carriers. Example: the second harmonic of a Band 3 uplink (1710–1785 MHz) falls at 3420–3570 MHz, inside n78. Intermodulation between two uplinks does the same</td></tr>
+<tr><td>Uplink CA and EN-DC</td><td>Two transmitters share the 23 dBm total, their intermodulation products must stay within emission limits (extra power back-off, A-MPR), and two PAs draw current</td></tr>
+<tr><td>Power and heat</td><td>Every active carrier adds receiver, converter and baseband current. Fast SCell deactivation keeps this in check</td></tr>
+</tbody></table></div>
+<h3>How the specifications handle it</h3>
+<ul>
+<li>Carrier-aggregation requirements sit in the "A" sub-clauses of TS 38.101-1 (for example 6.2A for output power and 7.3A for reference sensitivity). EN-DC and FR1 + FR2 combinations are in TS 38.101-3.</li>
+<li>Each band combination gets a small sensitivity relaxation (ΔR<sub>IB</sub>) and output-power allowance (ΔT<sub>IB</sub>) to cover the extra multiplexer loss.</li>
+<li>Where a harmonic or intermodulation product is known to hit a receive band, the specification lists a <b>maximum sensitivity degradation (MSD)</b> for that combination, which can be many dB.</li>
+<li>Tests repeat the single-carrier cases with all carriers active: power, emissions and sensitivity per carrier, plus throughput across the combination.</li>
+</ul>
+<p>See also the <a href="../Mobile/rf-front-end.html">RF front-end</a>, <a href="../Mobile/acoustic-filters.html">filter</a> and <a href="../Mobile/intermodulation.html">intermodulation</a> pages.</p>
 </section>
 </section>
 <section class="tab" id="t-std" data-title="Standards">
@@ -321,7 +477,7 @@ ol.steps li{margin:.35em 0}
 <p>Bands starting with B are LTE; the same spectrum used for NR gets an n prefix.</p>
 </section>
 </section>
-<section class="tab" id="t-hw" data-title="Radio hardware">
+<section class="tab" id="t-hw" data-title="Hardware">
 <section class="sub" id="tx" data-title="Transmitter chain">
 <h2>Transmitter chain</h2>
 <p>The transmitter's job: turn bits into a clean, accurately placed radio signal of the right power, without spilling energy into neighbouring channels, and without wasting battery.</p>
@@ -381,7 +537,7 @@ ol.steps li{margin:.35em 0}
 <li><b>RF front-end.</b> Modules grouped by band range (low, mid, high, ultra-high). A <b>PAMiD</b> integrates PA, duplexers, switches and often the LNA. Separate diversity receive modules serve the secondary antennas.</li>
 <li><b>Antennas.</b> Four to eight cellular antennas around the frame, shared between bands through switches, diplexers and tuners.</li>
 </ul>
-<p>Features that multiply the number of paths: <b>carrier aggregation</b> (several carriers at once), <b>4×4 downlink MIMO</b>, <b>EN-DC</b> (LTE and NR transmitting together in non-standalone 5G), and <b>uplink MIMO or transmit switching</b>. See the <a href="../Mobile/">interactive phone block diagram</a> and the <a href="../Mobile/rf-front-end.html">RF front-end page</a>.</p>
+<p>Features that multiply the number of paths (see the <a href="#mimo">MIMO and CA</a> tab): <b>carrier aggregation</b> (several carriers at once), <b>4×4 downlink MIMO</b>, <b>EN-DC</b> (LTE and NR transmitting together in non-standalone 5G), and <b>uplink MIMO or transmit switching</b>. See the <a href="../Mobile/">interactive phone block diagram</a> and the <a href="../Mobile/rf-front-end.html">RF front-end page</a>.</p>
 </section>
 </section>
 <section class="tab" id="t-bud" data-title="Gain budget">
@@ -439,7 +595,7 @@ ol.steps li{margin:.35em 0}
 <p>Related studies: <a href="../Mobile/rf-budget.html">RF gain budget and dynamic range</a>, <a href="../Mobile/intermodulation.html">intermodulation</a>, <a href="../Mobile/power-budget.html">power consumption</a>.</p>
 </section>
 </section>
-<section class="tab" id="t-met" data-title="Metrics and specs">
+<section class="tab" id="t-met" data-title="Metrics & specs">
 <section class="sub" id="metrics" data-title="Transmitter metrics">
 <h2>Transmitter metrics</h2>
 <div class="tw"><table><thead><tr><th>Metric</th><th>What it measures</th><th>Why it matters</th><th>Mainly set by</th></tr></thead><tbody>
@@ -634,7 +790,7 @@ ol.steps li{margin:.35em 0}
 <tr><td>ACS</td><td>Adjacent channel selectivity</td><td>LO</td><td>Local oscillator</td></tr>
 <tr><td>ADC / DAC</td><td>Analog-to-digital / digital-to-analog converter</td><td>MIMO</td><td>Multiple-input multiple-output</td></tr>
 <tr><td>BLER</td><td>Block error rate</td><td>MPR</td><td>Maximum power reduction</td></tr>
-<tr><td>CA</td><td>Carrier aggregation</td><td>NF</td><td>Noise figure</td></tr>
+<tr><td>CA / CC</td><td>Carrier aggregation / component carrier</td><td>NF</td><td>Noise figure</td></tr>
 <tr><td>CP</td><td>Cyclic prefix</td><td>NR</td><td>New Radio, the 5G air interface</td></tr>
 <tr><td>EVM</td><td>Error vector magnitude</td><td>OFDM(A)</td><td>Orthogonal frequency-division multiplexing (multiple access)</td></tr>
 <tr><td>FDD / TDD</td><td>Frequency- / time-division duplex</td><td>PA</td><td>Power amplifier</td></tr>
@@ -646,6 +802,8 @@ ol.steps li{margin:.35em 0}
 <tr><td>I/Q</td><td>In-phase and quadrature components</td><td>SNR / SINR</td><td>Signal-to-noise (and interference) ratio</td></tr>
 <tr><td>LDPC</td><td>Low-density parity-check code</td><td>TRP / TIS</td><td>Total radiated power / total isotropic sensitivity</td></tr>
 <tr><td>LTE</td><td>Long Term Evolution, the 4G air interface</td><td>UE</td><td>User equipment: the phone</td></tr>
+<tr><td>EN-DC</td><td>LTE + NR dual connectivity</td><td>PCell / SCell</td><td>Primary / secondary cell</td></tr>
+<tr><td>MSD</td><td>Maximum sensitivity degradation</td><td>SRS</td><td>Sounding reference signal</td></tr>
 </tbody></table></div>
 </section>
 <section class="sub" id="sources" data-title="Sources">
@@ -771,6 +929,8 @@ var Q=[
 ['A transmitter passes its power test but fails ACLR. Which block is the first suspect?',['Power amplifier linearity','Reference oscillator accuracy','Receive filter'],0,'Adjacent-channel leakage is mostly third- and fifth-order distortion from the PA.'],
 ['What is the pass criterion for most 3GPP receiver tests?',['Bit error rate below 10⁻⁶','Throughput at least 95 % of the maximum for the reference channel','EVM below 8 %'],1,'Sensitivity, selectivity and blocking are all judged on throughput.'],
 ['Why is the phone transmitting at full power during a reference sensitivity test in an FDD band?',['To keep the call alive','So that transmit noise leaking through the duplexer into the receiver is included','To warm up the PA'],1,'The test captures real self-desensitisation, not just thermal noise.'],
+['A phone at the cell edge has a 0 dB SNR. What is the best use of its four receive antennas?',['Four spatial layers','One layer, with the four antennas combined for gain and diversity','Switch three antennas off'],1,'Splitting power across layers only pays at high SNR; at low SNR, combining gain wins.'],
+['Which carrier-aggregation type is hardest on the phone front-end?',['Intra-band contiguous','Inter-band','They are all the same'],1,'Different bands need separate paths joined by multiplexers, and harmonics of one band can fall in another.'],
 ['Which pair of 3GPP documents defines NR FR1 phone RF requirements and how to test them?',['TS 38.104 and TS 38.141','TS 38.101-1 and TS 38.521-1','TS 36.101 and TS 34.121'],1,'38.104 and 38.141 are the base-station equivalents.']];
 var qz=$('qz');Q.forEach(function(q,i){var d=document.createElement('fieldset');d.className='q';
   d.innerHTML='<p>'+(i+1)+'. '+q[0]+'</p>'+q[1].map(function(a,j){return '<label><input type="radio" name="q'+i+'" value="'+j+'"> '+a+'</label>'}).join('')+'<div class="fb" aria-live="polite"></div>';qz.appendChild(d)});
@@ -890,6 +1050,56 @@ function nr(){var s=+$('nr-s').value,bw=+$('nr-b').value,rb=NRB[s][bw],sc=rb*12,
   $('nr-rb').textContent=rb;$('nr-sc').textContent=sc;$('nr-ob').textContent=ob.toFixed(2)+' MHz';$('nr-g').textContent=(bw-ob).toFixed(2)+' MHz';$('nr-f').textContent=F;
   $('nr-fs').textContent=(F*s/1000).toFixed(2)+' Msample/s';$('nr-sl').textContent=slot+' ms';$('nr-r').textContent=(sc*14*8/slot/1000).toFixed(0)+' Mbit/s';}
 $('nr-s').addEventListener('change',nrOpts);$('nr-b').addEventListener('change',nr);nrOpts();
+
+/* ---------- MIMO capacity ---------- */
+function mimoOpts(){var m=Math.min(+$('mi-t').value,+$('mi-r').value),l=$('mi-l'),cur=+l.value||m,o='';for(var i=1;i<=m;i++)if(i<=2||i==4||i==8||i==m)o+='<option>'+i+'</option>';l.innerHTML=o;l.value=Math.min(cur,m);if(!l.value)l.value=m;mimo()}
+function mimo(){var nt=+$('mi-t').value,nr=+$('mi-r').value,L=+$('mi-l').value,sd=+$('mi-s').value,snr=Math.pow(10,sd/10),B=Math.max(+$('mi-b').value,.1);
+  var cap=function(l){return l*Math.log2(1+snr*nr/l)},c=cap(L)*B,c1=Math.log2(1+snr)*B,best=1;for(var l=1;l<=Math.min(nt,nr);l++)if(cap(l)>cap(best))best=l;
+  $('mi-sv').textContent=fx(sd)+' dB';$('mi-ls').textContent=fx(10*Math.log10(snr*nr/L))+' dB';$('mi-c').textContent=c>=1000?(c/1000).toFixed(2)+' Gbit/s':c.toFixed(0)+' Mbit/s';
+  $('mi-g').textContent='× '+(c/c1).toFixed(2);var e=$('mi-best');e.textContent=best+(best==1?' layer':' layers');e.className=best==L?'pass':'';
+  var W=720,H=190,xa=170,xb=550,col=['--digl','--rfl','--anal','--vio'],ya=function(i,n){return H/2+(i-(n-1)/2)*Math.min(40,150/n)};
+  var g='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+nt+' transmit antennas, '+nr+' receive antennas, '+L+' layers">';
+  for(var i=0;i<nt;i++)for(var j=0;j<nr;j++){var on=i<L;g+='<path d="M'+xa+' '+ya(i,nt)+'L'+xb+' '+ya(j,nr)+'" stroke="var('+(on?col[i%4]:'--line')+')" stroke-width="'+(on?1.6:1)+'" opacity="'+(on?.8:1)+'"/>'}
+  for(i=0;i<nt;i++)g+='<circle cx="'+xa+'" cy="'+ya(i,nt)+'" r="7" fill="var('+(i<L?col[i%4]:'--muted')+')"/>';
+  for(j=0;j<nr;j++)g+='<circle cx="'+xb+'" cy="'+ya(j,nr)+'" r="7" fill="var(--ink)"/>';
+  g+='<text class="bt" x="'+(xa-22)+'" y="'+(H/2-4)+'" text-anchor="end">Base station</text><text class="bs" x="'+(xa-22)+'" y="'+(H/2+13)+'" text-anchor="end">'+nt+' transmit</text><text class="bt" x="'+(xb+22)+'" y="'+(H/2-4)+'">Phone</text><text class="bs" x="'+(xb+22)+'" y="'+(H/2+13)+'">'+nr+' receive</text><text class="bs" x="'+W/2+'" y="14" text-anchor="middle">channel matrix H: '+nt*nr+' paths</text>';
+  $('mi-plot').innerHTML=g+'</svg>'}
+['mi-t','mi-r'].forEach(function(i){$(i).addEventListener('change',mimoOpts)});$('mi-l').addEventListener('change',mimo);$('mi-s').addEventListener('input',mimo);$('mi-b').addEventListener('input',mimo);mimoOpts();
+
+/* ---------- beamforming ---------- */
+function beam(){var n=+$('bf-n').value,a0=+$('bf-a').value,s0=Math.sin(a0*Math.PI/180),W=720,H=250,L=46,R=12,T=12,B=40,FL=-40,p=[];
+  var X=function(a){return L+(a+90)/180*(W-L-R)},Y=function(d){return T+d/FL*(H-T-B)};
+  for(var a=-90;a<=90;a+=.25){var psi=Math.PI*(Math.sin(a*Math.PI/180)-s0),af=Math.abs(Math.sin(psi/2))<1e-9?1:Math.abs(Math.sin(n*psi/2)/(n*Math.sin(psi/2)));p.push(X(a).toFixed(1)+','+Y(Math.max(FL,20*Math.log10(af+1e-9))).toFixed(1))}
+  var g='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Array beam pattern">';
+  for(var d=0;d>=FL;d-=10)g+='<path d="M'+L+' '+Y(d)+'H'+(W-R)+'" stroke="var(--line)"/><text class="ax" x="'+(L-6)+'" y="'+(Y(d)+4)+'" text-anchor="end">'+fx(d,0)+'</text>';
+  for(a=-90;a<=90;a+=30)g+='<path d="M'+X(a)+' '+T+'V'+(H-B)+'" stroke="var(--line)"/><text class="ax" x="'+X(a)+'" y="'+(H-B+15)+'" text-anchor="middle">'+fx(a,0)+'°</text>';
+  g+='<text class="ax" x="'+(L+(W-L-R)/2)+'" y="'+(H-6)+'" text-anchor="middle">Direction</text><text class="ax" x="12" y="'+(T+(H-T-B)/2)+'" text-anchor="middle" transform="rotate(-90 12 '+(T+(H-T-B)/2)+')">dB</text>';
+  g+='<path d="M'+X(a0)+' '+T+'V'+(H-B)+'" stroke="var(--rfl)" stroke-dasharray="5 4"/><polyline fill="none" stroke="var(--digl)" stroke-width="1.8" points="'+p.join(' ')+'"/></svg>';$('bf-plot').innerHTML=g;
+  $('bf-nv').textContent=n;$('bf-av').textContent=fx(a0,0)+'°';$('bf-g').textContent=fx(10*Math.log10(n))+' dB';
+  $('bf-w').textContent=n<2?'no beam: equal in all directions':'about '+(101.5/n/Math.cos(a0*Math.PI/180)).toFixed(1)+'°';$('bf-p').textContent=fx(-180*s0,0)+'°'}
+$('bf-n').addEventListener('input',beam);$('bf-a').addEventListener('input',beam);beam();
+
+/* ---------- carrier aggregation ---------- */
+(function(){var s='<svg xmlns="'+NS+'" viewBox="0 0 720 150" role="img" aria-label="Intra-band contiguous, intra-band non-contiguous and inter-band carrier aggregation">';
+  function grp(x,t,bands){s+='<text class="bt" x="'+(x+105)+'" y="18" text-anchor="middle">'+t+'</text>';
+    bands.forEach(function(b){s+='<rect x="'+(x+b[0])+'" y="34" width="'+b[1]+'" height="84" rx="6" fill="none" stroke="var(--muted)" stroke-dasharray="4 3"/><text class="bs" x="'+(x+b[0]+b[1]/2)+'" y="134" text-anchor="middle">'+b[2]+'</text>';
+      b[3].forEach(function(c,i){s+='<rect class="bx k'+(b[4]||'d')+'" x="'+(x+b[0]+c)+'" y="56" width="44" height="52" rx="4"/><text class="bs" x="'+(x+b[0]+c+22)+'" y="86" text-anchor="middle" style="fill:var(--ink)">CC</text>'})})}
+  grp(10,'Intra-band contiguous',[[10,190,'Band A',[42,88]]]);grp(250,'Intra-band non-contiguous',[[10,190,'Band A',[12,134]]]);grp(490,'Inter-band',[[4,92,'Band A',[24]],[112,92,'Band B',[24],'r']]);
+  $('d-catypes').innerHTML=s+'</svg>'})();
+var CAR=[['n28',700,10,15,0],['n3',1800,20,15,0],['n1',2100,20,15,0],['n7',2600,20,15,0],['n41',2500,100,30,1],['n78',3500,100,30,1],['n78',3500,40,30,1]],CCD=[[5,4,8],[2,4,8],[0,2,8],[-1,2,8]],ctb=$('ca-tab').tBodies[0];
+CCD.forEach(function(d,i){var tr=document.createElement('tr'),sel=function(c,o,v,lab){return '<select data-c="'+c+'" aria-label="Carrier '+(i+1)+' '+lab+'">'+o.map(function(x){return '<option value="'+x[0]+'"'+(x[0]==v?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'};
+  tr.innerHTML='<td>'+(i?'SCell '+i:'PCell')+'</td><td>'+sel(0,(i?[[-1,'Off']]:[]).concat(CAR.map(function(c,k){return [k,c[0]+', '+(c[1]>=2500?(c[1]/1000)+' GHz':c[1]+' MHz')+', '+c[2]+' MHz '+(c[4]?'TDD':'FDD')]})),d[0],'band')+'</td><td>'+sel(1,[[1,'1'],[2,'2 × 2'],[4,'4 × 4']],d[1],'layers')+'</td><td>'+sel(2,[[6,'64QAM'],[8,'256QAM'],[10,'1024QAM']],d[2],'modulation')+'</td><td class="n"></td>';ctb.appendChild(tr)});
+function cagg(){var on=[],tot=0,bw=0,lay=0;
+  [].forEach.call(ctb.rows,function(tr,i){var q=tr.querySelectorAll('select'),k=+q[0].value,L=+q[1].value,Q=+q[2].value;if(k<0){tr.cells[4].textContent='';return}
+    var c=CAR[k],r=L*Q*0.926*NRB[c[3]][c[2]]*12/(1e-3/(14*c[3]/15))*0.86*(c[4]?.75:1)/1e6;tr.cells[4].textContent=r.toFixed(0)+' Mbit/s';tot+=r;bw+=c[2];lay+=L;on.push({c:c,i:i,L:L})});
+  var bands={},nb=0,rep=false;on.forEach(function(o){if(bands[o.c[0]])rep=true;else{bands[o.c[0]]=1;nb++}});
+  $('cc-n').textContent=on.length;$('cc-bw').textContent=bw+' MHz';$('cc-l').textContent=lay;$('cc-r').textContent=tot>=1000?(tot/1000).toFixed(2)+' Gbit/s':tot.toFixed(0)+' Mbit/s';
+  $('cc-t').textContent=on.length<2?'Single carrier, no aggregation':nb==1?'Intra-band':rep?'Inter-band with intra-band':'Inter-band, '+nb+' bands';
+  on.sort(function(a,b){return a.c[1]-b.c[1]||a.i-b.i});var W=720,H=120,gap=18,sc=(W-20-gap*(on.length-1))/Math.max(on.reduce(function(a,o){return a+o.c[2]+25},0),260),x=10;
+  var g='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Aggregated carriers by frequency">';
+  on.forEach(function(o){var w=(o.c[2]+25)*sc,h=22+o.L*13;g+='<rect class="bx k'+(o.c[4]?'r':'d')+'" x="'+x+'" y="'+(86-h)+'" width="'+w+'" height="'+h+'" rx="5"/><text class="bt" x="'+(x+w/2)+'" y="'+(86-h/2+4)+'" text-anchor="middle">'+o.c[0]+'</text><text class="bs" x="'+(x+w/2)+'" y="102" text-anchor="middle">'+o.c[2]+' MHz · '+o.L+(o.L>1?' layers':' layer')+'</text><text class="bs" x="'+(x+w/2)+'" y="116" text-anchor="middle">'+(o.i?'SCell':'PCell')+'</text>';x+=w+gap});
+  $('cc-plot').innerHTML=g+'</svg>'}
+ctb.addEventListener('change',cagg);cagg();
 
 /* ---------- tabs ---------- */
 (function(){var tabs=[].slice.call(document.querySelectorAll('section.tab')),bar=$('tabs'),subs=[],last={};
