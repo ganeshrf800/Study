@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Compare US, India CBSE and Singapore schooling year by year: what is taught, how students are assessed, the skills that move them up a stage, middle school choices and college routes with costs.">
+<link rel="stylesheet" href="../back.css">
+<script src="../theme.js"></script>
+<title>Curriculum Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky system switcher, then a stage rail that drives three panels (curriculum, assessment, skills) */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --sunk:#EDF0F5; --ink:#141B2D; --ink-2:#4A5468; --ink-3:#7A8496;
+  --line:#DCE1E9; --line-2:#C5CCD8;
+  --us:#3451C7; --us-soft:#E8ECFB; --in:#D9590B; --in-soft:#FCEEE4; --sg:#0A8572; --sg-soft:#E2F4F0;
+  --ok:#2F7D4F; --warn:#A66A00;
+  --f-display:"Plus Jakarta Sans",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+  --sys:var(--us); --sys-soft:var(--us-soft);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E131D; --surface:#161D2A; --sunk:#1C2433; --ink:#E9EDF4; --ink-2:#AEB7C6; --ink-3:#7F899B;
+  --line:#273041; --line-2:#364155;
+  --us:#8EA2F5; --us-soft:#1E2747; --in:#F59A5C; --in-soft:#3A2416; --sg:#4FCBB5; --sg-soft:#12332E;
+  --ok:#6CC490; --warn:#E3B04B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E131D; --surface:#161D2A; --sunk:#1C2433; --ink:#E9EDF4; --ink-2:#AEB7C6; --ink-3:#7F899B;
+  --line:#273041; --line-2:#364155;
+  --us:#8EA2F5; --us-soft:#1E2747; --in:#F59A5C; --in-soft:#3A2416; --sg:#4FCBB5; --sg-soft:#12332E;
+  --ok:#6CC490; --warn:#E3B04B; color-scheme:dark}
+body[data-sys="us"]{--sys:var(--us);--sys-soft:var(--us-soft)}
+body[data-sys="in"]{--sys:var(--in);--sys-soft:var(--in-soft)}
+body[data-sys="sg"]{--sys:var(--sg);--sys-soft:var(--sg-soft)}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-0.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--sys);outline-offset:2px}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:20px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:30px;height:30px;border-radius:8px;display:grid;grid-template-columns:1fr 1fr 1fr;overflow:hidden;flex:none}
+.mark i{display:block}
+.brand b{font-family:var(--f-display);font-size:17px;font-weight:800}
+.brand span{font-size:12.5px;color:var(--ink-3);display:block;line-height:1.2}
+nav.sys{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:10px;margin-left:auto;overflow-x:auto;max-width:100%}
+nav.sys button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font-size:14px;font-weight:500;color:var(--ink-2);white-space:nowrap;display:flex;align-items:center;gap:7px}
+nav.sys button .dot{width:8px;height:8px;border-radius:50%}
+nav.sys button[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(20,27,45,.12)}
+
+/* hero */
+.hero{padding-block:32px 8px}
+.hero h1{font-size:clamp(26px,4vw,38px);font-weight:800;line-height:1.15}
+.hero p.lede{color:var(--ink-2);max-width:66ch;margin:10px 0 0}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:22px}
+.fact{background:var(--surface);padding:14px 16px;min-width:0}
+.fact .v{font-weight:600;margin-top:3px;font-size:14.5px}
+.fact .s{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+@media (max-width:760px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* stage rail */
+section.block{padding-block:26px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-h h2{font-size:20px;font-weight:700}
+.sec-h p{margin:0;color:var(--ink-3);font-size:13px}
+.rail-scroll{overflow-x:auto}
+.rail{display:grid;grid-template-columns:repeat(12,minmax(44px,1fr));gap:4px;min-width:560px}
+.yr{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);text-align:center;padding-bottom:4px}
+.stage{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:10px 10px;text-align:left;min-width:0;transition:background .15s,border-color .15s}
+.stage .n{font-weight:600;font-size:13.5px;line-height:1.25}
+.stage .r{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.stage:hover{border-color:var(--sys)}
+.stage[aria-pressed="true"]{background:var(--sys);border-color:var(--sys);color:var(--surface)}
+.stage[aria-pressed="true"] .r{color:var(--surface);opacity:.85}
+
+/* panels */
+.grid3{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+@media (max-width:900px){.grid3{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.panel-h{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel-h h3{font-size:16px;font-weight:700}
+.panel-b{padding:16px 18px}
+.yrtabs{display:flex;gap:4px;flex-wrap:wrap}
+.yrtabs button{border:1px solid var(--line-2);background:transparent;border-radius:6px;padding:4px 10px;font-size:13px;font-family:var(--f-mono)}
+.yrtabs button[aria-pressed="true"]{background:var(--sys-soft);border-color:var(--sys);color:var(--sys)}
+.subj{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.subj:first-child{border-top:0;padding-top:0}
+.subj .k{font-size:13px;font-weight:600;color:var(--ink-2)}
+.subj ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.subj li{background:var(--sunk);border-radius:6px;padding:3px 9px;font-size:13.5px}
+@media (max-width:520px){.subj{grid-template-columns:1fr;gap:6px}}
+.ylabel{font-size:13px;color:var(--ink-3);margin-bottom:12px}
+.ylabel b{color:var(--ink);font-weight:600}
+
+dl.kv{margin:0;display:grid;gap:14px}
+dl.kv dt{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+dl.kv dd{margin:0}
+dl.kv ul{margin:0;padding-left:18px}
+dl.kv li{margin:2px 0}
+.exam{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--sys-soft)}
+.exam .t{font-weight:700;font-family:var(--f-display)}
+.exam .d{font-size:13.5px;color:var(--ink-2);margin-top:3px}
+.exams{display:grid;gap:8px}
+.scale{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px}
+.scale span{font-family:var(--f-mono);font-size:11.5px;padding:3px 7px;border-radius:5px;background:var(--sunk);color:var(--ink-2)}
+.scale span.hi{background:var(--sys);color:var(--surface)}
+
+/* skills */
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.skill{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.skill .cat{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sys)}
+.skill .t{font-weight:600}
+.skill .d{font-size:13.5px;color:var(--ink-2)}
+.check{display:flex;gap:8px;align-items:flex-start;margin-top:auto;padding-top:8px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--ink-3)}
+.gate{margin-top:14px;display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--sunk)}
+.gate svg{flex:none;margin-top:2px}
+.gate b{display:block;font-family:var(--f-display)}
+.gate p{margin:3px 0 0;font-size:13.5px;color:var(--ink-2)}
+.next{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--sys);background:var(--sys-soft);border-radius:999px;padding:4px 12px}
+
+/* compare */
+.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+@media (max-width:860px){.filters{grid-template-columns:1fr}}
+.filters label.lab{display:block;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.filters input[type=search]{width:100%;height:38px;border:1px solid var(--line-2);border-radius:8px;padding:0 12px;background:var(--bg);color:var(--ink);font:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{border:1px solid var(--line-2);background:transparent;border-radius:7px;padding:6px 11px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.tbl-wrap{overflow-x:auto;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table.cmp{width:100%;border-collapse:collapse;min-width:640px;font-size:13.5px}
+table.cmp th{text-align:left;font-family:var(--f-display);font-size:13px;padding:12px 14px;border-bottom:1px solid var(--line-2);position:sticky;top:0;background:var(--surface)}
+table.cmp th .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:1px}
+table.cmp td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+table.cmp tr:last-child td{border-bottom:0}
+table.cmp td.y{font-family:var(--f-mono);color:var(--ink);white-space:nowrap;width:70px}
+table.cmp td.y small{display:block;font-family:var(--f-body);color:var(--ink-3);font-size:11.5px}
+mark{background:#FFE58A;color:#141B2D;border-radius:2px;padding:0 1px}
+.count{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+.diffs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:4px}
+.diff{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.diff h3{font-size:15px;font-weight:700;margin-bottom:10px}
+.diff .row{display:grid;grid-template-columns:76px 1fr;gap:8px;font-size:13px;padding:4px 0}
+.diff .row b{font-weight:600}
+.lnk{border:0;background:none;padding:0;color:var(--sys);font-weight:600;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+
+/* choices */
+.lede-s{color:var(--ink-2);margin:-6px 0 14px;max-width:72ch;font-size:14px}
+.ctabs{display:flex;gap:0;border-bottom:1px solid var(--line-2);margin-bottom:16px;overflow-x:auto}
+.ctabs button{border:0;background:none;padding:10px 16px;font-weight:600;font-size:14px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.ctabs button[aria-selected="true"]{color:var(--sys);border-bottom-color:var(--sys)}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+@media (max-width:420px){.opts{grid-template-columns:1fr}}
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.opt-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.opt-h h3{font-size:15.5px;font-weight:700}
+.tag{font-size:11.5px;font-weight:600;white-space:nowrap;padding:3px 9px;border-radius:999px;background:var(--sys-soft);color:var(--sys)}
+.what{margin:0;font-size:13.5px;color:var(--ink-2)}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:14px;border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+@media (max-width:520px){.pc{grid-template-columns:1fr}}
+.pc-h{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.pc-h.ok{color:var(--ok)} .pc-h.warn{color:var(--warn)}
+.pc ul{margin:0;padding-left:16px;font-size:13px;color:var(--ink-2)}
+.pc li{margin:3px 0}
+ol.tl{list-style:none;margin:0;padding:0;display:grid;gap:0}
+ol.tl li{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:10px 0 10px 18px;border-left:2px solid var(--line-2);position:relative;font-size:14px}
+ol.tl li::before{content:"";position:absolute;left:-6px;top:15px;width:10px;height:10px;border-radius:50%;background:var(--sys)}
+ol.tl .when{font-weight:600}
+@media (max-width:520px){ol.tl li{grid-template-columns:1fr;gap:2px}}
+ul.ready{margin:0;padding-left:18px;font-size:14px}
+ul.ready li{margin:5px 0}
+.hint{margin:12px 0 0;font-size:13px;color:var(--ink-3);background:var(--sunk);padding:10px 12px;border-radius:8px}
+
+/* college */
+.bars{display:grid;gap:10px}
+.bar-row{display:grid;grid-template-columns:210px 1fr 170px;gap:12px;align-items:center;font-size:13.5px}
+.bar-l{font-weight:500}
+.bar-t{height:12px;background:var(--sunk);border-radius:6px;overflow:hidden}
+.bar-f{height:100%;min-width:4px;background:var(--sys);border-radius:6px}
+.bar-v{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right}
+@media (max-width:640px){.bar-row{grid-template-columns:1fr auto;gap:4px 10px}.bar-t{grid-column:1/-1;order:3}.bar-v{text-align:right}}
+.cpaths{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
+.cp-list{display:grid;gap:6px}
+.cp-list button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.cp-list button:hover{border-color:var(--sys)}
+.cp-list button[aria-selected="true"]{border-color:var(--sys);background:var(--sys-soft)}
+.cp-n{font-weight:600;font-size:14px}
+.cp-t{font-size:12px;color:var(--ink-3)}
+.cp-list button[aria-selected="true"] .cp-n{color:var(--sys)}
+@media (max-width:820px){.cpaths{grid-template-columns:1fr}.cp-list{display:flex;overflow-x:auto;padding-bottom:4px}.cp-list button{flex:none;max-width:230px}}
+.fit{margin:0 0 14px;padding:10px 12px;background:var(--sunk);border-radius:8px;font-size:14px}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px}
+@media (max-width:620px){.cgrid{grid-template-columns:1fr}}
+.cblock p{margin:6px 0 0;font-size:14px;color:var(--ink-2)}
+.cblock .len{color:var(--ink)}
+.cblock ul{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--ink-2)}
+.cblock li{margin:3px 0}
+#college>.hint{margin-top:14px}
+
+footer{padding-block:28px 40px;color:var(--ink-3);font-size:12.5px;border-top:1px solid var(--line);margin-top:24px}
+footer p{max-width:80ch;margin:4px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+.top-in .study-nav{margin:0}
+@media (max-width:640px){header.top{position:static}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><i style="background:var(--us)"></i><i style="background:var(--in)"></i><i style="background:var(--sg)"></i></div>
+      <div><b>Curriculum Atlas</b><span>US · India CBSE · Singapore, Years 1–12</span></div>
+    </div>
+    <a class="study-back" href="../">← Study home</a>
+    <nav class="sys" aria-label="Choose a school system" id="nav"></nav>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<footer>
+  <div class="wrap">
+    <p>Year 1 means the first year of compulsory primary school (US Grade 1, CBSE Class 1, Singapore Primary 1), roughly age 6–7. Topics are highlights, not full syllabi.</p>
+    <p>All three systems are mid-reform: CBSE runs two Class 10 board exams a year from 2026 and is phasing in new NCERT textbooks; Singapore's SEC replaces O- and N-Levels from 2027. US standards and tests vary by state. Check your school's current scheme of work for specifics.</p>
+    <p>College costs: US figures are College Board 2025–26 averages and BLS 2025 earnings; India and Singapore figures come from published fee schedules for 2025–26 and 2026 intakes. Fees change every year and aid varies by family, so confirm with each institution.</p>
+  </div>
+</footer>
+
+<script>
+const SUBJ=["Math","Science","Languages & humanities"];
+const CUR={
+us:{1:["Add/subtract within 20, Tens and ones, Measuring length, Time","Light and sound, Animal parents and young, Sky patterns","Phonics, Simple books, Neighborhood and maps"],2:["Add/subtract within 1,000, Money, Arrays","Matter, Landforms and erosion, Habitats","Reading fluency, Paragraphs, Producers and consumers"],3:["Multiplication and division, Fractions, Area and perimeter","Forces and magnets, Life cycles, Weather","Chapter books, Opinion writing, Local history"],4:["Long division, Equivalent fractions, Decimals, Angles","Energy and waves, Rocks and fossils","Research reports, State history"],5:["Fraction operations, Decimals, Volume, Coordinate plane","Particles of matter, Food webs, Stars and gravity","Argument essays, Colonies to the Constitution"],6:["Ratios, Negative numbers, Expressions, Intro statistics","Climate, Cells, Energy transfer","Novels, Ancient civilizations"],7:["Proportions and percents, Linear equations, Probability","Chemical reactions, Ecosystems, Plate tectonics","Literary analysis, Medieval world"],8:["Linear functions, Systems of equations, Pythagoras, Exponents","Forces and motion, Waves, Genetics and evolution","Rhetoric, US history to Reconstruction"],9:["Algebra I: linear and quadratic functions","Biology","English 9, Civics or world geography"],10:["Geometry and proofs, Right-triangle trigonometry","Chemistry","World literature, Modern world history"],11:["Algebra II: polynomials, logarithms, functions","Physics or elective","American literature, US history"],12:["Precalculus, Calculus, or Statistics","AP science electives","Composition, Government, Economics"]},
+in:{1:["Numbers to 99, Add/subtract, Shapes, Patterns","No separate science","English plus Hindi or a regional language, Stories and rhymes"],2:["Numbers to 999, Carrying and borrowing, Intro multiplication, Money, Time","No separate science","Reading and writing in two languages"],3:["4-digit numbers, Multiplication, Intro division, Halves and quarters","EVS: family, plants, animals, water","Two languages, Community (in EVS)"],4:["Large numbers, Fractions, Symmetry, Data handling","EVS: food, water, habitats, travel","Grammar, Composition"],5:["Lakhs, Intro decimals, Area and perimeter, Volume, Angles","EVS: shelter, life forms, natural resources","Comprehension, Letter writing"],6:["Patterns, Lines and angles, Integers, Fractions, Data","Nutrition, Materials, Magnets, Measurement, Diversity of life","Indian geography, Early history, Governance, Third language added"],7:["Integer and fraction operations, Decimals, Parallel lines, Intro algebra","Acids and bases, Heat, Electricity, Nutrition and respiration","Medieval India, Environment, Democracy"],8:["Rational numbers, Linear equations, Squares and cubes, Exponents, Mensuration","Microorganisms, Force and pressure, Sound, Light, Reproduction","Modern Indian history, Resources, The Constitution"],9:["Number systems, Polynomials, Coordinate geometry, Euclid's geometry, Statistics","Atoms and molecules, Cells and tissues, Newton's laws, Gravitation, Work and energy","French and Russian revolutions, India's geography, Economics"],10:["Quadratic equations, Arithmetic progressions, Trigonometry, Probability","Chemical reactions, Metals and carbon compounds, Heredity, Light, Electricity, Magnetism","Nationalism, Resources and development"],11:["Sets and functions, Complex numbers, Conic sections, Limits and derivatives","Physics, Chemistry, Biology (Science stream)","Stream chosen: Science, Commerce, or Humanities"],12:["Matrices, Integrals, Differential equations, Vectors and 3D, Linear programming","Electromagnetism, Optics, Organic chemistry, Genetics, Biotechnology","Board exam subjects of chosen stream"]},
+sg:{1:["Numbers to 100, Add/subtract, Shapes, Length","Science starts in Primary 3","English, Mother Tongue (Chinese, Malay or Tamil), Social Studies"],2:["Numbers to 1,000, Times tables 2–5 and 10, Intro fractions, Money, Bar models","Science starts in Primary 3","English, Mother Tongue, Character and citizenship"],3:["Numbers to 10,000, Times tables 6–9, Equivalent fractions, Area and perimeter, Angles","Diversity of living things and materials, Life cycles","Composition, Comprehension"],4:["Factors and multiples, Fractions, Decimals, Symmetry, Line graphs","Matter, Plant and digestive systems, Light and heat","Social Studies: Singapore's heritage"],5:["Fraction operations, Ratio, Percentage, Triangle area, Volume, Average","Reproduction, Water cycle, Cells, Body systems, Circuits","Subjects at Standard or Foundation level"],6:["Intro algebra, Circles, Speed, Pie charts, Multi-step word problems","Energy forms, Photosynthesis, Forces, Food webs","PSLE preparation in all four subjects"],7:["Primes, HCF and LCM, Algebraic expressions, Linear equations, Percentages, Statistics","Particles, Cells, Body systems, Energy","Geography, History, Literature at G1/G2/G3"],8:["Factorisation, Quadratic equations, Simultaneous equations, Pythagoras, Probability","Chemical changes, Electricity, Human systems, Ecology","Humanities continue"],9:["E-Math: indices, coordinate geometry, trigonometry; A-Math: polynomials, logarithms","Physics, Chemistry, Biology (pure or combined)","Subject combination chosen, Combined humanities"],10:["E-Math: vectors, statistics; A-Math: differentiation and integration","Pure or combined sciences","SEC national exam (from 2027)"],11:["H2 Math: functions, series, vectors, complex numbers, calculus","H2 Physics, Chemistry, Biology","General Paper, Project Work"],12:["H2 Math: differential equations, probability distributions, hypothesis testing","H2 sciences","A-Level exams"]}
+};
+
+const SYS={
+us:{name:"United States",short:"US",color:"var(--us)",
+ yearName:y=>"Grade "+y, lede:"No national curriculum. States set standards (most build on Common Core for math and English and the NGSS framework for science), districts choose materials, and teachers grade through the year. Federal law requires state tests in reading and math every year from Grade 3 to 8 and once in high school.",
+ facts:[["Who sets it","50 state boards","Districts pick textbooks"],["School year","Aug/Sep to Jun","About 180 days"],["Exit milestone","High school diploma","Earned through course credits"],["Structure","K + 12 grades","Elementary · Middle · High"]],
+ stages:[
+  {id:"el",name:"Elementary",from:1,to:5,
+   assess:{methods:["Teacher observation and classroom quizzes","Reading-level benchmarks several times a year","Unit tests and projects","State tests in English and math from Grade 3; science usually once in Grade 5"],
+    grading:"Standards-based report cards are common in early grades, scoring each skill on a 1–4 scale. Many schools switch to letter grades around Grade 3–5.",scale:["1 Beginning","2 Developing","3 Meeting","4 Exceeding"],hi:2,
+    exams:[["State assessment, Grades 3–5","Annual reading and math test; in California this is CAASPP (Smarter Balanced). Results inform schools, not promotion, in most states."]],
+    promo:"Promotion is close to automatic. A few states hold back third graders who can't read at grade level."},
+   skills:[["Literacy","Read to learn, not learn to read","By the end of Grade 3, read grade-level text fluently and explain what it says.","Reads a chapter book and retells it in order"],
+    ["Numeracy","Multiplication facts and fractions","Recall times tables quickly and treat fractions as numbers on a number line.","Solves 7 × 8 without counting"],
+    ["Writing","Multi-paragraph writing","Write an opinion or report with an intro, supporting reasons and a conclusion.","Writes a five-paragraph report with sources"],
+    ["Habits","Organization","Keep track of homework, materials and simple deadlines on their own.","Uses a planner without reminders"]],
+   gate:["Moving to middle school","Families choose a school and a math track during Grade 5. Open the Middle school stage for the options, with pros and cons of each."]},
+  {id:"mi",name:"Middle school",from:6,to:8,
+   assess:{methods:["Letter grades in each subject from separate teachers","Unit tests, lab reports and long projects","Homework and participation count toward grades","State tests in English and math each year; science in Grade 8"],
+    grading:"Letter grades A–F per course, often with a percentage behind each grade.",scale:["A 90–100","B 80–89","C 70–79","D 60–69","F <60"],hi:0,
+    exams:[["State assessment, Grades 6–8","Annual English and math tests, plus science in Grade 8."],["Algebra I end-of-course exam","Students who take Algebra I in Grade 8 may sit their state's high school algebra exam early."]],
+    promo:"Students pass to the next grade by passing core courses. Math placement for Grade 9 depends on middle school results."},
+   skills:[["Math","Algebra readiness","Fluency with ratios, negative numbers and solving one- and two-step equations.","Sets up and solves a word problem with a variable"],
+    ["Writing","Argument with evidence","Make a claim, support it with quotes or data, and address a counterargument.","Cites text evidence in an essay"],
+    ["Science","Lab and data skills","Plan a fair test, record measurements and draw a conclusion from a graph.","Writes a lab report with a data table"],
+    ["Habits","Executive function","Juggle six or seven teachers, deadlines and longer projects.","Breaks a project into weekly steps"]],
+   gate:["Moving to high school","Grade 8 math placement sets the course path: Algebra I in Grade 8 puts a student on track for calculus by Grade 12."],
+   choices:{title:"Choices when starting middle school",
+    intro:"Families usually make these decisions during Grade 5. Options and deadlines vary by district, so check your district's middle school guide and enrollment calendar.",
+    groups:[
+     {label:"Which school",items:[
+      {name:"Neighborhood public school",tag:"Default · free",what:"The school assigned by your home address. Most students go here.",
+       pros:["Free, close to home, usually with bus service","Stays with elementary friends","Full range of sports, clubs and electives at most schools"],
+       cons:["Advanced course offerings vary from school to school","Class sizes can be large"]},
+      {name:"Magnet school",tag:"Public · application or lottery",what:"A public school built around a theme such as STEM, the arts or language immersion, open to students across the district.",
+       pros:["Deep focus on a subject the student loves","Peers who chose the same interest","Often strong pathways into matching high school programs"],
+       cons:["Entry by lottery or application, often with deadlines in Grade 5 fall or winter","Longer commute; transport may not be provided","Less time for subjects outside the theme"]},
+      {name:"Charter school",tag:"Public · lottery",what:"Tuition-free public school run independently of the district, with its own teaching model.",
+       pros:["Different approaches (project-based, classical, college-prep)","Often smaller school communities"],
+       cons:["Quality varies widely; check test results and reviews","May offer fewer sports, electives or special-education services","Usually no school bus"]},
+      {name:"Private or parochial school",tag:"Tuition",what:"Independent or religious schools with their own curriculum and admissions.",
+       pros:["Smaller classes and more individual attention","Some offer faster-paced or advanced curricula throughout"],
+       cons:["Tuition cost","Admissions tests, interviews and earlier deadlines","Not bound by state testing, so comparing results is harder"]},
+      {name:"IB Middle Years Programme",tag:"Public or private · limited",what:"International Baccalaureate framework for ages 11–16, built on inquiry projects and links between subjects.",
+       pros:["Strong research, writing and project skills","Leads naturally into the IB Diploma in high school","Includes a world language and community service"],
+       cons:["Few schools offer it","Heavy project and presentation workload","Less flexibility for acceleration in single subjects"]},
+      {name:"Online or homeschool",tag:"Flexible",what:"State virtual schools, online charters, or parent-led home education.",
+       pros:["Learn at the student's own pace, including well ahead in some subjects","Flexible schedule for sports, arts or health needs"],
+       cons:["Fewer daily social and team experiences","Needs strong self-discipline and parent involvement","Labs, music ensembles and sports take extra arranging"]}
+     ]},
+     {label:"Advanced classes",items:[
+      {name:"Accelerated or compacted math",tag:"Most consequential choice",what:"Covers Grades 6, 7 and 8 math in two years so students take Algebra I in Grade 8 (sometimes Geometry). Grade-level students take Algebra I in Grade 9.",
+       pros:["Puts calculus, even AP Calculus BC, within reach by Grade 12","Keeps strong math students challenged","Opens room for more advanced math and science electives in high school"],
+       cons:["Compressing three years into two can leave gaps, especially in proportional reasoning","A weak foundation shows up later in Algebra II and Precalculus","Hard to move up later without summer courses or placement tests"]},
+      {name:"Honors English and science",tag:"Depth, not speed",what:"Same grade-level standards, taught with more reading, longer writing and more open-ended labs.",
+       pros:["More challenging texts and discussions","Builds the writing stamina AP courses later demand","Usually easy to switch in or out between years"],
+       cons:["More homework and reading each week","Less benefit if the student is already stretched in other subjects"]},
+      {name:"Gifted and talented (GATE)",tag:"Identification-based",what:"Programs for students identified as gifted, usually by testing in Grades 2–4. Offered as cluster classes, pull-outs or separate schools.",
+       pros:["Peers working at a similar level","Teachers trained to differentiate","In some districts, the main route to advanced classes"],
+       cons:["Identification can miss late bloomers and English learners","A label can add pressure","Programs and quality differ greatly between districts"]},
+      {name:"World language",tag:"Elective slot",what:"Spanish, French, Mandarin or others, often starting in Grade 6 or 7.",
+       pros:["Can count as high school Level 1 and lead to AP language by Grade 11","Younger learners pick up pronunciation more easily","Meets many college admission language expectations early"],
+       cons:["Takes an elective slot from music, art or tech","Some districts don't give high school credit for middle school language"]},
+      {name:"High school credit courses",tag:"Transcript impact",what:"Algebra I, Geometry or Language 1 taken in middle school for high school credit.",
+       pros:["Frees space in the high school schedule","Shows rigor to colleges"],
+       cons:["In some districts the grade goes on the high school transcript and GPA","A low grade can follow the student for four years"]},
+      {name:"Electives and college prep",tag:"Breadth",what:"Band, orchestra, choir, art, coding, robotics, journalism, and programs such as AVID that teach study skills for future college students.",
+       pros:["Discovers interests that shape high school choices","Music and arts build discipline and belonging","AVID supports students who will be first in their family at college"],
+       cons:["Fewer slots once language, intervention or advanced classes fill the schedule","Band and orchestra usually need to start in Grade 6 to continue well"]}
+     ]}
+    ],
+    timeline:[["Grade 5 fall","Attend middle school open houses; check magnet, charter and private deadlines"],["Grade 5 winter","Submit applications and lottery forms; private school testing"],["Grade 5 spring","Math placement tests or teacher recommendations; choose electives"],["Summer before Grade 6","Optional bridge or enrichment programs; summer math to fill gaps"],["Grade 6–7","Placement reviewed each year; moving up a track usually needs a test or summer course"]],
+    ready:["Earns top grades in math without much struggle and asks for harder problems","Scores well above grade level on state or district math tests","Has solid multiplication, division and fraction skills (not just speed)","Handles homework independently and recovers well from mistakes","Wants the challenge, not only the parent"]}},
+  {id:"hi",name:"High school",from:9,to:12,
+   assess:{methods:["Course grades every semester build a cumulative GPA","Honors and AP courses add weight to the GPA","End-of-course exams in some states (for example Algebra I, Biology)","State test once, often in Grade 10 or 11"],
+    grading:"GPA on a 4.0 scale (A = 4, B = 3). Weighted GPAs give AP and honors courses up to 5.0.",scale:["A 4.0","B 3.0","C 2.0","D 1.0","F 0"],hi:0,
+    exams:[["SAT or ACT","College entrance tests. SAT is scored 400–1600, ACT 1–36. Many colleges are test-optional; some selective ones again require scores."],["AP exams","Each AP course ends in a May exam scored 1–5. A 3 or higher often earns college credit."]],
+    promo:"Graduation requires a set number of credits (usually about 22–26) in required subjects. Requirements are set by each state."},
+   skills:[["Academics","Course rigor","Colleges look at how hard a schedule was, not just the grades.","Takes the most demanding courses they can handle"],
+    ["Writing","Research papers","Find, evaluate and cite sources in a long paper.","Completes a 2,000-word paper with citations"],
+    ["Profile","Depth in activities","Sustained commitment and leadership in a few activities.","Holds a role over two or more years"],
+    ["Testing","Exam preparation","Practice SAT/ACT and AP exams under timed conditions.","Has a target score and a test date"]],
+   gate:["Moving to college","Admission weighs GPA and course rigor most, then essays, recommendations, activities and (where required) test scores. The routes, costs and job options are below."]}
+ ]},
+in:{name:"India (CBSE)",short:"CBSE",color:"var(--in)",
+ yearName:y=>"Class "+y, lede:"The Central Board of Secondary Education affiliates schools across India and abroad and sets national board exams in Classes 10 and 12. NCERT writes the textbooks. Under NEP 2020, schooling is organized as 5+3+3+4: Foundational, Preparatory, Middle and Secondary stages.",
+ facts:[["Who sets it","CBSE and NCERT","Central board, national syllabus"],["School year","April to March","Board exams in Feb–Mar"],["Exit milestone","Class 10 and 12 boards","Marks drive stream and college"],["Structure","5+3+3+4 (NEP 2020)","Pre-school + Classes 1–12"]],
+ stages:[
+  {id:"fd",name:"Foundational",from:1,to:2,
+   assess:{methods:["Play- and activity-based learning","Teacher observation and anecdotal records","Portfolios of student work","No formal written exams"],
+    grading:"Descriptive feedback on a Holistic Progress Card (HPC), introduced under NEP 2020, covering academic, social and physical development.",scale:["Descriptive","No marks"],hi:0,
+    exams:[["None","Children are assessed only by their teachers at this stage."]],
+    promo:"All children move up."},
+   skills:[["Literacy","Read with understanding","Read short texts in the home or school language and in English, and answer simple questions.","Reads a short story aloud and explains it"],
+    ["Numeracy","Numbers to 99","Count, compare and add or subtract two-digit numbers. NIPUN Bharat sets these targets for the end of Class 3.","Adds 23 + 15 using tens and ones"],
+    ["Language","Two languages","Speak and write simple sentences in two languages.","Writes their name and a sentence in both"],
+    ["Habits","Classroom routines","Follow instructions, take turns and work in small groups.","Completes a group activity"]],
+   gate:["Moving to Preparatory","No exam. Teachers flag children who need support with reading or numbers."]},
+  {id:"pr",name:"Preparatory",from:3,to:5,
+   assess:{methods:["Periodic tests and term exams set by the school","Class work, projects and oral assessment","Self and peer assessment on the HPC","PARAKH national survey in Class 3 (a sample, not individual scores)"],
+    grading:"School-defined grades or marks on the Holistic Progress Card.",scale:["A","B","C","D","E"],hi:0,
+    exams:[["School annual exam, Class 5","Under central rules from December 2024, students who fail get a re-exam within two months and can be held back in central government schools. State rules vary."]],
+    promo:"Generally automatic until Class 5, where a year-end exam can apply."},
+   skills:[["Math","Multiplication and division","Multiply and divide multi-digit numbers and work with simple fractions.","Divides 864 by 4 correctly"],
+    ["Literacy","Comprehension in two languages","Read a passage and answer questions in full sentences in English and Hindi or a regional language.","Writes a paragraph answer"],
+    ["EVS","Observe and record","Notice patterns in the environment and describe them with drawings and notes.","Keeps a simple observation log"],
+    ["Habits","Written answers","Present answers neatly with steps shown.","Shows working in math"]],
+   gate:["Moving to Middle","Science and social science become separate subjects, and a third language begins in Class 6."]},
+  {id:"md",name:"Middle",from:6,to:8,
+   assess:{methods:["Periodic tests, half-yearly and annual exams","Science practicals and projects","Holistic Progress Card continues","PARAKH survey in Class 6"],
+    grading:"Marks converted to grades; schools commonly use an 8-point scale from A1 to E.",scale:["A1","A2","B1","B2","C1","C2","D","E"],hi:0,
+    exams:[["School annual exam, Class 8","Same re-exam and hold-back rule as Class 5 in central government schools."]],
+    promo:"Students who pass the annual exam move up; the Class 8 exam carries the most weight."},
+   skills:[["Math","Algebra foundations","Work with integers, rational numbers and linear equations.","Solves 3x − 5 = 16"],
+    ["Science","Concepts with diagrams","Explain a process in words and a labeled diagram.","Draws and labels a human heart"],
+    ["Language","Three languages","Read and write in three languages, one of them Indian.","Writes a letter in the third language"],
+    ["Habits","Textbook mastery","Read NCERT chapters closely; board exams draw heavily on them.","Summarizes a chapter in own notes"]],
+   gate:["Moving to Secondary","Class 9 content feeds directly into the Class 10 board exam, so gaps in algebra and science show up quickly."]},
+  {id:"sc",name:"Secondary",from:9,to:10,
+   assess:{methods:["Per subject: 80 marks for the written exam and 20 for internal assessment","Internal assessment: periodic tests, notebooks, subject enrichment and portfolio","Class 9 exams set by the school","About half of Class 10 questions test applying concepts (competency-based)"],
+    grading:"Marks out of 100 per subject plus a 9-point grade. Pass mark is 33% in each subject.",scale:["A1","A2","B1","B2","C1","C2","D1","D2","E"],hi:0,
+    exams:[["Class 10 board exam","From 2026, two sittings a year: the first in February is compulsory; an optional second in May lets students improve scores."]],
+    promo:"Students must pass Class 10 boards to enter Class 11. Schools admit to streams based on board marks."},
+   skills:[["Exam craft","Answering to the marking scheme","Write structured answers that hit the points examiners award marks for.","Practices with CBSE sample papers"],
+    ["Math & science","Strong fundamentals for Science stream","Schools set mark cutoffs in math and science for the Science stream.","Scores consistently above the school's cutoff"],
+    ["Habits","Time management","Finish a three-hour paper with time to check.","Completes timed mock papers"],
+    ["Choice","Stream decision","Pick Science, Commerce or Humanities based on interests and marks.","Has discussed options with teachers"]],
+   gate:["Moving to Senior Secondary","Board marks and school cutoffs decide entry to the Science, Commerce or Humanities stream."]},
+  {id:"ss",name:"Senior Secondary",from:11,to:12,
+   assess:{methods:["Class 11 exams set by the school","Class 12 board exam: written theory plus practicals or internal assessment (usually 20–30 marks)","Lab practicals and projects in science subjects"],
+    grading:"Marks and 9-point grades as in Class 10; 33% pass mark per subject.",scale:["A1","A2","B1","B2","C1","C2","D1","D2","E"],hi:0,
+    exams:[["Class 12 board exam","Held February–April. Marks count for college admission and eligibility."],["JEE Main and Advanced","Engineering entrance. IITs and NITs also expect at least 75% in Class 12 or a top-20-percentile board result."],["NEET-UG","Single national entrance exam for medical colleges."],["CUET-UG","Entrance test for central universities and many others."]],
+    promo:"Students must pass Class 11 school exams to move to Class 12."},
+   skills:[["Depth","Problem solving beyond the textbook","Entrance exams test multi-step problems well above board level.","Solves past JEE or NEET papers"],
+    ["Planning","Balancing boards and entrance prep","Keep up school marks while preparing for competitive exams.","Has a weekly revision plan"],
+    ["Practice","Mock tests","Take full-length timed tests and review mistakes.","Tracks scores across mocks"],
+    ["Labs","Practical skills","Record observations and results accurately for practical exams.","Keeps a complete lab record"]],
+   gate:["Moving to university","Admission depends on entrance exam rank (JEE, NEET, CUET) plus board results meeting eligibility cutoffs."]}
+ ]},
+sg:{name:"Singapore",short:"Singapore",color:"var(--sg)",
+ yearName:y=>y<=6?"Primary "+y:y<=10?"Secondary "+(y-6):"JC "+(y-10), lede:"A centrally designed national curriculum set by the Ministry of Education. Students sit the PSLE at the end of Primary 6, take subjects at different levels in secondary school under Full Subject-Based Banding, and from 2027 sit a single national exam, the SEC.",
+ facts:[["Who sets it","Ministry of Education","With SEAB and Cambridge"],["School year","January to November","Four terms"],["Exit milestone","PSLE, SEC, A-Level","National exams at 12, 16, 18"],["Structure","6 + 4 + 2","Primary · Secondary · Pre-university"]],
+ stages:[
+  {id:"lp",name:"Lower primary",from:1,to:4,
+   assess:{methods:["No weighted exams in Primary 1 and 2","Qualitative feedback through the Holistic Development Profile","From Primary 3: weighted assessments and an end-of-year exam","Mid-year exams were removed at all levels"],
+    grading:"Descriptors in Primary 1–2; marks and achievement bands from Primary 3.",scale:["Descriptors P1–2","Marks from P3"],hi:0,
+    exams:[["End of Primary 4 review","The school recommends whether each subject is taken at Standard or Foundation level in Primary 5."]],
+    promo:"All students move up."},
+   skills:[["Language","English and Mother Tongue","Read, speak and write confidently in both languages.","Reads aloud and answers oral questions"],
+    ["Math","Number sense and bar models","Use the model method (bar diagrams) to represent word problems.","Draws a bar model for a two-step problem"],
+    ["Science","Observation from Primary 3","Classify living things and materials and record what they see.","Explains a simple experiment"],
+    ["Character","Character and citizenship","Values education is part of the timetable from Primary 1.","Takes part in class duties"]],
+   gate:["Moving to upper primary","Subject levels for Primary 5–6 (Standard or Foundation) are set from Primary 4 results."]},
+  {id:"up",name:"Upper primary",from:5,to:6,
+   assess:{methods:["Weighted assessments and end-of-year exam in Primary 5","PSLE at the end of Primary 6: written papers plus oral and listening for languages","Subjects at Standard or Foundation level"],
+    grading:"Each PSLE subject gets an Achievement Level from AL1 (90 marks and above) to AL8. The four ALs add up to a PSLE Score from 4 to 32; lower is better.",scale:["AL1","AL2","AL3","AL4","AL5","AL6","AL7","AL8"],hi:0,
+    exams:[["PSLE","English, Math, Science and Mother Tongue. Foundation grades A–C count as AL6–AL8 for posting."],["Direct School Admission","Students with talents in sport, arts or other areas can secure a secondary place before results."]],
+    promo:"The PSLE Score sets a student's posting group and secondary school options."},
+   skills:[["Math","Problem-solving heuristics","Tackle multi-step problems on ratio, percentage and speed.","Solves non-routine PSLE questions"],
+    ["Science","Open-ended answers","Explain answers using precise scientific keywords.","Writes a full answer to a structured question"],
+    ["Language","Composition and oral","Write a narrative and a situational piece; speak on a picture or video.","Completes a timed composition"],
+    ["Habits","Exam stamina","Sit long papers with accuracy across all four subjects.","Finishes full practice papers"]],
+   gate:["Moving to secondary","The PSLE Score places students in Posting Group 1, 2 or 3, which sets the starting level for most subjects."]},
+  {id:"se",name:"Secondary",from:7,to:10,
+   assess:{methods:["School weighted assessments and end-of-year exams","Full Subject-Based Banding: each subject taken at G1, G2 or G3","Students can move up a subject level based on results","Secondary 4: national SEC exam (O- and N-Level until 2026)"],
+    grading:"Subject grades at the level taken. The SEC certificate lists each subject with its level.",scale:["G1","G2","G3"],hi:2,
+    exams:[["SEC (from 2027)","Replaces O- and N-Levels. One common written exam period from October; results in January."],["Integrated Programme","Some schools run a six-year track straight to A-Levels with no national exam at Secondary 4."]],
+    promo:"Students progress yearly; subject levels are reviewed each year."},
+   skills:[["Levels","Move up a subject level","Strong results at G2 can open G3 in that subject.","Earns a level upgrade"],
+    ["Math","Additional Math","A-Math opens science and engineering paths at pre-university level.","Takes A-Math at G3"],
+    ["Humanities","Source-based writing","Analyze sources and argue a position in history and social studies.","Writes a structured source-based answer"],
+    ["Habits","Independent learning","Plan revision across many subjects with less teacher direction.","Keeps a revision timetable"]],
+   gate:["Moving to pre-university","Admission to junior college, polytechnic or ITE goes through the Joint Admissions Exercise using national exam results. The aggregate used for SEC results is being revised."]},
+  {id:"pu",name:"Pre-university",from:11,to:12,
+   assess:{methods:["Subjects at H1, H2 or H3 level","General Paper (essay and comprehension) and Project Work","Promotional exam at the end of JC1","A-Level exams at the end of JC2"],
+    grading:"Letter grades A to U per A-Level subject, combined into a university admission score.",scale:["A","B","C","D","E","S","U"],hi:0,
+    exams:[["GCE A-Level","National exam at the end of JC2, set with Cambridge."],["Polytechnic or ITE","Alternative routes: a three-year polytechnic diploma or ITE courses, both with paths to university."]],
+    promo:"JC1 students must meet promotion criteria to enter JC2."},
+   skills:[["Math","Abstract reasoning","H2 Math covers calculus, vectors and statistics at university-prep depth.","Proves and applies results, not just computes"],
+    ["Writing","Argument and critical thinking","General Paper tests essays on current issues.","Writes a balanced argumentative essay"],
+    ["Research","Project Work","Plan and present a group research project.","Delivers a group presentation"],
+    ["Habits","Self-directed study","Two intense years; consistent revision matters more than cramming.","Reviews each topic monthly"]],
+   gate:["Moving to university","Local universities admit on A-Level results, plus interviews, portfolios or aptitude tests for some courses."]}
+ ]}
+};
+
+const COLLEGE={
+us:{cur:"$",unit:"per year",barNote:"The private college range runs from average net tuition after grants ($16,910) to the average published price ($45,000). Out-of-state public tuition and trade programs vary too widely to show as one average.",title:"College and career options after Grade 12",
+ intro:"Most students apply in the fall of Grade 12. Costs below are 2025–26 national averages for tuition and fees; actual prices after grants and scholarships are often much lower. File the FAFSA (or the California Dream Act Application) in the fall of senior year to qualify for aid.",
+ outcome:"Median weekly earnings in 2025 for full-time workers 25 and over: $966 with a high school diploma, $1,135 with an associate degree, $1,578 with a bachelor's and $1,876 with a master's (BLS).",
+ paths:[
+  {name:"Community college",tag:"2 years · open admission",bar:[4150,4150],cost:"About $4,150 a year in average tuition and fees; in California, $46 per unit, about $1,400 for a full year. Average budget including living costs: $21,320.",len:"Certificates in under a year; associate degree in 2 years",
+   req:["High school diploma or equivalent","No SAT or ACT; placement uses high school grades","Open to all residents"],
+   prep:["Apply in spring of Grade 12 and complete financial aid forms","Plan transfer early: in California, an Associate Degree for Transfer guarantees a CSU place, and UC offers transfer admission guarantees at several campuses","Take dual-enrollment college classes in high school to get ahead"],
+   jobs:["Registered nurse (associate degree)","Dental hygienist, radiology technician","IT support, cybersecurity technician","Or transfer to a four-year university as a junior"],
+   fit:"Students who want the lowest-cost route to a degree, more time to choose a major, or a direct path into a skilled job."},
+  {name:"Public university, in state",tag:"4 years · selective",bar:[11950,11950],cost:"About $11,950 a year in average tuition and fees; average budget with living costs $30,990. Average net tuition after grants is about $2,300.",len:"Bachelor's degree in 4 years",
+   req:["Required college-prep courses (in California, the 15 A–G courses with a minimum GPA)","GPA and course rigor weigh most","Essays; in California, UC uses four Personal Insight Questions and neither UC nor CSU uses SAT/ACT scores"],
+   prep:["Take honors and AP courses where you can succeed","Apply in the fall of Grade 12 (UC and CSU deadlines are in late fall)","Build one or two activities with real responsibility"],
+   jobs:["Engineer, software developer, data analyst","Teacher, accountant, nurse (BSN)","Graduate school: law, medicine, research"],
+   fit:"Strong students who want a full university experience at a lower in-state price."},
+  {name:"Public university, out of state",tag:"4 years · selective",bar:null,cost:"Average total budget about $50,920 a year including living costs; out-of-state students pay much higher tuition than residents.",len:"Bachelor's degree in 4 years",
+   req:["Usually higher grade and test expectations than for residents","Many flagships consider SAT/ACT scores","Essays and activities"],
+   prep:["Compare total cost with merit scholarships offered to non-residents","Check regional exchange programs that discount out-of-state tuition, such as WUE in the western states"],
+   jobs:["Same range as in-state universities","Access to programs your home state doesn't offer"],
+   fit:"Students targeting a specific program or campus that justifies the higher price."},
+  {name:"Private nonprofit college",tag:"4 years · holistic admission",bar:[16910,45000],cost:"About $45,000 a year in average published tuition; average budget $65,470. Average net tuition after grants is about $16,910, and many offer generous need-based aid.",len:"Bachelor's degree in 4 years",
+   req:["Holistic review: grades, course rigor, essays, recommendations, activities","Some require SAT/ACT again; many remain test-optional","Common App plus school-specific essays"],
+   prep:["Apply Early Decision or Early Action by November 1 for many schools","Submit the CSS Profile as well as the FAFSA for need-based aid","Use each school's net price calculator before ruling it out on price"],
+   jobs:["Same majors as public universities","Strong alumni networks for finance, consulting and tech recruiting","High rates of graduate and professional school"],
+   fit:"Students who want small classes, close faculty contact or a specific college culture, and who qualify for aid."},
+  {name:"Trade school or apprenticeship",tag:"6 months – 5 years · earn while learning",bar:null,cost:"Varies widely. Registered apprenticeships pay a wage from day one; trade school programs typically cost far less than a degree.",len:"Certificates in months; apprenticeships 2–5 years",
+   req:["High school diploma or equivalent","Some trades require a math or aptitude test","Apprenticeships hire through unions, employers or state programs"],
+   prep:["Take shop, engineering or career technical classes in high school","Strengthen algebra and geometry, which licensing exams use","Visit job sites and talk to apprenticeship coordinators in Grade 11–12"],
+   jobs:["Electrician, plumber, HVAC technician","Welder, aircraft mechanic, automotive technician","Construction manager after experience"],
+   fit:"Hands-on learners who want to earn early and avoid student debt."},
+  {name:"Military and service academies",tag:"Service commitment",bar:[0,0],cost:"Service academies charge no tuition in exchange for a service commitment after graduation. ROTC scholarships pay tuition at civilian colleges.",len:"4 years, then a required period of service",
+   req:["Academies: strong grades, fitness test and usually a nomination from a member of Congress","ROTC: scholarship application and physical standards","Enlistment: diploma and the ASVAB aptitude test"],
+   prep:["Start academy applications and nomination requests in the spring of Grade 11","Build leadership and athletic records","Talk with a recruiter or ROTC officer about service terms"],
+   jobs:["Military officer in any branch","Engineering, cyber, medicine and logistics roles","Strong transition to civilian government and industry jobs"],
+   fit:"Students drawn to service and leadership who are comfortable with a multi-year commitment."}
+ ]},
+in:{cur:"₹",unit:"per year",barNote:"The medicine range runs from government colleges at the low end to private management seats at the high end. Routes without a bar have fees that vary too widely to average.",title:"College and career options after Class 12",
+ intro:"Admission to most professional courses runs through national entrance exams, held between January and May of Class 12. The stream chosen in Class 11 decides which doors are open: PCM for engineering, PCB for medicine.",
+ outcome:"Government colleges cost a fraction of private ones, so entrance exam rank has a large effect on cost as well as on the college a student gets.",
+ paths:[
+  {name:"Engineering (IIT, NIT, IIIT)",tag:"4 years · JEE",bar:[200000,200000],cost:"IIT tuition is about ₹8 lakh for the full four-year B.Tech (about ₹2 lakh a year), with full or partial fee waivers for lower-income families and SC/ST/PwD students. Private engineering colleges vary widely.",len:"B.Tech in 4 years; dual degrees 5 years",
+   req:["Physics, Chemistry and Math in Class 12","JEE Main for NITs and IIITs; JEE Advanced for IITs","75% in Class 12 boards, or top 20 percentile of your board, for IITs and NITs"],
+   prep:["Two years of focused JEE preparation alongside boards","JEE Main runs in two sessions (January and April)","Regular full-length mock tests and error logs"],
+   jobs:["Software engineer, data scientist, product manager","Core engineering in manufacturing, energy, telecom","Public sector jobs via GATE, MS or research abroad"],
+   fit:"Students with strong math and physics who enjoy problem solving under time pressure."},
+  {name:"Medicine (MBBS)",tag:"5.5 years · NEET",bar:[10000,2500000],cost:"Government medical colleges roughly ₹10,000–₹2.5 lakh a year; private college management seats often ₹10–25 lakh a year or more.",len:"MBBS in 5.5 years including a one-year internship",
+   req:["Physics, Chemistry and Biology with English in Class 12","Minimum aggregate in PCB (50% for general category, lower for reserved categories)","NEET-UG rank decides seats through counselling"],
+   prep:["Master NCERT Biology line by line; most NEET biology questions come from it","NEET-UG is held once a year in May","Practice timed papers for speed and accuracy"],
+   jobs:["Doctor; specialize through NEET-PG","Related routes: BDS (dentistry), nursing, pharmacy, physiotherapy","Public health, research and hospital administration"],
+   fit:"Students committed to biology and a long training path."},
+  {name:"University degrees (CUET)",tag:"3–4 years · CUET",bar:null,cost:"Central and state universities are government-funded and among the lowest-cost options. Private universities charge considerably more.",len:"BA, BSc or BCom in 3 years; four-year honours under NEP",
+   req:["Class 12 pass with subjects matching the course","CUET-UG scores for central universities such as Delhi University and BHU","Some colleges set subject-mark cutoffs"],
+   prep:["Choose CUET domain subjects that match your Class 12 subjects","CUET-UG is held in May","Shortlist colleges by course, not only by name"],
+   jobs:["Civil services (UPSC), banking and government exams","Teaching, research, journalism","Commerce graduates: accounting, finance, CA alongside"],
+   fit:"Students who want a broad degree or are preparing for government careers."},
+  {name:"Law, design and professional courses",tag:"Varies · own entrance exams",bar:null,cost:"National Law Universities and private design schools charge more than government colleges; Chartered Accountancy through ICAI is low-cost but long.",len:"Five-year integrated law; 4-year design; CA typically 4–5 years",
+   req:["CLAT for National Law Universities","NID DAT or NIFT entrance for design","CA Foundation exam after Class 12; IPMAT for five-year IIM management programs"],
+   prep:["Read widely and practice reasoning for CLAT","Build a drawing and design portfolio for NID and NIFT","Commerce stream helps for CA but is not required"],
+   jobs:["Corporate lawyer, litigator, policy","Product, fashion, UX and communication designer","Chartered accountant, auditor, finance manager"],
+   fit:"Students with a clear interest who want a direct professional qualification."},
+  {name:"Diploma and vocational (Polytechnic, ITI)",tag:"1–3 years",bar:null,cost:"Government polytechnics and ITIs are low-cost; private ones charge more.",len:"ITI 1–2 years; polytechnic diploma 3 years",
+   req:["Class 10 or 12 depending on the course","State entrance tests or merit lists"],
+   prep:["Pick a trade with strong local demand","Diploma holders can join B.Tech directly in the second year (lateral entry)"],
+   jobs:["Electrician, fitter, machinist, technician","Junior engineer roles in industry and government","Self-employment in skilled trades"],
+   fit:"Practical learners who want to start working sooner."},
+  {name:"Study abroad",tag:"Varies",bar:null,cost:"Typically the most expensive route; scholarships and on-campus work help offset costs.",len:"3–4 year bachelor's depending on country",
+   req:["Strong Class 12 results; SAT for many US universities","IELTS or TOEFL for English proficiency","Essays, recommendations and activities for US and UK applications"],
+   prep:["Start research in Class 11; US applications are due between November and January of Class 12","Compare total cost and post-study work visa rules"],
+   jobs:["Global careers in tech, research, finance","Work-visa routes vary by country"],
+   fit:"Students who want international exposure and can fund it or win scholarships."}
+ ]},
+sg:{cur:"S$",unit:"per year",barNote:"Subsidised fees for Singapore citizens. The university range runs from most NUS and NTU courses to SUTD; medicine costs more. Routes without a bar have fees that vary too widely to average.",title:"College and career options after secondary school and JC",
+ intro:"Singapore offers three main routes after secondary school: junior college to university, polytechnic, or ITE. All are heavily subsidised for citizens, and each connects to the others. Male citizens serve two years of National Service before university.",
+ outcome:"Polytechnic and ITE graduates can progress to university or higher diplomas, so the first choice does not close off later options.",
+ paths:[
+  {name:"Local university",tag:"3–4 years · A-Level or diploma",bar:[8300,13500],cost:"Subsidised tuition for citizens is about S$8,300 a year for most courses at NUS and NTU (2026/27 intake), S$11,550 at SMU and S$13,500 at SUTD. Medicine is about S$33,000.",len:"Bachelor's in 3–4 years; medicine 5 years",
+   req:["A-Level results, a polytechnic diploma, or the IB Diploma","Subject prerequisites, such as H2 Math for engineering and computing","Interviews, portfolios or aptitude tests for some courses"],
+   prep:["Choose JC subject combinations with your target courses in mind","Prepare a portfolio for aptitude-based admission","Apply after A-Level results (or diploma results)"],
+   jobs:["Engineer, software developer, analyst","Doctor, lawyer, teacher, accountant","Civil service and research"],
+   fit:"Students who enjoy academic study and want a degree directly."},
+  {name:"Polytechnic diploma",tag:"3 years · applied",bar:[3167.5,3167.5],cost:"About S$3,170 a year for citizens (Ngee Ann Polytechnic, AY2026).",len:"Diploma in 3 years",
+   req:["SEC (previously O-Level) results","Early Admissions Exercise lets students apply on aptitude and interest before results"],
+   prep:["Explore course open houses in Secondary 3–4","Prepare an Early Admissions Exercise application and portfolio mid-way through Secondary 4"],
+   jobs:["Nurse, engineering technician, IT professional","Designer, media producer, business executive","Many continue to university"],
+   fit:"Students who learn best through projects and industry attachments."},
+  {name:"ITE (Nitec, Higher Nitec)",tag:"2 years · hands-on",bar:null,cost:"Heavily subsidised; the lowest-cost of the three routes.",len:"Nitec or Higher Nitec in 2 years; Technical Diploma 3 years",
+   req:["SEC results at the required subject levels","Early Admissions Exercise for aptitude-based entry"],
+   prep:["Pick a course with clear job demand","Plan the progression from Nitec to Higher Nitec to polytechnic if you want to continue"],
+   jobs:["Aerospace, automotive and electrical technician","Chef, hospitality and retail professional","Progression to polytechnic and university"],
+   fit:"Hands-on learners who want industry skills and a clear progression path."},
+  {name:"Overseas university",tag:"Varies",bar:null,cost:"Much more expensive than local universities; government and corporate scholarships cover some students in exchange for a service bond.",len:"3–4 years depending on country",
+   req:["A-Level or IB results","SAT for many US universities","Essays and recommendations"],
+   prep:["Research scholarship deadlines, which are often earlier than university deadlines","Understand bond terms before accepting a scholarship"],
+   jobs:["Global careers, often returning for bonded public service roles"],
+   fit:"Students seeking specific programs abroad, ideally with scholarship support."}
+ ]}
+};
+
+const COLLEGE_AT={us:['hi'],in:['ss'],sg:['se','pu']};
+const IDS=["compare","us","in","sg"];
+let view="compare", stageIdx={us:0,in:0,sg:0}, yearSel={};
+let cmp={sub:1,stage:0,q:"",vis:{us:1,in:1,sg:1}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderNav(){
+  const items=[["compare","Compare all",null],["us","United States","var(--us)"],["in","India CBSE","var(--in)"],["sg","Singapore","var(--sg)"]];
+  $("#nav").innerHTML=items.map(([id,l,c])=>`<button data-v="${id}" ${view===id?'aria-current="page"':""}>${c?`<span class="dot" style="background:${c}"></span>`:""}${l}</button>`).join("");
+  $("#nav").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+}
+function go(v){view=v;try{history.replaceState(null,"","#"+v)}catch(e){location.hash=v}render();window.scrollTo({top:0})}
+
+function render(){
+  document.body.dataset.sys=view==="compare"?"us":view;
+  renderNav();
+  $("#main").innerHTML=view==="compare"?compareHTML():systemHTML(view);
+  if(view==="compare")bindCompare();else bindSystem(view);
+}
+
+/* ---------- system view ---------- */
+function systemHTML(k){
+  const s=SYS[k];
+  return `<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">School system</div>
+    <h1>${s.name}</h1>
+    <p class="lede">${s.lede}</p>
+    <div class="facts">${s.facts.map(f=>`<div class="fact"><div class="eyebrow">${f[0]}</div><div class="v">${f[1]}</div><div class="s">${f[2]}</div></div>`).join("")}</div>
+  </section>
+  <section class="block">
+    <div class="sec-h"><h2>Stages</h2><p>Select a stage to see what is taught, how it is assessed and what moves a student on.</p></div>
+    <div class="rail-scroll"><div class="rail">
+      ${Array.from({length:12},(_,i)=>`<div class="yr">${i+1}</div>`).join("")}
+      ${s.stages.map((st,i)=>`<button class="stage" data-i="${i}" aria-pressed="${i===stageIdx[k]}" style="grid-column:${st.from}/${st.to+1}"><div class="n">${st.name}</div><div class="r">${s.yearName(st.from)}${st.to>st.from?" – "+s.yearName(st.to):""}</div></button>`).join("")}
+    </div></div>
+  </section>
+  <div id="stagebody"></div>
+  </div>`;
+}
+function stageBody(k){
+  const s=SYS[k], st=s.stages[stageIdx[k]], a=st.assess;
+  const key=k+st.id; if(!yearSel[key]||yearSel[key]<st.from||yearSel[key]>st.to)yearSel[key]=st.from;
+  const y=yearSel[key], row=CUR[k][y];
+  const nextSt=s.stages[stageIdx[k]+1];
+  return `
+  <section class="block" style="padding-top:0">
+    <div class="grid3">
+      <div class="panel">
+        <div class="panel-h"><h3>What is taught</h3><div class="yrtabs">${range(st.from,st.to).map(n=>`<button data-y="${n}" aria-pressed="${n===y}" aria-label="${esc(s.yearName(n))}">${n}</button>`).join("")}</div></div>
+        <div class="panel-b">
+          <div class="ylabel"><b>${s.yearName(y)}</b> · Year ${y} · age about ${y+5}–${y+6}</div>
+          ${SUBJ.map((sb,i)=>`<div class="subj"><div class="k">${sb}</div><ul>${row[i].split(/, (?![^(]*\))/).map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`).join("")}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h3>How students are assessed</h3></div>
+        <div class="panel-b">
+          <dl class="kv">
+            <div><dt>Methods</dt><dd><ul>${a.methods.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></dd></div>
+            <div><dt>Grading</dt><dd>${esc(a.grading)}<div class="scale">${a.scale.map((x,i)=>`<span class="${i===a.hi?"hi":""}">${esc(x)}</span>`).join("")}</div></dd></div>
+            <div><dt>Key exams</dt><dd class="exams">${a.exams.map(e=>`<div class="exam"><div class="t">${esc(e[0])}</div><div class="d">${esc(e[1])}</div></div>`).join("")}</dd></div>
+            <div><dt>Moving up a year</dt><dd>${esc(a.promo)}</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="block" style="padding-top:8px">
+    <div class="sec-h"><h2>Skills that move a student forward</h2>${nextSt?`<span class="next">Ready for ${esc(nextSt.name)} →</span>`:`<span class="next">Ready for what comes after school →</span>`}</div>
+    <div class="skills">${st.skills.map(sk=>`<div class="skill"><div class="cat">${esc(sk[0])}</div><div class="t">${esc(sk[1])}</div><div class="d">${esc(sk[2])}</div><div class="check"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.2l2 2 4-4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sign of readiness: ${esc(sk[3])}</span></div></div>`).join("")}</div>
+    <div class="gate"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h11M10 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--sys)"/></svg><div><b>${esc(st.gate[0])}</b><p>${esc(st.gate[1])}</p></div></div>
+  </section>${st.choices?choicesHTML(st.choices):""}${COLLEGE_AT[k].includes(st.id)?collegeHTML(k):""}`;
+}
+let collegeSel={us:0,in:0,sg:0};
+function money(k,n){const c=COLLEGE[k].cur;return n===0?"No tuition":c+Math.round(n).toLocaleString(k==="in"?"en-IN":"en-US")}
+function collegeHTML(k){
+  const c=COLLEGE[k], i=collegeSel[k], p=c.paths[i];
+  const bars=c.paths.filter(x=>x.bar), max=Math.max(...bars.map(x=>x.bar[1]));
+  const list=(t,arr)=>`<div class="cblock"><div class="eyebrow">${t}</div><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  return `<section class="block" style="padding-top:8px" id="college">
+    <div class="sec-h"><h2>${esc(c.title)}</h2></div>
+    <p class="lede-s">${esc(c.intro)}</p>
+    <div class="panel" style="margin-bottom:16px"><div class="panel-h"><h3>Tuition at a glance</h3><span class="ylabel" style="margin:0">${c.cur} ${c.unit}, tuition and fees only</span></div>
+      <div class="panel-b bars">${bars.map(x=>{const same=x.bar[0]===x.bar[1],a=same?0:x.bar[0]/max*100,b=x.bar[1]/max*100;return `<div class="bar-row"><div class="bar-l">${esc(x.name)}</div><div class="bar-t"><div class="bar-f" style="margin-left:${a.toFixed(2)}%;width:${Math.max(b-a,0).toFixed(2)}%"></div></div><div class="bar-v">${x.bar[0]===x.bar[1]?money(k,x.bar[0]):money(k,x.bar[0])+" – "+money(k,x.bar[1])}</div></div>`}).join("")}
+      <p class="hint" style="margin-top:14px">${esc(c.barNote)}</p></div></div>
+    <div class="cpaths">
+      <div class="cp-list" role="tablist" aria-label="Routes">${c.paths.map((x,j)=>`<button role="tab" data-cp="${j}" aria-selected="${j===i}"><span class="cp-n">${esc(x.name)}</span><span class="cp-t">${esc(x.tag)}</span></button>`).join("")}</div>
+      <div class="panel cp-detail">
+        <div class="panel-h"><h3>${esc(p.name)}</h3><span class="tag">${esc(p.tag)}</span></div>
+        <div class="panel-b">
+          <p class="fit"><b>Best for:</b> ${esc(p.fit)}</p>
+          <div class="cgrid">
+            <div class="cblock"><div class="eyebrow">Cost</div><p>${esc(p.cost)}</p><p class="len"><b>Length:</b> ${esc(p.len)}</p></div>
+            ${list("Requirements",p.req)}
+            ${list("How to prepare",p.prep)}
+            ${list("Job options",p.jobs)}
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">${esc(c.outcome)}</p>
+  </section>`;
+}
+let choiceTab=0;
+function choicesHTML(c){
+  const tabs=[...c.groups.map(g=>g.label),"Timeline and readiness"];
+  let body;
+  if(choiceTab<c.groups.length){
+    body=`<div class="opts">${c.groups[choiceTab].items.map(o=>`<article class="opt">
+      <div class="opt-h"><h3>${esc(o.name)}</h3><span class="tag">${esc(o.tag)}</span></div>
+      <p class="what">${esc(o.what)}</p>
+      <div class="pc"><div><div class="pc-h ok">Pros</div><ul>${o.pros.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>
+      <div><div class="pc-h warn">Cons</div><ul>${o.cons.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div></div>
+    </article>`).join("")}</div>`;
+  }else{
+    body=`<div class="grid3" style="grid-template-columns:1.1fr 1fr">
+      <div class="panel"><div class="panel-h"><h3>Decision timeline</h3></div><div class="panel-b"><ol class="tl">${c.timeline.map(t=>`<li><span class="when">${esc(t[0])}</span><span>${esc(t[1])}</span></li>`).join("")}</ol></div></div>
+      <div class="panel"><div class="panel-h"><h3>Signs a student is ready to accelerate</h3></div><div class="panel-b"><ul class="ready">${c.ready.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
+      <p class="hint">If only some of these fit, honors classes add depth without speeding up the sequence, and math can still be accelerated later through summer courses.</p></div></div>
+    </div>`;
+  }
+  return `<section class="block" style="padding-top:8px" id="choices">
+    <div class="sec-h"><h2>${esc(c.title)}</h2></div>
+    <p class="lede-s">${esc(c.intro)}</p>
+    <div class="ctabs" role="tablist">${tabs.map((t,i)=>`<button role="tab" data-ct="${i}" aria-selected="${i===choiceTab}">${esc(t)}</button>`).join("")}</div>
+    ${body}
+  </section>`;
+}
+function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r}
+function bindSystem(k){
+  const paint=()=>{$("#stagebody").innerHTML=stageBody(k);
+    $("#stagebody").querySelectorAll("[data-y]").forEach(b=>b.onclick=()=>{yearSel[k+SYS[k].stages[stageIdx[k]].id]=+b.dataset.y;paint()});
+    $("#stagebody").querySelectorAll("[data-ct]").forEach(b=>b.onclick=()=>{choiceTab=+b.dataset.ct;const y=window.scrollY;paint();window.scrollTo({top:y})});
+    $("#stagebody").querySelectorAll("[data-cp]").forEach(b=>b.onclick=()=>{collegeSel[k]=+b.dataset.cp;const y=window.scrollY;paint();window.scrollTo({top:y})});};
+  document.querySelectorAll(".stage").forEach(b=>b.onclick=()=>{stageIdx[k]=+b.dataset.i;document.querySelectorAll(".stage").forEach(x=>x.setAttribute("aria-pressed",x===b));paint()});
+  paint();
+}
+
+/* ---------- compare view ---------- */
+const STAGES=[["All years",1,12],["Years 1–5",1,5],["Years 6–8",6,8],["Years 9–12",9,12]];
+const STRUCT={us:y=>SYS.us.yearName(y)+(y===11?" · SAT/ACT":""),in:y=>SYS.in.yearName(y)+(y===10?" · board exam":y===11?" · stream chosen":y===12?" · board exam, JEE/NEET/CUET":""),sg:y=>SYS.sg.yearName(y)+(y===6?" · PSLE":y===10?" · SEC":y===12?" · A-Level":"")};
+function compareHTML(){
+  return `<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Side by side</div>
+    <h1>Three systems, year by year</h1>
+    <p class="lede">Compare what students learn in the US, India's CBSE and Singapore at the same year of school. Pick a system at the top for its stages, assessment and progression skills.</p>
+  </section>
+  <section class="block" style="padding-top:12px">
+    <div class="diffs">
+      ${diff("First high-stakes exam",["US","SAT/ACT around Grade 11 (not national)"],["CBSE","Class 10 board, age about 15"],["SG","PSLE in Primary 6, age 12"])}
+      ${diff("Calculus first appears",["US","Optional, Grade 12"],["CBSE","Class 11"],["SG","Secondary 4 (Additional Math)"])}
+      ${diff("When students specialize",["US","Electives and AP in high school"],["CBSE","Stream chosen for Class 11"],["SG","Subject levels from Secondary 1"])}
+      ${diff("School calendar",["US","Aug/Sep – Jun"],["CBSE","Apr – Mar"],["SG","Jan – Nov"])}
+    </div>
+  </section>
+  <section class="block" style="padding-top:8px">
+    <div class="sec-h"><h2>Curriculum table</h2><p>Filter by subject and stage, or search for a topic.</p></div>
+    <div class="filters">
+      <div><label class="lab" for="q">Search topics</label><input id="q" type="search" placeholder="Try calculus, fractions, genetics" value="${esc(cmp.q)}"></div>
+      <div><span class="lab">Subject</span><div class="seg" id="fsub">${["School stage",...SUBJ].map((t,i)=>`<button data-i="${i}" aria-pressed="${i===cmp.sub}">${t}</button>`).join("")}</div></div>
+      <div><span class="lab">Years</span><div class="seg" id="fst">${STAGES.map((t,i)=>`<button data-i="${i}" aria-pressed="${i===cmp.stage}">${t[0]}</button>`).join("")}</div>
+        <span class="lab" style="margin-top:10px">Systems</span><div class="seg" id="fsys">${["us","in","sg"].map(k=>`<button data-k="${k}" aria-pressed="${!!cmp.vis[k]}">${SYS[k].short}</button>`).join("")}</div></div>
+    </div>
+    <div class="tbl-wrap"><table class="cmp"><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+    <div class="count" id="cnt"></div>
+  </section></div>`;
+}
+function diff(t,...rows){return `<div class="diff"><h3>${t}</h3>${rows.map(r=>`<div class="row"><b style="color:var(--${r[0]==="US"?"us":r[0]==="CBSE"?"in":"sg"})">${r[0]}</b><span>${r[1]}</span></div>`).join("")}</div>`}
+function hl(s,q){s=esc(s);if(!q)return s;const re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");return s.replace(re,"<mark>$1</mark>")}
+function drawTable(){
+  const cols=["us","in","sg"].filter(k=>cmp.vis[k]);
+  $("#th").innerHTML=`<tr><th>Year</th>${cols.map(k=>`<th><span class="sw" style="background:${SYS[k].color}"></span>${SYS[k].name}</th>`).join("")}</tr>`;
+  const q=cmp.q.trim().toLowerCase();let n=0,rows="";
+  const [,a,b]=STAGES[cmp.stage];
+  for(let y=a;y<=b;y++){
+    const cells=cols.map(k=>cmp.sub===0?STRUCT[k](y):CUR[k][y][cmp.sub-1]);
+    if(q&&!cells.some(c=>c.toLowerCase().includes(q)))continue;n++;
+    rows+=`<tr><td class="y">${y}<small>age ${y+5}–${y+6}</small></td>${cells.map(c=>`<td>${hl(c,q)}</td>`).join("")}</tr>`;
+  }
+  $("#tb").innerHTML=rows||`<tr><td colspan="${cols.length+1}" style="text-align:center;padding:28px;color:var(--ink-3)">No years match "${esc(cmp.q)}" in ${cmp.sub===0?"School stage":SUBJ[cmp.sub-1]}. Try another subject or clear the search.</td></tr>`;
+  $("#cnt").textContent=`Showing ${n} of ${b-a+1} years`;
+}
+function bindCompare(){
+  $("#q").oninput=e=>{cmp.q=e.target.value;drawTable()};
+  const seg=(sel,fn)=>document.querySelectorAll(sel+" button").forEach(btn=>btn.onclick=()=>{fn(btn);document.querySelectorAll(sel+" button").forEach(x=>x.setAttribute("aria-pressed",sel==="#fsys"?!!cmp.vis[x.dataset.k]:x===btn));drawTable()});
+  seg("#fsub",b=>cmp.sub=+b.dataset.i);
+  seg("#fst",b=>cmp.stage=+b.dataset.i);
+  seg("#fsys",b=>{const k=b.dataset.k;cmp.vis[k]=cmp.vis[k]?0:1;if(!Object.values(cmp.vis).some(Boolean))cmp.vis[k]=1});
+  drawTable();
+}
+
+function fromHash(){const h=(location.hash||"").slice(1);view=IDS.includes(h)?h:"compare";render()}
+window.addEventListener("hashchange",fromHash);
+fromHash();
+</script>
+</body>
+</html>
