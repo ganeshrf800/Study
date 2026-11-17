@@ -3,15 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Memory, DDR, Lanes &amp; x16 Configurations — Interactive Guide</title>
+<title>Computer Memory — Interactive Technical Reference</title>
+<meta name="description" content="Interactive technical reference on computer memory: hierarchy, DRAM internals, DDR5/LPDDR6/GDDR7/HBM4, modules, timings, ECC, CXL, the 2026 industry, and an A–Z glossary.">
+<link rel="stylesheet" href="../back.css">
+<script src="../theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0f1216; --panel:#171b21; --panel2:#1e242c; --line:#2b333d;
   --text:#e6e9ee; --muted:#9aa4b2; --accent:#4fb3a9; --accent2:#e0a84f; --accent3:#8f8cf0; --danger:#e06c6c;
-  --chip:#26404a; --chipEdge:#4fb3a9;
+  --chip:#26404a; --chipEdge:#4fb3a9; --onaccent:#0b1513; --pcb:#1b2a22; --navbg:rgba(15,18,22,.92);
 }
+:root[data-theme=light]{--bg:#f6f7f9; --panel:#ffffff; --panel2:#edf0f3; --line:#d3d9e0; --text:#1b2127; --muted:#56616e; --accent:#177f76; --accent2:#a8690a; --accent3:#544fd0; --danger:#c43d3d; --chip:#d5e9ea; --chipEdge:#177f76; --onaccent:#ffffff; --pcb:#cfe2d4; --navbg:rgba(246,247,249,.93);}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f6f7f9; --panel:#ffffff; --panel2:#edf0f3; --line:#d3d9e0; --text:#1b2127; --muted:#56616e; --accent:#177f76; --accent2:#a8690a; --accent3:#544fd0; --danger:#c43d3d; --chip:#d5e9ea; --chipEdge:#177f76; --onaccent:#ffffff; --pcb:#cfe2d4; --navbg:rgba(246,247,249,.93);}}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 "IBM Plex Sans",system-ui,sans-serif}
@@ -19,7 +24,7 @@ code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
 header.hero{padding:48px 20px 28px;max-width:980px;margin:0 auto}
 header.hero h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 12px;letter-spacing:-.01em}
 header.hero p{color:var(--muted);max-width:680px;margin:0}
-nav.toc{position:sticky;top:0;z-index:10;background:rgba(15,18,22,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.toc{position:sticky;top:0;z-index:10;background:var(--navbg);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 nav.toc div{max-width:980px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:8px 14px;scrollbar-width:none}
 nav.toc a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap}
 nav.toc a:hover,nav.toc a.on{color:var(--text);background:var(--panel2)}
@@ -39,7 +44,7 @@ p{margin:0 0 14px}
 button,.seg button{font:inherit}
 .seg{display:inline-flex;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
 .seg button{background:transparent;color:var(--muted);border:0;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:14px}
-.seg button.on{background:var(--accent);color:#0b1513;font-weight:600}
+.seg button.on{background:var(--accent);color:var(--onaccent);font-weight:600}
 .ctrl{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin:6px 0 14px}
 .ctrl label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 input[type=range]{width:180px;accent-color:var(--accent)}
@@ -63,7 +68,7 @@ tbody tr{cursor:pointer}
 .pyramid button small{display:block;color:var(--muted);font-size:12px}
 .drill{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .drill button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:14px}
-.drill button.on{color:#0b1513;background:var(--accent);border-color:var(--accent);font-weight:600}
+.drill button.on{color:var(--onaccent);background:var(--accent);border-color:var(--accent);font-weight:600}
 .drill .arrow{color:var(--line);align-self:center}
 .pill{display:inline-block;font:600 11px/1 "IBM Plex Mono",monospace;padding:4px 7px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);margin-right:4px}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
@@ -74,31 +79,71 @@ tbody tr{cursor:pointer}
 .quizq .opts button.right{border-color:var(--accent);background:rgba(79,179,169,.18)}
 .quizq .opts button.wrong{border-color:var(--danger);background:rgba(224,108,108,.15)}
 .quizq .fb{font-size:14px;color:var(--muted);margin-top:8px;min-height:1em}
+.badge{display:inline-block;font:600 11px/1 "IBM Plex Mono",monospace;padding:4px 7px;border-radius:5px;border:1px solid;white-space:nowrap;vertical-align:1px}
+.badge.ship{color:var(--accent);border-color:var(--accent);background:rgba(79,179,169,.12)}
+.badge.pub{color:var(--accent3);border-color:var(--accent3);background:rgba(143,140,240,.12)}
+.badge.dev{color:var(--accent2);border-color:var(--accent2);background:rgba(224,168,79,.12)}
+.badge.leg{color:var(--muted);border-color:var(--line);background:var(--panel2)}
+header.hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font:500 12px/1.4 "IBM Plex Mono",monospace;color:var(--muted);margin-top:16px;letter-spacing:.02em}
+header.hero .glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:22px}
+header.hero .glance div{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:10px 14px;background:var(--panel)}
+header.hero .glance b{display:block;font-size:14px}
+header.hero .glance span{font-size:13px;color:var(--muted)}
+nav.toc .part{font:600 10px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);align-self:center;padding:0 6px 0 10px;white-space:nowrap}
+.part-head{margin:56px 0 0;padding:18px 0 0;border-top:2px solid var(--accent)}
+.part-head span{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.part-head p{color:var(--muted);margin:6px 0 0;max-width:680px}
+#sources ol{padding-left:22px;margin:0;font-size:14px}
+#sources li{margin:0 0 7px}
+#sources a,section p a{color:var(--accent)}
+dl,dd{margin:0}
+.svgwrap{overflow-x:auto}
+.svgwrap svg{min-width:560px;display:block}
+section{scroll-margin-top:50px}
 footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
 
 <header class="hero">
-  <a href="../" style="color:var(--muted);text-decoration:none;font-size:14px">← Study</a>
-  <div class="kicker" style="margin-top:14px">Interactive guide</div>
-  <h1>Memory, DDR, lanes &amp; what “2×16” and “4×16” really mean</h1>
-  <p>From CPU registers and caches down to disks, and from a single capacitor holding one bit up to how DRAM chips are wired side-by-side to form a memory bus. Tap, slide and toggle as you go.</p>
+  <a class="study-back" href="../">← Study home</a>
+  <div class="kicker" style="margin-top:22px">Interactive technical reference</div>
+  <h1>Computer Memory</h1>
+  <p>How memory works, from a single stored bit to the chips, modules and standards that ship today. Part I builds the fundamentals with hands-on simulators. Part II is a current engineering reference: technologies, standards, modules, timings, reliability, AI memory and the state of the industry.</p>
+  <div class="meta"><span>Updated 16 November 2026</span><span>18 sections</span><span>Industry figures cited in Sources</span></div>
+  <div class="glance">
+    <div><b>DDR5 is the PC and server standard</b><span>DDR6 is still in development at JEDEC</span></div>
+    <div><b>LPDDR6 is published</b><span>10,667–14,400 MT/s, July 2025</span></div>
+    <div><b>HBM4 is in mass production</b><span>2 TB/s per stack for AI accelerators</span></div>
+    <div><b>Supply is tight</b><span>AI demand has pushed DRAM prices sharply higher</span></div>
+  </div>
 </header>
 
 <nav class="toc" id="toc"><div>
-  <a href="#basics">1 · Memory basics</a>
+  <span class="part">Part I</span>
+  <a href="#basics">1 · Hierarchy</a>
   <a href="#deep">2 · Deep dive</a>
   <a href="#ddr">3 · Double data rate</a>
   <a href="#gens">4 · DDR generations</a>
   <a href="#lanes">5 · Lanes &amp; widths</a>
-  <a href="#config">6 · 2×16 / 4×16 builder</a>
-  <a href="#kits">7 · “2×16 GB” kits</a>
+  <a href="#config">6 · 2×16 / 4×16</a>
+  <a href="#kits">7 · Retail kits</a>
   <a href="#devices">8 · Phone vs PC</a>
-  <a href="#quiz">9 · Check yourself</a>
+  <span class="part">Part II</span>
+  <a href="#types">9 · Technology map</a>
+  <a href="#standards">10 · Standards</a>
+  <a href="#modules">11 · Modules</a>
+  <a href="#timings">12 · Timings</a>
+  <a href="#ras">13 · Reliability</a>
+  <a href="#ai">14 · AI memory</a>
+  <a href="#industry">15 · Industry</a>
+  <a href="#glossary">16 · A–Z glossary</a>
+  <a href="#quiz">17 · Quiz</a>
+  <a href="#sources">18 · Sources</a>
 </div></nav>
 
 <main>
+<div class="part-head" style="margin-top:28px"><span>Part I · Fundamentals</span><p>Interactive walkthroughs of how memory is organised and how data moves.</p></div>
 
 <!-- 1 BASICS -->
 <section id="basics">
@@ -205,7 +250,7 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
       <thead><tr><th>Gen</th><th>Year*</th><th>Voltage</th><th>Prefetch</th><th>Speeds (MT/s)</th><th>Notable</th></tr></thead>
       <tbody id="genBody"></tbody>
     </table>
-    <p class="muted" style="font-size:12px;margin:10px 0 0">*Approximate year of mainstream PC adoption. Speeds are JEDEC standard ranges; overclocked (XMP/EXPO) kits go higher.</p>
+    <p class="muted" style="font-size:12px;margin:10px 0 0">For LPDDR6, DDR6, GDDR7 and HBM4, see <a href="#standards" style="color:var(--accent)">section 10</a>. *Approximate year of mainstream PC adoption. Speeds are JEDEC standard ranges; overclocked (XMP/EXPO) kits go higher.</p>
   </div>
   <div class="card">
     <div class="ctrl">
@@ -340,15 +385,263 @@ footer{max-width:980px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);f
   <div class="callout"><b>Ties back to section 6:</b> a phone's “4×16” LPDDR5X setup is four independent x16 channels making a 64-bit bus. A laptop with “8×16” LPDDR5X gets a 128-bit bus, the same total width as a dual-channel desktop, but split into eight channels that can each sleep or wake on their own.</div>
 </section>
 
-<!-- 9 QUIZ -->
+<div class="part-head"><span>Part II · Technology and industry reference</span><p>Current as of November 2026. Standards dates and market figures are sourced; see section 18.</p></div>
+<!-- 9 TYPES -->
+<section id="types">
+  <div class="kicker">09 · Technology map</div>
+  <h2>Every kind of memory, on one map</h2>
+  <p>All semiconductor memory is a trade between <b>speed</b>, <b>density</b> (cost per bit), <b>endurance</b> (how many times it can be rewritten) and <b>retention</b> (how long it holds data without power). No single technology wins all four, which is why a system uses several. Select a technology:</p>
+  <div class="card">
+    <div class="ctrl"><div><label>Volatile (loses data without power)</label><div class="seg" id="tySelV"></div></div><div><label>Non-volatile (keeps data)</label><div class="seg" id="tySelN"></div></div><div><label>Emerging non-volatile</label><div class="seg" id="tySelE"></div></div></div>
+    <div id="tyInfo"></div>
+    <div id="tyBars" style="margin-top:14px"></div>
+  </div>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th>Technology</th><th>Bit cell</th><th>Read latency</th><th>Write endurance</th><th>Retention unpowered</th><th>Main use</th></tr></thead>
+      <tbody id="tyTable"></tbody>
+    </table>
+    <p class="muted" style="font-size:12px;margin:10px 0 0">Typical order-of-magnitude engineering figures; individual products vary.</p>
+  </div>
+</section>
+
+<!-- 10 STANDARDS -->
+<section id="standards">
+  <div class="kicker">10 · Standards &amp; roadmap</div>
+  <h2>Interface standards: where each one stands in late 2026</h2>
+  <p>Memory interfaces are defined mostly by <b>JEDEC</b>, the industry standards body. A standard being <i>published</i> is not the same as products <i>shipping</i>: platforms (CPUs, SoCs, GPUs) must add controllers and be validated first, which typically takes one to two years. Filter by market:</p>
+  <div class="card">
+    <div class="ctrl"><div><label>Market</label><div class="seg" id="stFilt"><button data-v="all" class="on">All</button><button data-v="pc">PC &amp; server</button><button data-v="mob">Mobile</button><button data-v="gfx">Graphics &amp; AI</button><button data-v="io">Interconnect &amp; storage</button></div></div></div>
+    <div class="tablewrap"><table class="wrap">
+      <thead><tr><th>Standard</th><th>Document / date</th><th>Headline speed</th><th>What changed</th><th>Status</th></tr></thead>
+      <tbody id="stBody"></tbody>
+    </table></div>
+    <div class="legend"><span><span class="badge ship">Shipping</span> in volume products</span><span><span class="badge pub">Published</span> standard final, products ramping</span><span><span class="badge dev">In development</span> not yet published</span><span><span class="badge leg">Legacy</span> being phased out</span></div>
+  </div>
+  <div class="callout"><b>DDR6 is not final.</b> As of October 2026 JEDEC had not published a DDR6 standard. Roadmap material points to a base speed around 8,800 MT/s scaling toward 17,600 MT/s, and to CAMM2-style modules replacing DIMM slots, but these are targets, not a specification. DDR5 remains the current PC and server standard.</div>
+</section>
+
+<!-- 11 MODULES -->
+<section id="modules">
+  <div class="kicker">11 · Modules &amp; form factors</div>
+  <h2>From UDIMM to CAMM2: what is actually on the module</h2>
+  <p>A module is more than DRAM chips on a board. DDR5 moved voltage regulation onto the module (a <b>PMIC</b>), added an <b>SPD hub</b> that reports the module's identity and temperature, and at higher speeds adds chips that re-drive the clock or buffer signals. The faster the bus, the more help the signals need. Select a module type:</p>
+  <div class="card">
+    <div class="seg" id="mdSel"></div>
+    <div class="svgwrap"><svg id="mdSvg" viewBox="0 0 640 178" width="100%" role="img" aria-label="Module layout" style="margin-top:12px"></svg></div>
+    <div class="stats" id="mdStats"></div>
+    <p id="mdNote" style="margin:12px 0 0;font-size:14px"></p>
+  </div>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th>Support chip</th><th>Full name</th><th>What it does</th><th>Found on</th></tr></thead>
+      <tbody>
+        <tr><td><b>SPD hub</b></td><td>Serial Presence Detect</td><td>Small EEPROM plus sensor. Tells the BIOS the module's size, speed grades and timings; holds XMP/EXPO profiles.</td><td>All DDR5 modules</td></tr>
+        <tr><td><b>PMIC</b></td><td>Power management IC</td><td>Converts the board supply to the DRAM rails on the module itself, for cleaner power at high speed.</td><td>All DDR5 modules</td></tr>
+        <tr><td><b>CKD</b></td><td>Client clock driver</td><td>Regenerates the clock on the module so every chip sees a clean edge.</td><td>CUDIMM, CSODIMM, DDR5 CAMM2</td></tr>
+        <tr><td><b>RCD</b></td><td>Registering clock driver</td><td>Buffers command, address and clock so the CPU drives one load instead of many chips.</td><td>RDIMM, LRDIMM</td></tr>
+        <tr><td><b>DB</b></td><td>Data buffer</td><td>Buffers the data lines too, so many ranks can share a channel.</td><td>LRDIMM</td></tr>
+        <tr><td><b>MRCD + MDB</b></td><td>Multiplexed rank clock driver and data buffer</td><td>Runs two ranks at once and interleaves their data, so the host link runs at twice the DRAM speed.</td><td>MRDIMM</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 12 TIMINGS -->
+<section id="timings">
+  <div class="kicker">12 · Timings &amp; latency</div>
+  <h2>Reading a spec sheet: DDR5-6000 CL30-36-36-76</h2>
+  <p>The first number is the <b>data rate</b> in MT/s. The rest are <b>timings</b>, counted in clock cycles, not nanoseconds. Because a faster kit has shorter cycles, a bigger CL number can still mean the same real delay. Convert with: <code>latency (ns) = CL × 2000 ÷ data rate</code>.</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Preset</label><div class="seg" id="tmPre"></div></div>
+    </div>
+    <div class="ctrl">
+      <div><label>Data rate: <span class="mono" id="tmRateL"></span></label><input type="range" id="tmRate" min="1600" max="9200" step="200" value="6000"></div>
+      <div><label>CL (CAS latency): <span class="mono" id="tmCLL"></span></label><input type="range" id="tmCL" min="9" max="60" step="1" value="30"></div>
+      <div><label>tRCD: <span class="mono" id="tmRCDL"></span></label><input type="range" id="tmRCD" min="9" max="60" step="1" value="36"></div>
+    </div>
+    <div class="svgwrap"><svg id="tmSvg" viewBox="0 0 640 150" width="100%" role="img" aria-label="Read access timeline"></svg></div>
+    <div class="stats" id="tmStats"></div>
+  </div>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th>Timing</th><th>Name</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">CL</td><td>CAS latency</td><td>Clocks from a READ command to the first data. The headline number.</td></tr>
+        <tr><td class="mono">tRCD</td><td>Row-to-column delay</td><td>Clocks from opening a row (ACTIVATE) until it can be read. Paid on every access to a new row.</td></tr>
+        <tr><td class="mono">tRP</td><td>Row precharge</td><td>Clocks to close a row before another in the same bank can open.</td></tr>
+        <tr><td class="mono">tRAS</td><td>Row active time</td><td>Minimum time a row must stay open so its cells are fully restored.</td></tr>
+        <tr><td class="mono">tREFI</td><td>Refresh interval</td><td>How often a refresh command is issued: about 7.8 µs on DDR4 and 3.9 µs on DDR5 at normal temperature.</td></tr>
+        <tr><td class="mono">tRFC</td><td>Refresh cycle time</td><td>How long the chip is busy per refresh. Grows with chip density, so bigger chips spend more time refreshing.</td></tr>
+        <tr><td class="mono">1T / 2T</td><td>Command rate</td><td>Whether a command is held for one clock or two. 2T is slower but more stable with many chips.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0">Memory training</h3><p style="margin:0;font-size:15px">At every cold boot the controller <b>trains</b> the link: it sweeps delays and voltages for each data lane until it finds the centre of the clean signal window (the “eye”), then calibrates drive strength and termination (ZQ, ODT). This is why a DDR5 system can sit on a black screen for tens of seconds after new memory is fitted, and why results can differ between boots at the edge of stability.</p></div>
+    <div class="card"><h3 style="margin-top:0">XMP, EXPO and JEDEC profiles</h3><p style="margin:0;font-size:15px">Every module boots at a conservative <b>JEDEC profile</b> stored in its SPD. Faster settings are optional overclocking profiles: <b>XMP</b> (Intel) and <b>EXPO</b> (AMD). They raise data rate, tighten timings and usually raise voltage. Enabling one is overclocking: tested by the kit maker, but not guaranteed on every CPU and board.</p></div>
+  </div>
+</section>
+
+<!-- 13 RAS -->
+<section id="ras">
+  <div class="kicker">13 · Reliability &amp; security</div>
+  <h2>Errors, ECC and Rowhammer</h2>
+  <p>DRAM bits occasionally flip. Causes include cosmic-ray neutrons and alpha particles (<b>soft errors</b>), weak or ageing cells (<b>hard errors</b>), and electrical disturbance from neighbouring rows. <b>ECC</b> (error-correcting code) stores extra check bits so the system can detect and repair flips. The demo uses the classic Hamming(7,4) code: 4 data bits protected by 3 check bits.</p>
+  <div class="card">
+    <div class="ctrl"><div><label>1. Choose 4 data bits</label><div id="eccData" style="display:flex;gap:6px"></div></div></div>
+    <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">2. Stored word (tap any bit to flip it, as an error would)</label>
+    <div id="eccWord" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <div class="stats" id="eccStats"></div>
+    <p id="eccMsg" style="margin:12px 0 0"></p>
+    <div id="eccBtns"></div>
+  </div>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th>Mechanism</th><th>Where</th><th>What it protects against</th></tr></thead>
+      <tbody>
+        <tr><td><b>SECDED ECC</b></td><td>Server and workstation DIMMs (72 bits per 64 of data on DDR4)</td><td>Corrects any single-bit error per word and detects double-bit errors.</td></tr>
+        <tr><td><b>On-die ECC</b></td><td>Inside every DDR5 chip</td><td>Corrects single-bit errors within the chip before data leaves it. It protects weak cells, not the bus, so it does not replace module-level ECC.</td></tr>
+        <tr><td><b>Chipkill / SDDC</b></td><td>Servers</td><td>Survives the complete failure of one DRAM chip by spreading each word's bits across chips. Easier with x4 chips.</td></tr>
+        <tr><td><b>CRC</b></td><td>DDR5 bus</td><td>Detects errors on the data lines so a transfer can be retried.</td></tr>
+        <tr><td><b>Patrol scrub</b></td><td>Server firmware</td><td>Reads all memory in the background and repairs single-bit errors before a second one lands in the same word.</td></tr>
+        <tr><td><b>Post-package repair</b></td><td>DDR4 and later</td><td>Permanently remaps a failing row to a spare row in the field.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout"><b>Rowhammer.</b> Repeatedly activating one DRAM row can leak enough charge from the rows beside it to flip their bits, without ever writing to them. Attackers have used this to cross security boundaries. Defences have moved into the DRAM itself: targeted row refresh (TRR), refresh management (RFM/DRFM), and since the April 2024 DDR5 update, <b>Per-Row Activation Counting (PRAC)</b>, where each row counts its own activations and the chip asks the system to pause when a row is hit too often. LPDDR6 includes PRAC as well.</div>
+</section>
+
+<!-- 14 AI -->
+<section id="ai">
+  <div class="kicker">14 · AI-era memory</div>
+  <h2>HBM, CXL, SOCAMM and High Bandwidth Flash</h2>
+  <p>AI accelerators are limited less by arithmetic than by how fast they can move data, the same lesson as section 2 at a far larger scale. That has produced new memory tiers. The most important is <b>HBM</b> (High Bandwidth Memory): DRAM dies thinned, stacked, and connected vertically by <b>through-silicon vias (TSVs)</b>, mounted beside the GPU on a silicon interposer with thousands of very short connections.</p>
+  <div class="card">
+    <div class="ctrl">
+      <div><label>Generation</label><div class="seg" id="hbGen"><button data-v="0">HBM3</button><button data-v="1">HBM3E</button><button data-v="2" class="on">HBM4</button></div></div>
+      <div><label>DRAM layers</label><div class="seg" id="hbLay"><button data-v="8">8-high</button><button data-v="12" class="on">12-high</button><button data-v="16">16-high</button></div></div>
+      <div><label>Die density</label><div class="seg" id="hbDie"><button data-v="16">16 Gb</button><button data-v="24" class="on">24 Gb</button><button data-v="32">32 Gb</button></div></div>
+    </div>
+    <div class="svgwrap"><svg id="hbSvg" viewBox="0 0 640 250" width="100%" role="img" aria-label="HBM stack beside a GPU"></svg></div>
+    <div class="stats" id="hbStats"></div>
+    <p class="muted" id="hbNote" style="margin:12px 0 0;font-size:14px"></p>
+  </div>
+  <h3>The AI memory tiers</h3>
+  <div class="card" id="aiTiers" style="padding:8px"></div>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th>CXL version</th><th>Released</th><th>Link</th><th>What it added</th></tr></thead>
+      <tbody>
+        <tr><td><b>1.0 / 1.1</b></td><td>Mar / Sep 2019</td><td>PCIe 5.0 · 32 GT/s</td><td>Direct-attached devices: memory expansion on a PCIe-style link.</td></tr>
+        <tr><td><b>2.0</b></td><td>Nov 2020</td><td>PCIe 5.0 · 32 GT/s</td><td>Switching and memory pooling between hosts.</td></tr>
+        <tr><td><b>3.0 – 3.2</b></td><td>Aug 2022 – Dec 2024</td><td>PCIe 6.x · 64 GT/s</td><td>Multi-level switching, fabrics, memory sharing.</td></tr>
+        <tr><td><b>4.0</b></td><td>Nov 2025</td><td>PCIe 7.0 · 128 GT/s</td><td>Double the speed, bundled ports, stronger memory RAS, multi-rack reach.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 15 INDUSTRY -->
+<section id="industry">
+  <div class="kicker">15 · Manufacturing &amp; market</div>
+  <h2>The industry in late 2026</h2>
+  <p>Three companies make almost all DRAM: <b>Samsung</b>, <b>SK hynix</b> and <b>Micron</b>, with China's <b>CXMT</b> a growing fourth. Since late 2025 the industry has been in a supply-constrained upcycle: fabs shifted capacity to HBM and server memory for AI data centres, leaving less for PCs, phones and embedded boards.</p>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0">DRAM revenue share, Q3 2026</h3><div id="mkDram"></div><p class="muted" style="font-size:12px;margin:8px 0 0">Counterpoint Research, includes HBM. Other trackers differ by a few points.</p></div>
+    <div class="card"><h3 style="margin-top:0">HBM revenue share, Q2 2026</h3><div id="mkHbm"></div><p class="muted" style="font-size:12px;margin:8px 0 0">Counterpoint Research. Rounded, so totals may not equal 100%.</p></div>
+  </div>
+  <div class="stats">
+    <div class="stat hi"><div class="v">$154.7 B</div><div class="l">global DRAM revenue, Q2 2026 (TrendForce), up 59.5% on the quarter</div></div>
+    <div class="stat"><div class="v">$438</div><div class="l">cheapest 32 GB DDR5-6000 kit in the US on 12 Nov 2026, against $100–200 in Oct 2025</div></div>
+    <div class="stat"><div class="v">+10–15%</div><div class="l">TrendForce forecast for conventional DRAM contract prices, Q4 2026 on Q3</div></div>
+    <div class="stat"><div class="v">Feb 2026</div><div class="l">Micron ended Crucial consumer shipments to prioritise data-centre customers</div></div>
+  </div>
+  <h3>DRAM process nodes</h3>
+  <p>DRAM makers stopped quoting nanometres years ago. Nodes in the “10 nm class” are named in sequence instead. Each step shrinks the cell a little, and newer ones need <b>EUV lithography</b> for more layers.</p>
+  <div class="card tablewrap">
+    <table class="wrap">
+      <thead><tr><th>Generation</th><th>Samsung / SK hynix name</th><th>Micron name</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>1st – 3rd</td><td class="mono">1x, 1y, 1z</td><td class="mono">1x, 1y, 1z</td><td>Roughly 19 nm down to about 15 nm. Samsung introduced EUV on 1z.</td></tr>
+        <tr><td>4th</td><td class="mono">1a</td><td class="mono">1α (alpha)</td><td>SK hynix began EUV in mass production here (2021).</td></tr>
+        <tr><td>5th</td><td class="mono">1b</td><td class="mono">1β (beta)</td><td>About 12–13 nm; around four EUV layers at SK hynix. The volume node for DDR5 and HBM3E.</td></tr>
+        <tr><td>6th</td><td class="mono">1c</td><td class="mono">1γ (gamma)</td><td>About 11–12 nm with five to six EUV layers. Micron's first EUV node. Ramping through 2026; the base for HBM4E.</td></tr>
+        <tr><td>Next</td><td class="mono">1d, then 0a…</td><td class="mono">1δ</td><td>Sub-10 nm class. Makers are developing new cell layouts (vertical-channel transistors, 4F²) and plan High-NA EUV around 2028.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>3D NAND: how many layers</h3>
+  <p>Flash stopped shrinking sideways and grew upward instead. Layer count is the headline measure of a NAND generation.</p>
+  <div class="card"><div id="mkNand"></div><p class="muted" style="font-size:12px;margin:8px 0 0">Newest generation in production per vendor reports, 2026. Kioxia/Sandisk 332-layer BiCS10 is sampling and ramping; Micron has announced a 400+ layer generation for the second half of 2027.</p></div>
+  <h3>Timeline: standards and industry milestones</h3>
+  <div class="card" id="mkTime"></div>
+</section>
+
+<!-- 16 GLOSSARY -->
+<section id="glossary">
+  <div class="kicker">16 · A–Z glossary</div>
+  <h2>Memory terms from A to Z</h2>
+  <div class="card">
+    <input id="glQ" type="search" placeholder="Search terms and definitions…" aria-label="Search glossary" style="width:100%;font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text)">
+    <div id="glLetters" style="display:flex;flex-wrap:wrap;gap:4px;margin:12px 0"></div>
+    <div class="muted" id="glCount" style="font-size:13px;margin-bottom:6px"></div>
+    <dl id="glList" style="margin:0"></dl>
+  </div>
+</section>
+
+<!-- 17 QUIZ -->
 <section id="quiz">
-  <div class="kicker">09 · Check yourself</div>
+  <div class="kicker">17 · Check yourself</div>
   <h2>Quick check</h2>
   <div id="quizBox"></div>
 </section>
 
+<!-- 18 SOURCES -->
+<section id="sources">
+  <div class="kicker">18 · Sources</div>
+  <h2>Sources and method</h2>
+  <p>Standards dates, product status and market figures in Part II were checked against the sources below on 16 November 2026. Market data moves quarterly and price data weekly; treat them as a snapshot. Typical engineering values elsewhere on the page (latencies, cell characteristics, example timings) are representative figures rather than measurements of a specific product.</p>
+  <div class="card"><ol>
+    <li><a href="https://www.businesswire.com/news/home/20250709315796/en/JEDEC-Releases-New-LPDDR6-Standard-to-Enhance-Mobile-and-AI-Memory-Performance">JEDEC: LPDDR6 standard JESD209-6 press release (Jul 2025)</a></li>
+    <li><a href="https://www.tomshardware.com/pc-components/dram/jedec-publishes-first-lpddr6-standard-new-interface-promises-double-the-effective-bandwidth-of-current-gen">Tom's Hardware: LPDDR6 data rates</a></li>
+    <li><a href="https://intuitionlabs.ai/articles/ddr6-explained-speed-architecture">IntuitionLabs: DDR6 status, updated Oct 2026</a></li>
+    <li><a href="https://bottleneckpc.com/blog/ddr6-ram-everything-we-know">BottleneckPC: DDR6 roadmap targets</a></li>
+    <li><a href="https://www.businesswire.com/news/home/20240417886230/en/JEDEC-Updates-JESD79-5C-DDR5-SDRAM-Standard-Elevating-Performance-and-Security-for-Next-Gen-Technologies">JEDEC: DDR5 JESD79-5C update with PRAC (Apr 2024)</a></li>
+    <li><a href="https://www.trendforce.com/news/2025/04/21/news-jedec-finalizes-hbm4-standard-potentially-easing-pressure-on-hybrid-bonding-adoption/">TrendForce: JEDEC HBM4 standard JESD270-4 (Apr 2025)</a></li>
+    <li><a href="https://www.allaboutcircuits.com/news/jedec-officially-releases-hbm4-memory-standard">All About Circuits: HBM4 specification summary</a></li>
+    <li><a href="https://codema.ai/articles/hbm4-race-sk-hynix-samsung-micron.html">Codema: HBM4 production status by vendor, Oct 2026</a></li>
+    <li><a href="https://www.benzinga.com/news/26/09/61800956/sk-hynix-16-layer-hbm4-nvidia-rubin-micron-samsung">Benzinga: 16-layer HBM4 status (Sep 2026)</a></li>
+    <li><a href="https://siliconanalysts.com/analysis/hbm4-market-share-race-2026">Silicon Analysts: HBM revenue share and HBM4 speeds</a></li>
+    <li><a href="https://www.pctestbench.com/dram-market-share-q3-2026/">PC Test Bench: Counterpoint Q3 2026 DRAM market share</a></li>
+    <li><a href="https://counterpointresearch.com/en/insights/global-dram-and-hbm-market-share">Counterpoint Research: global DRAM and HBM market share by quarter</a></li>
+    <li><a href="https://www.tradingkey.com/analysis/stocks/us-stocks/262154356-trendforce-micron-mu-conventional-dram-revenue-growth-samsung-sk-hynix-contract-price-tradingkey">TrendForce via TradingKey: Q2 2026 DRAM revenue</a></li>
+    <li><a href="https://tech-insider.org/ddr5-ram-price-450-ai-shortage-2026/">Tech Insider: DDR5 retail kit prices, Nov 2026</a></li>
+    <li><a href="https://shattered.io/ram-prices-ai-memory-shortage-2026/">Shattered: DDR5 kit prices, Oct 2025 versus 2026</a></li>
+    <li><a href="https://www.techbloat.com/dram-shortages-in-how-ram-and-gpu-prices-could-change.html">TechBloat: TrendForce Q4 2026 contract price forecast</a></li>
+    <li><a href="https://www.storagereview.com/news/micron-exits-crucial-consumer-business-to-focus-on-higher-growth-segments">StorageReview: Micron exits the Crucial consumer business</a></li>
+    <li><a href="https://computeexpresslink.org/wp-content/uploads/2025/11/CXL_4.0-Specification-Release_FINAL_Website-Copy.pdf">CXL Consortium: CXL 4.0 specification release (Nov 2025)</a></li>
+    <li><a href="https://computeexpresslink.org/wp-content/uploads/2025/12/CXL_4.0-Webinar_December-2025_FINAL.pdf">CXL Consortium: CXL 4.0 webinar, specification timeline</a></li>
+    <li><a href="https://www.digieraglobal.com/blogs/news/what-is-3d-nand">Digiera: 3D NAND layer counts by maker, 2026</a></li>
+    <li><a href="https://ollinewsroom.com/2026/10/23/microns-next-generation-3d-nand-to-double-bit-density-with-over-400-layers-offering-extreme-performance/">Olli Newsroom: Micron 400+ layer NAND plans</a></li>
+    <li><a href="https://www.kingston.com/en/blog/system-builder/understanding-memory-modules-cudimm-csodimm-camm2-mrdimm-video">Kingston: CUDIMM, CSODIMM, CAMM2 and MRDIMM explained</a></li>
+    <li><a href="https://www.tweaktown.com/news/111452/jedec-pushes-ddr5-server-memory-to-12-800-mt-s-with-new-mrdimm-gen2-standard-for-ai-and-data-center-workloads/index.html">TweakTown: MRDIMM Gen 2 at 12,800 MT/s</a></li>
+    <li><a href="https://www.jedec.org/standards-documents/docs/jesd328">JEDEC: JESD328 SOCAMM2 standard (Jun 2026)</a></li>
+    <li><a href="https://eyesonflash.com/working-memory/camm2-lpcamm2-socamm2/">Eyes on Flash: CAMM2, LPCAMM2 and SOCAMM2 timeline</a></li>
+    <li><a href="https://www.techpowerup.com/352445/sk-hynix-boosts-leading-edge-1c-dram-production-to-a-dominant-position">TechPowerUp: SK hynix 1c DRAM node ramp and EUV layers</a></li>
+    <li><a href="https://www.trendforce.com/news/2026/09/09/news-the-race-to-2028-samsung-sk-hynix-set-high-na-euv-timelines-for-dram-as-micron-stays-tight-lipped/">TrendForce: High-NA EUV timelines for DRAM</a></li>
+    <li><a href="https://www.thelec.net/news/articleView.html?idxno=10727">The Elec: Micron 1γ node and HBM4E</a></li>
+    <li><a href="https://anandtech.com/show/21287">AnandTech: GDDR7 specification, PAM3 signalling</a></li>
+    <li><a href="https://briefglance.com/articles/jedec-unleashes-ufs-50-doubling-speed-for-the-on-device-ai-era">BriefGlance: JEDEC UFS 5.0 published (Feb 2026)</a></li>
+    <li><a href="https://www.sandisk.com/company/newsroom/press-releases/2026/2026-08-03-Sandisk-and-sk-hynix-advance-global-standardization-of-hbf">Sandisk: High Bandwidth Flash specification through OCP (Aug 2026)</a></li>
+    <li><a href="https://www.yolegroup.com/product/report/emerging-non-volatile-memory-2026/">Yole Group: Emerging Non-Volatile Memory 2026</a></li>
+    <li><a href="https://semiengineering.com/new-nonvolatile-memory-winners-emerge/">Semiconductor Engineering: status of MRAM, ReRAM, PCM and FeRAM</a></li>
+  </ol></div>
+</section>
+
 </main>
-<footer>Figures are peak theoretical values (data rate × bus width ÷ 8). Real-world throughput is lower due to refresh, row switching, and command overhead.</footer>
+<footer>Computer Memory: Interactive Technical Reference · Updated 16 November 2026. Bandwidth figures are peak theoretical values (data rate × bus width ÷ 8). Real-world throughput is lower due to refresh, row switching, and command overhead.</footer>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -356,7 +649,7 @@ const NS="http://www.w3.org/2000/svg";
 function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e}
 function seg(id,cb){const box=$(id);box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v)});return ()=>box.querySelector('.on').dataset.v}
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const C={accent:css('--accent'),a2:css('--accent2'),a3:css('--accent3'),line:css('--line'),muted:css('--muted'),text:css('--text'),panel2:css('--panel2'),chip:css('--chip'),danger:css('--danger')};
+const C={};function loadC(){Object.assign(C,{accent:css('--accent'),a2:css('--accent2'),a3:css('--accent3'),line:css('--line'),muted:css('--muted'),text:css('--text'),panel2:css('--panel2'),chip:css('--chip'),danger:css('--danger'),on:css('--onaccent'),pcb:css('--pcb'),bg:css('--bg')})}loadC();
 const fmtBW=gbs=>gbs>=10?gbs.toFixed(1)+' GB/s':gbs.toFixed(2)+' GB/s';
 
 /* ---------- 1 hierarchy ---------- */
@@ -430,7 +723,7 @@ const REG={title:'Inside the registers',intro:'Registers are the CPU\'s working 
  {n:'Widths',t:'Register size is the CPU\'s natural word size. On x86-64, the 64-bit <code>RAX</code> still lets old code reach its lower parts by their historic names: <code>EAX</code> (low 32 bits, from 32-bit CPUs), <code>AX</code> (low 16 bits, from the 8086), and <code>AH</code>/<code>AL</code> (8-bit halves). A 64-bit register can hold any whole number up to about 1.8 × 10¹⁹, or address 16 exabytes of memory.',
   d:s=>{const x0=40,pb=8.75,bx=b=>x0+(63-b)*pb;
    [63,47,31,15,7,0].forEach(b=>{tx(s,bx(b)+(b===0?pb/2:0),22,String(b),{...mid,...mono,fill:C.muted,'font-size':11});ln(s,bx(b),26,bx(b),206,{stroke:C.line,'stroke-width':1,'stroke-dasharray':'2 4'})});
-   const bar=(hi,lo,y,name,bits,col)=>{rc(s,bx(hi),y,(hi-lo+1)*pb,34,{fill:col,opacity:.85,stroke:'#0f1216',rx:4});tx(s,bx(hi)+(hi-lo+1)*pb/2,y+22,name,{...mid,...mono,'font-weight':600,fill:'#0b1513','font-size':13})};
+   const bar=(hi,lo,y,name,bits,col)=>{rc(s,bx(hi),y,(hi-lo+1)*pb,34,{fill:col,opacity:.85,stroke:C.bg,rx:4});tx(s,bx(hi)+(hi-lo+1)*pb/2,y+22,name,{...mid,...mono,'font-weight':600,fill:C.on,'font-size':13})};
    bar(63,0,34,'RAX · 64 bits',0,C.accent);bar(31,0,78,'EAX · 32',0,C.a3);bar(15,0,122,'AX · 16',0,C.a2);bar(15,8,166,'AH',0,G);bar(7,0,166,'AL',0,G);
    tx(s,x0,224,'bit 63 (most significant) … bit 0 (least significant)',{fill:C.muted,'font-size':11});}},
  {n:'How a bit is stored',t:'A register bit is a <b>flip-flop</b>: two inverters (NOT gates) feeding each other in a loop. If Q is 1, the lower inverter outputs 0, which makes the upper one output 1 again, so the loop holds itself stable as long as power is on. No capacitor, no leakage, <b>no refresh</b>. A clock signal decides exactly when a new value may be written. Register-file cells need extra ports so several instructions can read and write at once, which makes them large (often 10–20+ transistors per bit). That is why there are so few registers.',
@@ -484,7 +777,7 @@ const CACHE={title:'Inside the cache',intro:'Caches are small, fast SRAM memorie
  {n:'Address → set',t:'How does the cache know where to look? It splits each memory address into three fields. The <b>offset</b> picks the byte inside the 64-byte line (6 bits). The <b>index</b> picks which <i>set</i> of the cache the line must live in. The <b>tag</b> is stored with the line and compared to confirm it really is the right address. Example: a 32 KB, 8-way cache with 64-byte lines has 64 sets, so the index is 6 bits. Drag the slider:',
   d:s=>{const draw=()=>{s.innerHTML='';const bits=addr.toString(2).padStart(16,'0');const x0=64,w=32;
     tx(s,320,22,`Address ${addr} = 0x${addr.toString(16).toUpperCase().padStart(4,'0')} (16-bit example)`,{...mid,...mono,'font-size':13});
-    for(let i=0;i<16;i++){const b=15-i,col=b>=12?C.a3:b>=6?C.a2:C.accent;rc(s,x0+i*w,40,w-3,40,{fill:col,opacity:.85,stroke:'none',rx:4});tx(s,x0+i*w+w/2-1.5,66,bits[i],{...mid,...mono,'font-size':16,'font-weight':600,fill:'#0b1513'});tx(s,x0+i*w+w/2-1.5,96,String(b),{...mid,...mono,fill:C.muted,'font-size':10})}
+    for(let i=0;i<16;i++){const b=15-i,col=b>=12?C.a3:b>=6?C.a2:C.accent;rc(s,x0+i*w,40,w-3,40,{fill:col,opacity:.85,stroke:'none',rx:4});tx(s,x0+i*w+w/2-1.5,66,bits[i],{...mid,...mono,'font-size':16,'font-weight':600,fill:C.on});tx(s,x0+i*w+w/2-1.5,96,String(b),{...mid,...mono,fill:C.muted,'font-size':10})}
     const tag=addr>>12,idx=(addr>>6)&63,off=addr&63;
     [[x0,4,'TAG',tag,'compared with stored tag',C.a3],[x0+4*w,6,'INDEX',idx,'→ set '+idx+' of 64',C.a2],[x0+10*w,6,'OFFSET',off,'→ byte '+off+' of the line',C.accent]].forEach(([x,n,lab,v,d,col])=>{const wd=n*w-3;el('path',{d:`M${x},106 L${x},114 L${x+wd},114 L${x+wd},106`,fill:'none',stroke:col,'stroke-width':2},s);tx(s,x+wd/2,136,lab+' = '+v,{...mid,...mono,fill:col,'font-weight':600,'font-size':13});tx(s,x+wd/2,156,d,{...mid,fill:C.muted,'font-size':11})});
     tx(s,320,196,`Line address = ${addr>>6}  ·  bytes ${(addr>>6)*64}–${(addr>>6)*64+63} are cached together`,{...mid,'font-size':12,fill:C.text});};
@@ -493,7 +786,7 @@ const CACHE={title:'Inside the cache',intro:'Caches are small, fast SRAM memorie
   d:s=>{const access=b=>{const sl=b%4;if(sim.slots[sl]===b){sim.hits++;sim.res='hit'}else{sim.miss++;sim.res='miss';sim.slots[sl]=b}sim.last=b;drawSim()};
    const drawSim=()=>{s.innerHTML='';defs(s);tx(s,20,18,'DRAM blocks (tap one)',{fill:C.muted,'font-size':12});
     for(let i=0;i<16;i++){const x=20+i*37.5,cols=[C.accent,C.a3,C.a2,G];const g=el('g',{style:'cursor:pointer'},s);g.addEventListener('click',()=>access(i));
-     rc(g,x,26,33,36,{fill:sim.last===i?cols[i%4]:C.chip,stroke:cols[i%4],rx:4});tx(g,x+16.5,49,String(i),{...mid,...mono,'font-size':13,fill:sim.last===i?'#0b1513':C.text})}
+     rc(g,x,26,33,36,{fill:sim.last===i?cols[i%4]:C.chip,stroke:cols[i%4],rx:4});tx(g,x+16.5,49,String(i),{...mid,...mono,'font-size':13,fill:sim.last===i?C.on:C.text})}
     tx(s,20,128,'Cache slots',{fill:C.muted,'font-size':12});
     for(let j=0;j<4;j++){const x=110+j*120,cols=[C.accent,C.a3,C.a2,G],v=sim.slots[j],act=sim.last!=null&&sim.last%4===j;
      rc(s,x,136,100,52,{fill:act?(sim.res==='hit'?'rgba(79,179,169,.3)':'rgba(224,108,108,.25)'):C.panel2,stroke:cols[j],'stroke-width':act?3:1.5});tx(s,x+50,156,'slot '+j,{...mid,fill:C.muted,'font-size':11});tx(s,x+50,177,v==null?'empty':'block '+v,{...mid,...mono,'font-size':13,'font-weight':600})}
@@ -526,9 +819,9 @@ const STOR={title:'Inside storage: SSD & HDD',intro:'Storage keeps data with the
  {n:'SSD vs HDD',t:'Both are <b>non-volatile</b> and connect to the system as block devices. The difference is mechanics: a hard drive has to physically move a head and wait for the platter to spin round, so random access takes milliseconds. An SSD has no moving parts and reaches any cell electronically in tens of microseconds. HDDs still win on cost per terabyte for bulk storage.',
   d:s=>{const col=(x,title,c,rows,icon)=>{rc(s,x,8,300,214,{stroke:c,fill:'rgba(255,255,255,.02)'});tx(s,x+150,30,title,{...mid,'font-weight':600,fill:c,'font-size':15});icon(x);rows.forEach(([k,v],i)=>{tx(s,x+16,128+i*20,k,{fill:C.muted,'font-size':12});tx(s,x+284,128+i*20,v,{'text-anchor':'end','font-size':12})})};
    col(10,'Hard disk drive (HDD)',C.a2,[['Moving parts','yes: platters + head'],['Sequential speed','~150–280 MB/s'],['Random access','~5–12 ms'],['Typical sizes','2–30+ TB'],['Weak spot','shock, vibration']],x=>{el('circle',{cx:x+120,cy:72,r:34,fill:C.panel2,stroke:C.a2,'stroke-width':2},s);el('circle',{cx:x+120,cy:72,r:6,fill:C.a2},s);ln(s,x+200,98,x+138,58,{stroke:C.text,'stroke-width':3});el('circle',{cx:x+200,cy:98,r:6,fill:C.text},s)});
-   col(330,'Solid-state drive (SSD)',C.accent,[['Moving parts','none'],['Sequential speed','~0.5–14 GB/s'],['Random access','~0.02–0.1 ms'],['Typical sizes','0.25–8 TB'],['Weak spot','finite write cycles']],x=>{rc(s,x+60,44,180,56,{fill:'#1b2a22',stroke:C.accent,rx:4});for(let i=0;i<3;i++)rc(s,x+72+i*46,54,38,36,{fill:C.chip,stroke:C.accent,rx:3});rc(s,x+214,58,18,28,{fill:C.chip,stroke:C.a3,rx:2})});}},
+   col(330,'Solid-state drive (SSD)',C.accent,[['Moving parts','none'],['Sequential speed','~0.5–14 GB/s'],['Random access','~0.02–0.1 ms'],['Typical sizes','0.25–8 TB'],['Weak spot','finite write cycles']],x=>{rc(s,x+60,44,180,56,{fill:C.pcb,stroke:C.accent,rx:4});for(let i=0;i<3;i++)rc(s,x+72+i*46,54,38,36,{fill:C.chip,stroke:C.accent,rx:3});rc(s,x+214,58,18,28,{fill:C.chip,stroke:C.a3,rx:2})});}},
  {n:'HDD: platters & heads',t:'Inside a hard drive, aluminium or glass <b>platters</b> coated with magnetic material spin at a constant speed (5400–7200 RPM in PCs, 7200 RPM = 120 turns per second). Data is laid out in concentric <b>tracks</b>, each split into <b>sectors</b> (usually 4 KB). A <b>read/write head</b> on an <b>actuator arm</b> flies a few nanometres above the surface, magnetising tiny regions one way or the other to write 1s and 0s. Big drives stack several platters with a head for each surface.',
-  d:s=>{const cx=200,cy=115;el('circle',{cx,cy,r:104,fill:'#1c1f26',stroke:C.a2,'stroke-width':2},s);for(let r=30;r<=98;r+=13)el('circle',{cx,cy,r,fill:'none',stroke:C.line},s);
+  d:s=>{const cx=200,cy=115;el('circle',{cx,cy,r:104,fill:C.panel2,stroke:C.a2,'stroke-width':2},s);for(let r=30;r<=98;r+=13)el('circle',{cx,cy,r,fill:'none',stroke:C.line},s);
    const g=el('g',{},s);const pol=(r,a)=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)];const [a1,b1]=pol(69,-12),[a2,b2]=pol(69,12),[a3,b3]=pol(82,12),[a4,b4]=pol(82,-12);
    el('path',{d:`M${a1},${b1} A69,69 0 0 1 ${a2},${b2} L${a3},${b3} A82,82 0 0 0 ${a4},${b4} Z`,fill:C.accent,opacity:.85},g);
    el('animateTransform',{attributeName:'transform',type:'rotate',from:`0 ${cx} ${cy}`,to:`360 ${cx} ${cy}`,dur:'1.6s',repeatCount:'indefinite'},g);
@@ -545,7 +838,7 @@ const STOR={title:'Inside storage: SSD & HDD',intro:'Storage keeps data with the
  {n:'SSD: flash cells',t:'An SSD stores bits in <b>NAND flash</b> cells: transistors with an insulated layer that traps electrons. Trapped charge shifts the voltage at which the transistor turns on, and the controller reads that voltage. Storing <b>more bits per cell</b> means splitting the voltage window into more levels: SLC = 2 levels (1 bit), MLC = 4 (2 bits), TLC = 8 (3 bits), QLC = 16 (4 bits). More levels give cheaper, denser drives, but they are slower to write and wear out sooner. Endurance figures are rough program/erase (P/E) cycles.',
   d:s=>{[['SLC',1,'~50–100k P/E'],['MLC',2,'~3–10k P/E'],['TLC',3,'~1–3k P/E'],['QLC',4,'~0.3–1k P/E']].forEach(([n,b,e],i)=>{const x=18+i*154,L=2**b,top=52,H=130,h=H/L;
     rc(s,x,8,140,214,{stroke:C.line,fill:'rgba(255,255,255,.02)'});tx(s,x+70,28,`${n} · ${b} bit${b>1?'s':''}`,{...mid,'font-weight':600});tx(s,x+70,44,L+' voltage levels',{...mid,fill:C.muted,'font-size':11});
-    for(let k=0;k<L;k++){rc(s,x+14,top+H-(k+1)*h+1,112,Math.max(1.5,h-2.5),{fill:[C.accent,C.a3,C.a2,G][k%4],opacity:.35+.6*(k/L),stroke:'none',rx:2});if(L<=8)tx(s,x+70,top+H-k*h-h/2+4,(L-1-k).toString(2).padStart(b,'0'),{...mid,...mono,'font-size':11,fill:'#0b1513','font-weight':600})}
+    for(let k=0;k<L;k++){rc(s,x+14,top+H-(k+1)*h+1,112,Math.max(1.5,h-2.5),{fill:[C.accent,C.a3,C.a2,G][k%4],opacity:.35+.6*(k/L),stroke:'none',rx:2});if(L<=8)tx(s,x+70,top+H-k*h-h/2+4,(L-1-k).toString(2).padStart(b,'0'),{...mid,...mono,'font-size':11,fill:C.on,'font-weight':600})}
     tx(s,x+70,206,e,{...mid,'font-size':12,fill:C.muted})});}},
  {n:'SSD: pages & blocks',t:'Flash has an awkward rule: you can <b>write</b> in small <b>pages</b> (~16 KB), but you can only <b>erase</b> whole <b>blocks</b> (hundreds of pages, several MB), and a page can\'t be overwritten until its block is erased. So when a file changes, the SSD writes the new data to a free page and marks the old page <b>stale</b>. The controller\'s <b>flash translation layer</b> tracks where everything really lives. <b>Garbage collection</b> later copies the still-valid pages out of a mostly-stale block and erases it. <b>Wear levelling</b> spreads writes so no block wears out early. Try it:',
   d:s=>{const draw=()=>{s.innerHTML='';const fill={f:C.panel2,v:C.accent,s:C.danger};
@@ -594,7 +887,7 @@ const DRAM={title:'Inside DRAM',intro:'A DRAM bit is a tiny <b>capacitor</b> (ch
    tx(s,x0+8,y0+r*chh+32,'row buffer (sense amplifiers): the whole open row lives here',{fill:C.a2,'font-size':12});
    tx(s,x0+9*cw-10,y0+r*chh+60,'↑ column read',{'font-size':12});}},
  {n:'Bank',t:'<b>Bank</b>: an independent grid with its own row buffer. While one bank is busy opening a row, another can be serving data. DDR4 has 16 banks in 4 <i>bank groups</i>; DDR5 has 32 banks in 8 groups.',
-  d:s=>{for(let g=0;g<4;g++){rc(s,30+g*150,20,140,170,{rx:8,fill:'none','stroke-dasharray':'4 4'});tx(s,40+g*150,40,'bank group '+g,{fill:C.muted,'font-size':12});for(let b=0;b<4;b++){const on=g===1&&b===2;rc(s,45+g*150,52+b*33,110,26,{rx:4,fill:on?C.accent:C.panel2});tx(s,58+g*150,70+b*33,'bank '+(g*4+b),{fill:on?'#0b1513':C.muted,'font-size':12})}}
+  d:s=>{for(let g=0;g<4;g++){rc(s,30+g*150,20,140,170,{rx:8,fill:'none','stroke-dasharray':'4 4'});tx(s,40+g*150,40,'bank group '+g,{fill:C.muted,'font-size':12});for(let b=0;b<4;b++){const on=g===1&&b===2;rc(s,45+g*150,52+b*33,110,26,{rx:4,fill:on?C.accent:C.panel2});tx(s,58+g*150,70+b*33,'bank '+(g*4+b),{fill:on?C.on:C.muted,'font-size':12})}}
    tx(s,30,215,'DDR4 example: 4 groups × 4 banks. Banks work independently and in parallel.',{fill:C.muted,'font-size':12});}},
  {n:'Chip',t:'<b>Chip</b> (device): a package with all the banks, plus I/O circuitry and its data pins (DQ lanes). Chips are sold by density (e.g. 8 Gb, 16 Gb) and width (x4, x8, x16).',
   d:s=>{rc(s,180,30,280,140,{rx:10,fill:C.chip,stroke:C.accent,'stroke-width':2});tx(s,270,95,'DRAM chip',{'font-size':18,'font-weight':600});tx(s,262,118,'16 banks · 8 Gb · x8',{fill:C.muted});
@@ -603,11 +896,11 @@ const DRAM={title:'Inside DRAM',intro:'A DRAM bit is a tiny <b>capacitor</b> (ch
   d:s=>{for(let i=0;i<8;i++){rc(s,20+i*76,40,66,80,{fill:C.chip,stroke:C.accent});tx(s,36+i*76,85,'x8');ln(s,53+i*76,120,53+i*76,160,{stroke:C.a2,'stroke-width':4});tx(s,28+i*76,178,`DQ${i*8}–${i*8+7}`,{fill:C.muted,'font-size':11})}
    ln(s,20,160,620,160,{stroke:C.a2,'stroke-width':1});tx(s,200,210,'8 chips × 8 lanes = 64-bit rank',{'font-size':14});}},
  {n:'DIMM',t:'<b>DIMM</b> (the stick): a circuit board carrying one or more ranks. SODIMM is the laptop size. On DDR5, each DIMM is split into two independent 32-bit sub-channels.',
-  d:s=>{for(let side=0;side<2;side++){rc(s,30,20+side*100,580,80,{fill:'#1b2a22'});tx(s,40,38+side*100,'rank '+side+(side?' (back side)':' (front side)'),{fill:C.muted,'font-size':12});for(let i=0;i<8;i++)rc(s,55+i*68,46+side*100,56,44,{rx:4,fill:C.chip,stroke:side?C.a3:C.accent})}
+  d:s=>{for(let side=0;side<2;side++){rc(s,30,20+side*100,580,80,{fill:C.pcb});tx(s,40,38+side*100,'rank '+side+(side?' (back side)':' (front side)'),{fill:C.muted,'font-size':12});for(let i=0;i<8;i++)rc(s,55+i*68,46+side*100,56,44,{rx:4,fill:C.chip,stroke:side?C.a3:C.accent})}
    tx(s,30,218,'A dual-rank DIMM: two sets of 8 chips sharing the same 64 data lines (one rank talks at a time)',{fill:C.muted,'font-size':12});}},
  {n:'Channel',t:'<b>Channel</b>: an independent 64-bit path between the memory controller and its DIMMs. Desktop CPUs usually have 2 channels, workstations 4–8, servers 8–12. Channels work in parallel, so bandwidth adds up.',
   d:s=>{rc(s,240,80,160,70,{rx:10,stroke:C.accent,'stroke-width':2});tx(s,262,112,'Memory',{'font-size':14,'font-weight':600});tx(s,262,130,'controller (CPU)',{'font-size':14,'font-weight':600});
-   [[60,'Channel A'],[460,'Channel B']].forEach(([x,n],k)=>{const c=k?C.a3:C.accent;tx(s,x,30,n,{fill:c,'font-weight':600});for(let d=0;d<2;d++)rc(s,x+d*55,45,40,150,{rx:4,fill:'#1b2a22',stroke:c});ln(s,k?400:160,115,k?460:240,115,{stroke:c,'stroke-width':4})});
+   [[60,'Channel A'],[460,'Channel B']].forEach(([x,n],k)=>{const c=k?C.a3:C.accent;tx(s,x,30,n,{fill:c,'font-weight':600});for(let d=0;d<2;d++)rc(s,x+d*55,45,40,150,{rx:4,fill:C.pcb,stroke:c});ln(s,k?400:160,115,k?460:240,115,{stroke:c,'stroke-width':4})});
    tx(s,230,215,'Two independent 64-bit channels',{fill:C.muted,'font-size':12});}}
 ]};
 
@@ -649,7 +942,7 @@ function drawCpu(){const s=$('#cpuSvg');s.innerHTML='';defs(s);const E=cpuEvents
  const tot=done.reduce((a,e)=>a+e.cyc,0);
  // core
  rc(s,8,6,330,300,{fill:'rgba(143,140,240,.05)',stroke:C.a3,'stroke-width':1.5,rx:12});tx(s,20,24,'CPU core @ 4.5 GHz',{fill:C.a3,'font-size':12,'font-weight':600});
- ['Fetch','Decode','Execute','Memory','Write-back'].forEach((n,i)=>{const on=ev.st===i;rc(s,18+i*63,34,58,40,{fill:on?C.accent:C.panel2,stroke:on?C.accent:C.line,rx:6});tx(s,47+i*63,58,n,{...mid,'font-size':11,'font-weight':on?700:400,fill:on?'#0b1513':C.text});if(i<4)tx(s,78+i*63,58,'›',{fill:C.muted,'font-size':12})});
+ ['Fetch','Decode','Execute','Memory','Write-back'].forEach((n,i)=>{const on=ev.st===i;rc(s,18+i*63,34,58,40,{fill:on?C.accent:C.panel2,stroke:on?C.accent:C.line,rx:6});tx(s,47+i*63,58,n,{...mid,'font-size':11,'font-weight':on?700:400,fill:on?C.on:C.text});if(i<4)tx(s,78+i*63,58,'›',{fill:C.muted,'font-size':12})});
  tx(s,20,94,'Registers',{fill:C.muted,'font-size':11});
  const regs=[['RAX (sum)',done.some(e=>e.reg===2)?'142':'100',done.some(e=>e.reg===2)&&ev.reg===2],['RBX',done.some(e=>e.reg>=1)?'42':'—',ev.reg===1],['RSI (&a[i])','0x7FFD1040',ev.st===2&&cpuK<=2],['RCX (count)','1000',0]];
  regs.forEach(([n,v,h],i)=>{const x=18+(i%2)*158,y=100+Math.floor(i/2)*34;rc(s,x,y,150,28,{fill:h?'rgba(79,179,169,.25)':C.chip,stroke:h?C.accent:C.line,rx:4});tx(s,x+8,y+18,n,{...mono,'font-size':10.5,fill:C.muted});tx(s,x+142,y+18,v,{...mono,'font-size':11.5,'text-anchor':'end','font-weight':600})});
@@ -727,8 +1020,8 @@ function drawDDR(){dS.innerHTML='';const period=80,x0=70,W=560,phase=t%period;
  const per=ddrMode==='ddr'?period/2:period;
  const startIdx=Math.floor(t/per)-1;
  for(let k=0;k<20;k++){const idx=startIdx+k;const x=x0-(t-idx*per);if(x>x0+W)break;
-  el('path',{d:`M${x},140 L${x+6},118 L${x+per-6},118 L${x+per},140 L${x+per-6},162 L${x+6},162 Z`,fill:idx%2?C.a3:C.a2,opacity:.75,stroke:'#0f1216'},g);
-  el('text',{x:x+per/2-8,y:145,fill:'#0b1513','font-size':12,'font-weight':600},g,'D'+((idx%100+100)%100));
+  el('path',{d:`M${x},140 L${x+6},118 L${x+per-6},118 L${x+per},140 L${x+per-6},162 L${x+6},162 Z`,fill:idx%2?C.a3:C.a2,opacity:.75,stroke:C.bg},g);
+  el('text',{x:x+per/2-8,y:145,fill:C.on,'font-size':12,'font-weight':600},g,'D'+((idx%100+100)%100));
   el('line',{x1:x,y1:72,x2:x,y2:116,stroke:C.line,'stroke-dasharray':'2 3'},g)}
  el('text',{x:x0,y:186,fill:C.muted,'font-size':12},dS,ddrMode==='ddr'?'One data word on the rising edge AND one on the falling edge':'One data word per clock cycle (rising edge only)');
  $('#ddrCyc').textContent=Math.floor(t/period);$('#ddrXfer').textContent=Math.floor(t/per);}
@@ -760,7 +1053,7 @@ function drawLanes(){const s=$('#lnSvg');s.innerHTML='';const n=Math.ceil(lnBus/
  el('text',{x:x0,y:210,fill:C.muted,'font-size':12},s,`Memory controller data bus: ${lnBus} lanes (DQ0–DQ${lnBus-1})`);
  for(let i=0;i<n;i++){const cx=x0+i*lnW*laneW,cw=lnW*laneW;const ecc=lnBus===72&&i*lnW>=64;
   const pad=Math.min(4,cw*0.12);
-  el('rect',{x:cx+pad,y:30,width:cw-2*pad,height:80,rx:Math.min(6,cw/5),fill:ecc?'#3a2f1e':C.chip,stroke:ecc?C.a2:C.accent},s);
+  el('rect',{x:cx+pad,y:30,width:cw-2*pad,height:80,rx:Math.min(6,cw/5),fill:ecc?'rgba(224,168,79,.25)':C.chip,stroke:ecc?C.a2:C.accent},s);
   if(cw>26)el('text',{x:cx+cw/2,y:76,fill:C.text,'font-size':cw>50?13:10,'text-anchor':'middle'},s,'x'+lnW);
   for(let l=0;l<lnW;l++){const lx=cx+(l+.5)*laneW;el('line',{x1:lx,y1:110,x2:lx,y2:178,stroke:ecc?C.a2:C.accent,'stroke-width':Math.max(1,laneW*.45),opacity:.8},s)}}
  el('text',{x:x0,y:20,fill:C.text,'font-size':14,'font-weight':600},s,`${n} chips × x${lnW} = ${n*lnW} bits`);
@@ -815,7 +1108,7 @@ function drawKit(){const s=$('#kSvg');s.innerHTML='';
  el('text',{x:105,y:110,fill:C.text,'font-size':15,'font-weight':600,'text-anchor':'middle'},s,'CPU');
  el('text',{x:105,y:130,fill:C.muted,'font-size':12,'text-anchor':'middle'},s,'2 memory channels');
  slots.forEach((sl,i)=>{const x=250+i*90+(i>1?30:0),col=sl.c==='A'?C.accent:C.a3,on=fill.includes(sl.n);
-  el('rect',{x,y:20,width:44,height:180,rx:4,fill:on?'#1b2a22':'transparent',stroke:on?col:C.line,'stroke-width':on?2:1,'stroke-dasharray':on?'':'4 4'},s);
+  el('rect',{x,y:20,width:44,height:180,rx:4,fill:on?C.pcb:'transparent',stroke:on?col:C.line,'stroke-width':on?2:1,'stroke-dasharray':on?'':'4 4'},s);
   if(on){for(let c=0;c<4;c++)el('rect',{x:x+8,y:36+c*38,width:28,height:28,rx:3,fill:C.chip,stroke:col},s);el('text',{x:x+22,y:192,fill:C.text,'font-size':11,'text-anchor':'middle'},s,k.s+'GB')}
   el('text',{x:x+22,y:218,fill:col,'font-size':12,'text-anchor':'middle'},s,sl.n)});
  el('line',{x1:180,y1:95,x2:250,y2:95,stroke:C.accent,'stroke-width':fill.some(f=>f[0]==='A')?4:1},s);
@@ -842,7 +1135,7 @@ function drawDev(){const s=$('#dvSvg');s.innerHTML='';const D=devs[dv];
  const soc=(x,y,w,h,t)=>{rc(s,x,y,w,h,{fill:C.panel2,stroke:C.a3,'stroke-width':2,rx:8});tx(s,x+w/2,y+h/2+5,t,{...mid,'font-weight':600,'font-size':14})};
  if(dv===0){
   tx(s,150,18,'Side view: package-on-package',{...mid,fill:C.muted,'font-size':12});
-  rc(s,20,190,260,12,{fill:'#1b2a22',stroke:C.line,rx:2});tx(s,150,222,'phone circuit board',{...mid,fill:C.muted,'font-size':11});
+  rc(s,20,190,260,12,{fill:C.pcb,stroke:C.line,rx:2});tx(s,150,222,'phone circuit board',{...mid,fill:C.muted,'font-size':11});
   soc(60,140,180,40,'SoC (CPU + GPU)');for(let i=0;i<9;i++)el('circle',{cx:70+i*20,cy:185,r:4,fill:C.muted},s);
   chipBox(60,70,180,46,'LPDDR5X package','DRAM dies stacked inside');for(let i=0;i<9;i++)el('circle',{cx:70+i*20,cy:124,r:4,fill:C.a2},s);
   tx(s,262,128,'solder balls',{fill:C.a2,'font-size':11});
@@ -857,12 +1150,12 @@ function drawDev(){const s=$('#dvSvg');s.innerHTML='';const D=devs[dv];
   tx(s,320,240,'4 packages × 2 channels × 16 bits = 128-bit bus',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
  } else if(dv===2){
   soc(40,80,140,90,'CPU');
-  [['Channel A',C.accent,40],['Channel B',C.a3,140]].forEach(([n,c,y])=>{rc(s,250,y,360,70,{fill:'#1b2a22',stroke:c,'stroke-width':2,rx:4});for(let i=0;i<8;i++)rc(s,266+i*42,y+14,34,30,{fill:C.chip,stroke:c,rx:3});tx(s,430,y+62,n+' · SODIMM · 64-bit (2 × 32)',{...mid,'font-size':11,fill:c});ln(s,180,y<100?110:140,250,y+35,{stroke:c,'stroke-width':4})});
+  [['Channel A',C.accent,40],['Channel B',C.a3,140]].forEach(([n,c,y])=>{rc(s,250,y,360,70,{fill:C.pcb,stroke:c,'stroke-width':2,rx:4});for(let i=0;i<8;i++)rc(s,266+i*42,y+14,34,30,{fill:C.chip,stroke:c,rx:3});tx(s,430,y+62,n+' · SODIMM · 64-bit (2 × 32)',{...mid,'font-size':11,fill:c});ln(s,180,y<100?110:140,250,y+35,{stroke:c,'stroke-width':4})});
   tx(s,320,22,'Two removable SODIMMs lying flat, one per channel',{...mid,fill:C.muted,'font-size':12});
   tx(s,320,240,'2 channels × 64 bits = 128-bit total',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
  } else {
   soc(30,85,140,80,'CPU');
-  [['A1',C.accent],['A2',C.accent],['B1',C.a3],['B2',C.a3]].forEach(([n,c],i)=>{const x=260+i*85+(i>1?20:0);rc(s,x,30,50,180,{fill:'#1b2a22',stroke:c,'stroke-width':2,rx:4});for(let k=0;k<5;k++)rc(s,x+9,42+k*32,32,24,{fill:C.chip,stroke:c,rx:3});tx(s,x+25,226,n,{...mid,fill:c,'font-size':12})});
+  [['A1',C.accent],['A2',C.accent],['B1',C.a3],['B2',C.a3]].forEach(([n,c],i)=>{const x=260+i*85+(i>1?20:0);rc(s,x,30,50,180,{fill:C.pcb,stroke:c,'stroke-width':2,rx:4});for(let k=0;k<5;k++)rc(s,x+9,42+k*32,32,24,{fill:C.chip,stroke:c,rx:3});tx(s,x+25,226,n,{...mid,fill:c,'font-size':12})});
   ln(s,170,110,260,110,{stroke:C.accent,'stroke-width':4});ln(s,170,140,450,140,{stroke:C.a3,'stroke-width':4,opacity:.8});
   tx(s,400,20,'Four upright DIMM slots on two channels',{...mid,fill:C.muted,'font-size':12});
   tx(s,400,246,'2 channels × 64 bits = 128-bit total',{...mid,'font-size':13,'font-weight':600,fill:C.accent});
@@ -888,7 +1181,302 @@ function drawPM(){const box=$('#pmList');box.innerHTML='';
  const m=pmodes[pm];$('#pmInfo').innerHTML=`<p style="margin:0"><b>${m.n}</b> · ${m.lp&&m.dd?'LPDDR and DDR':'LPDDR only'}</p><p style="margin:6px 0 0">${m.d}</p>`;}
 drawPM();
 
-/* ---------- 9 quiz ---------- */
+/* ================= REFERENCE SECTIONS ================= */
+function hbars(box,rows,max,unit){box.innerHTML=rows.map(([n,v,c,sub])=>`<div style="display:grid;grid-template-columns:minmax(96px,150px) 1fr auto;gap:10px;align-items:center;padding:5px 0"><span style="font-size:14px">${n}${sub?`<br><span class="muted" style="font-size:11px">${sub}</span>`:''}</span><span style="background:var(--panel2);border-radius:4px;height:14px;overflow:hidden"><span style="display:block;height:100%;width:${v/max*100}%;background:${c||'var(--accent)'};border-radius:4px"></span></span><span class="mono" style="font-size:13px;min-width:52px;text-align:right">${v}${unit}</span></div>`).join('')}
+
+/* ---------- 9 technology map ---------- */
+const TY=[
+ {k:'SRAM',g:'V',cell:'6 transistors (two cross-coupled inverters)',lat:'under 1 ns',end:'Unlimited',ret:'None (needs power)',use:'CPU caches, register files, small buffers',m:[5,1,5,0],st:'Universal. Built on the same logic process as the CPU, so it scales with each new CPU node.'},
+ {k:'DRAM',g:'V',cell:'1 transistor + 1 capacitor',lat:'tens of ns',end:'Effectively unlimited',ret:'Milliseconds (refreshed every 32–64 ms)',use:'Main memory: DDR, LPDDR, GDDR, HBM',m:[4,3,5,0],st:'The workhorse. DDR5 and LPDDR5X are mainstream; HBM4 and LPDDR6 are the newest forms.'},
+ {k:'NAND flash',g:'N',cell:'Charge-trap transistor in a vertical string (3D)',lat:'tens of µs',end:'~1,000 to 100,000 cycles (QLC to SLC)',ret:'Years, shrinking with wear and heat',use:'SSDs, phone storage (UFS), memory cards',m:[2,5,2,4],st:'Dominant storage. Stacks of 200 to 300+ layers are in production; 400+ are announced.'},
+ {k:'NOR flash',g:'N',cell:'Floating-gate transistor, individually addressable',lat:'~100 ns reads; slow writes',end:'~100,000 cycles',ret:'10–20 years',use:'Firmware and boot code (BIOS/UEFI), execute-in-place',m:[3,2,3,5],st:'Stable niche. Hard to shrink below about 28 nm, which is opening the door to embedded MRAM and ReRAM.'},
+ {k:'EEPROM',g:'N',cell:'Floating-gate, erasable one byte at a time',lat:'µs reads; ms writes',end:'~1,000,000 cycles',ret:'Decades',use:'Small configuration data, including the SPD chip on every DIMM',m:[2,1,3,5],st:'Ubiquitous in tiny sizes (kilobits to a few megabits).'},
+ {k:'MRAM',g:'E',cell:'Magnetic tunnel junction: bit stored as magnet direction',lat:'~10–35 ns',end:'Very high (billions of cycles and up)',ret:'Years to decades',use:'Embedded memory in microcontrollers and automotive chips; small stand-alone parts',m:[4,2,4,4],st:'In production as embedded memory on 2x nm and below at major foundries, replacing embedded flash.'},
+ {k:'ReRAM',g:'E',cell:'Conductive filament that forms and breaks in an oxide',lat:'~10–100 ns',end:'~100,000 to 1,000,000 cycles',ret:'About 10 years',use:'Low-cost embedded non-volatile memory for IoT and microcontrollers',m:[3,3,3,4],st:'In production as an embedded option; cheaper to add to a logic process than MRAM.'},
+ {k:'PCM',g:'E',cell:'Glass that switches between crystalline and amorphous states',lat:'~100 ns',end:'~1,000,000+ cycles',ret:'About 10 years',use:'Automotive microcontrollers; was the basis of Intel Optane',m:[3,3,3,4],st:'Intel Optane (3D XPoint) was wound down in 2022. PCM lives on as embedded memory in automotive chips.'},
+ {k:'FeRAM',g:'E',cell:'Ferroelectric capacitor: bit stored as polarisation',lat:'~50 ns',end:'Trillions of cycles',ret:'10+ years',use:'Smart cards, meters, data loggers needing frequent low-power writes',m:[4,1,5,4],st:'Small densities today. Hafnium-oxide ferroelectrics are being researched for denser future DRAM-like memory.'}
+];
+let ty=1;
+function drawTy(){
+ [['V','#tySelV'],['N','#tySelN'],['E','#tySelE']].forEach(([g,id])=>{const b=$(id);b.innerHTML='';TY.forEach((t,i)=>{if(t.g!==g)return;const x=document.createElement('button');x.textContent=t.k;x.className=i===ty?'on':'';x.onclick=()=>{ty=i;drawTy()};b.appendChild(x)})});
+ const t=TY[ty];
+ $('#tyInfo').innerHTML=`<h3 style="margin:6px 0 6px">${t.k} <span class="badge ${t.g==='V'?'pub':t.g==='N'?'ship':'dev'}">${t.g==='V'?'volatile':t.g==='N'?'non-volatile':'emerging'}</span></h3><p style="margin:0 0 6px"><b>Bit cell:</b> ${t.cell}.</p><p style="margin:0 0 6px"><b>Used for:</b> ${t.use}.</p><p style="margin:0" class="muted"><b>Status 2026:</b> ${t.st}</p>`;
+ hbars($('#tyBars'),[['Speed',t.m[0],C.accent],['Density (low cost per bit)',t.m[1],C.a3],['Write endurance',t.m[2],C.a2],['Retention without power',t.m[3],G]],5,' / 5');
+ $('#tyTable').innerHTML=TY.map((x,i)=>`<tr class="${i===ty?'sel':''}" data-i="${i}"><td><b>${x.k}</b></td><td>${x.cell}</td><td>${x.lat}</td><td>${x.end}</td><td>${x.ret}</td><td>${x.use}</td></tr>`).join('');
+ $('#tyTable').querySelectorAll('tr').forEach(r=>r.onclick=()=>{ty=+r.dataset.i;drawTy()});}
+drawTy();
+
+/* ---------- 10 standards ---------- */
+const ST=[
+ ['pc','DDR4','JESD79-4 · 2012','1,600–3,200 MT/s','1.2 V, bank groups. Still common in older PCs and embedded boards.','leg'],
+ ['pc','DDR5','JESD79-5 · 2020; rev. C Apr 2024','4,800–8,800 MT/s (SPD defines up to 9,200)','On-module PMIC, two 32-bit sub-channels per DIMM, on-die ECC; rev. C added PRAC Rowhammer protection.','ship'],
+ ['pc','DDR5 MRDIMM','Gen 1 shipping; Gen 2 being finalised','8,800 → 12,800 MT/s','Multiplexes two ranks to double the host data rate on server platforms. Gen 3 targets 17,600.','ship'],
+ ['pc','DDR6','Not published','Roadmap: ~8,800 → 17,600 MT/s','New channel design; CAMM2-style modules expected. Details are targets until JEDEC publishes.','dev'],
+ ['mob','LPDDR5 / 5X','JESD209-5 · 2019 onward','6,400 / 8,533, extended to 10,667 MT/s','16-bit channels, ~0.5 V I/O, deep sleep modes. Phones, thin laptops, cars, and now AI servers (SOCAMM2).','ship'],
+ ['mob','LPDDR6','JESD209-6 · 9 Jul 2025','10,667–14,400 MT/s','24 data lines per die in two 12-bit sub-channels, lower voltage, PRAC, on-die ECC and parity.','pub'],
+ ['gfx','GDDR6 / 6X','JESD250 · 2017','up to ~24 Gb/s per pin','Graphics-card memory. 6X (PAM4) is a vendor extension, not a JEDEC standard.','ship'],
+ ['gfx','GDDR7','JESD239 · Mar 2024','~32 Gb/s per pin at launch; standard allows 48','First JEDEC DRAM with PAM3 signalling (3 bits per 2 cycles), on-die ECC. Up to 192 GB/s per chip.','ship'],
+ ['gfx','HBM3E','JESD238 family','~9+ Gb/s × 1,024 I/O ≈ 1.2 TB/s per stack','8- and 12-high stacks for 2024–25 AI accelerators.','ship'],
+ ['gfx','HBM4','JESD270-4 · Apr 2025','8 Gb/s × 2,048 I/O = 2 TB/s per stack','Doubles the interface width; 4- to 16-high stacks of 24 or 32 Gb dies, up to 64 GB. Mass production began in 2026.','ship'],
+ ['io','CXL 2.0 / 3.x','2020 – 2024','32 / 64 GT/s per lane','Memory expansion, pooling and sharing over a PCIe physical layer.','ship'],
+ ['io','CXL 4.0','18 Nov 2025','128 GT/s per lane (PCIe 7.0)','Bundled ports, native x2 links, up to four retimers, stronger memory RAS.','pub'],
+ ['io','UFS 4.x','JESD220F · 2022','up to 5.8 GB/s','Storage in current flagship phones.','ship'],
+ ['io','UFS 5.0','26 Feb 2026','up to 10.8 GB/s','MIPI M-PHY 6.0 (HS-G6) and UniPro 3.0, inline hashing, backward compatible with UFS 4.x.','pub'],
+ ['io','NVMe over PCIe 5.0','PCIe 5.0 · 2019','~14 GB/s on x4','Current top-end PC and server SSDs.','ship'],
+ ['pc','CAMM2 / LPCAMM2','JESD318 · Dec 2023','DDR5 and LPDDR5X rates','Flat, screw-down module that replaces SODIMM and makes LPDDR replaceable.','pub'],
+ ['pc','SOCAMM2','JESD328 · Jun 2026','LPDDR5X up to 9.6 Gb/s per pin','Small replaceable LPDDR5X module for AI-server CPUs.','pub']
+];
+const SLAB={ship:'Shipping',pub:'Published',dev:'In development',leg:'Legacy'};
+let stF='all';seg('#stFilt',v=>{stF=v;drawSt()});
+function drawSt(){$('#stBody').innerHTML=ST.filter(r=>stF==='all'||r[0]===stF).map(r=>`<tr style="cursor:default"><td><b>${r[1]}</b></td><td>${r[2]}</td><td class="mono" style="font-size:13px">${r[3]}</td><td>${r[4]}</td><td><span class="badge ${r[5]}">${SLAB[r[5]]}</span></td></tr>`).join('')}
+drawSt();
+
+/* ---------- 11 modules ---------- */
+const MD=[
+ {k:'UDIMM',mem:'DDR5',where:'Desktops',chips:8,ex:['PMIC','SPD'],spd:'JEDEC to 5,600; XMP/EXPO kits far higher',ecc:'Optional',note:'Unbuffered: the CPU drives every DRAM chip directly. Simple and low-latency, but the many loads limit speed and the number of modules per channel. 288 pins.'},
+ {k:'SODIMM',mem:'DDR5',where:'Laptops, mini-PCs',chips:8,ex:['PMIC','SPD'],spd:'to ~5,600 MT/s',ecc:'Rare',small:1,note:'The small-outline version of a UDIMM (262 pins). Being displaced by soldered LPDDR in thin laptops and by CAMM2 in newer designs.'},
+ {k:'CUDIMM',mem:'DDR5',where:'Desktops (CSODIMM for laptops)',chips:8,ex:['PMIC','SPD','CKD'],spd:'6,400 MT/s and up',ecc:'Optional',note:'A UDIMM with a clock driver (CKD) that regenerates the clock on the module. Fits the same slot. Introduced at DDR5-6400, where an unbuffered clock becomes too noisy.'},
+ {k:'RDIMM',mem:'DDR5',where:'Servers, workstations',chips:10,ex:['PMIC','SPD','RCD'],spd:'to ~6,400 MT/s',ecc:'Yes',note:'A registering clock driver buffers command, address and clock, so many more chips and higher capacities are possible. Ten x8 chips shown: eight for data, two for ECC. Not interchangeable with UDIMM.'},
+ {k:'MRDIMM',mem:'DDR5',where:'AI and HPC servers',chips:10,ex:['PMIC','SPD','MRCD','MDB'],spd:'8,800 (Gen 1) → 12,800 (Gen 2)',ecc:'Yes',note:'Two ranks are read at the same time and a multiplexing data buffer interleaves them onto the bus, so the host link runs at twice the speed of the DRAM chips. Uses the same slot as RDIMM on supporting platforms.'},
+ {k:'CAMM2',mem:'DDR5 or LPDDR5X (LPCAMM2)',where:'Laptops, some desktops',chips:8,ex:['PMIC','SPD','CKD'],spd:'DDR5 to 6,400+; LPDDR5X to 8,533+',ecc:'Optional',camm:1,note:'Compression-attached: the module lies flat and is pressed onto a grid of contacts with screws, instead of sliding into a slot. Shorter signal paths, thinner, and one module provides both channels. LPCAMM2 makes LPDDR replaceable for the first time.'},
+ {k:'SOCAMM2',mem:'LPDDR5X',where:'AI-server CPUs',chips:4,ex:['PMIC','SPD'],spd:'up to 9.6 Gb/s per pin',ecc:'Platform-level',camm:1,small:1,note:'A compact compression-attached module carrying four LPDDR5X packages. It brings phone-class power efficiency to servers while staying replaceable. Began as a vendor design; the JEDEC standard (JESD328) was published in June 2026.'}
+];
+let md=0;
+function drawMd(){const b=$('#mdSel');b.innerHTML='';MD.forEach((m,i)=>{const x=document.createElement('button');x.textContent=m.k;x.className=i===md?'on':'';x.onclick=()=>{md=i;drawMd()};b.appendChild(x)});
+ const m=MD[md],s=$('#mdSvg');s.innerHTML='';const W=m.small?400:580,x0=320-W/2,H=m.camm?120:96,y0=30;
+ rc(s,x0,y0,W,H,{fill:C.pcb,stroke:C.accent,'stroke-width':1.5,rx:6});
+ const exCol={PMIC:C.a2,SPD:C.muted,CKD:G,RCD:C.a3,MRCD:C.a3,MDB:'#d9798f'};
+ const mdb=m.ex.includes('MDB'),centre=m.ex.filter(e=>e!=='MDB'),cw=44,gap=6,cTot=centre.length*(cw+gap)-gap;
+ const n=m.chips,left=Math.ceil(n/2),sideW=(W-cTot-40)/2,dw=Math.min(46,(sideW-6)/left-6),dh=m.camm?52:40,dy=y0+12;
+ for(let i=0;i<n;i++){const L=i<left,j=L?i:i-left,cnt=L?left:n-left,span=cnt*(dw+6)-6,sx=L?x0+12+(sideW-span)/2:x0+W-12-sideW+(sideW-span)/2;const ecc=m.k!=='UDIMM'&&n===10&&(i===left-1||i===n-1);
+  rc(s,sx+j*(dw+6),dy,dw,dh,{fill:C.chip,stroke:ecc?C.a2:C.accent,rx:3});tx(s,sx+j*(dw+6)+dw/2,dy+dh/2+4,ecc?'ECC':'DRAM',{...mid,'font-size':dw>34?10:8,fill:ecc?C.a2:C.text});
+  if(mdb)rc(s,sx+j*(dw+6)+dw/2-9,dy+dh+5,18,9,{fill:'#d9798f',stroke:'none',rx:2})}
+ centre.forEach((e,i)=>{const cx=320-cTot/2+i*(cw+gap);rc(s,cx,dy+4,cw,dh-8,{fill:C.panel2,stroke:exCol[e],'stroke-width':2,rx:3});tx(s,cx+cw/2,dy+dh/2+4,e,{...mid,'font-size':10,'font-weight':600,fill:exCol[e]})});
+ if(mdb)tx(s,x0+W-8,dy+dh+26,'MDB data buffers',{'text-anchor':'end','font-size':10,fill:'#d9798f'});
+ if(m.camm){for(let i=0;i<Math.floor((W-80)/7);i++)for(let r=0;r<2;r++)el('circle',{cx:x0+40+i*7,cy:y0+H-22+r*8,r:1.8,fill:C.a2},s);[x0+16,x0+W-16].forEach(cx=>{el('circle',{cx,cy:y0+H-18,r:7,fill:C.panel2,stroke:C.muted,'stroke-width':1.5},s);ln(s,cx-4,y0+H-18,cx+4,y0+H-18,{'stroke-width':1.5})});tx(s,320,y0+H+18,'compression contacts on the underside, held down by screws',{...mid,fill:C.muted,'font-size':11})}
+ else{for(let i=0;i<Math.floor((W-24)/5);i++){if(Math.abs(x0+12+i*5-(x0+W*0.46))<6)continue;rc(s,x0+12+i*5,y0+H-12,3,12,{fill:C.a2,stroke:'none',rx:0})}tx(s,320,y0+H+18,'edge connector: slides into a slot',{...mid,fill:C.muted,'font-size':11})}
+ tx(s,x0,18,m.k+(m.small?' (compact)':''),{'font-weight':600,'font-size':13,fill:C.accent});
+ $('#mdStats').innerHTML=[[m.mem,'memory type'],[m.where,'used in'],[m.ex.join(' + '),'support chips',1],[m.spd,'speed class'],[m.ecc,'ECC']].map(([v,l,h])=>`<div class="stat${h?' hi':''}"><div class="v" style="font-size:15px">${v}</div><div class="l">${l}</div></div>`).join('');
+ $('#mdNote').textContent=m.note;}
+drawMd();
+
+/* ---------- 12 timings ---------- */
+const TP=[['DDR4-3200 CL16',3200,16,18],['DDR5-4800 CL40',4800,40,39],['DDR5-5600 CL46',5600,46,45],['DDR5-6000 CL30',6000,30,36],['DDR5-6400 CL32',6400,32,39],['DDR5-8000 CL38',8000,38,48]];
+(function(){const b=$('#tmPre');TP.forEach((p,i)=>{const x=document.createElement('button');x.textContent=p[0];x.dataset.i=i;if(i===3)x.className='on';b.appendChild(x)});
+ b.onclick=e=>{const x=e.target.closest('button');if(!x)return;const p=TP[+x.dataset.i];$('#tmRate').value=p[1];$('#tmCL').value=p[2];$('#tmRCD').value=p[3];drawTm()};
+ ['#tmRate','#tmCL','#tmRCD'].forEach(id=>$(id).oninput=drawTm)})();
+function drawTm(){const r=+$('#tmRate').value,cl=+$('#tmCL').value,rcd=+$('#tmRCD').value,tck=2000/r,d5=r>=4400;
+ document.querySelectorAll('#tmPre button').forEach(x=>{const p=TP[+x.dataset.i];x.classList.toggle('on',p[1]===r&&p[2]===cl&&p[3]===rcd)});
+ $('#tmRateL').textContent=`${d5?'DDR5':'DDR4'}-${r} (clock ${r/2} MHz, cycle ${tck.toFixed(3)} ns)`;$('#tmCLL').textContent=cl+' clocks';$('#tmRCDL').textContent=rcd+' clocks';
+ const a=rcd*tck,b=cl*tck,bc=d5?8:4,c=bc*tck,tot=a+b+c,s=$('#tmSvg');s.innerHTML='';const x0=20,W=600,sc=W/Math.max(tot,30);
+ let x=x0;[[a,C.a3,'tRCD: open the row',rcd],[b,C.a2,'CL: wait for data',cl],[c,C.accent,'burst: 64 bytes',bc]].forEach(([v,col,lab,clk],i)=>{const w=v*sc;rc(s,x,56,w,38,{fill:col,opacity:.85,stroke:C.bg,rx:4});
+  tx(s,x+w/2,80,v.toFixed(2)+' ns',{...mid,...mono,'font-size':w>60?13:10,'font-weight':600,fill:C.on});
+  tx(s,x+w/2,46-(i===2&&w<110?14:0),lab,{...mid,'font-size':11,fill:col});tx(s,x+w/2,110,clk+' clk',{...mid,...mono,'font-size':10,fill:C.muted});x+=w});
+ [['ACT',x0],['READ',x0+a*sc],['data',x0+(a+b)*sc]].forEach(([l,px])=>{ln(s,px,24,px,100,{stroke:C.muted,'stroke-width':1,'stroke-dasharray':'3 3'});tx(s,px+3,22,l,{...mono,'font-size':10,fill:C.muted})});
+ tx(s,x0,138,`0 ns`,{...mono,'font-size':10,fill:C.muted});tx(s,x0+tot*sc,138,tot.toFixed(1)+' ns',{...mono,'font-size':10,fill:C.muted,'text-anchor':'end'});
+ $('#tmStats').innerHTML=[[b.toFixed(2)+' ns','CAS latency in real time',1],[a.toFixed(2)+' ns','row-to-column delay'],[(b+c).toFixed(1)+' ns','read from an already-open row'],[tot.toFixed(1)+' ns','read from a closed row (at the DRAM pins)',1]].map(([v,l,h])=>`<div class="stat${h?' hi':''}"><div class="v" style="font-size:18px">${v}</div><div class="l">${l}</div></div>`).join('');}
+drawTm();
+
+/* ---------- 13 ECC ---------- */
+let eccD=[1,0,1,1],eccF=new Set();
+function eccEncode(d){const w=[0,0,d[0],0,d[1],d[2],d[3]];w[0]=d[0]^d[1]^d[3];w[1]=d[0]^d[2]^d[3];w[3]=d[1]^d[2]^d[3];return w}
+function drawEcc(){const dB=$('#eccData');dB.innerHTML='';const cell='font:600 18px "IBM Plex Mono",monospace;width:44px;height:48px;border-radius:8px;cursor:pointer;';
+ eccD.forEach((v,i)=>{const b=document.createElement('button');b.textContent=v;b.style.cssText=cell+`background:var(--chip);border:1px solid var(--accent);color:var(--text)`;b.setAttribute('aria-label','data bit '+(i+1));b.onclick=()=>{eccD[i]^=1;eccF.clear();drawEcc()};dB.appendChild(b)});
+ const good=eccEncode(eccD),w=good.map((v,i)=>eccF.has(i)?v^1:v);
+ const s1=w[0]^w[2]^w[4]^w[6],s2=w[1]^w[2]^w[5]^w[6],s4=w[3]^w[4]^w[5]^w[6],pos=s1+2*s2+4*s4;
+ const fixed=w.slice();if(pos)fixed[pos-1]^=1;const out=[fixed[2],fixed[4],fixed[5],fixed[6]],ok=out.join('')===eccD.join('');
+ const wB=$('#eccWord');wB.innerHTML='';const names=['p1','p2','d1','p4','d2','d3','d4'];
+ w.forEach((v,i)=>{const par=i===0||i===1||i===3,fl=eccF.has(i),b=document.createElement('button');
+  b.innerHTML=`${v}<span style="display:block;font:400 10px 'IBM Plex Sans',sans-serif;color:var(--muted)">${names[i]}</span>`;
+  b.style.cssText=cell+`height:58px;color:var(--text);background:${fl?'rgba(224,108,108,.25)':par?'rgba(224,168,79,.14)':'var(--chip)'};border:${pos===i+1?'3px':'1px'} solid ${fl?'var(--danger)':par?'var(--accent2)':'var(--accent)'}`;
+  b.onclick=()=>{eccF.has(i)?eccF.delete(i):eccF.add(i);drawEcc()};wB.appendChild(b)});
+ $('#eccStats').innerHTML=[[eccF.size,'bits flipped'],[`${s4}${s2}${s1}`,'syndrome (binary)',1],[pos?'bit '+pos:'none','error located at',1],[out.join(''),'data after correction']].map(([v,l,h])=>`<div class="stat${h?' hi':''}"><div class="v" style="font-size:18px">${v}</div><div class="l">${l}</div></div>`).join('');
+ $('#eccMsg').innerHTML=eccF.size===0?'No errors. The three check bits (amber) are parity over overlapping groups of data bits. The syndrome is 000, meaning “all parity checks pass”.'
+  :eccF.size===1?`<b style="color:var(--accent)">Corrected.</b> The failed parity checks spell out the position of the bad bit in binary (${s4}${s2}${s1} = ${pos}). Flip it back and the data is intact.`
+  :ok?'Several flips happened to cancel out here; try a different pair.':`<b style="color:var(--danger)">Miscorrected.</b> With ${eccF.size} flipped bits the code still points confidently at bit ${pos||'“none”'}, and the data comes out wrong (${out.join('')} instead of ${eccD.join('')}). This is why real memory uses <b>SECDED</b>: one extra overall parity bit lets it recognise a double error and report it instead of silently corrupting data.`;
+ const bb=$('#eccBtns');bb.innerHTML='';bb.append(btn('Clear errors',()=>{eccF.clear();drawEcc()}),btn('Inject 1 random error',()=>{eccF.clear();eccF.add(Math.floor(Math.random()*7));drawEcc()}),btn('Inject 2 random errors',()=>{eccF.clear();while(eccF.size<2)eccF.add(Math.floor(Math.random()*7));drawEcc()}));}
+drawEcc();
+
+/* ---------- 14 HBM ---------- */
+const HG=[{n:'HBM3',io:1024,r:6.4,note:'JEDEC HBM3: 6.4 Gb/s per pin across 1,024 data lines, about 0.8 TB/s per stack.'},{n:'HBM3E',io:1024,r:9.2,note:'HBM3E pushed the same 1,024-line interface past 9 Gb/s per pin. It supplied the 2024–25 generation of AI accelerators.'},{n:'HBM4',io:2048,r:8,note:'JEDEC HBM4 doubles the interface to 2,048 data lines at 8 Gb/s per pin for 2 TB/s, and vendors exceed the baseline (Samsung quotes 11.7 Gb/s). The standard allows 4- to 16-high stacks of 24 or 32 Gb dies, up to 64 GB. Shipping in 2026: 12-high 36 GB stacks, and 16-high 48 GB stacks from SK hynix.'}];
+let hb={g:2,l:12,d:24};seg('#hbGen',v=>{hb.g=+v;drawHb()});seg('#hbLay',v=>{hb.l=+v;drawHb()});seg('#hbDie',v=>{hb.d=+v;drawHb()});
+function drawHb(){const s=$('#hbSvg');s.innerHTML='';const g=HG[hb.g];
+ rc(s,20,214,600,22,{fill:C.pcb,stroke:C.line,rx:3});tx(s,30,229,'package substrate',{fill:C.muted,'font-size':11});
+ for(let i=0;i<38;i++)el('circle',{cx:36+i*15.4,cy:209,r:3,fill:C.muted},s);
+ rc(s,40,184,560,20,{fill:C.panel2,stroke:C.a3,rx:3});tx(s,50,198,'silicon interposer: thousands of fine wires between GPU and memory',{fill:C.a3,'font-size':11});
+ rc(s,70,128,250,48,{fill:C.chip,stroke:C.a3,'stroke-width':2,rx:4});tx(s,195,157,'GPU / AI accelerator',{...mid,'font-weight':600,'font-size':14});
+ for(let i=0;i<24;i++)el('circle',{cx:78+i*10.2,cy:180,r:2,fill:C.a2},s);
+ const sx=390,sw=170,lh=Math.min(9,118/hb.l),top=166-hb.l*lh;
+ rc(s,sx,166,sw,10,{fill:C.a3,opacity:.7,stroke:'none',rx:2});tx(s,sx+sw+6,175,'base (logic) die',{'font-size':10,fill:C.a3});
+ for(let i=0;i<hb.l;i++)rc(s,sx,166-(i+1)*lh,sw,lh-1.2,{fill:C.accent,opacity:.45+.5*(i%2),stroke:'none',rx:1.5});
+ for(let i=0;i<14;i++)ln(s,sx+12+i*11.2,top,sx+12+i*11.2,176,{stroke:C.a2,'stroke-width':1.2,opacity:.9});
+ for(let i=0;i<16;i++)el('circle',{cx:sx+8+i*10.2,cy:180,r:2,fill:C.a2},s);
+ tx(s,sx+sw/2,top-22,`${hb.l} DRAM layers`,{...mid,'font-weight':600,'font-size':13,fill:C.accent});tx(s,sx+sw/2,top-8,'vertical lines: through-silicon vias (TSVs)',{...mid,'font-size':10,fill:C.a2});
+ ln(s,322,152,388,152,{stroke:C.a2,'stroke-width':3,'stroke-dasharray':'2 3'});tx(s,355,144,g.io.toLocaleString(),{...mid,...mono,'font-size':11,fill:C.a2});tx(s,355,166,'data lines',{...mid,'font-size':9,fill:C.muted});
+ const cap=hb.l*hb.d/8,bw=g.io*g.r/8/1000;
+ $('#hbStats').innerHTML=[[cap+' GB','capacity per stack',1],[bw.toFixed(2)+' TB/s','peak bandwidth per stack',1],[g.io.toLocaleString(),'data lines'],[g.r+' Gb/s','per line'],[(bw*1000/96).toFixed(0)+'×','vs dual-channel DDR5-6000']].map(([v,l,h])=>`<div class="stat${h?' hi':''}"><div class="v" style="font-size:18px">${v}</div><div class="l">${l}</div></div>`).join('');
+ $('#hbNote').textContent=`${hb.l} layers × ${hb.d} Gb = ${hb.l*hb.d} Gb = ${cap} GB. ${g.io.toLocaleString()} lines × ${g.r} Gb/s ÷ 8 = ${(g.io*g.r/8).toFixed(0)} GB/s. ${g.note}`;}
+drawHb();
+$('#aiTiers').innerHTML=[
+ ['HBM','On the accelerator package','~2 TB/s per stack (HBM4)','Holds the model weights and working data the GPU is computing on right now. Fastest and most expensive per gigabyte.','ship'],
+ ['DDR5 RDIMM / MRDIMM','CPU main memory','MRDIMM: 8,800 MT/s, 12,800 next','Feeds the host CPUs that prepare data and run the software stack.','ship'],
+ ['LPDDR5X on SOCAMM2','CPU main memory, low power','up to 9.6 Gb/s per pin','Phone-class efficiency in a replaceable server module. JEDEC standard since June 2026.','pub'],
+ ['CXL memory','Expansion and pooling','PCIe-class link','Adds capacity beyond the DIMM slots and lets servers share a pool. Slower than local DRAM: an access costs roughly an extra hop, comparable to reaching memory on another CPU socket.','ship'],
+ ['High Bandwidth Flash (HBF)','Proposed tier between HBM and SSD','8- or 16-high NAND stacks, up to 512 GB','NAND stacked and packaged like HBM for AI inference. Sandisk and SK hynix released a first open specification in August 2026; not yet in products.','dev'],
+ ['NVMe SSD','Storage','~14 GB/s (PCIe 5.0 x4)','Datasets, checkpoints and model files at rest.','ship']
+].map(([n,w,sp,d,b],i)=>`<div style="display:grid;grid-template-columns:28px 1fr;gap:4px 12px;padding:11px 12px;${i?'border-top:1px solid var(--line)':''}"><div class="mono muted" style="font-size:13px;padding-top:2px">${i+1}</div><div><div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline"><b>${n}</b><span class="muted" style="font-size:13px">${w}</span><span class="badge ${b}" style="margin-left:auto">${SLAB[b]}</span></div><div class="mono" style="font-size:12px;color:var(--accent);margin-top:3px">${sp}</div><div style="font-size:14px;margin-top:3px">${d}</div></div></div>`).join('');
+
+/* ---------- 15 industry ---------- */
+function drawMk(){
+ hbars($('#mkDram'),[['Samsung',38,C.accent],['SK hynix',29,C.a3],['Micron',21,C.a2],['CXMT',9,G]],40,'%');
+ hbars($('#mkHbm'),[['SK hynix',50,C.a3],['Samsung',33,C.accent],['Micron',18,C.a2]],60,'%');
+ hbars($('#mkNand'),[['SK hynix',321,C.a3],['Samsung',286,C.accent,'V9'],['Micron',276,C.a2,'G9'],['YMTC',267,G],['Kioxia / Sandisk',218,'#d9798f','BiCS8']],400,' layers');}
+drawMk();
+$('#mkTime').innerHTML=[
+ ['Dec 2023','CAMM2 module standard (JESD318) published.'],
+ ['Mar 2024','GDDR7 published: first JEDEC DRAM with PAM3 signalling.'],
+ ['Apr 2024','DDR5 revision C: timings to 8,800 MT/s and PRAC Rowhammer protection.'],
+ ['Apr 2025','HBM4 standard (JESD270-4) published: 2,048 data lines, 2 TB/s.'],
+ ['Jul 2025','LPDDR6 (JESD209-6) published: 10,667–14,400 MT/s.'],
+ ['Nov 2025','CXL 4.0 released: 128 GT/s on PCIe 7.0.'],
+ ['Dec 2025','Micron announces it will leave the Crucial consumer business.'],
+ ['Feb 2026','Samsung announces HBM4 mass production; Micron (March) and SK hynix (Q2) follow.'],
+ ['Feb 2026','UFS 5.0 published: 10.8 GB/s phone storage.'],
+ ['Jun 2026','SOCAMM2 (JESD328) published: replaceable LPDDR5X for AI servers.'],
+ ['Aug 2026','Sandisk and SK hynix release the first High Bandwidth Flash specification through OCP.'],
+ ['Q3 2026','SK hynix in volume on 16-high, 48 GB HBM4; 1c DRAM node ramping.'],
+ ['Pending','DDR6: still in development at JEDEC.']
+].map(([d,t],i,a)=>`<div style="display:grid;grid-template-columns:78px 14px 1fr;gap:10px;align-items:start"><span class="mono" style="font-size:12px;color:var(--accent);padding-top:3px;text-align:right">${d}</span><span style="position:relative;align-self:stretch"><span style="position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--line)"></span><span style="position:absolute;left:2px;top:6px;width:10px;height:10px;border-radius:50%;background:${i===a.length-1?'var(--accent2)':'var(--accent)'}"></span></span><span style="font-size:14px;padding-bottom:12px">${t}</span></div>`).join('');
+
+/* ---------- 16 glossary ---------- */
+const GL=[
+['Access time','How long it takes from requesting data to receiving it. See latency.'],
+['ACTIVATE (ACT)','The DRAM command that opens a row, copying its cells into the sense amplifiers so they can be read or written.'],
+['Address bus','The signals that tell memory which location is wanted. On DDR5 they are combined with commands into a command/address (CA) bus.'],
+['Bank','An independent array of rows and columns inside a DRAM chip with its own row buffer. DDR5 chips have 32, in 8 bank groups.'],
+['Bandwidth','How much data can move per second. Peak bandwidth = data rate × bus width ÷ 8.'],
+['BGA','Ball grid array: a chip package that connects through a grid of solder balls on its underside. How DRAM chips and soldered LPDDR are attached.'],
+['Bit line','The column wire in a memory array that carries a cell\'s value to the sense amplifier.'],
+['Burst length','How many transfers follow one read or write command. DDR4 uses 8; DDR5 uses 16, delivering a 64-byte cache line per burst on a 32-bit sub-channel.'],
+['Cache','Small, fast SRAM inside the CPU holding copies of recently used memory. Organised in levels L1, L2 and L3.'],
+['Cache line','The fixed block, usually 64 bytes, in which caches fetch and store data.'],
+['CAMM2','Compression Attached Memory Module: a flat, screw-down module standard (JESD318) replacing SODIMM. LPCAMM2 is the LPDDR version.'],
+['CAS latency (CL)','Clock cycles between a READ command and the first data. Multiply by the cycle time to get nanoseconds.'],
+['Channel','An independent data path between the memory controller and its memory. 64 bits wide on PC DDR, 16 bits on LPDDR5.'],
+['Chipkill','IBM\'s name for ECC that survives the failure of an entire DRAM chip. Also called SDDC.'],
+['CKD','Client clock driver: a chip on CUDIMM and CSODIMM modules that regenerates the clock signal.'],
+['Command rate','Whether commands are held for one clock (1T) or two (2T).'],
+['CUDIMM','Clocked unbuffered DIMM: a DDR5 desktop module with a clock driver for 6,400 MT/s and beyond. CSODIMM is the laptop version.'],
+['CXL','Compute Express Link: an open interconnect on the PCIe physical layer that lets a CPU use memory in external devices and share pools between servers.'],
+['DDR','Double data rate: data moves on both the rising and falling clock edge. Also the family name of PC and server DRAM standards (DDR4, DDR5).'],
+['Die','A single chip cut from a silicon wafer, before packaging. An HBM stack contains many dies.'],
+['DIMM','Dual in-line memory module: the removable memory stick used in desktops and servers.'],
+['DQ','A data line. A chip described as x8 has eight DQ lines.'],
+['DQS','Data strobe: a timing signal sent alongside each group of DQ lines so the receiver knows when to sample them.'],
+['DRAM','Dynamic RAM: one transistor and one capacitor per bit. Dense and cheap, but must be refreshed constantly.'],
+['Dual-channel','Two memory channels working in parallel, doubling bandwidth over a single channel.'],
+['DVFS','Dynamic voltage and frequency scaling: LPDDR\'s ability to drop speed and voltage on the fly to save power.'],
+['ECC','Error-correcting code: extra check bits that let memory detect and repair bit errors.'],
+['EEPROM','Electrically erasable programmable ROM. Small non-volatile memory, used for the SPD data on every module.'],
+['Endurance','How many write/erase cycles a memory cell survives. Effectively unlimited for DRAM; limited for flash.'],
+['EUV','Extreme ultraviolet lithography (13.5 nm light), used to print the finest layers of modern DRAM.'],
+['EXPO','AMD\'s format for memory overclocking profiles stored in the module\'s SPD.'],
+['FeRAM','Ferroelectric RAM: non-volatile memory storing bits as the polarisation of a ferroelectric capacitor.'],
+['Flash translation layer (FTL)','SSD firmware that maps the addresses the computer uses to the physical flash pages where data currently lives.'],
+['Flip-flop','A circuit of cross-coupled gates that holds one bit while powered. The storage element of registers and SRAM.'],
+['Fly-by topology','Routing command, address and clock past each DRAM chip in turn, rather than branching. Used since DDR3; requires write levelling during training.'],
+['Garbage collection','An SSD background task that moves valid data out of partly stale blocks so the blocks can be erased and reused.'],
+['GDDR','Graphics DDR: DRAM optimised for very high per-pin speed on graphics cards. GDDR7 is current.'],
+['Gear mode','Intel\'s term for running the memory controller at the full DRAM clock (Gear 1), half (Gear 2) or a quarter (Gear 4).'],
+['HBF','High Bandwidth Flash: NAND stacked and packaged like HBM, proposed as a high-capacity memory tier for AI inference.'],
+['HBM','High Bandwidth Memory: DRAM dies stacked vertically with through-silicon vias and placed beside a processor on an interposer.'],
+['Hybrid bonding','Joining dies copper-to-copper without solder bumps, allowing finer connections and thinner stacks. Planned for future HBM and used in 3D NAND.'],
+['Interposer','A silicon or organic layer carrying dense wiring between chips in one package, such as a GPU and its HBM stacks.'],
+['IOPS','Input/output operations per second: the standard measure of storage random-access performance.'],
+['JEDEC','The standards body that defines DDR, LPDDR, GDDR, HBM, UFS and module specifications.'],
+['KGD','Known good die: a bare die tested before it is stacked or packaged. Critical for HBM, where one bad layer scraps the whole stack.'],
+['Latency','Delay between a request and its response. For DRAM, usually quoted as CAS latency in nanoseconds.'],
+['LPCAMM2','The LPDDR form of CAMM2: a replaceable low-power memory module for laptops.'],
+['LPDDR','Low-Power DDR: DRAM for phones, tablets and thin laptops, with narrow channels, low voltages and deep sleep states.'],
+['LRDIMM','Load-reduced DIMM: a server module that buffers the data lines as well as command and address.'],
+['Memory controller','The part of a CPU or SoC that issues commands to DRAM, schedules refresh and trains the link.'],
+['Memory wall','The growing gap between how fast processors compute and how fast memory can supply data.'],
+['MLC','Multi-level cell: flash storing 2 bits per cell (4 voltage levels).'],
+['MRAM','Magnetoresistive RAM: non-volatile memory storing bits as the orientation of a tiny magnet.'],
+['MRDIMM','Multiplexed-rank DIMM: a server module that interleaves two ranks to double the data rate seen by the CPU.'],
+['MT/s','Mega-transfers per second: the unit of DDR data rate. DDR5-6000 makes 6,000 million transfers a second on each data line.'],
+['NAND flash','Dense non-volatile memory used in SSDs and phones. Written in pages and erased in blocks.'],
+['NOR flash','Non-volatile memory with fast random reads, used to store firmware.'],
+['NUMA','Non-uniform memory access: in multi-socket servers, memory attached to another CPU is slower to reach than local memory.'],
+['NVMe','The protocol SSDs use over PCIe, designed for flash rather than spinning disks.'],
+['ODT','On-die termination: resistors inside the DRAM chip that absorb signal reflections on the bus.'],
+['On-die ECC','Error correction built into each DDR5 chip that fixes single-bit cell errors internally.'],
+['Overclocking','Running memory beyond its JEDEC profile, typically by enabling an XMP or EXPO profile.'],
+['Page','The unit of virtual memory managed by the operating system (usually 4 KB). Also the unit in which NAND flash is written.'],
+['Page fault','What happens when a program touches a page that is not currently in RAM; the operating system must fetch or create it.'],
+['PAM3','Three-level signalling that carries 3 bits in 2 symbols. Introduced to DRAM with GDDR7.'],
+['PMIC','Power management IC: the voltage regulator placed on every DDR5 module.'],
+['PoP','Package-on-package: stacking the DRAM package directly on the processor package, common in phones.'],
+['PRAC','Per-Row Activation Counting: each DRAM row counts its activations so the chip can stop Rowhammer attacks. In DDR5 (2024) and LPDDR6.'],
+['Precharge','Closing an open row and resetting the bit lines, ready for the next ACTIVATE.'],
+['Prefetch','Reading several bits internally per data line at once so the slow DRAM core can feed a fast interface.'],
+['QLC','Quad-level cell: flash storing 4 bits per cell (16 voltage levels). Cheapest per gigabyte, lowest endurance.'],
+['Quad-channel','Four memory channels in parallel, found on workstation platforms.'],
+['Rank','A set of DRAM chips that together fill the full bus width and respond as one.'],
+['RAS','Reliability, availability and serviceability: the server features that detect, correct and survive memory faults.'],
+['RCD','Registering clock driver: the chip on an RDIMM that buffers command, address and clock.'],
+['RDIMM','Registered DIMM: the standard server module, using an RCD.'],
+['Refresh','Periodically reading and rewriting DRAM cells before their charge leaks away.'],
+['Register','A tiny, very fast storage location inside the CPU core, holding values being worked on.'],
+['ReRAM','Resistive RAM: non-volatile memory that stores bits as a high or low resistance in an oxide film.'],
+['Retention','How long a cell holds its data. Milliseconds for DRAM without refresh; years for flash without power.'],
+['Row buffer','The row currently held in a bank\'s sense amplifiers. Reads from it are fast (a row hit).'],
+['Rowhammer','A disturbance effect in which rapidly accessing one DRAM row flips bits in neighbouring rows.'],
+['Self-refresh','A low-power state in which the DRAM refreshes itself while the rest of the system sleeps.'],
+['Sense amplifier','The circuit that detects the tiny charge from a DRAM cell and amplifies it to a full 0 or 1.'],
+['SLC','Single-level cell: flash storing 1 bit per cell. Fastest and most durable.'],
+['SOCAMM2','A small compression-attached LPDDR5X module for AI servers (JESD328, 2026).'],
+['SODIMM','Small-outline DIMM: the laptop-sized memory module.'],
+['Soft error','A one-off bit flip caused by radiation or noise rather than a damaged cell.'],
+['SPD','Serial presence detect: the small chip on a module that reports its capacity, speeds and timings to the system.'],
+['SRAM','Static RAM: six transistors per bit, no refresh. Fast but large; used for CPU caches.'],
+['SSD','Solid-state drive: storage built from NAND flash plus a controller.'],
+['Swap','Disk space the operating system uses to hold pages evicted from RAM.'],
+['TLB','Translation lookaside buffer: a small CPU cache of recent virtual-to-physical address translations.'],
+['TLC','Triple-level cell: flash storing 3 bits per cell (8 voltage levels). The mainstream SSD type.'],
+['Training','The boot-time calibration in which the controller tunes timing and voltage for every data line.'],
+['tRCD','Row-to-column delay: clocks between opening a row and reading from it.'],
+['tRP','Row precharge time: clocks needed to close a row.'],
+['TSV','Through-silicon via: a vertical copper connection through a die, used to wire up stacked chips such as HBM.'],
+['UDIMM','Unbuffered DIMM: the standard desktop memory module.'],
+['UFS','Universal Flash Storage: the storage interface in modern phones. UFS 5.0 reaches 10.8 GB/s.'],
+['Unified memory','One pool of memory shared by CPU and GPU, as in phones and many laptops with integrated graphics.'],
+['VDD / VDDQ','The DRAM supply voltages: VDD for the core and VDDQ for the I/O drivers. DDR5 uses 1.1 V for both.'],
+['Virtual memory','The operating system\'s illusion that each program has its own large, private address space, mapped onto physical RAM and disk.'],
+['Volatile','Losing its contents when power is removed. DRAM and SRAM are volatile; flash is not.'],
+['Wafer','The 300 mm silicon disc on which hundreds of memory dies are manufactured together.'],
+['Wear levelling','Spreading writes evenly across an SSD so no block wears out early.'],
+['Word line','The row wire in a memory array; raising it connects that row\'s cells to their bit lines.'],
+['Write amplification','The ratio of data an SSD physically writes to the data the computer asked it to write.'],
+['x4 / x8 / x16','The width of a DRAM chip: how many data lines it has.'],
+['XIP','Execute in place: running code directly from non-volatile memory, usually NOR flash, without copying it to RAM.'],
+['XMP','Intel\'s Extreme Memory Profile: overclocking settings stored in the module\'s SPD.'],
+['Yield','The fraction of dies on a wafer that work. It drives memory cost, and it falls as stacks such as HBM get taller.'],
+['ZNS','Zoned Namespaces: an NVMe feature where the host writes sequentially into zones, cutting SSD garbage collection.'],
+['ZQ calibration','Tuning a DRAM chip\'s output drivers and termination against a precision reference resistor on the ZQ pin.']
+];
+let glL='',glQ='';
+function drawGl(){const used=new Set(GL.map(g=>g[0][0].toUpperCase())),L=$('#glLetters');L.innerHTML='';
+ ['All',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].forEach(ch=>{const b=document.createElement('button'),v=ch==='All'?'':ch,on=glL===v;b.textContent=ch;b.disabled=v&&!used.has(v);
+  b.style.cssText=`font:600 12px 'IBM Plex Mono',monospace;min-width:30px;padding:6px 7px;border-radius:6px;cursor:pointer;border:1px solid ${on?'var(--accent)':'var(--line)'};background:${on?'var(--accent)':'var(--panel2)'};color:${on?'var(--onaccent)':'var(--text)'}`;
+  b.onclick=()=>{glL=v;drawGl()};L.appendChild(b)});
+ const q=glQ.trim().toLowerCase(),rows=GL.filter(g=>(!glL||g[0][0].toUpperCase()===glL)&&(!q||(g[0]+' '+g[1]).toLowerCase().includes(q)));
+ $('#glCount').textContent=`${rows.length} of ${GL.length} terms`;
+ $('#glList').innerHTML=rows.length?rows.map(g=>`<div style="padding:9px 0;border-top:1px solid var(--line)"><dt style="font-weight:600">${g[0]}</dt><dd style="margin:2px 0 0;font-size:14px;color:var(--muted)">${g[1]}</dd></div>`).join(''):'<p class="muted" style="margin:8px 0">No matching terms.</p>';}
+$('#glQ').oninput=e=>{glQ=e.target.value;drawGl()};
+drawGl();
+
+/* ---------- 17 quiz ---------- */
 const qs=[
  {q:'A board uses a “4×16” DDR4 configuration. How wide is its data bus?',o:['16-bit','32-bit','64-bit','4-bit'],a:2,e:'Four chips × 16 data lanes each = 64 lanes, a 64-bit bus.'},
  {q:'Four 8 Gb chips give how much memory?',o:['32 GB','4 GB','8 GB','2 GB'],a:1,e:'4 × 8 Gb = 32 Gb, and 32 gigabits ÷ 8 = 4 gigabytes.'},
@@ -896,6 +1484,10 @@ const qs=[
  {q:'Why is DDR4-3200 called “3200” when its I/O clock is 1600 MHz?',o:['Marketing rounding','It transfers on both clock edges','It has two channels','It has 2 ranks'],a:1,e:'Double data rate: two transfers per clock cycle, so 1600 MHz × 2 = 3200 MT/s.'},
  {q:'You buy a “2×16GB” kit. What is it?',o:['Two x16 chips','Two sticks of 16 GB each','16 sticks of 2 GB','One 32 GB stick in x16 mode'],a:1,e:'In retail kit naming, 2×16GB = two 16 GB modules. Install one per channel for dual-channel.'},
  {q:'A phone uses LPDDR5X in a “4×16” setup. What does that mean?',o:['4 sticks of 16 GB','4 independent 16-bit channels, a 64-bit bus','16 channels of 4 bits','4 GB at 16 GT/s'],a:1,e:'LPDDR uses narrow 16-bit channels; four of them make a 64-bit bus, and each can sleep on its own to save power.'},
+ {q:'DDR5-6000 CL30 versus DDR4-3200 CL16: which has the lower CAS latency in nanoseconds?',o:['DDR5-6000 CL30','DDR4-3200 CL16','They are the same','It cannot be calculated'],a:2,e:'CL × 2000 ÷ data rate: 30 × 2000 ÷ 6000 = 10 ns, and 16 × 2000 ÷ 3200 = 10 ns. The DDR5 kit still moves nearly twice as much data per second.'},
+ {q:'What makes HBM different from ordinary DRAM modules?',o:['It is non-volatile','DRAM dies are stacked and wired vertically with TSVs, right beside the processor','It uses flash cells','It needs no refresh'],a:1,e:'HBM stacks thinned DRAM dies connected by through-silicon vias on an interposer next to the GPU, giving thousands of short data lines.'},
+ {q:'As of late 2026, what is the status of DDR6?',o:['Shipping in desktops','Published by JEDEC in 2025','Still in development; not yet published','Cancelled'],a:2,e:'JEDEC had not published a DDR6 standard as of October 2026. DDR5 remains current; LPDDR6, a separate standard, was published in July 2025.'},
+ {q:'A single-error-correcting code receives a word with two flipped bits. What happens without the extra SECDED parity bit?',o:['Both bits are fixed','It may "correct" the wrong bit and corrupt the data','Nothing; it ignores them','The memory powers off'],a:1,e:'The syndrome points at a third, innocent bit. The extra overall parity bit in SECDED lets the system detect the double error instead.'},
  {q:'How many x8 chips make one 64-bit rank?',o:['4','8','16','64'],a:1,e:'64 bits ÷ 8 lanes per chip = 8 chips.'}
 ];
 const qb=$('#quizBox');let score=0,done=0;
@@ -903,9 +1495,13 @@ qs.forEach((x,i)=>{const d=document.createElement('div');d.className='card quizq
  x.o.forEach((t,j)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;if(j===x.a)score++;b.classList.add(j===x.a?'right':'wrong');o.children[x.a].classList.add('right');d.querySelector('.fb').textContent=(j===x.a?'✓ Correct. ':'✗ Not quite. ')+x.e;if(done===qs.length)$('#qScore').textContent=`Score: ${score} / ${qs.length}`};o.appendChild(b)});qb.appendChild(d)});
 const sc=document.createElement('p');sc.id='qScore';sc.className='mono';sc.style.color=C.accent;qb.appendChild(sc);
 
+/* theme change: reload colours and redraw every diagram */
+function redrawAll(){loadC();[drawPyr,drawDeep,drawBrain,drawSmp,drawCpu,drawDDR,drawGens,calcGen,drawLanes,drawCfg,drawKit,drawDev,drawPM,drawTy,drawSt,drawMd,drawTm,drawEcc,drawHb,drawMk,drawGl].forEach(f=>{try{f()}catch(e){}})}
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll)}catch(e){}
 /* toc highlight */
 const links=[...document.querySelectorAll('#toc a')];
-const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}})},{rootMargin:'-40% 0px -55% 0px'});
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>{const on=a.getAttribute('href')==='#'+e.target.id;a.classList.toggle('on',on);if(on)a.parentNode.scrollTo({left:a.offsetLeft-a.parentNode.clientWidth/2+a.offsetWidth/2,behavior:'smooth'})})}})},{rootMargin:'-40% 0px -55% 0px'});
 document.querySelectorAll('section').forEach(s=>io.observe(s));
 </script>
 </body>
