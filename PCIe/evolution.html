@@ -147,7 +147,39 @@ svg.slots { width: 100%; min-width: 520px; height: auto; display: block; }
 .q .opts button.wrong { border-color: var(--bad); color: var(--bad); }
 .q .fb { font-size: 0.9rem; min-height: 1.2em; }
 .quiz { display: grid; gap: 12px; }
-footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
+footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; display: grid; gap: 8px; border-top: 1px solid var(--line); margin-top: 40px; }
+footer ul { margin: 0; padding-left: 18px; columns: 2 320px; }
+
+/* ---- reference-document treatment ---- */
+body { font-size: 15.5px; }
+header.hero { background: var(--surface); padding: 22px 0 0; }
+.docbar { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 0.74rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.docbar b { color: var(--ink); font-weight: 600; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border-top: 1px solid var(--line); margin-top: 8px; }
+.kpi { padding: 14px 16px 16px 0; display: grid; gap: 2px; }
+.kpi + .kpi { border-left: 1px solid var(--line); padding-left: 16px; }
+.kpi .v { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi .k { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi .d { font-size: 0.82rem; color: var(--muted); }
+@media (max-width: 560px) { .kpi + .kpi { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); } }
+main section { padding-top: 44px; }
+.sec-head { border-top: 2px solid var(--ink); padding-top: 14px; }
+.sec-head .num { letter-spacing: 0.06em; text-transform: uppercase; }
+.panel, .dev, .q, .simple > div { border-radius: 6px; box-shadow: 0 1px 2px rgba(10, 30, 50, 0.05); }
+.gens button, .seg, .btn, .ro, .plain-live, canvas { border-radius: 5px; }
+thead th { background: var(--code-bg); border-bottom: 1px solid var(--line); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--code-bg) 60%, transparent); }
+td, th { font-variant-numeric: tabular-nums; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.rel { color: var(--ok); } .pill.draft { color: var(--trace); } .pill.ship { color: var(--accent); }
+svg.stackmap { width: 100%; min-width: 620px; height: auto; display: block; }
+.sm rect { fill: var(--code-bg); stroke: var(--line); stroke-width: 1.5; }
+.sm .base rect { fill: color-mix(in srgb, var(--accent) 16%, var(--code-bg)); stroke: var(--accent); }
+.sm .alt rect { stroke: var(--trace); stroke-dasharray: 5 4; }
+.sm text { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; text-anchor: middle; }
+.sm .sub { fill: var(--muted); font-size: 10.5px; }
+.std-note { font-size: 0.85rem; color: var(--muted); }
 </style>
 <!--site--><link rel="stylesheet" href="../back.css"><!--/site-->
 <script>try{var t=localStorage.getItem("tb-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
@@ -158,9 +190,16 @@ footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
   <div class="wrap">
     <!--site--><a class="study-back" href="../">← Study home</a>
     <div class="tabs"><a href="./">Testing guide</a><a href="evolution.html" aria-current="page">Evolution &amp; protocol</a></div><!--/site-->
-    <div class="eyebrow">Interactive lesson · PCIe 1.0 (2003) → 8.0 (2028 target)</div>
+    <div class="docbar"><span><b>PCI Express</b> · Technical reference and interactive lesson</span><span>Revised November 2026 · Generations 1.0 to 8.0 · Sources listed at the end</span></div>
     <h1>How PCIe evolved, one idea at a time</h1>
-    <p class="lede">Every generation doubled the speed, and each time something in the protocol had to change to make that possible. Step through the generations, then try each idea yourself: the signal, the encoding, equalization, the packet format and error recovery.</p>
+    <p class="lede">Every generation doubled the speed, and each time something in the protocol had to change to make that possible. Step through the generations, then try each idea yourself: the signal, the encoding, equalization, the packet format and error recovery. The last section tracks the current state of the standards built on or beside PCIe.</p>
+    <div class="kpis">
+      <div class="kpi"><span class="k">Latest released</span><span class="v">PCIe 7.0</span><span class="d">128 GT/s · June 2025</span></div>
+      <div class="kpi"><span class="k">In draft</span><span class="v">PCIe 8.0</span><span class="d">256 GT/s · draft 0.5 · 2028 target</span></div>
+      <div class="kpi"><span class="k">Per-lane rate since 2003</span><span class="v">×51</span><span class="d">2.5 → 128 GT/s released</span></div>
+      <div class="kpi"><span class="k">x16, both directions</span><span class="v">512 GB/s</span><span class="d">PCIe 7.0 · 1 TB/s targeted for 8.0</span></div>
+      <div class="kpi"><span class="k">Signalling</span><span class="v">PAM4</span><span class="d">with FLITs and FEC since 6.0</span></div>
+    </div>
   </div>
 </header>
 <nav class="rail" aria-label="Sections"><div class="wrap">
@@ -172,7 +211,8 @@ footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
   <a href="#reliability"><span class="n">06</span>Reliability</a>
   <a href="#features"><span class="n">07</span>Features</a>
   <a href="#practice"><span class="n">08</span>In practice</a>
-  <a href="#quiz"><span class="n">09</span>Quiz</a>
+  <a href="#standards"><span class="n">09</span>Standards now</a>
+  <a href="#quiz"><span class="n">10</span>Quiz</a>
 </div></nav>
 
 <main class="wrap">
@@ -334,14 +374,52 @@ footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
   </div>
 </section>
 
+<section id="standards">
+  <div class="sec-head"><span class="num">09 / Standards now</span><h2>The current standards landscape</h2>
+  <p class="muted">Where each specification stands as of November 2026, and how the standards relate. Filter by area.</p></div>
+  <div class="simple">
+    <div><span class="lbl">In plain words</span><p>PCIe is the road. Other standards are the vehicles and traffic systems that use it. <b>NVMe</b> is how storage talks over it. <b>CXL</b> lets servers share memory over the same wires. <b>UALink</b> is a separate, newer road built only to connect AI accelerators to each other.</p></div>
+    <div class="ex"><span class="lbl">Example</span><p>A 2027 AI rack could use all of them at once: PCIe 6 or 7 from CPUs to accelerators and SSDs, NVMe for the storage commands, CXL for a shared memory pool, UALink between accelerators, and optical PCIe retimers to reach the next rack.</p></div>
+  </div>
+  <div class="panel" style="overflow-x:auto; margin-bottom:16px">
+    <svg class="stackmap sm" viewBox="0 0 760 250" role="img" aria-label="How NVMe, CXL, tunnelled protocols and UALink relate to the PCIe layers">
+      <g><rect x="20" y="20" width="150" height="50" rx="5"></rect><text x="95" y="42">NVMe 2.3</text><text x="95" y="58" class="sub">storage commands</text></g>
+      <g><rect x="180" y="20" width="150" height="50" rx="5"></rect><text x="255" y="42">Device drivers</text><text x="255" y="58" class="sub">GPU, NIC, Wi-Fi…</text></g>
+      <g><rect x="340" y="20" width="200" height="110" rx="5"></rect><text x="440" y="60">CXL 4.0</text><text x="440" y="78" class="sub">memory, cache and I/O protocols</text><text x="440" y="94" class="sub">own link layer, shared PHY</text></g>
+      <g><rect x="20" y="80" width="310" height="50" rx="5"></rect><text x="175" y="102">PCIe transaction + data link layers</text><text x="175" y="118" class="sub">TLPs, credits, ACK/NAK or FLITs</text></g>
+      <g class="base"><rect x="20" y="140" width="520" height="50" rx="5"></rect><text x="280" y="162">PCIe physical layer (6.x at 64 GT/s, 7.0 at 128 GT/s)</text><text x="280" y="178" class="sub">LTSSM, equalization, PAM4</text></g>
+      <g><rect x="20" y="200" width="250" height="34" rx="5"></rect><text x="145" y="221">Copper: slots, M.2, EDSFF, cables</text></g>
+      <g><rect x="280" y="200" width="260" height="34" rx="5"></rect><text x="410" y="221">Optical via Optical Aware Retimer</text></g>
+      <g class="alt"><rect x="580" y="20" width="160" height="214" rx="5"></rect><text x="660" y="100">UALink 2.0</text><text x="660" y="120" class="sub">separate stack for</text><text x="660" y="134" class="sub">accelerator-to-accelerator</text><text x="660" y="148" class="sub">links, 200G per lane</text></g>
+    </svg>
+    <p class="std-note" style="margin-top:8px">Solid boxes ride on PCIe. The dashed box is a separate interconnect used alongside it.</p>
+  </div>
+  <div class="panel" style="display:grid; gap:12px">
+    <div class="seg" id="stdSeg" role="group" aria-label="Filter standards by area"></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Standard</th><th>Status</th><th>Date</th><th>What is new</th><th>Why it matters</th></tr></thead><tbody id="stdBody"></tbody></table></div>
+    <p class="std-note">Dates and features are from the announcements listed under Sources. Related background standards not dated here: PCIe link encryption (IDE) and device attestation (TDISP, built on DMTF SPDM), PCI-SIG CopprLink cables, and SNIA EDSFF drive form factors.</p>
+  </div>
+</section>
+
 <section id="quiz">
-  <div class="sec-head"><span class="num">09 / Quiz</span><h2>Check what stuck</h2><p class="muted" id="score">0 of 6 answered correctly</p></div>
+  <div class="sec-head"><span class="num">10 / Quiz</span><h2>Check what stuck</h2><p class="muted" id="score">0 of 7 answered correctly</p></div>
   <div class="quiz" id="quizEl"></div>
 </section>
 </main>
 
 <footer class="wrap">
   <p>Figures follow the PCI Express Base Specifications and PCI-SIG announcements. The waveform, equalization and efficiency demos are simplified teaching models. Device pictures are drawn diagrams, not photographs. PCIe 8.0 is still in draft (draft 0.5, May 2026), so its details may change.</p>
+  <p>Sources:</p>
+  <ul>
+    <li><a href="https://convergedigest.com/pci-sig-finalizes-pcie-7-0-specification-at-128-0-gt-s/">Converge Digest: PCIe 7.0 finalized</a></li>
+    <li><a href="https://www.design-reuse.com/news/202528858">Design &amp; Reuse: PCIe optical interconnect (Optical Aware Retimer ECN)</a></li>
+    <li><a href="https://news.mynavi.jp/techplus/article/20250612-3352199/">Mynavi TechPlus: PCIe 7.0 release and compliance timeline</a></li>
+    <li><a href="https://www.itechguides.com/?p=715391">iTechGuides: PCIe 8.0 draft 0.5 status</a></li>
+    <li><a href="https://www.businesswire.com/news/home/20251118275848/en/CXL-Consortium-Releases-the-Compute-Express-Link-4.0-Specification-Increasing-Speed-and-Bandwidth">Business Wire: CXL 4.0 release</a></li>
+    <li><a href="https://datacentrenews.uk/story/cxl-4-0-doubles-bandwidth-introduces-bundled-ports-for-data-centres">DataCentreNews: CXL 4.0 features</a></li>
+    <li><a href="https://www.hpcwire.com/off-the-wire/ualink-consortium-publishes-4-specifications-defining-in-network-compute-chiplets-manageability-and-200g-performance/">HPCwire: UALink 2.0 specifications</a></li>
+    <li><a href="https://www.silicon.co.uk/press-release/nvm-express-publishes-set-of-nvme-specifications-enabling-new-capabilities-for-ai-cloud-enterprise-and-client-storage">NVM Express press release: NVMe 2.3</a></li>
+  </ul>
 </footer>
 
 <script>
@@ -391,7 +469,7 @@ footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
     { n: "7.0", y: "2025", rate: 128, eff: 236 / 256, sig: "PAM4", enc: "FLIT + FEC",
       simple: "Gen6 at double speed. Same four-level signal and same crates. The work went into making such a fast signal survive real boards and cables, and into saving power.",
       ex: "Specification published in 2025; products are expected in AI clusters and 800G networking later this decade.",
-      tech: ["128 GT/s using PAM4 at 64 GBaud", "FLIT mode only at this rate", "Tighter channel and jitter parameters, focus on reach and power efficiency", "Optical links considered alongside copper through retimer extensions"] },
+      tech: ["128 GT/s using PAM4 at 64 GBaud", "FLIT mode only at this rate", "Tighter channel and jitter parameters, focus on reach and power efficiency", "Preliminary compliance testing expected in 2027, integrators list in 2028", "Optical links considered alongside copper through retimer extensions"] },
     { n: "8.0", y: "2028 target", rate: 256, eff: 236 / 256, sig: "PAM4", enc: "FLIT + FEC",
       simple: "Still being written. The goal is to double once more while staying compatible with everything before it.",
       ex: "No products yet. Draft 0.5 went to PCI-SIG members in May 2026; the full specification is targeted for 2028.",
@@ -624,6 +702,21 @@ footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
   const SL = [["x1", 25, "Wi-Fi, sound, USB cards"], ["x4", 39, "NVMe adapter cards, 10G network"], ["x8", 56, "RAID and fast network cards"], ["x16", 89, "Graphics cards, accelerators"]];
   $("#slotG").innerHTML = SL.map((s, i) => { const y = 14 + i * 44, sc = 4.2, a = 11.65 * sc; return `<text x="6" y="${y + 18}" style="font-size:13px">${s[0]}</text><rect x="50" y="${y}" width="${a}" height="26" rx="3"/><rect x="${50 + a + 6}" y="${y}" width="${(s[1] - 11.65) * sc - 6}" height="26" rx="3"/><rect class="hi" x="${50 + a + 1}" y="${y}" width="4" height="26"/><text x="${50 + s[1] * sc + 12}" y="${y + 12}">${s[1]} mm</text><text x="${50 + s[1] * sc + 12}" y="${y + 24}">${s[2]}</text>`; }).join("");
 
+  /* ---------- 09 standards ---------- */
+  const STD = [
+    ["pcie", "PCIe 6.x", "ship", "Shipping", "2022 →", "64 GT/s PAM4, FLIT mode, FEC. Revision 6.4 carries the optical retimer change.", "The generation now reaching AI servers, switches, retimers and enterprise SSDs."],
+    ["pcie", "PCIe 7.0", "rel", "Released", "Jun 2025", "128 GT/s, up to 512 GB/s both ways on x16, PAM4 and FLIT encoding, better power efficiency.", "Sized for 800G Ethernet and AI clusters. Compliance testing is planned to begin in 2027, so products follow later."],
+    ["pcie", "PCIe 8.0", "draft", "Draft 0.5", "May 2026", "Targets 256 GT/s and 1 TB/s on x16. New connector technologies under evaluation.", "Full specification targeted for 2028. Nothing to buy for several years."],
+    ["optical", "Optical Aware Retimer ECN", "rel", "Released", "Jun 2025", "Amends PCIe 6.4 and 7.0 with a retimer-based way to run PCIe over optical fibre.", "First standard route to PCIe links between racks, beyond the reach of copper."],
+    ["memory", "CXL 4.0", "rel", "Released", "Nov 2025", "Moves to the PCIe 7.0 physical layer at 128 GT/s. Adds bundled ports, native x2 width, up to four retimers and stronger memory error reporting.", "Lets servers pool and share memory across a rack, which helps memory-hungry AI and database workloads."],
+    ["ai", "UALink 2.0", "rel", "Released", "Apr 2026", "Common Specification 2.0 with in-network compute, a separate 200G data-link and physical-layer specification, a manageability specification and a chiplet specification compatible with UCIe 3.0.", "An open, multi-vendor way to connect AI accelerators to each other. It is not PCIe; it sits beside it."],
+    ["storage", "NVMe 2.3", "rel", "Released", "Aug 2025", "Eleven updated specifications, including Rapid Path Failure Recovery, drive self-reported power, and NVMe over PCIe Transport 1.3.", "Faster recovery from failures and better power visibility for data-centre SSDs. The command layer every PCIe SSD uses."]
+  ];
+  let sf = "all";
+  function renderStd() { $("#stdBody").innerHTML = STD.filter(r => sf === "all" || r[0] === sf).map(r => `<tr><td><b>${r[1]}</b></td><td><span class="pill ${r[2]}">${r[3]}</span></td><td class="g" style="color:var(--muted)">${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td></tr>`).join(""); }
+  seg($("#stdSeg"), [["all", "All"], ["pcie", "PCIe base"], ["optical", "Optical"], ["memory", "Memory (CXL)"], ["ai", "AI scale-up"], ["storage", "Storage"]], () => sf, (k) => { sf = k; renderStd(); });
+  renderStd();
+
   /* ---------- 09 quiz ---------- */
   const QZ = [
     ["Why did Gen3 run at 8 GT/s instead of 10 GT/s?", ["It changed the encoding to waste far fewer bits", "It used four voltage levels", "It added more lanes"], 0, "128b/130b cut the overhead from 20% to 1.5%, so 8 GT/s was enough to double Gen2."],
@@ -631,6 +724,7 @@ footer { padding: 32px 0 44px; color: var(--muted); font-size: 0.85rem; }
     ["A Gen5 x4 SSD is fitted in a Gen3 x4 slot. What happens?", ["It will not work", "It runs at Gen3 x4 speed", "It runs at Gen5 on two lanes"], 1, "The link trains to the highest speed and width both ends support."],
     ["In Gen1–5, what happens when a packet arrives corrupted?", ["The software gets wrong data", "The receiver sends NAK and the sender replays it", "The link shuts down"], 1, "The LCRC check fails, a NAK is sent, and the copy in the replay buffer is sent again."],
     ["Why does Gen6 need forward error correction?", ["PAM4 levels are closer together, so raw errors are far more common", "FLITs are larger than TLPs", "Encryption requires it"], 0, "The raw error rate target moves from 1e-12 to about 1e-6; FEC repairs most errors without a resend."],
+    ["Which statement about CXL 4.0 is correct?", ["It replaces PCIe with a new connector", "It runs on the PCIe 7.0 physical layer at 128 GT/s", "It is a storage command set"], 1, "CXL shares the PCIe physical layer; version 4.0 moved to the PCIe 7.0 one."],
     ["What is equalization for?", ["Making all lanes the same length", "Compensating for the board weakening fast signal changes", "Balancing power between devices"], 1, "Traces attenuate high frequencies; the transmitter and receiver boost them back."]
   ];
   let right = 0;
