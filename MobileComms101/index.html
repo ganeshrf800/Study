@@ -31,10 +31,10 @@ figcaption{color:var(--muted);font-size:.85rem;padding:8px 4px 0}
 .note{border-left:3px solid var(--accent);background:var(--surface);padding:10px 14px;margin:1em 0;border-radius:0 6px 6px 0;font-size:.95rem}
 .note b{color:var(--accent)}
 code,.f{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;font-size:.9em}
-.f{display:block;background:var(--sunk);padding:9px 12px;border-radius:6px;margin:.7em 0;overflow-x:auto;white-space:nowrap}
+.f{display:block;background:var(--sunk);padding:9px 12px;border-radius:6px;margin:.7em 0;overflow-x:auto;white-space:normal;word-spacing:.15em;line-height:1.7}
 .lab{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:14px 16px;margin:1.3em 0}
 .lab h3{margin:.1em 0 .6em;font-size:1rem}
-.lab h3::before{content:"Try it · ";color:var(--accent)}
+.lab h3::before{content:"Calculator — ";color:var(--accent);font-weight:600}
 .ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 18px}
 .ctl label{display:grid;gap:3px;font-size:.85rem;color:var(--muted)}
 .ctl input[type=number],.ctl select,table select,table input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:5px 7px;width:100%}
@@ -67,6 +67,15 @@ ol.steps li{margin:.35em 0}
 .js .sub>h2{border-top:0;padding-top:0;margin-top:1em}
 .pn{display:flex;justify-content:space-between;gap:10px;margin-top:2.4em;border-top:1px solid var(--line);padding-top:14px}
 .pn button{max-width:48%;text-align:left}.pn button:last-child{margin-left:auto;text-align:right}
+.lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.8rem;color:var(--muted);padding:6px 4px 0}
+.lg i{display:inline-block;width:20px;border-top:2.5px solid;vertical-align:middle;margin-right:6px}
+.bars{display:grid;gap:6px;margin:12px 0 2px}.br{display:grid;grid-template-columns:minmax(120px,170px) 1fr 120px;gap:10px;align-items:center;font-size:.84rem}
+.br>div{background:var(--sunk);border-radius:3px;height:14px;overflow:hidden}.br i{display:block;height:100%}.br b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.br{grid-template-columns:110px 1fr 92px;font-size:.78rem}}
+tr.calc th,tr.calc td{background:var(--sunk);font-weight:600}
+p.ref{font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:1.6em}
+details{margin-top:12px}summary{cursor:pointer;font-weight:600;font-size:.9rem;color:var(--accent)}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:1.6em 0 -.4em}
 .hint{font-size:.88rem;color:var(--muted);margin:.8em 0 0}
 .ctl label button{justify-self:start}
 .ax{fill:var(--muted);font-size:11px}
@@ -75,8 +84,9 @@ ol.steps li{margin:.35em 0}
 <script>document.documentElement.classList.add("js")</script>
 </head><body><main>
 <a class="study-back" href="../">← Study home</a>
+<p class="eyebrow">Engineering reference · LTE and 5G NR</p>
 <h1>Mobile Communications 101</h1>
-<p class="lede">How a phone and a cell tower talk to each other, from the first principles of sending information through to how the radio is built, budgeted, specified and tested. Pick a tab, then a topic. The interactive blocks let you check the numbers yourself.</p>
+<p class="lede">A practitioner's reference for cellular RF and physical-layer engineering: propagation and link budgets, waveforms and coding, MIMO and carrier aggregation, transceiver architecture and impairments, requirement derivation, 3GPP conformance, OTA and production test. Calculators implement the equations in the text; 3GPP clause references are given at the end of each topic.</p>
 <p><time datetime="2026-11-16">16 November 2026</time> · Deeper dives into individual phone blocks live in the <a href="../Mobile/">Mobile</a> section.</p>
 
 <div class="tabs" id="tabs" role="tablist" aria-label="Chapters"></div>
@@ -114,8 +124,8 @@ ol.steps li{margin:.35em 0}
 <p>There are only two ways to go faster: more bandwidth or more SNR. (Multiple antennas, covered later, create several parallel channels and multiply the limit.)</p>
 <div class="lab"><h3>Shannon capacity</h3>
 <div class="ctl">
-<label>Bandwidth: <span id="sh-bv"></span><input type="range" id="sh-b" min="0.2" max="100" step="0.2" value="20"></label>
-<label>SNR: <span id="sh-sv"></span><input type="range" id="sh-s" min="-10" max="40" step="0.5" value="20"></label>
+<label><span class="lt">Bandwidth: <span id="sh-bv"></span></span><input type="range" id="sh-b" min="0.2" max="100" step="0.2" value="20"></label>
+<label><span class="lt">SNR: <span id="sh-sv"></span></span><input type="range" id="sh-s" min="-10" max="40" step="0.5" value="20"></label>
 </div>
 <div class="out"><div>Capacity<b id="sh-c"></b></div><div>Spectral efficiency<b id="sh-e"></b></div><div>Noise floor (ideal receiver)<b id="sh-n"></b></div></div>
 </div>
@@ -139,22 +149,98 @@ ol.steps li{margin:.35em 0}
 <li><b>Doppler shift.</b> Motion shifts the carrier by f·v/c. At 2 GHz and 120 km/h that is about 220 Hz.</li>
 </ul>
 </section>
+<section class="sub" id="propagation" data-title="Propagation models">
+<h2>Propagation models</h2>
+<p>Free-space loss is a lower bound. Network planning and 3GPP performance evaluation use empirical or geometry-based stochastic models fitted to measurement campaigns. For NR the reference is <b>3GPP TR 38.901</b> (0.5–100 GHz), which replaced the LTE-era TR 36.873 and the classic Okumura–Hata / COST-231 models (150–2000 MHz).</p>
+<div class="tw"><table><thead><tr><th>Scenario</th><th>Path loss (dB), d<sub>3D</sub> in m, f<sub>c</sub> in GHz</th><th class="n">σ<sub>SF</sub></th><th>Typical heights</th></tr></thead><tbody>
+<tr><td>UMa LOS, d<sub>2D</sub> ≤ d′<sub>BP</sub></td><td><code>28.0 + 22 log d₃D + 20 log f_c</code></td><td class="n">4 dB</td><td rowspan="3">h<sub>BS</sub> 25 m, h<sub>UT</sub> 1.5–22.5 m</td></tr>
+<tr><td>UMa LOS, beyond breakpoint</td><td><code>28.0 + 40 log d₃D + 20 log f_c − 9 log(d′BP² + (h_BS − h_UT)²)</code></td><td class="n">4 dB</td></tr>
+<tr><td>UMa NLOS</td><td><code>max(PL_LOS, 13.54 + 39.08 log d₃D + 20 log f_c − 0.6(h_UT − 1.5))</code></td><td class="n">6 dB</td></tr>
+<tr><td>UMi street canyon LOS</td><td><code>32.4 + 21 log d₃D + 20 log f_c</code> (40 log beyond breakpoint, −9.5 log term)</td><td class="n">4 dB</td><td rowspan="2">h<sub>BS</sub> 10 m</td></tr>
+<tr><td>UMi street canyon NLOS</td><td><code>max(PL_LOS, 22.4 + 35.3 log d₃D + 21.3 log f_c − 0.3(h_UT − 1.5))</code></td><td class="n">7.82 dB</td></tr>
+<tr><td>Indoor hotspot (office) LOS</td><td><code>32.4 + 17.3 log d₃D + 20 log f_c</code></td><td class="n">3 dB</td><td rowspan="2">h<sub>BS</sub> 3 m</td></tr>
+<tr><td>Indoor hotspot (office) NLOS</td><td><code>max(PL_LOS, 17.3 + 38.3 log d₃D + 24.9 log f_c)</code></td><td class="n">8.03 dB</td></tr>
+</tbody></table></div>
+<p>The breakpoint distance is <code>d′BP = 4 h′BS h′UT f_c / c</code> with effective heights <code>h′ = h − h_E</code>; h<sub>E</sub> = 1 m is used here (in UMa it is drawn stochastically). Shadow fading is log-normal with standard deviation σ<sub>SF</sub>, which drives the coverage margin in a link budget.</p>
+<h3>Outdoor-to-indoor penetration (TR 38.901 §7.4.3)</h3>
+<ul>
+<li><b>Low-loss model</b> (standard glass, concrete): <code>PL_tw = 5 − 10 log(0.3·10^(−L_glass/10) + 0.7·10^(−L_concrete/10))</code> with <code>L_glass = 2 + 0.2 f_c</code>, <code>L_concrete = 5 + 4 f_c</code>. About 13 dB at 3.5 GHz.</li>
+<li><b>High-loss model</b> (IRR-coated glass, 23 + 0.3 f<sub>c</sub>): about 27 dB at 3.5 GHz. Energy-efficient buildings make mid-band and mmWave indoor coverage from outdoor sites hard.</li>
+<li>Indoor loss adds 0.5 dB per metre of indoor distance; car penetration is modelled as N(9, 5) dB.</li>
+</ul>
+<div class="lab"><h3>Path loss and cell range</h3>
+<div class="ctl">
+<label><span class="lt">Carrier frequency (GHz)</span><input type="number" id="pr-f" value="3.5" min="0.5" max="100" step="0.1"></label>
+<label><span class="lt">UE height (m)</span><input type="number" id="pr-h" value="1.5" min="1.5" max="22.5" step="0.5"></label>
+<label><span class="lt">Maximum allowable path loss (dB)</span><input type="number" id="pr-m" value="127" step="1"></label>
+</div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="pr-plot"></div><figcaption>Median path loss against 2D distance (logarithmic). UMa uses h<sub>BS</sub> = 25 m, UMi 10 m. The dashed line is the MAPL.</figcaption></figure>
+<div class="out"><div>Free space range<b id="pr-r0"></b></div><div>UMa LOS<b id="pr-r1"></b></div><div>UMa NLOS<b id="pr-r2"></b></div><div>UMi LOS<b id="pr-r3"></b></div><div>UMi NLOS<b id="pr-r4"></b></div></div>
+<p class="hint">Range is the distance at which the median path loss reaches the MAPL. Shadowing, penetration and body loss belong in the MAPL (see the MAPL budget topic), not here.</p>
+</div>
+<p class="ref">Spec: 3GPP TR 38.901 §7.4.1 (path loss), §7.4.3 (O2I), Table 7.4.1-1.</p>
+</section>
+<section class="sub" id="fading" data-title="Fading and channel models">
+<h2>Fading, dispersion and channel models</h2>
+<p>Small-scale fading is described by two dispersions. <b>Delay spread</b> (multipath) makes the channel frequency-selective; <b>Doppler spread</b> (motion) makes it time-varying. Each has a dual coherence parameter that waveform and reference-signal design must respect.</p>
+<div class="tw"><table><thead><tr><th>Quantity</th><th>Definition / rule of thumb</th><th>Design consequence</th></tr></thead><tbody>
+<tr><td>RMS delay spread σ<sub>τ</sub></td><td>Second central moment of the power-delay profile. Indoor 10–50 ns, urban macro 100 ns–1 µs</td><td>Cyclic prefix must exceed the maximum excess delay that carries significant energy</td></tr>
+<tr><td>Coherence bandwidth B<sub>c</sub></td><td><code>B_c ≈ 1 / (5 σ_τ)</code> (50 % frequency correlation)</td><td>Frequency-domain DMRS density; subband size for CQI/PMI; frequency diversity gain</td></tr>
+<tr><td>Maximum Doppler f<sub>D</sub></td><td><code>f_D = v f_c / c</code></td><td>Subcarrier spacing ≫ f<sub>D</sub> to keep inter-carrier interference low</td></tr>
+<tr><td>Coherence time T<sub>c</sub></td><td><code>T_c ≈ 0.423 / f_D</code></td><td>Additional DMRS symbols in time, CSI reporting period, link-adaptation lag</td></tr>
+<tr><td>Doppler ICI</td><td>Upper bound <code>P_ICI ≈ (π f_D / Δf)² / 3</code> relative to signal</td><td>Sets an SINR ceiling at high speed, independent of transmit power</td></tr>
+</tbody></table></div>
+<h3>Small-scale statistics</h3>
+<ul>
+<li><b>Rayleigh</b> envelope (NLOS, many paths): the probability that the power is more than <i>x</i> dB below its mean is <code>1 − exp(−10^(−x/10))</code>: 9.5 % for 10 dB, 1 % for 20 dB, 0.1 % for 30 dB. Diversity of order <i>L</i> makes the outage probability fall as SNR<sup>−L</sup>.</li>
+<li><b>Rician</b> with K-factor (ratio of LOS to scattered power): K = 0 is Rayleigh; K &gt; 10 dB is close to AWGN.</li>
+<li><b>Spatial correlation</b> between antennas reduces both diversity order and MIMO rank (see the MIMO tab).</li>
+</ul>
+<h3>Conformance channel models</h3>
+<div class="tw"><table><thead><tr><th>Model</th><th>Used in</th><th>RMS delay spread</th><th>Typical Doppler</th></tr></thead><tbody>
+<tr><td>EPA / EVA / ETU</td><td>LTE (TS 36.101 Annex B)</td><td>43 / 357 / 991 ns</td><td>5 / 70 / 300 Hz</td></tr>
+<tr><td>TDL-A30, TDL-B100, TDL-C300</td><td>NR FR1 demodulation (TS 38.101-4)</td><td>30 / 100 / 300 ns</td><td>e.g. TDLA30-10, TDLB100-400, TDLC300-100</td></tr>
+<tr><td>CDL-A … CDL-E</td><td>TR 38.901 link level, spatial (angles of departure and arrival); FR2 and MIMO OTA</td><td>Scalable</td><td>Scalable</td></tr>
+<tr><td>MIMO correlation Low / Medium / High</td><td>LTE and NR demodulation</td><td colspan="2">α (base station), β (UE): 0 / 0, 0.3 / 0.9, 0.9 / 0.9</td></tr>
+</tbody></table></div>
+<div class="lab"><h3>Coherence and numerology check</h3>
+<div class="ctl">
+<label><span class="lt">Carrier frequency (GHz)</span><input type="number" id="fd-f" value="3.5" min="0.4" step="0.1"></label>
+<label><span class="lt">Speed (km/h)</span><input type="number" id="fd-v" value="120" min="0" step="10"></label>
+<label><span class="lt">RMS delay spread (ns)</span><input type="number" id="fd-t" value="300" min="1" step="10"></label>
+<label><span class="lt">Subcarrier spacing</span><select id="fd-s"><option value="15">15 kHz</option><option value="30" selected>30 kHz</option><option value="60">60 kHz</option><option value="120">120 kHz</option></select></label>
+</div>
+<div class="out"><div>Max Doppler<b id="fd-d"></b></div><div>Coherence time<b id="fd-tc"></b></div><div>Slots per coherence time<b id="fd-sl"></b></div><div>Coherence bandwidth<b id="fd-bc"></b></div><div>…in resource blocks<b id="fd-rb"></b></div><div>Normal CP vs 4 σ<sub>τ</sub><b id="fd-cp"></b></div><div>Doppler ICI ceiling<b id="fd-ici"></b></div></div>
+</div>
+</section>
 <section class="sub" id="linkbudget" data-title="Link budget">
 <h2>Link budget</h2>
 <p>A link budget adds every gain and loss between transmitter and receiver to find the received power, then compares it with what the receiver needs.</p>
 <span class="f">P_rx = P_tx + G_tx + G_rx − path loss − other losses &nbsp;&nbsp;&nbsp; (all in dB and dBm)</span>
 <div class="lab"><h3>Uplink link budget (phone to base station)</h3>
 <div class="ctl">
-<label>Transmit power (dBm)<input type="number" id="lb-p" value="23" step="1"></label>
-<label>Phone antenna gain (dBi)<input type="number" id="lb-gt" value="0" step="0.5"></label>
-<label>Base-station antenna gain (dBi)<input type="number" id="lb-gr" value="17" step="0.5"></label>
-<label>Frequency (MHz)<input type="number" id="lb-f" value="1800" step="50" min="100"></label>
-<label>Distance (km)<input type="number" id="lb-d" value="2" step="0.1" min="0.01"></label>
-<label>Shadowing, body and wall loss (dB)<input type="number" id="lb-l" value="20" step="1"></label>
-<label>Bandwidth (MHz)<input type="number" id="lb-b" value="9" step="1" min="0.01"></label>
-<label>Receiver noise figure (dB)<input type="number" id="lb-nf" value="5" step="0.5"></label>
+<label><span class="lt">Transmit power (dBm)</span><input type="number" id="lb-p" value="23" step="1"></label>
+<label><span class="lt">Phone antenna gain (dBi)</span><input type="number" id="lb-gt" value="0" step="0.5"></label>
+<label><span class="lt">Base-station antenna gain (dBi)</span><input type="number" id="lb-gr" value="17" step="0.5"></label>
+<label><span class="lt">Frequency (MHz)</span><input type="number" id="lb-f" value="1800" step="50" min="100"></label>
+<label><span class="lt">Distance (km)</span><input type="number" id="lb-d" value="2" step="0.1" min="0.01"></label>
+<label><span class="lt">Shadowing, body and wall loss (dB)</span><input type="number" id="lb-l" value="20" step="1"></label>
+<label><span class="lt">Bandwidth (MHz)</span><input type="number" id="lb-b" value="9" step="1" min="0.01"></label>
+<label><span class="lt">Receiver noise figure (dB)</span><input type="number" id="lb-nf" value="5" step="0.5"></label>
 </div>
 <div class="out"><div>Free-space path loss<b id="lb-fs"></b></div><div>Received power<b id="lb-rx"></b></div><div>Receiver noise floor<b id="lb-no"></b></div><div>SNR<b id="lb-snr"></b></div></div>
+</div>
+</section>
+<section class="sub" id="mapl" data-title="MAPL budget">
+<h2>Engineering link budget: maximum allowable path loss</h2>
+<p>Network dimensioning works backwards from the receiver: given the SINR the chosen MCS needs at the cell edge, how much path loss can the link tolerate? The <b>maximum allowable path loss (MAPL)</b> of uplink and downlink is computed separately; the smaller one limits the cell radius. In mid-band TDD it is almost always the uplink, because the phone's 23 dBm faces the same path as the base station's 200 W.</p>
+<span class="f">MAPL = EIRP + G_rx − L_rx − S_rx − M_interference − M_shadow − L_penetration − L_body &nbsp;&nbsp; S_rx = −174 + 10 log B + NF + SINR_req</span>
+<p>The shadow-fading margin converts a median path loss into an edge-coverage probability: <code>M_shadow = σ_SF · Φ⁻¹(p_edge)</code>, i.e. 1.28 σ for 90 % edge reliability (about 97 % area reliability for typical slopes).</p>
+<div class="lab"><h3>Uplink and downlink MAPL</h3>
+<div class="tw"><table id="ml-t"><thead><tr><th>Item</th><th class="n">Uplink (UE → gNB)</th><th class="n">Downlink (gNB → UE)</th><th>Note</th></tr></thead><tbody></tbody></table></div>
+<div class="ctl"><label><span class="lt">Carrier frequency for range (GHz)</span><input type="number" id="ml-f" value="3.5" step="0.1" min="0.5"></label></div>
+<div class="out"><div>Uplink MAPL<b id="ml-u"></b></div><div>Downlink MAPL<b id="ml-d"></b></div><div>Limiting link<b id="ml-l"></b></div><div>Cell range, UMa NLOS<b id="ml-r"></b></div></div>
+<p class="hint">Defaults: 64T64R mid-band massive MIMO (24 dBi array gain each way), UL edge allocation of 10 PRB at 30 kHz, QPSK at a low code rate. Range uses the median TR 38.901 UMa NLOS model with h<sub>BS</sub> = 25 m.</p>
 </div>
 </section>
 <section class="sub" id="sharing" data-title="Sharing the air">
@@ -187,8 +273,8 @@ ol.steps li{margin:.35em 0}
 
 <div class="lab"><h3>Bits to waveform</h3>
 <div class="ctl">
-<label>Scheme<select id="wv-s"><option value="ask">ASK (on-off keying)</option><option value="fsk">FSK</option><option value="bpsk">BPSK</option><option value="qpsk" selected>QPSK</option><option value="qam">16QAM</option></select></label>
-<label>Bit pattern<button class="go" id="wv-n" type="button">New random bits</button></label>
+<label><span class="lt">Scheme</span><select id="wv-s"><option value="ask">ASK (on-off keying)</option><option value="fsk">FSK</option><option value="bpsk">BPSK</option><option value="qpsk" selected>QPSK</option><option value="qam">16QAM</option></select></label>
+<label><span class="lt">Bit pattern</span><button class="go" id="wv-n" type="button">New random bits</button></label>
 </div>
 <figure style="border:0;padding:0"><div id="wv-plot"></div></figure>
 <div class="out"><div>Bits per symbol<b id="wv-b"></b></div><div>Symbols for these 12 bits<b id="wv-n2"></b></div><div>Symbol rate for the same bit rate<b id="wv-r"></b></div></div>
@@ -201,12 +287,37 @@ ol.steps li{margin:.35em 0}
 <div class="lab"><h3>Constellation and EVM</h3>
 <div class="split"><canvas id="cv" width="600" height="600" role="img" aria-label="Constellation diagram"></canvas>
 <div><div class="ctl">
-<label>Scheme<select id="cs"><option value="4">QPSK</option><option value="16" selected>16QAM</option><option value="64">64QAM</option><option value="256">256QAM</option><option value="1024">1024QAM</option></select></label>
-<label>SNR: <span id="cnv"></span><input type="range" id="cn" min="5" max="45" step="0.5" value="22"></label>
+<label><span class="lt">Scheme</span><select id="cs"><option value="4">QPSK</option><option value="16" selected>16QAM</option><option value="64">64QAM</option><option value="256">256QAM</option><option value="1024">1024QAM</option></select></label>
+<label><span class="lt">SNR: <span id="cnv"></span></span><input type="range" id="cn" min="5" max="45" step="0.5" value="22"></label>
 </div>
 <div class="out"><div>EVM<b id="c-evm"></b></div><div>3GPP EVM limit<b id="c-lim"></b></div><div>Result<b id="c-res"></b></div></div>
 <p style="font-size:.88rem;color:var(--muted)">Each dot is one received symbol. Noise spreads the dots into clouds around the ideal points. When the clouds overlap, the receiver mistakes one symbol for its neighbour. <b>Error vector magnitude (EVM)</b> is the RMS size of the cloud as a percentage of the constellation's RMS amplitude; with noise alone, EVM ≈ 10^(−SNR/20).</p></div></div>
 </div>
+</section>
+<section class="sub" id="errorperf" data-title="Error performance">
+<h2>Error performance: Eb/N0, SNR and EVM</h2>
+<h3>Energy ratios</h3>
+<span class="f">E_s/N_0 = E_b/N_0 + 10 log(k · R_c) &nbsp;&nbsp;&nbsp; SNR = E_s/N_0 − 10 log(B_N · T_s) &nbsp;&nbsp;&nbsp; k = log₂M</span>
+<p>For Nyquist-shaped single-carrier signals and per resource element in OFDM, the noise bandwidth equals the symbol rate, so SNR ≈ E<sub>s</sub>/N<sub>0</sub>. R<sub>c</sub> is the code rate; comparisons between modulations at equal spectral efficiency must be made in E<sub>b</sub>/N<sub>0</sub>.</p>
+<h3>Uncoded bit error rate in AWGN (Gray mapping)</h3>
+<span class="f">BPSK, QPSK: P_b = Q(√(2E_b/N_0)) &nbsp;&nbsp;&nbsp; square M-QAM: P_b ≈ (4/k)(1 − 1/√M) · Q(√(3k/(M−1) · E_b/N_0))</span>
+<p>The Shannon bound at spectral efficiency η (bit/s/Hz) is <code>E_b/N_0 ≥ (2^η − 1)/η</code>, tending to −1.59 dB as η → 0. Modern LDPC codes operate within roughly 1–1.5 dB of capacity at a 10 % BLER for long blocks, so the uncoded gap in the table below is mostly recovered by coding.</p>
+<div class="lab"><h3>BER against E<sub>b</sub>/N<sub>0</sub></h3>
+<div class="ctl"><label><span class="lt">E<sub>b</sub>/N<sub>0</sub>: <span id="be-xv"></span></span><input type="range" id="be-x" min="0" max="36" step="0.5" value="14"></label></div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="be-plot"></div></figure>
+<div class="tw"><table id="be-t"><thead><tr><th>Modulation</th><th class="n">Bits/symbol</th><th class="n">E<sub>s</sub>/N<sub>0</sub> here</th><th class="n">BER here</th><th class="n">E<sub>b</sub>/N<sub>0</sub> for 10⁻⁶ (uncoded)</th><th class="n">Shannon minimum at η = k</th><th class="n">Uncoded gap</th></tr></thead><tbody></tbody></table></div>
+</div>
+<h3>EVM, MER and SNR</h3>
+<p>With EVM normalised to the RMS constellation power (the 3GPP definition), and impairments that look like additive noise, <code>SNR = MER = −20 log₁₀(EVM_rms)</code>. A transmitter's EVM therefore caps the SNR any receiver can achieve, however strong the signal.</p>
+<div class="tw"><table><thead><tr><th>Modulation</th><th class="n">UE EVM limit (TS 38.101-1)</th><th class="n">Equivalent SNR ceiling</th><th class="n">SNR needed at highest MCS (approx.)</th></tr></thead><tbody>
+<tr><td>π/2-BPSK</td><td class="n">30 %</td><td class="n">10.5 dB</td><td class="n">—</td></tr>
+<tr><td>QPSK</td><td class="n">17.5 %</td><td class="n">15.1 dB</td><td class="n">≈ 5 dB</td></tr>
+<tr><td>16QAM</td><td class="n">12.5 %</td><td class="n">18.1 dB</td><td class="n">≈ 11 dB</td></tr>
+<tr><td>64QAM</td><td class="n">8 %</td><td class="n">21.9 dB</td><td class="n">≈ 17 dB</td></tr>
+<tr><td>256QAM</td><td class="n">3.5 %</td><td class="n">29.1 dB</td><td class="n">≈ 23 dB</td></tr>
+<tr><td>1024QAM (gNB transmitter)</td><td class="n">2.5 %</td><td class="n">32.0 dB</td><td class="n">≈ 29 dB</td></tr>
+</tbody></table></div>
+<p class="ref">EVM measured after zero-forcing equalisation over one slot, with carrier leakage and IQ image excluded (they are separately limited). Spec: TS 38.101-1 §6.4.2.1, TS 38.104 §6.6.3.</p>
 </section>
 <section class="sub" id="spectrum" data-title="Spectrum">
 <h2>How each scheme looks in frequency</h2>
@@ -218,7 +329,7 @@ ol.steps li{margin:.35em 0}
 </ul>
 <div class="lab"><h3>Spectrum of each scheme</h3>
 <div class="ctl">
-<label>Scheme<select id="sp-s">
+<label><span class="lt">Scheme</span><select id="sp-s">
 <option value="rect">QPSK, no filtering (rectangular pulses)</option>
 <option value="rrc4" selected>QPSK with root-raised-cosine filter (WCDMA style)</option>
 <option value="rrc16">16QAM with root-raised-cosine filter</option>
@@ -228,7 +339,7 @@ ol.steps li{margin:.35em 0}
 <option value="ofdm">OFDM, 32 subcarriers (LTE and NR style)</option>
 <option value="scfdma">DFT-s-OFDM / SC-FDMA, 32 subcarriers (uplink)</option>
 </select></label>
-<label>Filter roll-off α: <span id="sp-av"></span><input type="range" id="sp-a" min="0.05" max="1" step="0.01" value="0.22"></label>
+<label><span class="lt">Filter roll-off α: <span id="sp-av"></span></span><input type="range" id="sp-a" min="0.05" max="1" step="0.01" value="0.22"></label>
 </div>
 <figure style="border:0;padding:0;margin-bottom:.4em"><div id="sp-plot"></div><figcaption>Power spectral density, simulated from 4096 random symbols. Frequency is in multiples of the symbol rate; the shaded band holds 99 % of the power.</figcaption></figure>
 <figure style="border:0;padding:0;margin:.4em 0"><div id="sp-env"></div><figcaption>Envelope (instantaneous amplitude) over 60 symbols. The dashed line is the RMS level. Peaks far above it force the power amplifier to back off.</figcaption></figure>
@@ -253,9 +364,9 @@ ol.steps li{margin:.35em 0}
 </ul>
 <div class="lab"><h3>Subcarriers and orthogonality</h3>
 <div class="ctl">
-<label>Number of subcarriers: <span id="sc-nv"></span><input type="range" id="sc-n" min="1" max="12" step="1" value="5"></label>
-<label>Subcarrier spacing<select id="sc-d"><option value="15">15 kHz</option><option value="30">30 kHz</option><option value="60">60 kHz</option><option value="120">120 kHz</option></select></label>
-<label>Receiver frequency offset: <span id="sc-ov"></span><input type="range" id="sc-o" min="0" max="50" step="1" value="0"></label>
+<label><span class="lt">Number of subcarriers: <span id="sc-nv"></span></span><input type="range" id="sc-n" min="1" max="12" step="1" value="5"></label>
+<label><span class="lt">Subcarrier spacing</span><select id="sc-d"><option value="15">15 kHz</option><option value="30">30 kHz</option><option value="60">60 kHz</option><option value="120">120 kHz</option></select></label>
+<label><span class="lt">Receiver frequency offset: <span id="sc-ov"></span></span><input type="range" id="sc-o" min="0" max="50" step="1" value="0"></label>
 </div>
 <figure style="border:0;padding:0;margin-bottom:.4em"><div id="sc-plot"></div><figcaption>Each curve is the spectrum of one subcarrier. The dashed line is where the receiver samples the highlighted subcarrier; the dots show what every subcarrier contributes there.</figcaption></figure>
 <div class="out"><div>Symbol length (1 ÷ spacing)<b id="sc-t"></b></div><div>Cyclic prefix (normal)<b id="sc-cp"></b></div><div>Occupied bandwidth<b id="sc-bw"></b></div><div>Offset in hertz<b id="sc-hz"></b></div><div>Wanted amplitude<b id="sc-w"></b></div><div>Signal to inter-carrier interference<b id="sc-sir"></b></div></div>
@@ -270,6 +381,42 @@ ol.steps li{margin:.35em 0}
 <li><b>MIMO</b> sends several data streams from several antennas on the same frequency. It has its own tab: <a href="#mimo">MIMO and CA</a>.</li>
 </ul>
 <p>More on waveforms: <a href="../Mobile/modulation.html">Modulation study</a> in the Mobile section.</p>
+</section>
+<section class="sub" id="mcs" data-title="MCS, TBS and throughput">
+<h2>MCS, transport block size and throughput</h2>
+<h3>Link adaptation loop</h3>
+<ol class="steps">
+<li>The UE measures CSI-RS and reports CQI (4 bits, from a table matched to the MCS table in use), together with rank and PMI.</li>
+<li>The gNB maps CQI to an MCS, adding an <b>outer-loop offset</b> driven by HARQ ACK/NACK to hold the initial-transmission BLER at its target (10 % for eMBB, down to 10⁻⁵ for URLLC with MCS Table 3).</li>
+<li>DCI 1_1 signals the MCS index (5 bits), PRB allocation, layers and HARQ process; the UE computes the TBS from these.</li>
+</ol>
+<div class="tw"><table><thead><tr><th>Table (TS 38.214)</th><th>Highest order</th><th>Use</th></tr></thead><tbody>
+<tr><td>5.1.3.1-1</td><td>64QAM</td><td>Default</td></tr>
+<tr><td>5.1.3.1-2</td><td>256QAM</td><td>Configured by RRC (mcs-Table = qam256); used in the calculator</td></tr>
+<tr><td>5.1.3.1-3</td><td>64QAM, low spectral efficiency entries</td><td>URLLC, low BLER targets</td></tr>
+<tr><td>5.1.3.1-4</td><td>1024QAM</td><td>Rel-17 downlink, high-SINR small cells and FWA</td></tr>
+</tbody></table></div>
+<h3>Channel coding in NR</h3>
+<ul>
+<li><b>LDPC</b> (data): quasi-cyclic, two base graphs. BG1 (46 × 68, K<sub>cb</sub> = 8448, rates down to 1/3) for large blocks; BG2 (42 × 52, K<sub>cb</sub> = 3840, rates down to 1/5) when TBS ≤ 292, TBS ≤ 3824 with R ≤ 0.67, or R ≤ 0.25. 24-bit TB CRC plus 24-bit CB CRC when segmented.</li>
+<li><b>Rate matching</b> reads from a circular buffer at four redundancy versions (RV 0, 2, 3, 1), giving incremental-redundancy HARQ; up to 16 HARQ processes per carrier.</li>
+<li><b>Polar codes</b> carry DCI, UCI above 11 bits and the PBCH; short UCI uses Reed–Muller or repetition codes.</li>
+</ul>
+<div class="lab"><h3>PDSCH TBS and throughput (TS 38.214 §5.1.3.2)</h3>
+<div class="ctl">
+<label><span class="lt">Subcarrier spacing</span><select id="tb-s"><option value="15">15 kHz</option><option value="30" selected>30 kHz</option><option value="60">60 kHz</option><option value="120">120 kHz</option></select></label>
+<label><span class="lt">PRBs allocated</span><input type="number" id="tb-n" value="273" min="1" max="275" step="1"></label>
+<label><span class="lt">MCS index (Table 2): <span id="tb-mv"></span></span><input type="range" id="tb-m" min="0" max="27" step="1" value="27"></label>
+<label><span class="lt">Layers</span><select id="tb-l"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label>
+<label><span class="lt">PDSCH symbols per slot</span><input type="number" id="tb-y" value="13" min="2" max="14" step="1"></label>
+<label><span class="lt">DMRS REs per PRB</span><select id="tb-d"><option>6</option><option selected>12</option><option>18</option><option>24</option><option>36</option></select></label>
+<label><span class="lt">xOverhead</span><select id="tb-o"><option>0</option><option>6</option><option>12</option><option>18</option></select></label>
+<label><span class="lt">Downlink share of slots (%)</span><input type="number" id="tb-p" value="74" min="1" max="100" step="1"></label>
+</div>
+<div class="out"><div>Modulation, code rate<b id="tb-q"></b></div><div>N<sub>RE</sub><b id="tb-re"></b></div><div>N<sub>info</sub><b id="tb-ni"></b></div><div>TBS (bits per slot)<b id="tb-tb"></b></div><div>Code blocks, base graph<b id="tb-cb"></b></div><div>Throughput<b id="tb-r"></b></div><div>TS 38.306 peak, same carrier<b id="tb-pk"></b></div></div>
+<p class="hint">74 % is the downlink share of a DDDSU pattern with a 10:2:2 special slot. TS 38.306 uses R<sub>max</sub> = 948/1024 and a fixed 14 % overhead (FR1 downlink); the TBS method counts DMRS and xOverhead explicitly.</p>
+<details><summary>MCS index table 2 (256QAM)</summary><div class="tw"><table id="tb-tab"><thead><tr><th class="n">I<sub>MCS</sub></th><th>Modulation</th><th class="n">Q<sub>m</sub></th><th class="n">R × 1024</th><th class="n">Spectral efficiency</th></tr></thead><tbody></tbody></table></div><p class="hint">Indices 28–31 are reserved for retransmissions (modulation only, TBS taken from the initial transmission).</p></details>
+</div>
 </section>
 </section>
 <section class="tab" id="t-mimo" data-title="MIMO and CA">
@@ -304,11 +451,11 @@ ol.steps li{margin:.35em 0}
 <p>Each added layer multiplies the rate but divides the power, so layers pay off only when the SNR is good. At the cell edge one well-combined layer beats four starved ones. This is why the network adapts the rank continuously.</p>
 <div class="lab"><h3>MIMO capacity</h3>
 <div class="ctl">
-<label>Transmit antennas<select id="mi-t"><option>1</option><option>2</option><option selected>4</option><option>8</option></select></label>
-<label>Receive antennas<select id="mi-r"><option>1</option><option>2</option><option selected>4</option></select></label>
-<label>Layers<select id="mi-l"></select></label>
-<label>SNR per receive antenna: <span id="mi-sv"></span><input type="range" id="mi-s" min="-10" max="35" step="0.5" value="20"></label>
-<label>Bandwidth (MHz)<input type="number" id="mi-b" value="100" min="1" step="5"></label>
+<label><span class="lt">Transmit antennas</span><select id="mi-t"><option>1</option><option>2</option><option selected>4</option><option>8</option></select></label>
+<label><span class="lt">Receive antennas</span><select id="mi-r"><option>1</option><option>2</option><option selected>4</option></select></label>
+<label><span class="lt">Layers</span><select id="mi-l"></select></label>
+<label><span class="lt">SNR per receive antenna: <span id="mi-sv"></span></span><input type="range" id="mi-s" min="-10" max="35" step="0.5" value="20"></label>
+<label><span class="lt">Bandwidth (MHz)</span><input type="number" id="mi-b" value="100" min="1" step="5"></label>
 </div>
 <figure style="border:0;padding:0;margin-bottom:.4em"><div id="mi-plot"></div><figcaption>Every transmit antenna reaches every receive antenna. Coloured paths carry the layers; grey paths are the extra antennas that add diversity or beamforming gain.</figcaption></figure>
 <div class="out"><div>SNR per layer<b id="mi-ls"></b></div><div>Capacity<b id="mi-c"></b></div><div>Gain over one antenna each end<b id="mi-g"></b></div><div>Best layer count at this SNR<b id="mi-best"></b></div></div>
@@ -326,8 +473,8 @@ ol.steps li{margin:.35em 0}
 <p>Feed the same signal to a row of antennas and their waves add up in some directions and cancel in others. Shifting the phase from one element to the next steers the direction in which they add. More elements make the beam narrower and stronger.</p>
 <div class="lab"><h3>Antenna array beam pattern</h3>
 <div class="ctl">
-<label>Elements in a row, half a wavelength apart: <span id="bf-nv"></span><input type="range" id="bf-n" min="1" max="32" step="1" value="8"></label>
-<label>Steering angle: <span id="bf-av"></span><input type="range" id="bf-a" min="-60" max="60" step="1" value="20"></label>
+<label><span class="lt">Elements in a row, half a wavelength apart: <span id="bf-nv"></span></span><input type="range" id="bf-n" min="1" max="32" step="1" value="8"></label>
+<label><span class="lt">Steering angle: <span id="bf-av"></span></span><input type="range" id="bf-a" min="-60" max="60" step="1" value="20"></label>
 </div>
 <figure style="border:0;padding:0;margin-bottom:.4em"><div id="bf-plot"></div><figcaption>Relative gain against direction. 0° is straight ahead of the array.</figcaption></figure>
 <div class="out"><div>Array gain<b id="bf-g"></b></div><div>Beam width (−3 dB)<b id="bf-w"></b></div><div>Phase step between elements<b id="bf-p"></b></div></div>
@@ -337,6 +484,39 @@ ol.steps li{margin:.35em 0}
 <tr><td>5G mid-band base station (massive MIMO)</td><td>32 or 64 transceivers behind a panel of 128–192 elements</td><td>Narrow beams per user and MU-MIMO to many phones at once. TDD lets the base station learn the downlink channel from the phone's uplink SRS, because both use the same frequency</td></tr>
 <tr><td>5G millimetre wave</td><td>Phased arrays at both ends; phones carry several small antenna modules</td><td>Array gain makes up for the high path loss. Beams must be found and tracked (beam management) as the phone moves or a hand blocks a module</td></tr>
 </tbody></table></div>
+</section>
+<section class="sub" id="mimorx" data-title="Receivers, precoding, CSI">
+<h2>MIMO receivers, precoding and CSI</h2>
+<h3>System model and capacity</h3>
+<span class="f">y = H x + n &nbsp;&nbsp;&nbsp; C = log₂ det(I + (ρ/N_t) H Hᴴ) = Σᵢ log₂(1 + (ρ/N_t) λᵢ)</span>
+<p>λ<sub>i</sub> are the eigenvalues of HH<sup>H</sup> (squared singular values of H). The singular value decomposition <code>H = U Σ Vᴴ</code> turns the channel into min(N<sub>t</sub>, N<sub>r</sub>) parallel eigen-channels: precode with V at the transmitter, combine with U<sup>H</sup> at the receiver. With channel knowledge at the transmitter, water-filling allocates more power to stronger eigenmodes. The <b>condition number</b> λ<sub>max</sub>/λ<sub>min</sub> is a practical indicator of how many layers the channel will sustain.</p>
+<h3>Linear and non-linear detectors</h3>
+<div class="tw"><table><thead><tr><th>Detector</th><th>Filter / rule</th><th>Properties</th></tr></thead><tbody>
+<tr><td>Zero forcing (ZF)</td><td><code>W = (Hᴴ H)⁻¹ Hᴴ</code></td><td>Removes inter-layer interference, amplifies noise when H is ill-conditioned</td></tr>
+<tr><td>Linear MMSE</td><td><code>W = (Hᴴ H + σ² I)⁻¹ Hᴴ</code>; post-detection SINR<sub>k</sub> = 1 / [(I + Hᴴ H/σ²)⁻¹]<sub>kk</sub> − 1</td><td>Balances noise and interference; the baseline in UE modems</td></tr>
+<tr><td>MMSE-IRC</td><td>MMSE with the estimated interference-plus-noise covariance R<sub>I+N</sub> in place of σ²I</td><td>Suppresses a dominant co-channel interferer using spare receive dimensions; required by enhanced-receiver tests</td></tr>
+<tr><td>SIC / ML / sphere decoding</td><td>Successive cancellation or (near-)maximum-likelihood search over the lattice</td><td>Approaches capacity at higher complexity; often applied per pair of layers</td></tr>
+</tbody></table></div>
+<h3>Precoding and CSI in NR</h3>
+<ul>
+<li><b>CSI framework.</b> CSI-RS resources (up to 32 ports), CSI-IM for interference measurement, reporting of CRI, RI, PMI, LI and CQI, periodic on PUCCH or aperiodic on PUSCH.</li>
+<li><b>Type I single-panel codebook.</b> 2D DFT beams over (N<sub>1</sub>, N<sub>2</sub>) ports per polarisation with oversampling (O<sub>1</sub>, O<sub>2</sub>); i<sub>1</sub> selects a wideband beam group, i<sub>2</sub> the beam and cross-polarisation co-phasing per subband. Up to 8 layers; coarse spatial resolution, suited to SU-MIMO.</li>
+<li><b>Type II codebook.</b> Linear combination of L = 2–4 orthogonal beams with per-subband amplitude and phase. Much finer CSI for MU-MIMO at a large feedback cost; Rel-16 eType II compresses it in the frequency domain (and supports rank 4).</li>
+<li><b>Reciprocity (TDD).</b> The gNB estimates the downlink channel from SRS; with 1T4R or 2T4R antenna switching the full 4-antenna channel is sounded. Eigen-beamforming or regularised ZF across users follows.</li>
+<li><b>Hybrid beamforming (FR2).</b> Analog beams per panel from a codebook chosen by beam sweeping (P1/P2/P3 procedures), digital precoding across a few RF chains.</li>
+</ul>
+<h3>Antenna correlation</h3>
+<p>From the S-parameters of a two-port antenna system, the envelope correlation coefficient is</p>
+<span class="f">ECC = |S₁₁*S₁₂ + S₂₁*S₂₂|² / [(1 − |S₁₁|² − |S₂₁|²)(1 − |S₂₂|² − |S₁₂|²)]</span>
+<p>valid for lossless antennas in a uniform 3D environment; a far-field pattern integral is used in practice. ECC ≈ |ρ|², the squared magnitude of the complex signal correlation. Handset targets are typically ECC &lt; 0.5, with &lt; 0.3 preferred for 4 × 4 MIMO in mid-band.</p>
+<div class="lab"><h3>Ergodic capacity of a correlated 2 × 2 channel</h3>
+<div class="ctl">
+<label><span class="lt">Antenna correlation |ρ| at both ends: <span id="mc-rv"></span></span><input type="range" id="mc-r" min="0" max="0.99" step="0.01" value="0.7"></label>
+<label><span class="lt">SNR for readout: <span id="mc-sv"></span></span><input type="range" id="mc-s" min="0" max="30" step="1" value="20"></label>
+</div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="mc-plot"></div><figcaption>Monte Carlo average of log₂ det(I + ρ/2·HHᴴ) over Rayleigh channels, Kronecker correlation model, equal power per transmit antenna (open loop).</figcaption></figure>
+<div class="out"><div>SISO Rayleigh<b id="mc-c1"></b></div><div>2 × 2 uncorrelated<b id="mc-c2"></b></div><div>2 × 2 correlated<b id="mc-c3"></b></div><div>Approximate ECC<b id="mc-e"></b></div></div>
+</div>
 </section>
 <section class="sub" id="mimophone" data-title="MIMO in the phone">
 <h2>MIMO in the standards and in the phone</h2>
@@ -446,6 +626,64 @@ ol.steps li{margin:.35em 0}
 <h2>The network around the phone</h2>
 <figure><div id="d-net"></div><figcaption>A 5G network. In 4G the base station is called an eNodeB and the core is the EPC; the roles are the same.</figcaption></figure>
 </section>
+<section class="sub" id="frame" data-title="Frame and channels">
+<h2>NR frame structure and physical channels</h2>
+<h3>Time–frequency structure</h3>
+<ul>
+<li><b>Frame</b> 10 ms → 10 <b>subframes</b> of 1 ms → 2<sup>μ</sup> <b>slots</b> per subframe → 14 OFDM symbols per slot (normal CP; 12 with extended CP at 60 kHz only).</li>
+<li>Basic time unit T<sub>c</sub> = 1/(480 kHz · 4096) ≈ 0.509 ns. Normal CP is 144·κ·2<sup>−μ</sup>·T<sub>c</sub> (κ = 64): 4.69 µs at 15 kHz, with a longer CP on the first symbol of every 0.5 ms.</li>
+<li><b>Resource element</b> = one subcarrier × one symbol; <b>PRB</b> = 12 subcarriers. A <b>bandwidth part</b> (BWP) is a contiguous set of PRBs with its own numerology; up to four per direction are configured and one is active, which lets a UE run a narrow BWP to save power.</li>
+</ul>
+<h3>Physical channels and signals</h3>
+<div class="tw"><table><thead><tr><th>Name</th><th>Direction</th><th>Function</th></tr></thead><tbody>
+<tr><td>PSS, SSS</td><td>DL</td><td>Timing and identity: 127-length m-sequence and Gold sequence; PCI = 3·N<sub>ID</sub><sup>(1)</sup> + N<sub>ID</sub><sup>(2)</sup>, 1008 values</td></tr>
+<tr><td>PBCH (+DMRS)</td><td>DL</td><td>MIB: system frame number, CORESET#0 and search-space configuration, SCS of common channels</td></tr>
+<tr><td>PDCCH</td><td>DL</td><td>DCI in a CORESET (1–3 symbols); aggregation levels 1–16 CCEs; formats 0_x (UL grant), 1_x (DL assignment), 2_x (group commands)</td></tr>
+<tr><td>PDSCH</td><td>DL</td><td>User data, SIBs, paging, RAR</td></tr>
+<tr><td>PUCCH</td><td>UL</td><td>HARQ-ACK, scheduling request, CSI; formats 0–4 (short 1–2 symbols, long 4–14 symbols)</td></tr>
+<tr><td>PUSCH</td><td>UL</td><td>User data and multiplexed UCI; CP-OFDM or DFT-s-OFDM</td></tr>
+<tr><td>PRACH</td><td>UL</td><td>Random-access preambles: long (L = 839, 1.25/5 kHz) and short (L = 139, 15–120 kHz) formats</td></tr>
+<tr><td>DMRS</td><td>DL/UL</td><td>Demodulation reference, front-loaded with up to 3 additional positions for high Doppler; types 1 and 2</td></tr>
+<tr><td>PT-RS</td><td>DL/UL</td><td>Phase tracking: estimates common phase error from oscillator phase noise, essential in FR2</td></tr>
+<tr><td>CSI-RS, TRS</td><td>DL</td><td>Channel-state measurement, beam management, fine time/frequency tracking</td></tr>
+<tr><td>SRS</td><td>UL</td><td>Uplink sounding for scheduling, reciprocity beamforming and positioning</td></tr>
+</tbody></table></div>
+<h3>SS/PBCH block and beam sweeping</h3>
+<p>An SSB spans 4 symbols × 240 subcarriers (20 PRB). Up to L<sub>max</sub> = 4 (≤ 3 GHz), 8 (3–6 GHz) or 64 (FR2) SSBs, each on a different beam, are sent within a 5 ms half-frame; the burst repeats every 5–160 ms (a UE assumes 20 ms during initial search). SSBs sit on a sparse <b>synchronisation raster</b> (GSCN), not on the channel raster, which shortens cell search across wide bands.</p>
+<h3>TDD patterns</h3>
+<div class="tw"><table><thead><tr><th>Pattern (30 kHz)</th><th class="n">Period</th><th class="n">DL share</th><th>Notes</th></tr></thead><tbody>
+<tr><td>DDDSU</td><td class="n">2.5 ms</td><td class="n">≈ 74 %</td><td>Common in n78; short UL latency</td></tr>
+<tr><td>DDDDDDDSUU</td><td class="n">5 ms</td><td class="n">≈ 74 %</td><td>With a 6:4:4 special slot; aligns with LTE TDD configuration 2 for coexistence (China, Japan)</td></tr>
+<tr><td>DSUUU</td><td class="n">2.5 ms</td><td class="n">≈ 34 %</td><td>Uplink-heavy private networks</td></tr>
+</tbody></table></div>
+<p>The special slot contains DL symbols, a guard period and UL symbols (e.g. 10:2:2). The guard period must cover twice the propagation delay to the cell edge plus the transmit/receive switching time, and neighbouring operators in the same band must synchronise their patterns to avoid base-station-to-base-station interference.</p>
+<p class="ref">Spec: TS 38.211 (channels, numerology), TS 38.213 (SSB, PDCCH, TDD), TS 38.331 (TDD-UL-DL-ConfigCommon).</p>
+</section>
+<section class="sub" id="access" data-title="Access and mobility">
+<h2>Initial access, RRC states and mobility</h2>
+<h3>From power-on to data</h3>
+<ol class="steps">
+<li><b>Cell search.</b> Scan GSCN raster points; detect PSS (symbol timing, N<sub>ID</sub><sup>(2)</sup>), then SSS (N<sub>ID</sub><sup>(1)</sup>, hence PCI).</li>
+<li><b>System information.</b> Decode PBCH/MIB, locate CORESET#0, decode SIB1 (cell access, RACH configuration, TDD pattern, other SIB scheduling).</li>
+<li><b>Random access, 4-step.</b> Msg1: preamble on a RACH occasion tied to the best SSB beam. Msg2: random-access response with timing advance, UL grant and temporary C-RNTI. Msg3: RRCSetupRequest. Msg4: RRCSetup and contention resolution. Rel-16 adds a 2-step procedure (MsgA = preamble + PUSCH, MsgB).</li>
+<li><b>RRC and NAS.</b> RRCSetupComplete carries the NAS registration request to the AMF; authentication and security mode follow, then a PDU session is established through the SMF and UPF.</li>
+<li><b>Connected operation.</b> RRC reconfiguration adds SCells, BWPs, CSI and SRS configurations, MIMO layers and DRX.</li>
+</ol>
+<h3>RRC states</h3>
+<div class="tw"><table><thead><tr><th>State</th><th>UE behaviour</th><th>Power</th></tr></thead><tbody>
+<tr><td>RRC_IDLE</td><td>Cell reselection, paging monitoring per DRX cycle; no context in the RAN</td><td>Lowest</td></tr>
+<tr><td>RRC_INACTIVE</td><td>Context stored in the RAN; RAN-based notification area; fast resume (I-RNTI)</td><td>Near idle, with lower resume latency</td></tr>
+<tr><td>RRC_CONNECTED</td><td>Scheduled data, measurement reporting, network-controlled handover; connected-mode DRX between bursts</td><td>Highest</td></tr>
+</tbody></table></div>
+<h3>Measurements and handover</h3>
+<ul>
+<li><b>SS-RSRP</b>: linear average power per RE of the SSS (reported −156 to −31 dBm). <b>SS-RSRQ</b> = N·RSRP / RSSI over N PRBs. <b>SS-SINR</b> excludes noise-only REs.</li>
+<li>Field rules of thumb for RSRP: above −80 dBm excellent, −80 to −100 good, −100 to −110 fair, below −110 dBm cell edge.</li>
+<li><b>Events</b>: A1/A2 serving above/below threshold, A3 neighbour better than serving by an offset (the usual intra-frequency handover trigger, with hysteresis and time-to-trigger), A4–A6, and B1/B2 for inter-RAT (e.g. adding the NR leg in EN-DC).</li>
+<li><b>Beam management (FR2)</b>: P1 wide sweep, P2 gNB refinement, P3 UE refinement; beam failure detection and recovery via contention-free RACH.</li>
+</ul>
+<p class="ref">Spec: TS 38.300 (overview), TS 38.304 (idle mode), TS 38.331 (RRC), TS 38.215 (measurements), TS 38.133 (RRM requirements).</p>
+</section>
 <section class="sub" id="numerology" data-title="NR numerology">
 <h2>5G NR numerology</h2>
 <p>LTE fixed the subcarrier spacing at 15 kHz. NR scales it by powers of two so that one design covers 700 MHz and 39 GHz.</p>
@@ -457,8 +695,8 @@ ol.steps li{margin:.35em 0}
 </tbody></table></div>
 <div class="lab"><h3>NR carrier calculator</h3>
 <div class="ctl">
-<label>Subcarrier spacing<select id="nr-s"><option value="15">15 kHz</option><option value="30" selected>30 kHz</option><option value="60">60 kHz</option></select></label>
-<label>Channel bandwidth<select id="nr-b"></select></label>
+<label><span class="lt">Subcarrier spacing</span><select id="nr-s"><option value="15">15 kHz</option><option value="30" selected>30 kHz</option><option value="60">60 kHz</option></select></label>
+<label><span class="lt">Channel bandwidth</span><select id="nr-b"></select></label>
 </div>
 <div class="out"><div>Resource blocks<b id="nr-rb"></b></div><div>Subcarriers<b id="nr-sc"></b></div><div>Occupied bandwidth<b id="nr-ob"></b></div><div>Guard band, both edges together<b id="nr-g"></b></div><div>Typical FFT size<b id="nr-f"></b></div><div>Sample rate<b id="nr-fs"></b></div><div>Slot length<b id="nr-sl"></b></div><div>Raw rate, 256QAM, one layer<b id="nr-r"></b></div></div>
 <p class="hint">FR1 values from TS 38.101-1. The raw rate counts every resource element at 8 bits and ignores coding, reference signals and control overhead; real peak rates per layer are roughly 60–70 % of it.</p>
@@ -475,6 +713,50 @@ ol.steps li{margin:.35em 0}
 <tr><td>n258, n260, n261</td><td>26, 39, 28 GHz</td><td>TDD</td><td>Millimetre wave (FR2)</td></tr>
 </tbody></table></div>
 <p>Bands starting with B are LTE; the same spectrum used for NR gets an n prefix.</p>
+</section>
+<section class="sub" id="uepower" data-title="UE power and control">
+<h2>UE power classes, MPR and uplink power control</h2>
+<h3>Power classes</h3>
+<div class="tw"><table><thead><tr><th>Class</th><th>Range</th><th>Requirement</th><th>Typical use</th></tr></thead><tbody>
+<tr><td>PC1</td><td>FR1</td><td>31 dBm conducted</td><td>High-power UE in specific bands (public safety, FWA)</td></tr>
+<tr><td>PC1.5</td><td>FR1</td><td>29 dBm</td><td>TDD bands with two transmit chains (UL MIMO)</td></tr>
+<tr><td>PC2</td><td>FR1</td><td>26 dBm</td><td>HPUE in n41, n77, n78, n79 (compensates TDD UL duty cycle)</td></tr>
+<tr><td>PC3</td><td>FR1</td><td>23 dBm ± 2 dB</td><td>Default handset</td></tr>
+<tr><td>PC1</td><td>FR2</td><td>Min peak EIRP 40 dBm; max TRP 35 dBm, max EIRP 55 dBm</td><td>Fixed wireless access</td></tr>
+<tr><td>PC3</td><td>FR2</td><td>Min peak EIRP 22.4 dBm (n257); spherical coverage 11.5 dBm at 50 % CDF; max TRP 23 dBm, max EIRP 43 dBm</td><td>Handset</td></tr>
+</tbody></table></div>
+<h3>Configured maximum power P<sub>CMAX</sub></h3>
+<span class="f">P_CMAX,L ≤ P_CMAX ≤ P_CMAX,H &nbsp;&nbsp; P_CMAX,L = min{P_EMAX − ΔT_C, P_PowerClass − ΔP_PowerClass − max(MPR + A-MPR + ΔT_IB + ΔT_C, P-MPR)}</span>
+<ul>
+<li><b>MPR</b> (maximum power reduction): allowed back-off for waveform, modulation and allocation, because higher PAPR and edge allocations stress PA linearity and the emission mask.</li>
+<li><b>A-MPR</b>: additional reduction when the network signals an NS value protecting adjacent services (e.g. public safety or satellite bands).</li>
+<li><b>P-MPR</b>: power management reduction for RF exposure (SAR/PD proximity) and multi-RAT coexistence. Modern phones apply time-averaged SAR, which tracks exposure over a window and caps power only when the average approaches the limit.</li>
+<li><b>ΔT<sub>C</sub></b> = 1.5 dB for allocations near a band edge; <b>ΔT<sub>IB</sub></b> covers multiplexer loss in CA/EN-DC combinations.</li>
+</ul>
+<div class="tw"><table><thead><tr><th>PC3 MPR (approx., outer RB allocations)</th><th class="n">DFT-s-OFDM</th><th class="n">CP-OFDM</th></tr></thead><tbody>
+<tr><td>π/2-BPSK</td><td class="n">≤ 0.5 dB</td><td class="n">—</td></tr>
+<tr><td>QPSK</td><td class="n">≤ 1 dB</td><td class="n">≤ 3 dB</td></tr>
+<tr><td>16QAM</td><td class="n">≤ 2 dB</td><td class="n">≤ 3 dB</td></tr>
+<tr><td>64QAM</td><td class="n">≤ 2.5 dB</td><td class="n">≤ 3.5 dB</td></tr>
+<tr><td>256QAM</td><td class="n">≤ 4.5 dB</td><td class="n">≤ 6.5 dB</td></tr>
+</tbody></table></div>
+<p class="hint">Inner allocations get smaller values. Use TS 38.101-1 Table 6.2.2-1 for exact entries.</p>
+<h3>PUSCH power control</h3>
+<span class="f">P_PUSCH = min{P_CMAX, P_O,PUSCH + 10 log(2^μ · M_RB) + α · PL + Δ_TF + f}</span>
+<p>P<sub>O</sub> is the target received power per resource block at 15 kHz, α ∈ {0, 0.4 … 1} sets fractional path-loss compensation (α &lt; 1 trades cell-edge throughput for less inter-cell interference), PL is the UE's estimate from SSB or CSI-RS RSRP and the signalled reference power, Δ<sub>TF</sub> adjusts for MCS, and f accumulates closed-loop TPC commands (−1, 0, +1, +3 dB). The <b>power headroom report</b> (PHR = P<sub>CMAX</sub> − computed power) tells the scheduler how many more PRBs the UE can be given.</p>
+<div class="lab"><h3>Uplink power and headroom</h3>
+<div class="ctl">
+<label><span class="lt">P<sub>O,PUSCH</sub> (dBm)</span><input type="number" id="pc-p0" value="-90" step="1"></label>
+<label><span class="lt">α</span><select id="pc-a"><option>0.4</option><option>0.5</option><option>0.6</option><option>0.7</option><option selected>0.8</option><option>0.9</option><option>1</option></select></label>
+<label><span class="lt">Path loss (dB)</span><input type="number" id="pc-pl" value="120" step="1"></label>
+<label><span class="lt">PRBs</span><input type="number" id="pc-m" value="20" min="1" max="275" step="1"></label>
+<label><span class="lt">Subcarrier spacing</span><select id="pc-u"><option value="0">15 kHz</option><option value="1" selected>30 kHz</option><option value="2">60 kHz</option></select></label>
+<label><span class="lt">Δ<sub>TF</sub> + closed loop f (dB)</span><input type="number" id="pc-f" value="0" step="1"></label>
+<label><span class="lt">P<sub>CMAX</sub> (dBm)</span><input type="number" id="pc-c" value="23" step="0.5"></label>
+</div>
+<div class="out"><div>Unconstrained power<b id="pc-o"></b></div><div>Transmitted power<b id="pc-t"></b></div><div>Power headroom<b id="pc-h"></b></div><div>Received power per PRB at gNB<b id="pc-r"></b></div><div>PRBs at full power<b id="pc-mx"></b></div></div>
+</div>
+<p class="ref">Spec: TS 38.101-1 §6.2 (output power, MPR, A-MPR, P<sub>CMAX</sub>), TS 38.101-2 §6.2 (FR2), TS 38.213 §7.1 (PUSCH power control), TS 38.321 (PHR).</p>
 </section>
 </section>
 <section class="tab" id="t-hw" data-title="Hardware">
@@ -514,6 +796,89 @@ ol.steps li{margin:.35em 0}
 <tr><td>Demapper and decoder</td><td>Converts symbols to soft bit decisions, corrects errors, checks the CRC</td><td>Block error rate (BLER)</td></tr>
 </tbody></table></div>
 <p>Block-by-block detail: <a href="../Mobile/lna.html">LNA</a>, <a href="../Mobile/mixers.html">mixers</a>, <a href="../Mobile/acoustic-filters.html">SAW and BAW filters</a>, <a href="../Mobile/rf-switches.html">switches</a>, <a href="../Mobile/antennas.html">antennas</a>.</p>
+</section>
+<section class="sub" id="impair" data-title="Impairments">
+<h2>Transceiver impairments</h2>
+<p>Every block in the chain departs from ideal behaviour. The system engineer's job is to quantify each departure, translate it into a common currency (SNR or EVM in band, dBc out of band) and allocate a budget to each block.</p>
+<div class="tw"><table><thead><tr><th>Impairment</th><th>Model / metric</th><th>Effect on TX</th><th>Effect on RX</th><th>Mitigation</th></tr></thead><tbody>
+<tr><td>LO phase noise</td><td>L(f) in dBc/Hz; integrated phase error σ<sub>φ</sub> = √(2∫L(f)df) rad</td><td>EVM ≈ σ<sub>φ</sub>; spectral regrowth from noise skirts</td><td>Common phase error and ICI in OFDM; reciprocal mixing of blockers</td><td>Low-noise VCO/PLL, PT-RS based CPE correction, wider SCS at mmWave</td></tr>
+<tr><td>IQ gain/phase imbalance</td><td>Image rejection ratio <code>IRR = (1 + 2g cos θ + g²)/(1 − 2g cos θ + g²)</code></td><td>Image of the allocation at the mirror subcarriers (IQ image limit ≈ −28 dBc)</td><td>Mirror-subcarrier crosstalk; limits high-order QAM</td><td>Factory or on-line IQ calibration (IRR &gt; 45–50 dB after cal)</td></tr>
+<tr><td>DC offset, LO leakage</td><td>dBc at the carrier centre</td><td>Carrier leakage limit (−28 dBc at high power, relaxed at low power)</td><td>DC at the centre of a zero-IF channel; flicker noise</td><td>DC calibration loops; NR leaves the DC subcarrier usable and signals its location</td></tr>
+<tr><td>PA nonlinearity</td><td>AM-AM, AM-PM, memory; P1dB, IMD3, ACLR</td><td>In-band distortion (EVM) and spectral regrowth (ACLR, SEM)</td><td>—</td><td>Back-off, DPD, ET/APT, CFR</td></tr>
+<tr><td>Receiver nonlinearity</td><td>IIP2, IIP3, P1dB, blocker desense</td><td>—</td><td>IM2 at DC from AM blockers and TX leakage; IM3 falling on the channel; compression</td><td>High-linearity LNA/mixer, RF filtering, gain switching</td></tr>
+<tr><td>Thermal and TX noise</td><td>NF; TX noise floor in dBm/Hz</td><td>Noise in the RX band of FDD duplex partners; out-of-band emissions</td><td>Sensitivity</td><td>Low-noise PA drivers, duplexer rejection in RX band</td></tr>
+<tr><td>Quantisation, clipping</td><td>SQNR, ENOB; crest factor</td><td>DAC noise floor; clipping distortion</td><td>ADC noise floor, overload by blockers</td><td>Oversampling, AGC, crest-factor reduction</td></tr>
+<tr><td>Frequency error</td><td>ppm of carrier</td><td>Loss of orthogonality at the gNB</td><td>ICI; acquisition range</td><td>AFC locked to DL, TCXO/XO with temperature compensation</td></tr>
+<tr><td>Amplitude ripple, group delay</td><td>dB p-p, ns across channel</td><td>Mostly removed by the receiver's equaliser; tested by EVM equaliser flatness</td><td>Same</td><td>Filter design, digital pre-equalisation</td></tr>
+</tbody></table></div>
+<h3>Useful conversions</h3>
+<ul>
+<li>Integrated phase noise −40 dBc ⇒ σ<sub>φ</sub> = √(2·10⁻⁴) = 0.014 rad = 0.81° rms ⇒ EVM ≈ 1.4 %.</li>
+<li>0.1 dB gain and 1° phase imbalance ⇒ IRR ≈ 40 dB ⇒ EVM contribution ≈ 1 %.</li>
+<li>Reciprocal mixing: a blocker P<sub>B</sub> at offset Δf adds noise <code>P_B + L(Δf) + 10 log B</code> into the channel.</li>
+<li>IM2 from TX leakage in FDD zero-IF: <code>P_IM2 = 2P_TX,leak − IIP2</code>; IM3: <code>P_IM3 = 3P_in − 2IIP3</code> (all in dBm, input-referred).</li>
+</ul>
+</section>
+<section class="sub" id="evmbudget" data-title="EVM budget">
+<h2>Transmitter EVM budget</h2>
+<p>Independent impairments that behave like noise add in power, so EVM contributions combine as a root sum of squares:</p>
+<span class="f">EVM_total = √(Σ EVMᵢ²) &nbsp;&nbsp;&nbsp; EVMᵢ = 10^(−SNRᵢ/20)</span>
+<p>Designers target the total well below the 3GPP limit for the highest modulation they want to support, leaving margin for unit-to-unit spread, temperature and antenna load variation.</p>
+<div class="lab"><h3>EVM budget</h3>
+<div class="ctl">
+<label><span class="lt">LO integrated phase error (° rms)</span><input type="number" id="ev-pn" value="0.8" min="0" step="0.1"></label>
+<label><span class="lt">IQ image rejection (dB)</span><input type="number" id="ev-iq" value="45" step="1"></label>
+<label><span class="lt">Transceiver and DAC noise SNR (dB)</span><input type="number" id="ev-n" value="40" step="1"></label>
+<label><span class="lt">PA in-band distortion SDR after DPD (dB)</span><input type="number" id="ev-pa" value="32" step="0.5"></label>
+<label><span class="lt">Crest-factor reduction SDR (dB)</span><input type="number" id="ev-cf" value="40" step="1"></label>
+<label><span class="lt">Residual ripple / group delay EVM (%)</span><input type="number" id="ev-rp" value="0.5" min="0" step="0.1"></label>
+</div>
+<div id="ev-bars" class="bars"></div>
+<div class="out"><div>Total EVM<b id="ev-t"></b></div><div>Equivalent SNR<b id="ev-s"></b></div><div>Highest UE modulation passing<b id="ev-m"></b></div><div>Margin to 256QAM limit<b id="ev-g"></b></div></div>
+<p class="hint">Bars show each contributor's share of the total error power. The PA is usually dominant at maximum power and the transceiver noise floor at low power.</p>
+</div>
+</section>
+<section class="sub" id="palin" data-title="PA efficiency and linearity">
+<h2>Power amplifier: efficiency, linearity and linearisation</h2>
+<h3>Figures of merit</h3>
+<ul>
+<li><b>PAE</b> = (P<sub>out</sub> − P<sub>in</sub>)/P<sub>DC</sub>. Drain (collector) efficiency ignores the drive power.</li>
+<li><b>Back-off</b>: average output power below P1dB or P<sub>sat</sub>. A modulated signal with PAPR <i>x</i> dB needs roughly <i>x</i> − (CFR, DPD allowances) dB of back-off; efficiency of a class-AB stage falls steeply with back-off.</li>
+<li><b>Linearity</b>: AM-AM (gain compression) and AM-PM (phase rotation with amplitude) produce IMD3/IMD5 and spectral regrowth; memory effects (bias network, thermal) make distortion depend on signal history and bandwidth.</li>
+<li><b>Load sensitivity</b>: antenna VSWR changes with hand and head; PAs are load-pull characterised and must survive high VSWR at all phases. Antenna tuners and coupler-based closed-loop power control keep radiated power stable.</li>
+</ul>
+<h3>Supply modulation</h3>
+<div class="tw"><table><thead><tr><th>Technique</th><th>How it works</th><th>Bandwidth demand</th><th>Benefit</th></tr></thead><tbody>
+<tr><td>Fixed supply</td><td>Battery or fixed boost voltage</td><td>—</td><td>Simple; poor efficiency at low power</td></tr>
+<tr><td>APT (average power tracking)</td><td>DC-DC converter sets V<sub>CC</sub> per slot from the target power</td><td>Slot-rate updates</td><td>Large savings at medium and low power, where phones spend most time</td></tr>
+<tr><td>ET (envelope tracking)</td><td>Fast modulator makes V<sub>CC</sub> follow the RF envelope through a shaping (iso-gain) table</td><td>Several × the channel bandwidth; challenging at 100 MHz</td><td>Typically several points of PAE at high power; requires timing alignment of ~ns</td></tr>
+<tr><td>Doherty / load modulation</td><td>Carrier and peaking amplifiers modulate each other's load</td><td>RF bandwidth limited by the combiner</td><td>Standard in base stations (high efficiency at 6–9 dB back-off); emerging in handsets</td></tr>
+</tbody></table></div>
+<h3>Digital pre-distortion</h3>
+<p>DPD applies the inverse of the PA's nonlinearity in the digital domain. A widely used form is the memory polynomial</p>
+<span class="f">y(n) = Σₖ Σₘ a_km · x(n − m) · |x(n − m)|^(k−1)</span>
+<p>with odd orders k ≤ 7 and memory depth m ≤ 3–5. Coefficients are estimated from a feedback (observation) receiver through the output coupler, by indirect learning or direct least squares. Handsets often use look-up-table DPD per power level and band; base stations adapt continuously. <b>Crest-factor reduction</b> (peak windowing or clipping and filtering) lowers PAPR by a few dB before DPD, at a controlled EVM cost.</p>
+</section>
+<section class="sub" id="converters" data-title="Data converters">
+<h2>Data converters</h2>
+<span class="f">SQNR = 6.02 N + 1.76 dB (full-scale sine) &nbsp;&nbsp; ENOB = (SINAD − 1.76)/6.02 &nbsp;&nbsp; SNR_jitter = −20 log₁₀(2π f_in σ_j)</span>
+<ul>
+<li><b>Processing gain</b>: when the converter samples faster than the signal needs, the in-band share of quantisation noise falls by 10 log(f<sub>s</sub>/2B).</li>
+<li><b>PAPR</b>: a signal whose peaks reach full scale has an RMS level (PAPR − 3 dB) below a full-scale sine, so the SNR is that much worse.</li>
+<li><b>Receive ADC dynamic range</b> must cover: thermal noise placed 10+ dB above the ADC noise floor (so the ADC adds &lt; 0.4 dB to NF), PAPR, AGC settling error, and the residual of any blocker that the analog channel filter did not remove.</li>
+<li><b>Architectures</b>: continuous-time ΔΣ ADCs (inherent anti-aliasing, high resolution in 100–400 MHz) dominate UE receivers; pipelined/SAR and time-interleaved converters at GS/s rates enable RF sampling in base stations and instruments.</li>
+</ul>
+<div class="lab"><h3>Converter SNR</h3>
+<div class="ctl">
+<label><span class="lt">Resolution (bits)</span><input type="number" id="cv-n" value="12" min="4" max="20" step="1"></label>
+<label><span class="lt">Sample rate (MS/s)</span><input type="number" id="cv-fs" value="245.76" min="1" step="1"></label>
+<label><span class="lt">Signal bandwidth (MHz)</span><input type="number" id="cv-b" value="100" min="0.1" step="5"></label>
+<label><span class="lt">Signal PAPR (dB)</span><input type="number" id="cv-p" value="10" min="0" step="0.5"></label>
+<label><span class="lt">Highest input frequency (MHz)</span><input type="number" id="cv-f" value="50" min="0.1" step="10"></label>
+<label><span class="lt">Clock jitter (fs rms)</span><input type="number" id="cv-j" value="200" min="0" step="10"></label>
+</div>
+<div class="out"><div>Ideal SQNR (sine)<b id="cv-q"></b></div><div>Processing gain<b id="cv-g"></b></div><div>PAPR penalty<b id="cv-pp"></b></div><div>Jitter-limited SNR<b id="cv-js"></b></div><div>In-band SNR<b id="cv-t"></b></div><div>Equivalent EVM<b id="cv-e"></b></div></div>
+</div>
 </section>
 <section class="sub" id="arch" data-title="Architectures">
 <h2>Receiver and transmitter architectures</h2>
@@ -562,12 +927,50 @@ ol.steps li{margin:.35em 0}
 <p style="font-size:.88rem;color:var(--muted);margin-top:0">Edit any gain, noise figure or IIP3. Passive stages have a noise figure equal to their loss. Try raising the filter loss by 1 dB, or halving the LNA gain, and watch the sensitivity.</p>
 <div class="tw"><table id="cas"><thead><tr><th>Stage</th><th class="n">Gain (dB)</th><th class="n">NF (dB)</th><th class="n">IIP3 (dBm)</th><th class="n">Cumulative gain</th><th class="n">Cumulative NF</th><th class="n">Signal out (dBm)</th></tr></thead><tbody></tbody></table></div>
 <div class="ctl">
-<label>Input signal at antenna (dBm)<input type="number" id="ca-in" value="-90" step="1"></label>
-<label>Occupied bandwidth (MHz)<input type="number" id="ca-b" value="9" step="0.5" min="0.01"></label>
-<label>SNR required by the demodulator (dB)<input type="number" id="ca-s" value="-1" step="0.5"></label>
+<label><span class="lt">Input signal at antenna (dBm)</span><input type="number" id="ca-in" value="-90" step="1"></label>
+<label><span class="lt">Occupied bandwidth (MHz)</span><input type="number" id="ca-b" value="9" step="0.5" min="0.01"></label>
+<label><span class="lt">SNR required by the demodulator (dB)</span><input type="number" id="ca-s" value="-1" step="0.5"></label>
 </div>
 <div class="out"><div>Total gain<b id="ca-g"></b></div><div>Total noise figure<b id="ca-nf"></b></div><div>Total IIP3<b id="ca-ip"></b></div><div>Noise floor at antenna<b id="ca-no"></b></div><div>Sensitivity<b id="ca-se"></b></div><div>Spurious-free dynamic range<b id="ca-sf"></b></div></div>
 <figure style="border:0;padding:0;margin-bottom:0"><div id="ca-plot"></div><figcaption>Level diagram: signal power after each stage.</figcaption></figure>
+</div>
+</section>
+<section class="sub" id="derive" data-title="Deriving requirements">
+<h2>Deriving block requirements from 3GPP tests</h2>
+<p>Each conformance test fixes a signal scenario; working backwards from its pass criterion gives the noise and linearity each block must achieve. The examples below use LTE Band 1, 10 MHz (B<sub>eff</sub> = 9 MHz, 10 log B = 69.5 dB), a required SNR of −1 dB for the reference channel and a receiver NF of 9 dB referred to the antenna port, so the thermal floor is −174 + 69.5 + 9 = <b>−95.5 dBm</b>. They are illustrative; real budgets add implementation and production margins.</p>
+<div class="tw"><table><thead><tr><th>Requirement</th><th>Test scenario</th><th>Derivation</th><th>Result</th></tr></thead><tbody>
+<tr><td>System NF</td><td>REFSENS −97 dBm with TX at P<sub>max</sub>, 2 Rx</td><td>NF ≤ REFSENS + 174 − 10 log B − SNR − diversity gain − implementation margin = −97 + 174 − 69.5 + 1 + 3 − 2.5</td><td><b>NF ≤ 9 dB</b> including front-end loss and TX-leakage desense</td></tr>
+<tr><td>IIP3</td><td>Wide-band intermod: wanted at REFSENS + 6 dB (−91 dBm); CW and modulated interferers at −46 dBm</td><td>Allowed N + I = −91 − (−1) = −90 dBm; less thermal −95.5 ⇒ IM3 ≤ −91.4 dBm. IIP3 ≥ P<sub>int</sub> + (P<sub>int</sub> − P<sub>IM3</sub>)/2</td><td><b>IIP3 ≥ −23.3 dBm</b> antenna-referred</td></tr>
+<tr><td>IIP2</td><td>REFSENS with TX at 23 dBm; duplexer isolation 55 dB ⇒ −32 dBm leakage at LNA input</td><td>Allow IM2 10 dB below thermal (0.4 dB desense): −105.5 dBm in band, about half the IM2 spectrum falls in band ⇒ −102.5 dBm total. IIP2 ≥ 2(−32) + 102.5</td><td><b>IIP2 ≥ +38.5 dBm</b> antenna-referred, i.e. ≈ +53 dBm at the mixer after 15 dB front-end gain</td></tr>
+<tr><td>TX noise in RX band</td><td>Same</td><td>Allow TX noise 10 dB below thermal density (−174 + 9 = −165 dBm/Hz): ≤ −175 dBm/Hz at LNA input. With 47 dB duplexer rejection in the RX band</td><td><b>PA output noise ≤ −128 dBm/Hz</b> at the RX offset</td></tr>
+<tr><td>LO phase noise</td><td>Out-of-band blocking: wanted −91 dBm, CW blocker −15 dBm at ≥ 85 MHz offset; band filter rejects it by R dB</td><td>Allocate half the −91.4 dBm budget (−94.4 dBm) to reciprocal mixing: L ≤ −94.4 − (−15 − R) − 69.5</td><td><b>L(85 MHz) ≤ −149 + R dBc/Hz</b>; −124 dBc/Hz with R = 25 dB</td></tr>
+<tr><td>Compression</td><td>Same blocker, after the band filter: −15 − 25 = −40 dBm at the LNA</td><td>Keep the blocker ≥ 10 dB below input P1dB so gain compression is &lt; 0.1 dB</td><td><b>LNA input P1dB ≥ −30 dBm</b></td></tr>
+<tr><td>Channel filter / ADC</td><td>ACS: wanted −83 dBm, adjacent-channel interferer −51.5 dBm (31.5 dB above)</td><td>ADC must hold wanted + PAPR + residual interferer: DR ≥ (31.5 − X) + PAPR + SNR margin, where X is analog rejection at the adjacent channel</td><td>With X = 20 dB: ≈ 11.5 + 12 + 25 ≈ <b>49 dB</b> plus AGC margin</td></tr>
+</tbody></table></div>
+<p class="hint">The same method applies to NR with its own levels: wider channels raise 10 log B, wider TX bandwidths spread IM2, and CA combinations add MSD allowances where harmonics or intermodulation land on a receive band.</p>
+</section>
+<section class="sub" id="desense" data-title="Desense budget">
+<h2>Receiver desense budget</h2>
+<p>A receiver that meets its thermal NF can still lose sensitivity to noise injected by its own transmitter or by blockers. Expressing every source as a density at the antenna port (dBm/Hz) and adding them in power gives the total desensitisation:</p>
+<span class="f">Desense = 10 log[(N_th + N_TX + N_IM2 + N_RM + N_other) / N_th] &nbsp;&nbsp; N_th = −174 + NF dBm/Hz</span>
+<div class="lab"><h3>Desense</h3>
+<div class="ctl">
+<label><span class="lt">Receiver NF, antenna-referred (dB)</span><input type="number" id="ds-nf" value="6" step="0.5"></label>
+<label><span class="lt">Channel bandwidth (MHz)</span><input type="number" id="ds-b" value="9" min="0.1" step="1"></label>
+<label><span class="lt">Required SNR (dB)</span><input type="number" id="ds-s" value="-1" step="0.5"></label>
+<label><span class="lt">REFSENS limit (dBm)</span><input type="number" id="ds-r" value="-97" step="0.5"></label>
+<label><span class="lt">PA noise at RX frequency (dBm/Hz)</span><input type="number" id="ds-pn" value="-130" step="1"></label>
+<label><span class="lt">Duplexer rejection of TX noise in RX band (dB)</span><input type="number" id="ds-dr" value="47" step="1"></label>
+<label><span class="lt">TX power at antenna (dBm)</span><input type="number" id="ds-pt" value="23" step="1"></label>
+<label><span class="lt">TX-to-RX isolation at TX frequency (dB)</span><input type="number" id="ds-iso" value="55" step="1"></label>
+<label><span class="lt">IIP2, antenna-referred (dBm)</span><input type="number" id="ds-ip2" value="42" step="1"></label>
+<label><span class="lt">TX occupied bandwidth (MHz)</span><input type="number" id="ds-bt" value="9" min="0.1" step="1"></label>
+<label><span class="lt">Blocker at antenna after filtering (dBm)</span><input type="number" id="ds-pb" value="-60" step="1"></label>
+<label><span class="lt">LO phase noise at blocker offset (dBc/Hz)</span><input type="number" id="ds-l" value="-140" step="1"></label>
+</div>
+<div id="ds-bars" class="bars"></div>
+<div class="out"><div>Thermal floor<b id="ds-th"></b></div><div>Total noise density<b id="ds-tot"></b></div><div>Desense<b id="ds-d"></b></div><div>Sensitivity<b id="ds-se"></b></div><div>Margin to REFSENS<b id="ds-m"></b></div></div>
+<p class="hint">IM2 is the second-order product of the leaked TX envelope; for equal TX and RX bandwidths about half of it lands in a zero-IF channel (the calculator uses min(1, B<sub>RX</sub>/2B<sub>TX</sub>)). Reciprocal mixing assumes flat phase noise across the channel.</p>
 </div>
 </section>
 <section class="sub" id="refsens" data-title="Sensitivity example">
@@ -700,7 +1103,7 @@ ol.steps li{margin:.35em 0}
 <div class="tw"><table><thead><tr><th>Clause</th><th>Test case</th><th>Signals applied</th><th>Passes when</th></tr></thead><tbody>
 <tr><td>7.3</td><td>Reference sensitivity</td><td>Wanted signal at the reference sensitivity level; phone transmitting at maximum power (so its own transmit noise is included)</td><td rowspan="6">Throughput ≥ 95 % of maximum</td></tr>
 <tr><td>7.4</td><td>Maximum input level</td><td>Wanted signal at about −25 dBm with high-order modulation</td></tr>
-<tr><td>7.5</td><td>Adjacent channel selectivity</td><td>Wanted signal 14 dB above sensitivity plus a modulated interferer in the adjacent channel, about 33 dB stronger; repeated at high level</td></tr>
+<tr><td>7.5</td><td>Adjacent channel selectivity</td><td>Wanted signal 14 dB above REFSENS plus a modulated adjacent-channel interferer 31.5 dB above it (LTE, carriers up to 10 MHz; ACS = 33 dB); case 2 repeats at high level</td></tr>
 <tr><td>7.6</td><td>Blocking: in-band (7.6.2), out-of-band (7.6.3), narrowband (7.6.4)</td><td>Wanted signal a few dB above sensitivity plus a modulated or CW blocker at defined offsets, up to −15 dBm out of band</td></tr>
 <tr><td>7.7</td><td>Spurious response</td><td>CW blocker at the frequencies that failed out-of-band blocking</td></tr>
 <tr><td>7.8</td><td>Intermodulation characteristics</td><td>Wanted signal plus a CW and a modulated interferer placed so their third-order product falls on the channel</td></tr>
@@ -717,6 +1120,53 @@ ol.steps li{margin:.35em 0}
 <li><b>Regulatory</b>: emissions, SAR, electromagnetic compatibility and safety.</li>
 <li><b>Field and interoperability</b>: drive tests on live networks and against each infrastructure vendor.</li>
 </ul>
+</section>
+<section class="sub" id="mu" data-title="Uncertainty and tolerance">
+<h2>Measurement uncertainty and test tolerance</h2>
+<p>3GPP specifies a <b>minimum requirement</b> and, separately, the maximum <b>test system uncertainty</b> a laboratory may have. Under the shared-risk principle the conformance <b>test requirement</b> is the minimum requirement relaxed by a <b>test tolerance (TT)</b> derived from that uncertainty, so a compliant device is not failed because of the test system.</p>
+<div class="tw"><table><thead><tr><th>Test (FR1 conducted)</th><th class="n">TT, f ≤ 3 GHz</th><th class="n">TT, 3–6 GHz</th></tr></thead><tbody>
+<tr><td>Maximum output power</td><td class="n">0.7 dB</td><td class="n">1.0 dB</td></tr>
+<tr><td>Reference sensitivity</td><td class="n">0.7 dB</td><td class="n">1.0 dB</td></tr>
+<tr><td>ACLR</td><td class="n">0.8 dB</td><td class="n">0.8 dB</td></tr>
+<tr><td>FR2 radiated (EIRP, EIS)</td><td colspan="2" class="n">Several times larger; of order ±1.5–2.5 dB depending on band and method</td></tr>
+</tbody></table></div>
+<p class="hint">Representative values; the governing ones are in TS 38.521-1 Annex F and TS 38.521-2 Annex F.</p>
+<h3>Building an uncertainty budget (GUM)</h3>
+<ol class="steps">
+<li>List every contributor: instrument absolute accuracy, mismatch, path-loss calibration, repeatability, temperature drift, cable flexing.</li>
+<li>Convert each to a standard uncertainty: divide a ± limit by √3 for a rectangular distribution, by √2 for U-shaped (mismatch), by the coverage factor for a normal distribution quoted at 95 % (k = 2).</li>
+<li>Combine in quadrature: <code>u_c = √(Σ uᵢ²)</code>. Report the expanded uncertainty <code>U = k·u_c</code> with k = 2 (≈ 95 % confidence).</li>
+<li>Mismatch between source and load reflection coefficients Γ<sub>S</sub>, Γ<sub>L</sub> has limits <code>20 log(1 ± |Γ_S||Γ_L|)</code> dB.</li>
+</ol>
+<div class="lab"><h3>Power-measurement uncertainty</h3>
+<div class="ctl">
+<label><span class="lt">Instrument accuracy (± dB, rectangular)</span><input type="number" id="mu-i" value="0.5" min="0" step="0.05"></label>
+<label><span class="lt">DUT port VSWR</span><input type="number" id="mu-v1" value="1.5" min="1" step="0.05"></label>
+<label><span class="lt">Test port VSWR</span><input type="number" id="mu-v2" value="1.3" min="1" step="0.05"></label>
+<label><span class="lt">Path-loss calibration (± dB at 95 %)</span><input type="number" id="mu-c" value="0.3" min="0" step="0.05"></label>
+<label><span class="lt">Repeatability (σ, dB)</span><input type="number" id="mu-r" value="0.1" min="0" step="0.05"></label>
+<label><span class="lt">Temperature drift (± dB, rectangular)</span><input type="number" id="mu-t" value="0.15" min="0" step="0.05"></label>
+</div>
+<div class="out"><div>Mismatch limits<b id="mu-mm"></b></div><div>Combined standard uncertainty<b id="mu-uc"></b></div><div>Expanded uncertainty (k = 2)<b id="mu-U"></b></div><div>Guard-banded window for 21–25 dBm<b id="mu-gb"></b></div></div>
+</div>
+<h3>Statistical testing of throughput</h3>
+<p>Receiver tests pass on ≥ 95 % of maximum throughput. Because block errors are random, the test must run long enough that the decision is statistically sound; 3GPP specifies the number of slots or uses early-decision statistics (pass or fail as soon as a confidence bound clears the limit) to keep test time manageable. Fading tests need durations spanning many coherence times.</p>
+</section>
+<section class="sub" id="ota" data-title="OTA testing">
+<h2>Over-the-air (OTA) testing</h2>
+<p>Conducted tests exclude the antenna, but users experience radiated performance. Operators and certification bodies therefore require OTA metrics, and in FR2, where antenna arrays are integrated with the RF chips, OTA is the only way to test at all.</p>
+<h3>FR1: TRP and TIS</h3>
+<p>The UE is rotated in an anechoic chamber (combined-axis or distributed-axis positioner) and EIRP or EIS is measured on a spherical grid in both polarisations, typically 15° for TRP and 30° for TIS. Test conditions include free space, beside head and hand (left/right) with SAM head and hand phantoms, and hand only for data devices.</p>
+<span class="f">TRP ≈ π/(2NM) · Σᵢ Σⱼ [EIRP_θ(θᵢ,φⱼ) + EIRP_φ(θᵢ,φⱼ)] sin θᵢ &nbsp;&nbsp;&nbsp; TIS ≈ 2NM / {π Σᵢ Σⱼ [1/EIS_θ + 1/EIS_φ] sin θᵢ}</span>
+<p>TRP is a power average; TIS is a harmonic mean of sensitivity, dominated by the best directions. Antenna efficiency, hand detuning and the tuner state dominate the difference between conducted and radiated numbers. MIMO OTA (throughput in an emulated spatial channel) uses multi-probe anechoic, radiated two-stage or reverberation-chamber methods.</p>
+<h3>FR2: beams, EIRP and spherical coverage</h3>
+<div class="tw"><table><thead><tr><th>Method</th><th>Principle</th><th>When usable</th></tr></thead><tbody>
+<tr><td>Direct far field (DFF)</td><td>Range length ≥ 2D²/λ</td><td>Radiating aperture D ≤ 5 cm (black-box assumption): 0.47 m at 28 GHz. Larger apertures need impractical ranges</td></tr>
+<tr><td>Indirect far field (CATR)</td><td>Compact antenna test range: a reflector converts a spherical wave into a plane wave over a quiet zone (e.g. 30 cm)</td><td>Any device fitting the quiet zone; the 3GPP reference method for FR2 UE RF</td></tr>
+<tr><td>Near-field to far-field</td><td>Phase and amplitude sampled on a near-field surface, transformed</td><td>Pattern and EIRP measurements where phase coherence is available</td></tr>
+</tbody></table></div>
+<p>FR2 metrics include <b>peak EIRP</b> (beam peak search), <b>spherical coverage</b> (CDF of the best-beam EIRP over the sphere, e.g. the 50 % point), <b>TRP</b>, <b>EIS</b> and <b>beam correspondence</b> (the UE selects its transmit beam from receive measurements without UL sweeping). Measurement grids, positioner speed and beam-lock test functions make FR2 test time a major cost driver.</p>
+<p class="ref">Spec: TS 38.521-2, TR 38.810 (FR2 test methods), TR 38.827 (MIMO OTA), CTIA Test Plan for Wireless Device Over-the-Air Performance.</p>
 </section>
 <section class="sub" id="equipment" data-title="Equipment">
 <h2>Test equipment</h2>
@@ -775,6 +1225,32 @@ ol.steps li{margin:.35em 0}
 <tr><td>Production: calibration</td><td>Measure and store each unit's gain and power corrections</td><td>Non-signalling mode (no call), a few seconds per band</td></tr>
 <tr><td>Production: verification</td><td>Catch assembly defects</td><td>Reduced list: power, EVM, ACLR, sensitivity at a few points, plus an antenna check</td></tr>
 </tbody></table></div>
+</section>
+<section class="sub" id="prod" data-title="Production and calibration">
+<h2>Production test and calibration</h2>
+<p>Production test must guarantee that every shipped unit meets the specification in seconds per band, not hours. It relies on design verification having established margin, and on calibration to remove part-to-part variation.</p>
+<h3>Typical flow</h3>
+<ol class="steps">
+<li><b>Board test</b> after SMT: power rails, digital interfaces, basic RF continuity.</li>
+<li><b>RF calibration</b> in non-signalling (factory test) mode, driven over a diagnostic interface with list-mode sequencing on the tester.</li>
+<li><b>RF verification</b>: a reduced set of power, EVM, ACLR, frequency error and RX level checks at representative channels, often several DUTs in parallel per tester.</li>
+<li><b>Final assembly test</b>: radiated or coupler-based check that each antenna path is connected and efficient (catches missing springs and connectors).</li>
+</ol>
+<h3>What is calibrated</h3>
+<div class="tw"><table><thead><tr><th>Item</th><th>Method</th><th>Stored as</th></tr></thead><tbody>
+<tr><td>TX power vs gain index</td><td>Sweep transceiver and PA gain states, measure output power at low/mid/high channels</td><td>Linearisation tables per band, channel interpolation, temperature compensation</td></tr>
+<tr><td>APT / ET</td><td>Find V<sub>CC</sub> per power level meeting ACLR/EVM with margin; ET delay alignment and shaping</td><td>Bias tables, delay offsets</td></tr>
+<tr><td>RX gain (RSSI)</td><td>Inject known levels per LNA gain state and channel</td><td>RSSI offsets so RSRP reports are accurate</td></tr>
+<tr><td>Frequency reference</td><td>Measure XO/TCXO offset, possibly versus temperature</td><td>AFC coefficients</td></tr>
+<tr><td>IQ, DC, DPD</td><td>Often self-calibrated in the transceiver using internal loopback; DPD may be adapted in the field</td><td>Correction coefficients</td></tr>
+</tbody></table></div>
+<h3>Limits and statistics</h3>
+<ul>
+<li><b>Guard-banding</b>: production limits = specification limits tightened by the test system's expanded uncertainty, so that a passing unit is compliant with high confidence.</li>
+<li><b>Process capability</b>: <code>C_pk = min(USL − μ, μ − LSL)/(3σ)</code>; ≥ 1.33 is a common target, ≥ 1.67 for safety-related or regulatory parameters.</li>
+<li><b>Correlation</b>: golden units measured in the lab and on each production tester keep stations aligned; drift triggers recalibration of test fixtures.</li>
+<li><b>Test-time reduction</b>: drop tests whose distributions sit far from limits (high C<sub>pk</sub>) to periodic sampling; keep tests that catch assembly defects.</li>
+</ul>
 </section>
 </section>
 <section class="tab" id="t-rev" data-title="Review">
@@ -931,6 +1407,10 @@ var Q=[
 ['Why is the phone transmitting at full power during a reference sensitivity test in an FDD band?',['To keep the call alive','So that transmit noise leaking through the duplexer into the receiver is included','To warm up the PA'],1,'The test captures real self-desensitisation, not just thermal noise.'],
 ['A phone at the cell edge has a 0 dB SNR. What is the best use of its four receive antennas?',['Four spatial layers','One layer, with the four antennas combined for gain and diversity','Switch three antennas off'],1,'Splitting power across layers only pays at high SNR; at low SNR, combining gain wins.'],
 ['Which carrier-aggregation type is hardest on the phone front-end?',['Intra-band contiguous','Inter-band','They are all the same'],1,'Different bands need separate paths joined by multiplexers, and harmonics of one band can fall in another.'],
+['A receiver has 0.1 dB gain and 1° phase imbalance. Roughly what image rejection does that give?',['20 dB','40 dB','60 dB'],1,'IRR = (1 + 2g cos θ + g²)/(1 − 2g cos θ + g²) ≈ 40 dB; calibration pushes it beyond 45–50 dB.'],
+['Why does the REFSENS test run with the UE transmitting at maximum power in FDD bands?',['To include TX noise and IM2 of the TX leakage, which desensitise the receiver','To warm up the oscillator','To check SAR'],0,'Self-desense from the duplex transmitter is a real-world limit, so the test captures it.'],
+['In a mid-band TDD link budget, which link usually limits cell range?',['Downlink','Uplink','Neither; they balance by design'],1,'The UE transmits 23–26 dBm against tens of watts at the gNB, so the uplink MAPL is typically 10 dB or more lower.'],
+['What does the test tolerance in a 3GPP conformance test do?',['Tightens the limit by the uncertainty','Relaxes the minimum requirement by an amount derived from test-system uncertainty','Sets the production guard-band'],1,'Shared-risk principle: a compliant device is not failed because of the test system.'],
 ['Which pair of 3GPP documents defines NR FR1 phone RF requirements and how to test them?',['TS 38.104 and TS 38.141','TS 38.101-1 and TS 38.521-1','TS 36.101 and TS 34.121'],1,'38.104 and 38.141 are the base-station equivalents.']];
 var qz=$('qz');Q.forEach(function(q,i){var d=document.createElement('fieldset');d.className='q';
   d.innerHTML='<p>'+(i+1)+'. '+q[0]+'</p>'+q[1].map(function(a,j){return '<label><input type="radio" name="q'+i+'" value="'+j+'"> '+a+'</label>'}).join('')+'<div class="fb" aria-live="polite"></div>';qz.appendChild(d)});
@@ -1100,6 +1580,163 @@ function cagg(){var on=[],tot=0,bw=0,lay=0;
   on.forEach(function(o){var w=(o.c[2]+25)*sc,h=22+o.L*13;g+='<rect class="bx k'+(o.c[4]?'r':'d')+'" x="'+x+'" y="'+(86-h)+'" width="'+w+'" height="'+h+'" rx="5"/><text class="bt" x="'+(x+w/2)+'" y="'+(86-h/2+4)+'" text-anchor="middle">'+o.c[0]+'</text><text class="bs" x="'+(x+w/2)+'" y="102" text-anchor="middle">'+o.c[2]+' MHz · '+o.L+(o.L>1?' layers':' layer')+'</text><text class="bs" x="'+(x+w/2)+'" y="116" text-anchor="middle">'+(o.i?'SCell':'PCell')+'</text>';x+=w+gap});
   $('cc-plot').innerHTML=g+'</svg>'}
 ctb.addEventListener('change',cagg);cagg();
+
+/* ================= professional additions ================= */
+function lplot(id,o){var W=720,H=o.H||300,L=58,R=16,T=14,B=46;
+  function lg(v,g){return g?Math.log10(v):v}
+  var x0=lg(o.x[0],o.xl),x1=lg(o.x[1],o.xl),y0=lg(o.y[0],o.yl),y1=lg(o.y[1],o.yl);
+  function X(v){return L+(lg(v,o.xl)-x0)/(x1-x0)*(W-L-R)}function Y(v){return T+(y1-lg(v,o.yl))/(y1-y0)*(H-T-B)}
+  var s='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.label)+'">';
+  o.yt.forEach(function(v){s+='<path d="M'+L+' '+Y(v).toFixed(1)+'H'+(W-R)+'" stroke="var(--line)"/><text class="ax" x="'+(L-6)+'" y="'+(Y(v)+4).toFixed(1)+'" text-anchor="end">'+(o.yf?o.yf(v):fx(v,0))+'</text>'});
+  o.xt.forEach(function(v){s+='<path d="M'+X(v).toFixed(1)+' '+T+'V'+(H-B)+'" stroke="var(--line)"/><text class="ax" x="'+X(v).toFixed(1)+'" y="'+(H-B+15)+'" text-anchor="middle">'+(o.xf?o.xf(v):fx(v,0))+'</text>'});
+  s+='<text class="ax" x="'+(L+(W-L-R)/2)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(o.xlab)+'</text><text class="ax" x="14" y="'+(T+(H-T-B)/2)+'" text-anchor="middle" transform="rotate(-90 14 '+(T+(H-T-B)/2)+')">'+esc(o.ylab)+'</text>';
+  (o.hl||[]).forEach(function(h){if(h.v>=o.y[0]&&h.v<=o.y[1])s+='<path d="M'+L+' '+Y(h.v).toFixed(1)+'H'+(W-R)+'" stroke="var('+h.c+')" stroke-width="1.5" stroke-dasharray="6 4"/>'+(h.t?'<text class="ax" x="'+(L+6)+'" y="'+(Y(h.v)-5).toFixed(1)+'" text-anchor="start" style="fill:var('+h.c+')">'+esc(h.t)+'</text>':'')});
+  (o.vl||[]).forEach(function(h){if(h.v>=o.x[0]&&h.v<=o.x[1])s+='<path d="M'+X(h.v).toFixed(1)+' '+T+'V'+(H-B)+'" stroke="var('+h.c+')" stroke-width="1.5" stroke-dasharray="6 4"/>'});
+  o.s.forEach(function(se){var seg=[];function out(){if(seg.length>1)s+='<polyline fill="none" stroke="var('+se.c+')" stroke-width="'+(se.w||1.9)+'"'+(se.d?' stroke-dasharray="'+se.d+'"':'')+' points="'+seg.join(' ')+'"/>';seg=[]}
+    se.p.forEach(function(p){if(isFinite(p[1])&&p[1]>=o.y[0]&&p[1]<=o.y[1]&&p[0]>=o.x[0]&&p[0]<=o.x[1])seg.push(X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1));else out()});out()});
+  (o.pt||[]).forEach(function(p){if(isFinite(p[1])&&p[1]>=o.y[0]&&p[1]<=o.y[1])s+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="4.5" fill="var('+p[2]+')" stroke="var(--surface)" stroke-width="1.5"/>'});
+  s+='</svg><div class="lg">'+o.s.filter(function(se){return se.n}).map(function(se){return '<span><i style="border-top-color:var('+se.c+')'+(se.d?';border-top-style:dashed':'')+'"></i>'+esc(se.n)+'</span>'}).join('')+'</div>';
+  $(id).innerHTML=s}
+function bars(id,items){var tot=items.reduce(function(a,b){return a+b[1]},0);
+  $(id).innerHTML=items.map(function(it){var p=tot>0?it[1]/tot*100:0;return '<div class="br"><span>'+esc(it[0])+'</span><div><i style="width:'+p.toFixed(1)+'%;background:var('+(it[3]||'--digl')+')"></i></div><b>'+it[2]+'</b></div>'}).join('')}
+function erfc(x){var z=Math.abs(x),t=1/(1+0.5*z),r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r}
+function Qf(x){return 0.5*erfc(x/Math.SQRT2)}
+function invQ(p){var lo=-10,hi=10;for(var i=0;i<80;i++){var m=(lo+hi)/2;if(Qf(m)>p)lo=m;else hi=m}return (lo+hi)/2}
+function L10(x){return Math.log10(x)}
+function dist(d){return d==null?'under 10 m':d===Infinity?'beyond 5 km':d>=1000?(d/1000).toFixed(2)+' km':d.toFixed(0)+' m'}
+function solveRange(f,M){if(f(10)>M)return null;if(f(5000)<=M)return Infinity;var lo=Math.log10(10),hi=Math.log10(5000);for(var i=0;i<50;i++){var m=(lo+hi)/2;if(f(Math.pow(10,m))<=M)lo=m;else hi=m}return Math.pow(10,lo)}
+var CL=3e8;
+function bpd(hb,hu,fc){return 4*(hb-1)*(hu-1)*fc*1e9/CL}
+function plFS(d,fc){return 32.45+20*L10(d)+20*L10(fc)}
+function plUMa(d2,fc,hu,los){var hb=25,d3=Math.hypot(d2,hb-hu),bp=bpd(hb,hu,fc),l=d2<=bp?28+22*L10(d3)+20*L10(fc):28+40*L10(d3)+20*L10(fc)-9*L10(bp*bp+(hb-hu)*(hb-hu));
+  return los?l:Math.max(l,13.54+39.08*L10(d3)+20*L10(fc)-0.6*(hu-1.5))}
+function plUMi(d2,fc,hu,los){var hb=10,d3=Math.hypot(d2,hb-hu),bp=bpd(hb,hu,fc),l=d2<=bp?32.4+21*L10(d3)+20*L10(fc):32.4+40*L10(d3)+20*L10(fc)-9.5*L10(bp*bp+(hb-hu)*(hb-hu));
+  return los?l:Math.max(l,22.4+35.3*L10(d3)+21.3*L10(fc)-0.3*(hu-1.5))}
+
+/* ---------- propagation ---------- */
+function prop(){var fc=Math.max(+$('pr-f').value,0.5),hu=Math.min(Math.max(+$('pr-h').value,1.5),22.5),M=+$('pr-m').value;
+  var md=[['Free space','--muted','6 3',function(d){return plFS(d,fc)}],['UMa LOS','--digl','6 3',function(d){return plUMa(d,fc,hu,1)}],['UMa NLOS','--digl','',function(d){return plUMa(d,fc,hu,0)}],['UMi LOS','--rfl','6 3',function(d){return plUMi(d,fc,hu,1)}],['UMi NLOS','--rfl','',function(d){return plUMi(d,fc,hu,0)}]];
+  var xs=[];for(var e=1;e<=Math.log10(5000)+1e-9;e+=0.02)xs.push(Math.pow(10,e));
+  lplot('pr-plot',{label:'Path loss against distance',x:[10,5000],xl:1,y:[40,180],xt:[10,20,50,100,200,500,1000,2000,5000],xf:function(v){return v>=1000?v/1000+' km':v+' m'},yt:[40,60,80,100,120,140,160,180],xlab:'2D distance',ylab:'Path loss (dB)',
+    hl:[{v:M,c:'--ink',t:'MAPL '+fx(M,0)+' dB'}],s:md.map(function(m){return {n:m[0],c:m[1],d:m[2],p:xs.map(function(d){return [d,m[3](d)]})}})});
+  md.forEach(function(m,i){$('pr-r'+i).textContent=dist(solveRange(m[3],M))})}
+['pr-f','pr-h','pr-m'].forEach(function(i){$(i).addEventListener('input',prop)});prop();
+
+/* ---------- fading ---------- */
+function fade(){var fc=+$('fd-f').value,v=+$('fd-v').value/3.6,st=+$('fd-t').value*1e-9,df=+$('fd-s').value*1e3,fD=v*fc*1e9/CL,Tc=fD>0?0.423/fD:Infinity,Bc=1/(5*st),slot=1e-3/(df/15e3),cp=144/2048/df;
+  $('fd-d').textContent=fD.toFixed(0)+' Hz';$('fd-tc').textContent=isFinite(Tc)?(Tc*1e3).toFixed(2)+' ms':'static';$('fd-sl').textContent=isFinite(Tc)?(Tc/slot).toFixed(1):'∞';
+  $('fd-bc').textContent=Bc>=1e6?(Bc/1e6).toFixed(2)+' MHz':(Bc/1e3).toFixed(0)+' kHz';$('fd-rb').textContent=(Bc/(12*df)).toFixed(1);
+  var ok=cp>=4*st,e=$('fd-cp');e.textContent=(cp*1e6).toFixed(2)+' µs vs '+(4*st*1e6).toFixed(2)+' µs';e.className=ok?'pass':'fail';
+  var x=fD/df,ici=x>0?-10*L10(Math.PI*Math.PI*x*x/3):Infinity,f=$('fd-ici');f.textContent=isFinite(ici)?fx(ici)+' dB SIR':'none';f.className=ici>=25?'pass':'fail'}
+['fd-f','fd-v','fd-t','fd-s'].forEach(function(i){$(i).addEventListener('input',fade)});fade();
+
+/* ---------- MAPL ---------- */
+var MLR=[['p','Transmit power (dBm)',23,53,'UE PC3; gNB 200 W across the carrier'],['gt','Transmit antenna gain (dBi)',0,24,'gNB array with beamforming'],['lt','Transmit feeder loss (dB)',0,0,'Active antenna: none'],
+ ['eirp','EIRP (dBm)'],['gr','Receive antenna gain (dBi)',24,0,'gNB array combining gain on UL'],['lr','Receive feeder loss (dB)',0,0,''],['nf','Noise figure (dB)',3.5,7,''],['b','Bandwidth (MHz)',3.6,98.28,'UL: 10 PRB × 30 kHz; DL: 273 PRB'],
+ ['nth','Thermal noise (dBm)'],['sinr','Required SINR (dB)',-2,-2,'Edge MCS'],['sens','Receiver sensitivity (dBm)'],['im','Interference margin (dB)',2,3,'Load dependent'],['sf','Shadow fading σ (dB)',7,7,'TR 38.901 UMa NLOS ≈ 6'],['pe','Edge coverage probability (%)',90,90,''],
+ ['sfm','Shadow fading margin (dB)'],['pen','Penetration loss (dB)',13,13,'O2I low-loss, 3.5 GHz'],['body','Body loss (dB)',3,3,''],['mapl','MAPL (dB)']];
+var mlt=$('ml-t').tBodies[0];
+MLR.forEach(function(r){var tr=document.createElement('tr');if(r.length<3){tr.className='calc';tr.innerHTML='<th>'+r[1]+'</th><td class="n" id="ml-'+r[0]+'-u"></td><td class="n" id="ml-'+r[0]+'-d"></td><td></td>'}
+  else tr.innerHTML='<td>'+r[1]+'</td><td class="n"><input type="number" step="0.5" id="ml-'+r[0]+'-iu" value="'+r[2]+'" aria-label="Uplink '+r[1]+'"></td><td class="n"><input type="number" step="0.5" id="ml-'+r[0]+'-id" value="'+r[3]+'" aria-label="Downlink '+r[1]+'"></td><td class="hint" style="margin:0">'+r[4]+'</td>';mlt.appendChild(tr)});
+function mapl(){var res={};['u','d'].forEach(function(k){var g=function(n){return +$('ml-'+n+'-i'+k).value},o={};
+  o.eirp=g('p')+g('gt')-g('lt');o.nth=-174+10*L10(Math.max(g('b'),1e-3)*1e6)+g('nf');o.sens=o.nth+g('sinr');var pe=Math.min(Math.max(g('pe'),50),99.99)/100;o.sfm=g('sf')*invQ(1-pe);
+  o.mapl=o.eirp+g('gr')-g('lr')-o.sens-g('im')-o.sfm-g('pen')-g('body');['eirp','nth','sens','sfm','mapl'].forEach(function(n){$('ml-'+n+'-'+k).textContent=fx(o[n])});res[k]=o.mapl});
+  var fc=Math.max(+$('ml-f').value,0.5),m=Math.min(res.u,res.d);$('ml-u').textContent=fx(res.u)+' dB';$('ml-d').textContent=fx(res.d)+' dB';
+  $('ml-l').textContent=(res.u<res.d?'Uplink':'Downlink')+' by '+Math.abs(res.u-res.d).toFixed(1)+' dB';$('ml-r').textContent=dist(solveRange(function(d){return plUMa(d,fc,1.5,0)},m))}
+mlt.addEventListener('input',mapl);$('ml-f').addEventListener('input',mapl);mapl();
+
+/* ---------- BER ---------- */
+var BM=[['BPSK / QPSK',2,'--digl'],['16QAM',4,'--rfl'],['64QAM',6,'--anal'],['256QAM',8,'--vio'],['1024QAM',10,'--ink']];
+function berM(M,k,g){return M<=4?Qf(Math.sqrt(2*g)):(4/k)*(1-1/Math.sqrt(M))*Qf(Math.sqrt(3*k/(M-1)*g))}
+var bet=$('be-t').tBodies[0];BM.forEach(function(m){var tr=document.createElement('tr');tr.innerHTML='<td>'+m[0]+'</td><td class="n">'+(m[1]==2?'1 / 2':m[1])+'</td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n"></td>';bet.appendChild(tr)});
+BM.forEach(function(m,i){var M=Math.pow(2,m[1]),lo=0,hi=60;for(var j=0;j<60;j++){var md=(lo+hi)/2;if(berM(M,m[1],Math.pow(10,md/10))>1e-6)lo=md;else hi=md}
+  var sh=10*L10((Math.pow(2,m[1])-1)/m[1]),c=bet.rows[i].cells;c[4].textContent=hi.toFixed(1)+' dB';c[5].textContent=fx(sh)+' dB';c[6].textContent=(hi-sh).toFixed(1)+' dB'});
+function ber(){var x=+$('be-x').value,xs=[];for(var e=0;e<=36;e+=0.25)xs.push(e);$('be-xv').textContent=x.toFixed(1)+' dB';
+  lplot('be-plot',{label:'Bit error rate against Eb/N0',x:[0,36],y:[1e-8,0.5],yl:1,xt:[0,4,8,12,16,20,24,28,32,36],yt:[1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1],yf:function(v){return '10'+String(Math.round(Math.log10(v))).replace('-','⁻').replace(/\d/g,function(d){return '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]})},xlab:'Eb/N0 (dB)',ylab:'Bit error rate',
+    vl:[{v:x,c:'--muted'}],s:BM.map(function(m){var M=Math.pow(2,m[1]);return {n:m[0],c:m[2],p:xs.map(function(e){return [e,berM(M,m[1],Math.pow(10,e/10))]})}}),pt:BM.map(function(m){return [x,berM(Math.pow(2,m[1]),m[1],Math.pow(10,x/10)),m[2]]})});
+  BM.forEach(function(m,i){var b=berM(Math.pow(2,m[1]),m[1],Math.pow(10,x/10)),c=bet.rows[i].cells;c[2].textContent=fx(x+10*L10(m[1]==2?2:m[1]))+' dB';c[3].textContent=b<1e-12?'< 10⁻¹²':b.toExponential(1)})}
+$('be-x').addEventListener('input',ber);ber();
+
+/* ---------- MCS / TBS ---------- */
+var MCS2=[[2,120],[2,193],[2,308],[2,449],[2,602],[4,378],[4,434],[4,490],[4,553],[4,616],[4,658],[6,466],[6,517],[6,567],[6,616],[6,666],[6,719],[6,772],[6,822],[6,873],[8,682.5],[8,711],[8,754],[8,797],[8,841],[8,885],[8,916.5],[8,948]];
+var TBT=[24,32,40,48,56,64,72,80,88,96,104,112,120,128,136,144,152,160,168,176,184,192,208,224,240,256,272,288,304,320,336,352,368,384,408,432,456,480,504,528,552,576,608,640,672,704,736,768,808,848,888,928,984,1032,1064,1128,1160,1192,1224,1256,1288,1320,1352,1416,1480,1544,1608,1672,1736,1800,1864,1928,2024,2088,2152,2216,2280,2408,2472,2536,2600,2664,2728,2792,2856,2976,3104,3240,3368,3496,3624,3752,3824];
+var QN={2:'QPSK',4:'16QAM',6:'64QAM',8:'256QAM'};
+$('tb-tab').tBodies[0].innerHTML=MCS2.map(function(m,i){return '<tr><td class="n">'+i+'</td><td>'+QN[m[0]]+'</td><td class="n">'+m[0]+'</td><td class="n">'+m[1]+'</td><td class="n">'+(m[0]*m[1]/1024).toFixed(4)+'</td></tr>'}).join('');
+function tbsCalc(nre,R,Qm,v){var ni=nre*R*Qm*v,tbs,n,nq;
+  if(ni<=0)return [0,0];
+  if(ni<=3824){n=Math.max(3,Math.floor(Math.log2(ni))-6);nq=Math.max(24,Math.pow(2,n)*Math.floor(ni/Math.pow(2,n)));tbs=TBT.filter(function(t){return t>=nq})[0]}
+  else{n=Math.floor(Math.log2(ni-24))-5;nq=Math.max(3840,Math.pow(2,n)*Math.round((ni-24)/Math.pow(2,n)));var C;
+    if(R<=0.25){C=Math.ceil((nq+24)/3816);tbs=8*C*Math.ceil((nq+24)/(8*C))-24}
+    else if(nq>8424){C=Math.ceil((nq+24)/8424);tbs=8*C*Math.ceil((nq+24)/(8*C))-24}
+    else tbs=8*Math.ceil((nq+24)/8)-24}
+  return [ni,tbs]}
+function tbs(){var s=+$('tb-s').value,np=Math.min(Math.max(Math.round(+$('tb-n').value),1),275),mi=+$('tb-m').value,v=+$('tb-l').value,ns=Math.min(Math.max(Math.round(+$('tb-y').value),1),14),dm=+$('tb-d').value,oh=+$('tb-o').value,sh=Math.min(Math.max(+$('tb-p').value,1),100)/100;
+  var Qm=MCS2[mi][0],R=MCS2[mi][1]/1024,nre1=Math.min(156,12*ns-dm-oh),nre=Math.max(0,nre1)*np,r=tbsCalc(nre,R,Qm,v),T=r[1];
+  var bg2=T<=292||(T<=3824&&R<=0.67)||R<=0.25,K=bg2?3840:8448,Bb=T+24,C=Bb<=K?1:Math.ceil(Bb/(K-24)),mu=Math.log2(s/15),sps=1000*Math.pow(2,mu),thr=T*sps*sh;
+  var pk=v*8*(948/1024)*np*12/(1e-3/(14*Math.pow(2,mu)))*(1-0.14)*sh;
+  $('tb-mv').textContent=mi;$('tb-q').textContent=QN[Qm]+', R = '+R.toFixed(3);$('tb-re').textContent=nre.toLocaleString();$('tb-ni').textContent=Math.round(r[0]).toLocaleString();$('tb-tb').textContent=T.toLocaleString();
+  $('tb-cb').textContent=C+' × BG'+(bg2?2:1);$('tb-r').textContent=thr>=1e9?(thr/1e9).toFixed(2)+' Gbit/s':(thr/1e6).toFixed(1)+' Mbit/s';$('tb-pk').textContent=pk>=1e9?(pk/1e9).toFixed(2)+' Gbit/s':(pk/1e6).toFixed(1)+' Mbit/s'}
+['tb-s','tb-n','tb-m','tb-l','tb-y','tb-d','tb-o','tb-p'].forEach(function(i){$(i).addEventListener('input',tbs)});tbs();
+
+/* ---------- correlated MIMO capacity ---------- */
+var MCSAMP=(function(){var r=rng(31337),g=function(){var u=Math.max(r(),1e-12),w=r(),m=Math.sqrt(-Math.log(u));return [m*Math.cos(2*Math.PI*w),m*Math.sin(2*Math.PI*w)]},a=[];for(var i=0;i<1500;i++)a.push([g(),g(),g(),g()]);return a})();
+function capCorr(rho,snrs){var a=(Math.sqrt(1+rho)+Math.sqrt(1-rho))/2,b=(Math.sqrt(1+rho)-Math.sqrt(1-rho))/2;
+  var Hs=MCSAMP.map(function(w){var h11=w[0],h12=w[1],h21=w[2],h22=w[3];
+    function mix(p,q){return [a*p[0]+b*q[0],a*p[1]+b*q[1]]}
+    var t11=mix(h11,h21),t21=mix(h21,h11),t12=mix(h12,h22),t22=mix(h22,h12),
+        u11=mix(t11,t12),u12=mix(t12,t11),u21=mix(t21,t22),u22=mix(t22,t21);
+    var g11=u11[0]*u11[0]+u11[1]*u11[1]+u12[0]*u12[0]+u12[1]*u12[1],g22=u21[0]*u21[0]+u21[1]*u21[1]+u22[0]*u22[0]+u22[1]*u22[1],
+        cr=u11[0]*u21[0]+u11[1]*u21[1]+u12[0]*u22[0]+u12[1]*u22[1],ci=u11[1]*u21[0]-u11[0]*u21[1]+u12[1]*u22[0]-u12[0]*u22[1];
+    return [g11,g22,cr*cr+ci*ci]});
+  return snrs.map(function(sd){var c=Math.pow(10,sd/10)/2,s=0;Hs.forEach(function(h){s+=Math.log2((1+c*h[0])*(1+c*h[1])-c*c*h[2])});return s/Hs.length})}
+var SN=[];for(var q=0;q<=30;q+=2)SN.push(q);
+var C1=SN.map(function(sd){var c=Math.pow(10,sd/10),s=0;MCSAMP.forEach(function(w){s+=Math.log2(1+c*(w[0][0]*w[0][0]+w[0][1]*w[0][1]))});return s/MCSAMP.length}),C2=capCorr(0,SN);
+function mcap(){var r=+$('mc-r').value,sd=+$('mc-s').value,C3=capCorr(r,SN),i=SN.indexOf(sd),pick=function(arr){if(i>=0)return arr[i];var j=Math.floor(sd/2),f=(sd-SN[j])/2;return arr[j]+(arr[Math.min(j+1,SN.length-1)]-arr[j])*f};
+  $('mc-rv').textContent=r.toFixed(2);$('mc-sv').textContent=sd+' dB';$('mc-c1').textContent=pick(C1).toFixed(2)+' bit/s/Hz';$('mc-c2').textContent=pick(C2).toFixed(2)+' bit/s/Hz';$('mc-c3').textContent=pick(C3).toFixed(2)+' bit/s/Hz';$('mc-e').textContent=(r*r).toFixed(2);
+  lplot('mc-plot',{label:'Ergodic capacity against SNR',x:[0,30],y:[0,18],xt:[0,5,10,15,20,25,30],yt:[0,3,6,9,12,15,18],xlab:'SNR per receive antenna (dB)',ylab:'bit/s/Hz',vl:[{v:sd,c:'--muted'}],
+    s:[{n:'SISO Rayleigh',c:'--muted',d:'6 3',p:SN.map(function(x,k){return [x,C1[k]]})},{n:'2 × 2 uncorrelated',c:'--digl',p:SN.map(function(x,k){return [x,C2[k]]})},{n:'2 × 2, |ρ| = '+r.toFixed(2),c:'--rfl',p:SN.map(function(x,k){return [x,C3[k]]})}]})}
+$('mc-r').addEventListener('input',mcap);$('mc-s').addEventListener('input',mcap);mcap();
+
+/* ---------- UL power control ---------- */
+function pctl(){var p0=+$('pc-p0').value,a=+$('pc-a').value,pl=+$('pc-pl').value,m=Math.max(1,+$('pc-m').value),u=+$('pc-u').value,f=+$('pc-f').value,pc=+$('pc-c').value;
+  var bw=10*L10(Math.pow(2,u)*m),o=p0+bw+a*pl+f,t=Math.min(pc,o),h=pc-o,rx=t-pl-10*L10(Math.pow(2,u)*m),mx=Math.pow(10,(pc-p0-a*pl-f)/10)/Math.pow(2,u);
+  $('pc-o').textContent=fx(o)+' dBm';var e=$('pc-t');e.textContent=fx(t)+' dBm'+(o>pc?' (limited)':'');e.className=o>pc?'fail':'';$('pc-h').textContent=fx(h)+' dB';
+  $('pc-r').textContent=fx(rx)+' dBm (target '+fx(p0+(a-1)*pl)+')';$('pc-mx').textContent=mx>=275?'all 275':Math.max(0,Math.floor(mx))}
+['pc-p0','pc-a','pc-pl','pc-m','pc-u','pc-f','pc-c'].forEach(function(i){$(i).addEventListener('input',pctl)});pctl();
+
+/* ---------- EVM budget ---------- */
+var EVL=[['QPSK',17.5],['16QAM',12.5],['64QAM',8],['256QAM',3.5]];
+function evm(){var c=[['Phase noise',+$('ev-pn').value*Math.PI/180],['IQ image',Math.pow(10,-(+$('ev-iq').value)/20)],['Noise floor',Math.pow(10,-(+$('ev-n').value)/20)],['PA distortion',Math.pow(10,-(+$('ev-pa').value)/20)],['CFR',Math.pow(10,-(+$('ev-cf').value)/20)],['Ripple, delay',+$('ev-rp').value/100]];
+  var tot=Math.sqrt(c.reduce(function(a,x){return a+x[1]*x[1]},0)),pct=tot*100;
+  bars('ev-bars',c.map(function(x,i){return [x[0],x[1]*x[1],(x[1]*100).toFixed(2)+' %',['--digl','--rfl','--anal','--vio','--muted','--ink'][i]]}));
+  $('ev-t').textContent=pct.toFixed(2)+' %';$('ev-s').textContent=fx(-20*L10(tot))+' dB';var best='none';EVL.forEach(function(l){if(pct<=l[1])best=l[0]});$('ev-m').textContent=best;
+  var g=20*L10(3.5/pct),e=$('ev-g');e.textContent=(g>=0?'+':'−')+Math.abs(g).toFixed(1)+' dB';e.className=g>=1?'pass':g>=0?'':'fail'}
+['ev-pn','ev-iq','ev-n','ev-pa','ev-cf','ev-rp'].forEach(function(i){$(i).addEventListener('input',evm)});evm();
+
+/* ---------- converters ---------- */
+function conv(){var n=+$('cv-n').value,fs=+$('cv-fs').value,b=Math.max(+$('cv-b').value,1e-3),p=+$('cv-p').value,f=+$('cv-f').value,j=+$('cv-j').value;
+  var q=6.02*n+1.76,g=10*L10(Math.max(fs/(2*b),1e-9)),pp=Math.max(0,p-3.01),js=j>0?-20*L10(2*Math.PI*f*1e6*j*1e-15):Infinity,sq=q+g-pp;
+  var tot=-10*L10(Math.pow(10,-sq/10)+(isFinite(js)?Math.pow(10,-js/10):0));
+  $('cv-q').textContent=q.toFixed(1)+' dB';var e=$('cv-g');e.textContent=fx(g)+' dB';e.className=fs<2*b?'fail':'';$('cv-pp').textContent='−'+pp.toFixed(1)+' dB';
+  $('cv-js').textContent=isFinite(js)?js.toFixed(1)+' dB':'not limiting';$('cv-t').textContent=tot.toFixed(1)+' dB';$('cv-e').textContent=(100*Math.pow(10,-tot/20)).toFixed(2)+' %'}
+['cv-n','cv-fs','cv-b','cv-p','cv-f','cv-j'].forEach(function(i){$(i).addEventListener('input',conv)});conv();
+
+/* ---------- desense ---------- */
+function dsn(){var g=function(i){return +$(i).value},nf=g('ds-nf'),B=Math.max(g('ds-b'),1e-3)*1e6,lin=function(d){return Math.pow(10,d/10)};
+  var nth=-174+nf,ntx=g('ds-pn')-g('ds-dr'),leak=g('ds-pt')-g('ds-iso'),im2=2*leak-g('ds-ip2'),fr=Math.min(1,g('ds-b')/(2*Math.max(g('ds-bt'),1e-3))),nim=im2+10*L10(fr)-10*L10(B),nrm=g('ds-pb')+g('ds-l');
+  var parts=[['Thermal (kTF)',nth,'--muted'],['TX noise in RX band',ntx,'--rfl'],['IM2 of TX leakage',nim,'--vio'],['Reciprocal mixing',nrm,'--digl']],tot=10*L10(parts.reduce(function(a,p){return a+lin(p[1])},0)),des=tot-nth;
+  bars('ds-bars',parts.map(function(p){return [p[0],lin(p[1]),fx(p[1])+' dBm/Hz',p[2]]}));
+  var se=tot+10*L10(B)+g('ds-s'),m=g('ds-r')-se;
+  $('ds-th').textContent=fx(nth)+' dBm/Hz';$('ds-tot').textContent=fx(tot)+' dBm/Hz';$('ds-d').textContent=des.toFixed(2)+' dB';$('ds-se').textContent=fx(se)+' dBm';
+  var e=$('ds-m');e.textContent=(m>=0?'+':'−')+Math.abs(m).toFixed(1)+' dB';e.className=m>=0?'pass':'fail'}
+['ds-nf','ds-b','ds-s','ds-r','ds-pn','ds-dr','ds-pt','ds-iso','ds-ip2','ds-bt','ds-pb','ds-l'].forEach(function(i){$(i).addEventListener('input',dsn)});dsn();
+
+/* ---------- measurement uncertainty ---------- */
+function mun(){var g=function(i){return Math.max(0,+$(i).value)},G=function(v){v=Math.max(v,1);return (v-1)/(v+1)},gg=G(g('mu-v1'))*G(g('mu-v2'));
+  var mhi=20*L10(1+gg),mlo=20*L10(1-gg),u=[g('mu-i')/Math.sqrt(3),(mhi-mlo)/2/Math.SQRT2,g('mu-c')/2,g('mu-r'),g('mu-t')/Math.sqrt(3)],uc=Math.sqrt(u.reduce(function(a,b){return a+b*b},0)),U=2*uc;
+  $('mu-mm').textContent='+'+mhi.toFixed(2)+' / '+fx(mlo,2)+' dB';$('mu-uc').textContent=uc.toFixed(2)+' dB';$('mu-U').textContent='± '+U.toFixed(2)+' dB';
+  var lo=21+U,hi=25-U,e=$('mu-gb');e.textContent=lo<hi?lo.toFixed(2)+' to '+hi.toFixed(2)+' dBm':'no window left';e.className=lo<hi?'':'fail'}
+['mu-i','mu-v1','mu-v2','mu-c','mu-r','mu-t'].forEach(function(i){$(i).addEventListener('input',mun)});mun();
 
 /* ---------- tabs ---------- */
 (function(){var tabs=[].slice.call(document.querySelectorAll('section.tab')),bar=$('tabs'),subs=[],last={};
