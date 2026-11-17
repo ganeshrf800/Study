@@ -6,11 +6,11 @@
 <script src="../theme.js"></script>
 <style>
 :root{--bg:#f6f7f5;--surface:#fff;--sunk:#eceeec;--ink:#17201c;--muted:#5a6660;--line:#d3dad6;--link:#1f5fb8;--accent:#1f5fb8;
---dig:#dfe9fb;--digl:#2a78d6;--ana:#e3f2e6;--anal:#2e7d4f;--rf:#fbe6d8;--rfl:#b8521a;--ok:#2e7d4f;--bad:#b0423a;color-scheme:light}
+--dig:#dfe9fb;--digl:#2a78d6;--ana:#e3f2e6;--anal:#2e7d4f;--rf:#fbe6d8;--rfl:#b8521a;--ok:#2e7d4f;--bad:#b0423a;--vio:#7a4fa3;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1513;--surface:#161e1b;--sunk:#1e2824;--ink:#e3eae6;--muted:#97a59f;--line:#2c3934;--link:#8ab8f5;--accent:#8ab8f5;
---dig:#1a2a44;--digl:#5ea2f2;--ana:#18301f;--anal:#6fcf97;--rf:#3a2416;--rfl:#f08a4b;--ok:#6fcf97;--bad:#ef8a80;color-scheme:dark}}
+--dig:#1a2a44;--digl:#5ea2f2;--ana:#18301f;--anal:#6fcf97;--rf:#3a2416;--rfl:#f08a4b;--ok:#6fcf97;--bad:#ef8a80;--vio:#bb97e3;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#0f1513;--surface:#161e1b;--sunk:#1e2824;--ink:#e3eae6;--muted:#97a59f;--line:#2c3934;--link:#8ab8f5;--accent:#8ab8f5;
---dig:#1a2a44;--digl:#5ea2f2;--ana:#18301f;--anal:#6fcf97;--rf:#3a2416;--rfl:#f08a4b;--ok:#6fcf97;--bad:#ef8a80;color-scheme:dark}
+--dig:#1a2a44;--digl:#5ea2f2;--ana:#18301f;--anal:#6fcf97;--rf:#3a2416;--rfl:#f08a4b;--ok:#6fcf97;--bad:#ef8a80;--vio:#bb97e3;color-scheme:dark}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 main{max-width:900px;margin:0 auto;padding:20px 20px 80px}
@@ -54,21 +54,37 @@ canvas{width:100%;max-width:300px;aspect-ratio:1;background:var(--sunk);border-r
 button.go{font:600 14px/1 inherit;padding:9px 14px;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
 button.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 ol.steps li{margin:.35em 0}
+.tabs{position:sticky;top:0;z-index:5;display:flex;gap:4px;overflow-x:auto;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);margin:1.2em 0 0;scrollbar-width:thin}
+.tabs button,.subs button{font-family:inherit;font-weight:600;white-space:nowrap;cursor:pointer}
+.tabs button{font-size:.92rem;padding:9px 13px;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted)}
+.tabs button:hover{color:var(--ink);background:var(--sunk)}
+.tabs button[aria-selected=true]{background:var(--accent);color:var(--bg)}
+.subs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.subs button{font-size:.85rem;font-weight:500;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink)}
+.subs button:hover{border-color:var(--accent)}
+.subs button[aria-selected=true]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface));font-weight:600}
+.js .tab:not(.on),.js .sub:not(.on){display:none}
+.js .sub>h2{border-top:0;padding-top:0;margin-top:1em}
+.pn{display:flex;justify-content:space-between;gap:10px;margin-top:2.4em;border-top:1px solid var(--line);padding-top:14px}
+.pn button{max-width:48%;text-align:left}.pn button:last-child{margin-left:auto;text-align:right}
+.hint{font-size:.88rem;color:var(--muted);margin:.8em 0 0}
+.ctl label button{justify-self:start}
+.ax{fill:var(--muted);font-size:11px}
+@media print{.js .tab:not(.on),.js .sub:not(.on){display:block}.tabs,.subs,.pn{display:none}}
 </style>
+<script>document.documentElement.classList.add("js")</script>
 </head><body><main>
 <a class="study-back" href="../">← Study home</a>
 <h1>Mobile Communications 101</h1>
-<p class="lede">How a phone and a cell tower talk to each other, from the first principles of sending information through to how the radio is built, budgeted, specified and tested. Written as a first course: each section builds on the one before, and the calculators let you check the numbers yourself.</p>
+<p class="lede">How a phone and a cell tower talk to each other, from the first principles of sending information through to how the radio is built, budgeted, specified and tested. Pick a tab, then a topic. The interactive blocks let you check the numbers yourself.</p>
 <p><time datetime="2026-11-16">16 November 2026</time> · Deeper dives into individual phone blocks live in the <a href="../Mobile/">Mobile</a> section.</p>
 
-<nav class="toc" aria-label="Sections">
-<a href="#basics">1 Communication basics</a><a href="#wireless">2 Wireless</a><a href="#modulation">3 Modulation</a><a href="#standards">4 Mobile standards</a><a href="#tx">5 Transmitter chain</a><a href="#rx">6 Receiver chain</a><a href="#arch">7 Architectures</a><a href="#budget">8 Gain budget</a><a href="#metrics">9 Performance metrics</a><a href="#specs">10 Specifications</a><a href="#tests">11 Test cases</a><a href="#procedure">12 Test procedure</a><a href="#quiz">13 Quiz</a><a href="#glossary">14 Glossary</a>
-</nav>
-
-<h2 id="basics">1. Basics of communication</h2>
+<div class="tabs" id="tabs" role="tablist" aria-label="Chapters"></div>
+<section class="tab" id="t-fund" data-title="Fundamentals">
+<section class="sub" id="basics" data-title="Communication model">
+<h2>The communication model</h2>
 <p>Every communication system, from two tin cans on a string to a 5G network, has the same five parts. A <b>source</b> produces information. A <b>transmitter</b> turns it into a signal suited to the medium. The <b>channel</b> carries the signal and also weakens it, distorts it and adds noise. A <b>receiver</b> undoes as much of that damage as it can, and the <b>destination</b> gets the recovered information.</p>
 <figure><div id="d-model"></div><figcaption>The general model of a communication system. Everything else on this page is detail inside the transmitter and receiver boxes.</figcaption></figure>
-
 <h3>Signals, frequency and bandwidth</h3>
 <ul>
 <li><b>Analog and digital.</b> An analog signal varies continuously (a microphone voltage). A digital signal is a stream of bits. Modern mobile systems digitise everything, because bits can be compressed, protected with error-correcting codes and regenerated without accumulating noise.</li>
@@ -76,8 +92,9 @@ ol.steps li{margin:.35em 0}
 <li><b>Bandwidth (B)</b> is the range of frequencies a signal occupies. More bandwidth carries more data. A GSM channel is 200 kHz wide, an LTE carrier up to 20 MHz, a 5G mid-band carrier up to 100 MHz.</li>
 <li><b>Baseband and passband.</b> Information starts as a baseband signal centred on 0 Hz. To radiate it from a small antenna and to share the air with other users, it is shifted up onto a high-frequency <b>carrier</b>. That shift is modulation plus up-conversion.</li>
 </ul>
-
-<h3>Decibels</h3>
+</section>
+<section class="sub" id="decibels" data-title="Decibels">
+<h2>Decibels</h2>
 <p>Radio power spans a huge range: a phone transmits about 0.2 W and can receive 0.000 000 000 000 1 W. Decibels turn that into manageable numbers and turn multiplication into addition.</p>
 <span class="f">Gain (dB) = 10 · log₁₀(P_out / P_in) &nbsp;&nbsp;&nbsp; Power (dBm) = 10 · log₁₀(P / 1 mW)</span>
 <div class="tw"><table><thead><tr><th>Change</th><th>Power ratio</th><th>Absolute level</th><th>Power</th></tr></thead><tbody>
@@ -88,8 +105,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>−10 dB</td><td>÷ 10</td><td>−100 dBm</td><td>0.1 pW (near the limit of reception)</td></tr>
 </tbody></table></div>
 <p>Related units: <b>dBi</b> is antenna gain relative to an isotropic radiator, <b>dBc</b> is a level relative to the carrier, and <b>dBm/Hz</b> is power density.</p>
-
-<h3>Noise, SNR and the Shannon limit</h3>
+</section>
+<section class="sub" id="noise" data-title="Noise and Shannon">
+<h2>Noise, SNR and the Shannon limit</h2>
 <p>Every receiver sees thermal noise. At room temperature its density is <b>−174 dBm/Hz</b>, so the noise in a bandwidth B is −174 + 10·log₁₀(B) dBm. The receiver's own electronics add a little more, described by its <b>noise figure (NF)</b>. The ratio of signal power to noise power is the <b>SNR</b>.</p>
 <p>Claude Shannon showed in 1948 that a channel of bandwidth B and a given SNR has a hard upper limit on error-free data rate:</p>
 <span class="f">C = B · log₂(1 + SNR) &nbsp;&nbsp; bits per second (SNR as a plain ratio, not dB)</span>
@@ -101,10 +119,10 @@ ol.steps li{margin:.35em 0}
 </div>
 <div class="out"><div>Capacity<b id="sh-c"></b></div><div>Spectral efficiency<b id="sh-e"></b></div><div>Noise floor (ideal receiver)<b id="sh-n"></b></div></div>
 </div>
-
-<h2 id="wireless">2. Wireless communication</h2>
+</section>
+<section class="sub" id="wireless" data-title="Wireless channel">
+<h2>The wireless channel</h2>
 <p>In a wireless link the channel is free space plus everything in it. Compared with a cable the channel is far lossier, changes from millisecond to millisecond, and is shared with every other transmitter nearby. Most of the design effort in mobile systems goes into coping with those three facts.</p>
-
 <h3>Radio spectrum used by mobile networks</h3>
 <div class="tw"><table><thead><tr><th>Range</th><th>Frequencies</th><th>Behaviour</th><th>Typical use</th></tr></thead><tbody>
 <tr><td>Low band</td><td>600–1000 MHz</td><td>Travels far, penetrates buildings, little bandwidth available</td><td>Wide-area and rural coverage</td></tr>
@@ -113,7 +131,6 @@ ol.steps li{margin:.35em 0}
 <tr><td>Millimetre wave</td><td>24–71 GHz</td><td>Very wide carriers, blocked by walls, hands and foliage</td><td>Dense hotspots, fixed wireless</td></tr>
 </tbody></table></div>
 <p>3GPP groups 5G bands into <b>FR1</b> (410 MHz to 7.125 GHz) and <b>FR2</b> (24.25 to 71 GHz).</p>
-
 <h3>Propagation</h3>
 <ul>
 <li><b>Free-space path loss.</b> Power spreads over a growing sphere, so received power falls with the square of distance. In convenient units: <span class="f">FSPL (dB) = 32.44 + 20·log₁₀(d in km) + 20·log₁₀(f in MHz)</span> Doubling distance or frequency costs 6 dB.</li>
@@ -121,8 +138,9 @@ ol.steps li{margin:.35em 0}
 <li><b>Multipath fading.</b> Reflections arrive with different delays and add or cancel. The signal can dip 20–30 dB within half a wavelength of movement. Delayed copies also smear one symbol into the next (inter-symbol interference).</li>
 <li><b>Doppler shift.</b> Motion shifts the carrier by f·v/c. At 2 GHz and 120 km/h that is about 220 Hz.</li>
 </ul>
-
-<h3>Link budget</h3>
+</section>
+<section class="sub" id="linkbudget" data-title="Link budget">
+<h2>Link budget</h2>
 <p>A link budget adds every gain and loss between transmitter and receiver to find the received power, then compares it with what the receiver needs.</p>
 <span class="f">P_rx = P_tx + G_tx + G_rx − path loss − other losses &nbsp;&nbsp;&nbsp; (all in dB and dBm)</span>
 <div class="lab"><h3>Uplink link budget (phone to base station)</h3>
@@ -138,16 +156,20 @@ ol.steps li{margin:.35em 0}
 </div>
 <div class="out"><div>Free-space path loss<b id="lb-fs"></b></div><div>Received power<b id="lb-rx"></b></div><div>Receiver noise floor<b id="lb-no"></b></div><div>SNR<b id="lb-snr"></b></div></div>
 </div>
-
-<h3>Sharing the air</h3>
+</section>
+<section class="sub" id="sharing" data-title="Sharing the air">
+<h2>Sharing the air</h2>
 <div class="tw"><table><thead><tr><th>Idea</th><th>Options</th><th>What it means</th></tr></thead><tbody>
 <tr><td>Duplexing: separating uplink from downlink</td><td>FDD, TDD</td><td><b>FDD</b> uses two frequencies at once and needs a duplexer filter in the phone. <b>TDD</b> uses one frequency and alternates in time, needing only a switch. Most bands above 2.3 GHz are TDD.</td></tr>
 <tr><td>Multiple access: separating users</td><td>FDMA, TDMA, CDMA, OFDMA</td><td>Users are given different frequencies (1G), time slots (2G), spreading codes (3G), or blocks of a time-frequency grid (4G and 5G).</td></tr>
 <tr><td>Cellular reuse</td><td>Cells, sectors, handover</td><td>Coverage is split into cells, each served by a base station. The same frequencies are reused in other cells, and a moving phone is handed from one cell to the next.</td></tr>
 <tr><td>Spatial techniques</td><td>Diversity, MIMO, beamforming</td><td>Several antennas give protection against fading (diversity), parallel data streams (MIMO) or a steered, focused beam (beamforming).</td></tr>
 </tbody></table></div>
-
-<h2 id="modulation">3. Modulation schemes</h2>
+</section>
+</section>
+<section class="tab" id="t-mod" data-title="Modulation">
+<section class="sub" id="modulation" data-title="Schemes">
+<h2>Modulation schemes</h2>
 <p>Modulation maps bits onto a property of the carrier wave: its amplitude, frequency or phase. A carrier can be written as two components 90° apart, <b>I</b> (in-phase) and <b>Q</b> (quadrature). Plotting the allowed I/Q values gives a <b>constellation</b>: each point is one <b>symbol</b>, and a constellation of M points carries log₂(M) bits per symbol.</p>
 <div class="tw"><table><thead><tr><th>Scheme</th><th>What varies</th><th class="n">Bits / symbol</th><th class="n">SNR needed (rough)</th><th>Where it is used</th></tr></thead><tbody>
 <tr><td>FM (analog)</td><td>Frequency</td><td class="n">n/a</td><td class="n">n/a</td><td>1G voice</td></tr>
@@ -162,6 +184,20 @@ ol.steps li{margin:.35em 0}
 </tbody></table></div>
 <p>The SNR column is a rule of thumb for the highest code rate; each extra two bits per symbol costs roughly 6 dB. The network watches channel quality and switches scheme and code rate every few milliseconds. This is <b>adaptive modulation and coding</b>.</p>
 
+
+<div class="lab"><h3>Bits to waveform</h3>
+<div class="ctl">
+<label>Scheme<select id="wv-s"><option value="ask">ASK (on-off keying)</option><option value="fsk">FSK</option><option value="bpsk">BPSK</option><option value="qpsk" selected>QPSK</option><option value="qam">16QAM</option></select></label>
+<label>Bit pattern<button class="go" id="wv-n" type="button">New random bits</button></label>
+</div>
+<figure style="border:0;padding:0"><div id="wv-plot"></div></figure>
+<div class="out"><div>Bits per symbol<b id="wv-b"></b></div><div>Symbols for these 12 bits<b id="wv-n2"></b></div><div>Symbol rate for the same bit rate<b id="wv-r"></b></div></div>
+<p class="hint" id="wv-t"></p>
+</div>
+</section>
+<section class="sub" id="constellation" data-title="Constellation and EVM">
+<h2>Constellation and EVM</h2>
+<p>A constellation plots every symbol the transmitter can send as a point on the I/Q plane. The receiver decides which point was sent by picking the nearest one, so the spacing between points, compared with the size of the noise cloud, sets the error rate. Packing in more points carries more bits per symbol but needs a cleaner signal.</p>
 <div class="lab"><h3>Constellation and EVM</h3>
 <div class="split"><canvas id="cv" width="600" height="600" role="img" aria-label="Constellation diagram"></canvas>
 <div><div class="ctl">
@@ -171,24 +207,74 @@ ol.steps li{margin:.35em 0}
 <div class="out"><div>EVM<b id="c-evm"></b></div><div>3GPP EVM limit<b id="c-lim"></b></div><div>Result<b id="c-res"></b></div></div>
 <p style="font-size:.88rem;color:var(--muted)">Each dot is one received symbol. Noise spreads the dots into clouds around the ideal points. When the clouds overlap, the receiver mistakes one symbol for its neighbour. <b>Error vector magnitude (EVM)</b> is the RMS size of the cloud as a percentage of the constellation's RMS amplitude; with noise alone, EVM ≈ 10^(−SNR/20).</p></div></div>
 </div>
-
-<h3>OFDM: the waveform of 4G and 5G</h3>
+</section>
+<section class="sub" id="spectrum" data-title="Spectrum">
+<h2>How each scheme looks in frequency</h2>
+<p>A signal can be described in time (a waveform) or in frequency (a spectrum). The two are tied together: <b>the faster the symbols change, the wider the spectrum</b>. Three things decide what the spectrum looks like:</p>
+<ul>
+<li><b>Symbol rate</b> sets the width. The main lobe is roughly as wide as the symbol rate, which is why 16QAM at the same bit rate as QPSK needs half the bandwidth.</li>
+<li><b>Pulse shape</b> sets the skirts. Abrupt symbol transitions splash energy far into neighbouring channels; a pulse-shaping filter confines it.</li>
+<li><b>Modulation order</b> (QPSK, 16QAM, 64QAM) does <i>not</i> change the shape. It changes how many bits each symbol carries and how much the envelope varies.</li>
+</ul>
+<div class="lab"><h3>Spectrum of each scheme</h3>
+<div class="ctl">
+<label>Scheme<select id="sp-s">
+<option value="rect">QPSK, no filtering (rectangular pulses)</option>
+<option value="rrc4" selected>QPSK with root-raised-cosine filter (WCDMA style)</option>
+<option value="rrc16">16QAM with root-raised-cosine filter</option>
+<option value="rrc64">64QAM with root-raised-cosine filter</option>
+<option value="msk">MSK</option>
+<option value="gmsk">GMSK, BT = 0.3 (GSM)</option>
+<option value="ofdm">OFDM, 32 subcarriers (LTE and NR style)</option>
+<option value="scfdma">DFT-s-OFDM / SC-FDMA, 32 subcarriers (uplink)</option>
+</select></label>
+<label>Filter roll-off α: <span id="sp-av"></span><input type="range" id="sp-a" min="0.05" max="1" step="0.01" value="0.22"></label>
+</div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="sp-plot"></div><figcaption>Power spectral density, simulated from 4096 random symbols. Frequency is in multiples of the symbol rate; the shaded band holds 99 % of the power.</figcaption></figure>
+<figure style="border:0;padding:0;margin:.4em 0"><div id="sp-env"></div><figcaption>Envelope (instantaneous amplitude) over 60 symbols. The dashed line is the RMS level. Peaks far above it force the power amplifier to back off.</figcaption></figure>
+<div class="out"><div>99 % occupied bandwidth<b id="sp-obw"></b></div><div>Peak-to-average power (99.9 %)<b id="sp-papr"></b></div><div>Bits per symbol<b id="sp-bps"></b></div><div>Uncoded efficiency<b id="sp-eff"></b></div></div>
+<p class="hint" id="sp-t"></p>
+</div>
+<h3>The same picture in real systems</h3>
+<div class="tw"><table><thead><tr><th>System</th><th>Waveform</th><th>Symbol or subcarrier rate</th><th>Occupied</th><th>Channel</th></tr></thead><tbody>
+<tr><td>GSM</td><td>GMSK, BT = 0.3, constant envelope</td><td>270.833 ksymbol/s</td><td>About 250 kHz, overlapping the neighbours slightly</td><td>200 kHz</td></tr>
+<tr><td>WCDMA</td><td>QPSK chips, root-raised-cosine α = 0.22</td><td>3.84 Mchip/s</td><td>3.84 × 1.22 = 4.68 MHz</td><td>5 MHz</td></tr>
+<tr><td>LTE, 20 MHz</td><td>OFDM, 1200 subcarriers</td><td>15 kHz spacing</td><td>18 MHz</td><td>20 MHz</td></tr>
+<tr><td>NR, 100 MHz</td><td>OFDM, 3276 subcarriers</td><td>30 kHz spacing</td><td>98.28 MHz</td><td>100 MHz</td></tr>
+</tbody></table></div>
+</section>
+<section class="sub" id="ofdm" data-title="OFDM and subcarriers">
+<h2>OFDM: the waveform of 4G and 5G</h2>
 <p>Instead of one fast stream of symbols on one carrier, <b>orthogonal frequency-division multiplexing</b> sends many slow streams in parallel on closely spaced <b>subcarriers</b>, each carrying its own QAM symbol. An inverse FFT builds the waveform; an FFT in the receiver separates the subcarriers again.</p>
 <ul>
 <li>Slow symbols are long compared with multipath delays. A short guard copy of each symbol's tail, the <b>cyclic prefix</b>, absorbs the echoes.</li>
 <li>Subcarriers can be given to different users, which is <b>OFDMA</b>. LTE groups 12 subcarriers of 15 kHz into a 180 kHz <b>resource block</b>.</li>
 <li>The drawback is a high <b>peak-to-average power ratio (PAPR)</b>, 8–12 dB, which forces the power amplifier to back off from its efficient region. The LTE uplink therefore uses <b>SC-FDMA</b> (also called DFT-s-OFDM), which has 2–3 dB lower PAPR. The 5G uplink can use either.</li>
 </ul>
-
-<h3>Coding and MIMO</h3>
+<div class="lab"><h3>Subcarriers and orthogonality</h3>
+<div class="ctl">
+<label>Number of subcarriers: <span id="sc-nv"></span><input type="range" id="sc-n" min="1" max="12" step="1" value="5"></label>
+<label>Subcarrier spacing<select id="sc-d"><option value="15">15 kHz</option><option value="30">30 kHz</option><option value="60">60 kHz</option><option value="120">120 kHz</option></select></label>
+<label>Receiver frequency offset: <span id="sc-ov"></span><input type="range" id="sc-o" min="0" max="50" step="1" value="0"></label>
+</div>
+<figure style="border:0;padding:0;margin-bottom:.4em"><div id="sc-plot"></div><figcaption>Each curve is the spectrum of one subcarrier. The dashed line is where the receiver samples the highlighted subcarrier; the dots show what every subcarrier contributes there.</figcaption></figure>
+<div class="out"><div>Symbol length (1 ÷ spacing)<b id="sc-t"></b></div><div>Cyclic prefix (normal)<b id="sc-cp"></b></div><div>Occupied bandwidth<b id="sc-bw"></b></div><div>Offset in hertz<b id="sc-hz"></b></div><div>Wanted amplitude<b id="sc-w"></b></div><div>Signal to inter-carrier interference<b id="sc-sir"></b></div></div>
+<p class="hint">With no offset, every other subcarrier passes through zero exactly where the wanted one peaks: they overlap without interfering. That is what <b>orthogonal</b> means, and it works because the spacing equals 1 ÷ symbol length. Slide the offset up and the zeros no longer line up, so neighbours leak in. This is why a phone must hold its carrier within ± 0.1 ppm, and why 5G uses wider spacing at higher frequencies, where Doppler and oscillator drift are larger in hertz.</p>
+</div>
+</section>
+<section class="sub" id="coding" data-title="Coding and MIMO">
+<h2>Coding and MIMO</h2>
 <ul>
 <li><b>Channel coding</b> adds redundant bits so the receiver can correct errors. 2G used convolutional codes, 3G and 4G use turbo codes, 5G uses LDPC for data and polar codes for control. The <b>code rate</b> is the fraction of useful bits.</li>
 <li><b>HARQ</b> retransmits only when decoding fails and combines the retry with the first attempt.</li>
 <li><b>MIMO</b> sends different data streams from several antennas on the same frequency at the same time. With enough scattering, N transmit and N receive antennas support up to N streams. Phones typically have 4 receive paths in mid band and 2 in low band.</li>
 </ul>
 <p>More on waveforms: <a href="../Mobile/modulation.html">Modulation study</a> in the Mobile section.</p>
-
-<h2 id="standards">4. Mobile standards</h2>
+</section>
+</section>
+<section class="tab" id="t-std" data-title="Standards">
+<section class="sub" id="standards" data-title="Generations">
+<h2>Mobile standards, 1G to 6G</h2>
 <p>Standards make any phone work with any network. Since 3G they have been written by <b>3GPP</b>, a partnership of regional standards bodies, and published in numbered <b>Releases</b>. The ITU sets the headline requirements for each generation (IMT-2000, IMT-Advanced, IMT-2020, IMT-2030).</p>
 <div class="tw"><table><thead><tr><th>Gen</th><th>First service</th><th>Main standards</th><th>Access</th><th>Modulation</th><th>Carrier width</th><th>Typical peak rate</th><th>What it brought</th></tr></thead><tbody>
 <tr><td>1G</td><td>About 1980</td><td>AMPS, NMT, TACS</td><td>FDMA</td><td>Analog FM</td><td>25–30 kHz</td><td>Voice only</td><td>Mobile telephony</td></tr>
@@ -199,11 +285,13 @@ ol.steps li{margin:.35em 0}
 <tr><td>6G</td><td>Expected around 2030</td><td>In study in Rel-20; first specifications planned for Rel-21</td><td>Builds on the NR OFDM framework</td><td>To be decided</td><td>To be decided</td><td>To be decided</td><td>Under study: new 7–15 GHz spectrum, AI-native air interface, sensing</td></tr>
 </tbody></table></div>
 <p class="note"><b>Where 6G stands (November 2026).</b> 3GPP is running its 6G studies in Release 20, alongside further 5G-Advanced work. Release 21 is planned as the first release with 6G specifications; according to Qualcomm's summary of the June 2026 plenary, the 6G radio work item is due for approval in March 2027. See <a href="#sources">sources</a>.</p>
-
-<h3>The network around the phone</h3>
+</section>
+<section class="sub" id="network" data-title="Network">
+<h2>The network around the phone</h2>
 <figure><div id="d-net"></div><figcaption>A 5G network. In 4G the base station is called an eNodeB and the core is the EPC; the roles are the same.</figcaption></figure>
-
-<h3>5G NR numerology</h3>
+</section>
+<section class="sub" id="numerology" data-title="NR numerology">
+<h2>5G NR numerology</h2>
 <p>LTE fixed the subcarrier spacing at 15 kHz. NR scales it by powers of two so that one design covers 700 MHz and 39 GHz.</p>
 <div class="tw"><table><thead><tr><th class="n">μ</th><th class="n">Subcarrier spacing</th><th class="n">Symbol length</th><th class="n">Slot length</th><th>Used in</th><th>Widest carrier</th></tr></thead><tbody>
 <tr><td class="n">0</td><td class="n">15 kHz</td><td class="n">66.7 µs</td><td class="n">1 ms</td><td>FR1, mostly FDD bands below 3 GHz</td><td>50 MHz</td></tr>
@@ -211,8 +299,17 @@ ol.steps li{margin:.35em 0}
 <tr><td class="n">2</td><td class="n">60 kHz</td><td class="n">16.7 µs</td><td class="n">0.25 ms</td><td>FR1 and FR2</td><td>100 MHz (FR1), 200 MHz (FR2)</td></tr>
 <tr><td class="n">3</td><td class="n">120 kHz</td><td class="n">8.33 µs</td><td class="n">0.125 ms</td><td>FR2</td><td>400 MHz</td></tr>
 </tbody></table></div>
-
-<h3>Some common bands</h3>
+<div class="lab"><h3>NR carrier calculator</h3>
+<div class="ctl">
+<label>Subcarrier spacing<select id="nr-s"><option value="15">15 kHz</option><option value="30" selected>30 kHz</option><option value="60">60 kHz</option></select></label>
+<label>Channel bandwidth<select id="nr-b"></select></label>
+</div>
+<div class="out"><div>Resource blocks<b id="nr-rb"></b></div><div>Subcarriers<b id="nr-sc"></b></div><div>Occupied bandwidth<b id="nr-ob"></b></div><div>Guard band, both edges together<b id="nr-g"></b></div><div>Typical FFT size<b id="nr-f"></b></div><div>Sample rate<b id="nr-fs"></b></div><div>Slot length<b id="nr-sl"></b></div><div>Raw rate, 256QAM, one layer<b id="nr-r"></b></div></div>
+<p class="hint">FR1 values from TS 38.101-1. The raw rate counts every resource element at 8 bits and ignores coding, reference signals and control overhead; real peak rates per layer are roughly 60–70 % of it.</p>
+</div>
+</section>
+<section class="sub" id="bands" data-title="Bands">
+<h2>Some common bands</h2>
 <div class="tw"><table><thead><tr><th>Band</th><th>Frequency</th><th>Duplex</th><th>Notes</th></tr></thead><tbody>
 <tr><td>B28 / n28</td><td>700 MHz</td><td>FDD</td><td>Coverage layer in much of the world</td></tr>
 <tr><td>B3 / n3</td><td>1800 MHz</td><td>FDD</td><td>The most widely deployed LTE band</td></tr>
@@ -222,8 +319,11 @@ ol.steps li{margin:.35em 0}
 <tr><td>n258, n260, n261</td><td>26, 39, 28 GHz</td><td>TDD</td><td>Millimetre wave (FR2)</td></tr>
 </tbody></table></div>
 <p>Bands starting with B are LTE; the same spectrum used for NR gets an n prefix.</p>
-
-<h2 id="tx">5. Transmitter chain</h2>
+</section>
+</section>
+<section class="tab" id="t-hw" data-title="Radio hardware">
+<section class="sub" id="tx" data-title="Transmitter chain">
+<h2>Transmitter chain</h2>
 <p>The transmitter's job: turn bits into a clean, accurately placed radio signal of the right power, without spilling energy into neighbouring channels, and without wasting battery.</p>
 <figure><div id="d-tx"></div><figcaption>Phone transmit chain. Blue blocks are digital (modem), green are analog baseband and frequency conversion (transceiver chip), orange are RF front-end.</figcaption></figure>
 <div class="tw"><table><thead><tr><th>Block</th><th>What it does</th><th>What matters most</th></tr></thead><tbody>
@@ -240,8 +340,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>Antenna</td><td>Converts the conducted signal to a radiated wave</td><td>Efficiency (often only −3 to −6 dB in a phone), bandwidth</td></tr>
 </tbody></table></div>
 <p>Block-by-block detail: <a href="../Mobile/transceiver.html">transceiver</a>, <a href="../Mobile/pa.html">power amplifier</a>, <a href="../Mobile/linearization.html">DPD and envelope tracking</a>, <a href="../Mobile/data-converters.html">data converters</a>, <a href="../Mobile/synthesizers.html">synthesizers</a>.</p>
-
-<h2 id="rx">6. Receiver chain</h2>
+</section>
+<section class="sub" id="rx" data-title="Receiver chain">
+<h2>Receiver chain</h2>
 <p>The receiver's job: pick out a wanted signal that may be a tenth of a picowatt, while much stronger unwanted signals, including the phone's own transmitter, arrive at the same antenna.</p>
 <figure><div id="d-rx"></div><figcaption>Phone receive chain. A phone has several of these in parallel for diversity and MIMO.</figcaption></figure>
 <div class="tw"><table><thead><tr><th>Block</th><th>What it does</th><th>What matters most</th></tr></thead><tbody>
@@ -257,9 +358,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>Demapper and decoder</td><td>Converts symbols to soft bit decisions, corrects errors, checks the CRC</td><td>Block error rate (BLER)</td></tr>
 </tbody></table></div>
 <p>Block-by-block detail: <a href="../Mobile/lna.html">LNA</a>, <a href="../Mobile/mixers.html">mixers</a>, <a href="../Mobile/acoustic-filters.html">SAW and BAW filters</a>, <a href="../Mobile/rf-switches.html">switches</a>, <a href="../Mobile/antennas.html">antennas</a>.</p>
-
-<h2 id="arch">7. Architectures</h2>
-<h3>Receiver and transmitter architectures</h3>
+</section>
+<section class="sub" id="arch" data-title="Architectures">
+<h2>Receiver and transmitter architectures</h2>
 <p>The architecture is the choice of how many frequency conversions there are and where filtering and digitising happen.</p>
 <figure><div id="d-het"></div><figcaption>Superheterodyne receiver: convert to a fixed intermediate frequency (IF), filter there, then convert again.</figcaption></figure>
 <figure><div id="d-zif"></div><figcaption>Direct-conversion (zero-IF) receiver: one conversion straight to baseband. The transmitter is the mirror image.</figcaption></figure>
@@ -270,18 +371,22 @@ ol.steps li{margin:.35em 0}
 <tr><td>RF sampling (direct RF)</td><td>A very fast ADC or DAC works at RF; all conversion is digital</td><td>Most flexible; wide instantaneous bandwidth</td><td>Converter power and cost</td><td>Base stations, instruments</td></tr>
 <tr><td>Millimetre-wave with IF</td><td>Baseband ↔ IF near 8–10 GHz in the transceiver, IF ↔ 28 or 39 GHz in an antenna module with a phased array</td><td>Lets the lossy millimetre-wave part sit next to the antennas</td><td>Extra conversion; beam management</td><td>5G FR2 phones</td></tr>
 </tbody></table></div>
-
-<h3>Phone radio architecture</h3>
+</section>
+<section class="sub" id="phone" data-title="Phone radio">
+<h2>Phone radio architecture</h2>
 <figure><div id="d-phone"></div><figcaption>The four layers of a phone radio. Data and control flow both ways; the modem steers the other three over a digital control bus (MIPI RFFE).</figcaption></figure>
 <ul>
-<li><b>Modem (baseband processor).</b> Runs the whole protocol stack and the digital signal processing in sections 5 and 6.</li>
+<li><b>Modem (baseband processor).</b> Runs the whole protocol stack and the digital signal processing of the transmitter and receiver chains.</li>
 <li><b>RF transceiver.</b> One chip with many zero-IF transmit and receive paths and several synthesizers, to support carrier aggregation and MIMO.</li>
 <li><b>RF front-end.</b> Modules grouped by band range (low, mid, high, ultra-high). A <b>PAMiD</b> integrates PA, duplexers, switches and often the LNA. Separate diversity receive modules serve the secondary antennas.</li>
 <li><b>Antennas.</b> Four to eight cellular antennas around the frame, shared between bands through switches, diplexers and tuners.</li>
 </ul>
 <p>Features that multiply the number of paths: <b>carrier aggregation</b> (several carriers at once), <b>4×4 downlink MIMO</b>, <b>EN-DC</b> (LTE and NR transmitting together in non-standalone 5G), and <b>uplink MIMO or transmit switching</b>. See the <a href="../Mobile/">interactive phone block diagram</a> and the <a href="../Mobile/rf-front-end.html">RF front-end page</a>.</p>
-
-<h2 id="budget">8. Gain budget analysis</h2>
+</section>
+</section>
+<section class="tab" id="t-bud" data-title="Gain budget">
+<section class="sub" id="budget" data-title="Cascade rules">
+<h2>Gain budget analysis</h2>
 <p>A gain budget (also called a cascade or line-up analysis) walks through the chain stage by stage and tracks three things: how big the signal is, how much noise has been added, and how much distortion the chain will produce. It is how a designer decides how much gain, noise figure and linearity each block must have.</p>
 <h3>The three cascade rules</h3>
 <ul>
@@ -293,7 +398,11 @@ ol.steps li{margin:.35em 0}
 <span class="f">Sensitivity = −174 dBm/Hz + 10·log₁₀(B) + NF_total + SNR_required</span>
 <span class="f">Spurious-free dynamic range = ⅔ · (IIP3_total − noise floor)</span>
 
-<div class="lab"><h3>Receiver cascade calculator</h3>
+
+</section>
+<section class="sub" id="cascade" data-title="Receiver calculator">
+<h2>Receiver cascade calculator</h2>
+<div class="lab"><h3>Edit the line-up</h3>
 <p style="font-size:.88rem;color:var(--muted);margin-top:0">Edit any gain, noise figure or IIP3. Passive stages have a noise figure equal to their loss. Try raising the filter loss by 1 dB, or halving the LNA gain, and watch the sensitivity.</p>
 <div class="tw"><table id="cas"><thead><tr><th>Stage</th><th class="n">Gain (dB)</th><th class="n">NF (dB)</th><th class="n">IIP3 (dBm)</th><th class="n">Cumulative gain</th><th class="n">Cumulative NF</th><th class="n">Signal out (dBm)</th></tr></thead><tbody></tbody></table></div>
 <div class="ctl">
@@ -304,8 +413,9 @@ ol.steps li{margin:.35em 0}
 <div class="out"><div>Total gain<b id="ca-g"></b></div><div>Total noise figure<b id="ca-nf"></b></div><div>Total IIP3<b id="ca-ip"></b></div><div>Noise floor at antenna<b id="ca-no"></b></div><div>Sensitivity<b id="ca-se"></b></div><div>Spurious-free dynamic range<b id="ca-sf"></b></div></div>
 <figure style="border:0;padding:0;margin-bottom:0"><div id="ca-plot"></div><figcaption>Level diagram: signal power after each stage.</figcaption></figure>
 </div>
-
-<h3>Worked example: where the LTE reference sensitivity comes from</h3>
+</section>
+<section class="sub" id="refsens" data-title="Sensitivity example">
+<h2>Worked example: where the LTE reference sensitivity comes from</h2>
 <div class="tw"><table><thead><tr><th>Term</th><th class="n">Value</th><th>Comment</th></tr></thead><tbody>
 <tr><td>Thermal noise density</td><td class="n">−174 dBm/Hz</td><td>kT at 290 K</td></tr>
 <tr><td>Bandwidth, 10 MHz LTE carrier</td><td class="n">+69.5 dB</td><td>50 resource blocks × 180 kHz = 9 MHz</td></tr>
@@ -315,8 +425,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>Two-antenna diversity gain</td><td class="n">−3 dB</td><td></td></tr>
 <tr><th>Reference sensitivity</th><th class="n">−97 dBm</th><th>Matches the Band 1 requirement in TS 36.101</th></tr>
 </tbody></table></div>
-
-<h3>Transmit gain budget</h3>
+</section>
+<section class="sub" id="txbudget" data-title="Transmit budget">
+<h2>Transmit gain budget</h2>
 <p>The transmit budget runs the other way: start from the power needed at the antenna and work back to find what the PA must deliver.</p>
 <div class="tw"><table><thead><tr><th>Stage</th><th class="n">Gain (dB)</th><th class="n">Level after stage (dBm)</th><th>Comment</th></tr></thead><tbody>
 <tr><td>Transceiver output</td><td class="n"></td><td class="n">−1.0</td><td>Set by power control; EVM and noise are fixed here</td></tr>
@@ -326,9 +437,11 @@ ol.steps li{margin:.35em 0}
 <tr><td>Coupler, traces, tuner</td><td class="n">−1.4</td><td class="n">23.0</td><td>Power class 3 at the antenna connector</td></tr>
 </tbody></table></div>
 <p>Related studies: <a href="../Mobile/rf-budget.html">RF gain budget and dynamic range</a>, <a href="../Mobile/intermodulation.html">intermodulation</a>, <a href="../Mobile/power-budget.html">power consumption</a>.</p>
-
-<h2 id="metrics">9. Performance metrics</h2>
-<h3>Transmitter</h3>
+</section>
+</section>
+<section class="tab" id="t-met" data-title="Metrics and specs">
+<section class="sub" id="metrics" data-title="Transmitter metrics">
+<h2>Transmitter metrics</h2>
 <div class="tw"><table><thead><tr><th>Metric</th><th>What it measures</th><th>Why it matters</th><th>Mainly set by</th></tr></thead><tbody>
 <tr><td>Maximum output power</td><td>Mean power at the antenna connector at full power</td><td>Uplink coverage</td><td>PA, post-PA loss</td></tr>
 <tr><td>Power control range and accuracy</td><td>Minimum power, step size, absolute and relative accuracy</td><td>Interference to other users, battery life</td><td>Driver gain control, calibration</td></tr>
@@ -342,7 +455,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>Spurious emissions</td><td>Harmonics and other products far from the carrier</td><td>Protects other services; regulatory</td><td>Harmonic filtering, switch linearity</td></tr>
 <tr><td>Transmit ON/OFF time mask</td><td>How fast the power ramps and how low it is when off</td><td>TDD timing, interference</td><td>PA bias and switch timing</td></tr>
 </tbody></table></div>
-<h3>Receiver</h3>
+</section>
+<section class="sub" id="rxmetrics" data-title="Receiver metrics">
+<h2>Receiver metrics</h2>
 <div class="tw"><table><thead><tr><th>Metric</th><th>What it measures</th><th>Why it matters</th><th>Mainly set by</th></tr></thead><tbody>
 <tr><td>Reference sensitivity</td><td>Lowest input power that still gives 95 % of maximum throughput</td><td>Downlink coverage</td><td>Front-end loss, LNA noise figure</td></tr>
 <tr><td>Maximum input level</td><td>Highest input power that still meets throughput</td><td>Working next to the base station</td><td>Gain control range, ADC headroom</td></tr>
@@ -353,7 +468,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>Receiver spurious emissions</td><td>Power leaking out of the antenna in receive mode</td><td>Regulatory</td><td>LO leakage</td></tr>
 <tr><td>Noise figure, IIP3, IIP2, P1dB</td><td>Component-level noise and linearity figures</td><td>Design inputs behind the system tests above</td><td>Each block</td></tr>
 </tbody></table></div>
-<h3>System and radiated</h3>
+</section>
+<section class="sub" id="sysmetrics" data-title="System and radiated">
+<h2>System and radiated metrics</h2>
 <div class="tw"><table><thead><tr><th>Metric</th><th>Meaning</th></tr></thead><tbody>
 <tr><td>Throughput, BLER</td><td>Data rate delivered, and fraction of transport blocks that fail the CRC. Most receiver tests pass at ≥ 95 % of maximum throughput</td></tr>
 <tr><td>Spectral efficiency</td><td>Bits per second per hertz</td></tr>
@@ -364,9 +481,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>EIRP, EIS</td><td>Radiated power and sensitivity in a given direction; the basis of all FR2 requirements, where there is no antenna connector</td></tr>
 <tr><td>Current drain</td><td>Battery current in defined states (idle, connected, full power)</td></tr>
 </tbody></table></div>
-
-<h2 id="specs">10. Specifications</h2>
-<h3>Which document says what</h3>
+</section>
+<section class="sub" id="specs" data-title="Spec documents">
+<h2>Which document says what</h2>
 <div class="tw"><table><thead><tr><th>3GPP specification</th><th>Covers</th></tr></thead><tbody>
 <tr><td>TS 38.101-1, -2, -3, -4</td><td>NR phone radio requirements: FR1, FR2, combinations with LTE and between ranges, and demodulation performance</td></tr>
 <tr><td>TS 38.521-1, -2, -3, -4</td><td>NR phone conformance tests matching the four parts above: how each requirement is tested and with what tolerance</td></tr>
@@ -379,8 +496,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>TS 45.005 and TS 51.010</td><td>GSM radio requirements and tests</td></tr>
 </tbody></table></div>
 <p>Around the 3GPP documents sit certification schemes (GCF and PTCRB pick which test cases a phone must pass), regulatory rules (FCC in the United States, the Radio Equipment Directive with ETSI standards in Europe, plus SAR limits on exposure), over-the-air test plans (CTIA) and each operator's own acceptance requirements.</p>
-
-<h3>Key phone requirements at a glance</h3>
+</section>
+<section class="sub" id="limits" data-title="Key limits">
+<h2>Key phone requirements at a glance</h2>
 <p>Values for a power class 3 handset, FR1, measured at the antenna connector. Many have band- and bandwidth-specific exceptions; check the current specification before using a number as a limit.</p>
 <div class="tw"><table><thead><tr><th>Parameter</th><th>LTE (TS 36.101)</th><th>NR FR1 (TS 38.101-1)</th></tr></thead><tbody>
 <tr><td>Maximum output power</td><td>23 dBm ± 2 dB</td><td>23 dBm ± 2 dB (power class 2: 26 dBm)</td></tr>
@@ -396,10 +514,12 @@ ol.steps li{margin:.35em 0}
 <tr><td>Adjacent channel selectivity</td><td>33 dB for carriers up to 10 MHz</td><td>About 33 dB, band and bandwidth dependent</td></tr>
 <tr><td>Receiver pass criterion</td><td colspan="2">Throughput ≥ 95 % of the maximum for the reference measurement channel</td></tr>
 </tbody></table></div>
-
-<h2 id="tests">11. Test cases</h2>
+</section>
+</section>
+<section class="tab" id="t-test" data-title="Testing">
+<section class="sub" id="tests" data-title="Transmitter tests">
+<h2>Transmitter test cases</h2>
 <p>The conformance test list follows the requirement clauses one for one. Clause numbers below are those of TS 38.101-1 and TS 38.521-1 (NR FR1); TS 36.521-1 for LTE uses nearly the same numbering.</p>
-<h3>Transmitter test cases</h3>
 <div class="tw"><table><thead><tr><th>Clause</th><th>Test case</th><th>Phone set-up</th><th>Measured</th><th>Passes when</th></tr></thead><tbody>
 <tr><td>6.2.1</td><td>Maximum output power</td><td>Power control commanded "all up"; defined resource-block allocations</td><td>Mean power in the channel</td><td>Within class limits, e.g. 23 dBm ± 2 dB plus test tolerance</td></tr>
 <tr><td>6.2.2</td><td>Maximum power reduction (MPR)</td><td>Higher-order modulation and wide allocations at full power</td><td>Mean power</td><td>Power does not drop more than the MPR allowed for that waveform</td></tr>
@@ -418,7 +538,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>6.5.3</td><td>Spurious emissions</td><td>Maximum power</td><td>Sweep from 9 kHz to 12.75 GHz or the fifth harmonic</td><td>Under general and protected-band limits</td></tr>
 <tr><td>6.5.4</td><td>Transmit intermodulation</td><td>Maximum power with an interfering tone injected into the antenna port</td><td>Intermodulation product level</td><td>Below the limit in dBc</td></tr>
 </tbody></table></div>
-<h3>Receiver test cases</h3>
+</section>
+<section class="sub" id="rxtests" data-title="Receiver tests">
+<h2>Receiver test cases</h2>
 <div class="tw"><table><thead><tr><th>Clause</th><th>Test case</th><th>Signals applied</th><th>Passes when</th></tr></thead><tbody>
 <tr><td>7.3</td><td>Reference sensitivity</td><td>Wanted signal at the reference sensitivity level; phone transmitting at maximum power (so its own transmit noise is included)</td><td rowspan="6">Throughput ≥ 95 % of maximum</td></tr>
 <tr><td>7.4</td><td>Maximum input level</td><td>Wanted signal at about −25 dBm with high-order modulation</td></tr>
@@ -428,7 +550,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>7.8</td><td>Intermodulation characteristics</td><td>Wanted signal plus a CW and a modulated interferer placed so their third-order product falls on the channel</td></tr>
 <tr><td>7.9</td><td>Receiver spurious emissions</td><td>None; receive mode only</td><td>Emissions ≤ −57 dBm below 1 GHz and ≤ −47 dBm above</td></tr>
 </tbody></table></div>
-<h3>Other test groups</h3>
+</section>
+<section class="sub" id="othertests" data-title="Other test groups">
+<h2>Other test groups</h2>
 <ul>
 <li><b>Demodulation performance</b> (TS 38.101-4): throughput under standard fading channel models and MIMO conditions, plus accuracy of channel-quality reporting.</li>
 <li><b>Radio resource management</b> (TS 38.533): cell search, measurement accuracy, handover and timing.</li>
@@ -437,9 +561,9 @@ ol.steps li{margin:.35em 0}
 <li><b>Regulatory</b>: emissions, SAR, electromagnetic compatibility and safety.</li>
 <li><b>Field and interoperability</b>: drive tests on live networks and against each infrastructure vendor.</li>
 </ul>
-
-<h2 id="procedure">12. Test procedure</h2>
-<h3>Equipment</h3>
+</section>
+<section class="sub" id="equipment" data-title="Equipment">
+<h2>Test equipment</h2>
 <figure><div id="d-bench"></div><figcaption>Conducted RF test bench. The phone's antenna is replaced by a cable to the instrument, so the result excludes the antenna.</figcaption></figure>
 <div class="tw"><table><thead><tr><th>Item</th><th>Role</th></tr></thead><tbody>
 <tr><td>Radio communication tester ("callbox")</td><td>Emulates the base station and core network, sets up the call, commands the phone, and contains a signal analyser and generator</td></tr>
@@ -451,8 +575,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>Anechoic or reverberation chamber</td><td>Radiated tests; mandatory for millimetre wave</td></tr>
 <tr><td>Test SIM and automation software</td><td>Authenticates with the emulator; sequences thousands of test points and records results</td></tr>
 </tbody></table></div>
-
-<h3>General procedure for a conducted test</h3>
+</section>
+<section class="sub" id="procedure" data-title="Procedure">
+<h2>General procedure for a conducted test</h2>
 <ol class="steps">
 <li><b>Prepare.</b> Warm up and self-calibrate the instruments. Measure the loss of every cable and combiner at the test frequencies and enter it as a correction.</li>
 <li><b>Connect.</b> Cable the phone's antenna port (or RF test connector) to the tester inside the shield box. Fit the test SIM. Power the phone from the programmable supply at nominal voltage.</li>
@@ -463,7 +588,9 @@ ol.steps li{margin:.35em 0}
 <li><b>Compare.</b> Apply the limit plus the allowed <b>test tolerance</b> from the conformance specification. Record pass or fail with the margin.</li>
 <li><b>Repeat.</b> Step through channels, bandwidths, allocations, modulations, and extreme temperature and voltage. Automation makes this practical.</li>
 </ol>
-
+</section>
+<section class="sub" id="examples" data-title="Worked examples">
+<h2>Worked examples</h2>
 <h3>Example: maximum output power, EVM and ACLR in one set-up</h3>
 <ol class="steps">
 <li>Connect on Band n78, mid channel, 100 MHz, 30 kHz spacing. Uplink: DFT-s-OFDM, QPSK, full allocation.</li>
@@ -482,8 +609,9 @@ ol.steps li{margin:.35em 0}
 <li>Pass if throughput is at least 95 % of the maximum.</li>
 <li>For engineering work, continue stepping the level down in 0.5 dB steps to find the actual sensitivity and the margin to the limit.</li>
 </ol>
-
-<h3>Where testing happens in a product's life</h3>
+</section>
+<section class="sub" id="lifecycle" data-title="Product life">
+<h2>Where testing happens in a product's life</h2>
 <div class="tw"><table><thead><tr><th>Stage</th><th>Purpose</th><th>Typical method</th></tr></thead><tbody>
 <tr><td>Design verification</td><td>Find the margin on every requirement across units, temperature and voltage</td><td>Full test list, often swept past the limit</td></tr>
 <tr><td>Conformance and certification</td><td>Prove compliance to GCF, PTCRB and regulators</td><td>Accredited laboratory, validated test platforms</td></tr>
@@ -491,12 +619,16 @@ ol.steps li{margin:.35em 0}
 <tr><td>Production: calibration</td><td>Measure and store each unit's gain and power corrections</td><td>Non-signalling mode (no call), a few seconds per band</td></tr>
 <tr><td>Production: verification</td><td>Catch assembly defects</td><td>Reduced list: power, EVM, ACLR, sensitivity at a few points, plus an antenna check</td></tr>
 </tbody></table></div>
-
-<h2 id="quiz">13. Check your understanding</h2>
+</section>
+</section>
+<section class="tab" id="t-rev" data-title="Review">
+<section class="sub" id="quiz" data-title="Quiz">
+<h2>Check your understanding</h2>
 <div id="qz"></div>
 <p><button class="go" id="qz-go" type="button">Check answers</button> <span id="qz-sc" style="margin-left:10px;font-weight:600"></span></p>
-
-<h2 id="glossary">14. Glossary</h2>
+</section>
+<section class="sub" id="glossary" data-title="Glossary">
+<h2>Glossary</h2>
 <div class="tw"><table><tbody>
 <tr><td>ACLR</td><td>Adjacent channel leakage ratio</td><td>LNA</td><td>Low-noise amplifier</td></tr>
 <tr><td>ACS</td><td>Adjacent channel selectivity</td><td>LO</td><td>Local oscillator</td></tr>
@@ -515,8 +647,9 @@ ol.steps li{margin:.35em 0}
 <tr><td>LDPC</td><td>Low-density parity-check code</td><td>TRP / TIS</td><td>Total radiated power / total isotropic sensitivity</td></tr>
 <tr><td>LTE</td><td>Long Term Evolution, the 4G air interface</td><td>UE</td><td>User equipment: the phone</td></tr>
 </tbody></table></div>
-
-<h2 id="sources">Sources and further reading</h2>
+</section>
+<section class="sub" id="sources" data-title="Sources">
+<h2>Sources and further reading</h2>
 <ul>
 <li>3GPP specifications, free to download: <a href="https://www.3gpp.org/specifications-technologies">3gpp.org/specifications-technologies</a>. Start with TS 38.101-1 (requirements) and TS 38.521-1 (tests).</li>
 <li>3GPP, <a href="https://www.3gpp.org/news-events/3gpp-news/sa-rel20">Release 20: 5G-Advanced and 6G study tracks</a>.</li>
@@ -525,6 +658,8 @@ ol.steps li{margin:.35em 0}
 <li>H. T. Friis, "Noise Figures of Radio Receivers", Proceedings of the IRE, 1944.</li>
 </ul>
 <p style="color:var(--muted);font-size:.88rem">Requirement values are quoted for learning. They carry band-, bandwidth- and release-specific exceptions, so use the current 3GPP specification for any real compliance work.</p>
+</section>
+</section>
 </main>
 
 <script>
@@ -643,6 +778,140 @@ $('qz-go').addEventListener('click',function(){var n=0;Q.forEach(function(q,i){v
   if(!c){fb.textContent='Not answered.';fb.className='fb';return}
   var ok=+c.value===q[2];if(ok)n++;fb.textContent=(ok?'Correct. ':'Not quite. ')+q[3];fb.className='fb '+(ok?'pass':'fail')});
   $('qz-sc').textContent=n+' / '+Q.length});
+
+/* ---------- bits to waveform ---------- */
+var WB=[1,0,1,1,0,0,1,0,0,1,1,1],wr=rng(99);
+var WT={ask:'Amplitude carries the bit: carrier on for 1, off for 0. Simple, but any fading looks like data.',
+fsk:'Frequency carries the bit: a faster tone for 1, a slower one for 0. The amplitude never changes, which suits efficient amplifiers. GMSK is a smoothed version of this.',
+bpsk:'Phase carries the bit: a 1 and a 0 are the same wave flipped by 180°. Look for the reversals where the bit changes.',
+qpsk:'Four phases, 90° apart, carry two bits each. Each symbol lasts twice as long as a bit, so the same bit rate needs half the bandwidth of BPSK.',
+qam:'Sixteen combinations of amplitude and phase carry four bits each. Symbols last four bit periods, so bandwidth falls again, but the amplitude now varies and the points sit closer together.'};
+function wave(){var k=$('wv-s').value,n={ask:1,fsk:1,bpsk:1,qpsk:2,qam:4}[k],W=720,H=210,L=8,bw=(W-2*L)/12,mid=118,amp=52,p=[],g2=[-3,-1,3,1];
+  function val(t){var b=Math.min(11,Math.floor(t)),s=Math.floor(b/n)*n,c=2*Math.PI*2*t;
+    if(k=='ask')return WB[b]?Math.sin(c):0;
+    if(k=='fsk')return Math.sin(2*Math.PI*(WB[b]?4:2)*t);
+    if(k=='bpsk')return Math.sin(c+(WB[b]?0:Math.PI));
+    if(k=='qpsk')return Math.sin(c+Math.PI/4+Math.PI/2*[0,1,3,2][WB[s]*2+WB[s+1]]);
+    var I=g2[WB[s]*2+WB[s+1]],Q=g2[WB[s+2]*2+WB[s+3]];return (I*Math.cos(c)-Q*Math.sin(c))/4.243}
+  for(var x=0;x<=W-2*L;x+=.75)p.push((L+x).toFixed(1)+','+(mid-amp*val(Math.min(x/bw,11.9999))).toFixed(1));
+  var s='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Modulated carrier for the bit pattern '+WB.join('')+'">';
+  for(var i=0;i<=12;i++){var sym=i%n==0;s+='<path d="M'+(L+i*bw)+' '+(sym?8:30)+'V'+(H-(sym?8:38))+'" stroke="var(--'+(sym?'muted':'line')+')" '+(sym?'stroke-dasharray="4 3"':'')+'/>'}
+  for(i=0;i<12;i++)s+='<text x="'+(L+(i+.5)*bw)+'" y="24" text-anchor="middle" class="bt" style="font-size:15px">'+WB[i]+'</text>';
+  s+='<path d="M'+L+' '+mid+'H'+(W-L)+'" stroke="var(--line)"/><polyline fill="none" stroke="var(--digl)" stroke-width="1.8" points="'+p.join(' ')+'"/>';
+  for(i=0;i<12;i+=n){var lab;
+    if(k=='ask')lab=WB[i]?'on':'off';else if(k=='fsk')lab=WB[i]?'f₂':'f₁';else if(k=='bpsk')lab=WB[i]?'0°':'180°';
+    else if(k=='qpsk')lab=[45,135,315,225][WB[i]*2+WB[i+1]]+'°';
+    else lab='I '+fx(g2[WB[i]*2+WB[i+1]],0)+', Q '+fx(g2[WB[i+2]*2+WB[i+3]],0);
+    s+='<text class="ax" x="'+(L+(i+n/2)*bw)+'" y="'+(H-14)+'" text-anchor="middle">'+lab+'</text>'}
+  $('wv-plot').innerHTML=s+'</svg>';$('wv-b').textContent=n;$('wv-n2').textContent=12/n;$('wv-r').textContent=n==1?'1 × bit rate':'1/'+n+' × bit rate';$('wv-t').textContent=WT[k];}
+$('wv-s').addEventListener('change',wave);$('wv-n').addEventListener('click',function(){for(var i=0;i<12;i++)WB[i]=wr()<.5?0:1;wave()});wave();
+
+/* ---------- spectrum lab ---------- */
+function fft(re,im){var n=re.length,i,j,len,t;
+  for(i=1,j=0;i<n;i++){var bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
+  for(len=2;len<=n;len<<=1){var ang=-2*Math.PI/len,wR=Math.cos(ang),wI=Math.sin(ang),h=len>>1;
+    for(i=0;i<n;i+=len){var cr=1,ci=0;for(j=0;j<h;j++){var a=i+j,b=a+h,xr=re[b]*cr-im[b]*ci,xi=re[b]*ci+im[b]*cr;re[b]=re[a]-xr;im[b]=im[a]-xi;re[a]+=xr;im[a]+=xi;t=cr*wR-ci*wI;ci=cr*wI+ci*wR;cr=t}}}}
+var SPS=8,NSYM=4096;
+function gen(kind,alpha){var N=SPS*NSYM,re=new Float64Array(N),im=new Float64Array(N),r=rng(2024),i,j,k;
+  function lev(M){var q=Math.sqrt(M);return (2*Math.floor(r()*q)-q+1)/Math.sqrt(2*(M-1)/3)}
+  if(kind=='rect'){for(i=0;i<NSYM;i++){var a=lev(4),b=lev(4);for(j=0;j<SPS;j++){re[i*SPS+j]=a;im[i*SPS+j]=b}}}
+  else if(kind.indexOf('rrc')==0){var M=+kind.slice(3),sp=6*SPS,h=new Float64Array(2*sp+1);
+    for(k=-sp;k<=sp;k++){var t=k/SPS,v;
+      if(k==0)v=1-alpha+4*alpha/Math.PI;
+      else if(Math.abs(Math.abs(4*alpha*t)-1)<1e-9)v=alpha/Math.SQRT2*((1+2/Math.PI)*Math.sin(Math.PI/(4*alpha))+(1-2/Math.PI)*Math.cos(Math.PI/(4*alpha)));
+      else v=(Math.sin(Math.PI*t*(1-alpha))+4*alpha*t*Math.cos(Math.PI*t*(1+alpha)))/(Math.PI*t*(1-16*alpha*alpha*t*t));
+      h[k+sp]=v}
+    for(i=0;i<NSYM;i++){var a2=lev(M),b2=lev(M),c=i*SPS;for(k=-sp;k<=sp;k++){var x=c+k;if(x>=0&&x<N){re[x]+=a2*h[k+sp];im[x]+=b2*h[k+sp]}}}}
+  else if(kind=='msk'||kind=='gmsk'){var f=new Float64Array(N);for(i=0;i<NSYM;i++){var d=r()<.5?-1:1;for(j=0;j<SPS;j++)f[i*SPS+j]=d}
+    if(kind=='gmsk'){var sg=Math.sqrt(Math.LN2)/(2*Math.PI*0.3)*SPS,L=3*SPS,g=[],sum=0;for(k=-L;k<=L;k++){g.push(Math.exp(-k*k/(2*sg*sg)));sum+=g[k+L]}
+      var f2=new Float64Array(N);for(i=0;i<N;i++){var acc=0;for(k=-L;k<=L;k++){x=i+k;if(x>=0&&x<N)acc+=f[x]*g[k+L]}f2[i]=acc/sum}f=f2}
+    var ph=0;for(i=0;i<N;i++){ph+=Math.PI/2/SPS*f[i];re[i]=Math.cos(ph);im[i]=Math.sin(ph)}}
+  else{var F=256,K=32,CP=18,pos=0,br=new Float64Array(F),bi=new Float64Array(F),dr=new Float64Array(K),di=new Float64Array(K);
+    while(pos+F+CP<=N){for(k=0;k<K;k++){dr[k]=lev(4);di[k]=lev(4)}
+      if(kind=='scfdma'){fft(dr,di);for(k=0;k<K;k++){dr[k]/=Math.sqrt(K);di[k]/=Math.sqrt(K)}}
+      br.fill(0);bi.fill(0);
+      for(k=0;k<K;k++){var bin=kind=='scfdma'?((k<K/2?k:k-K)+F)%F:(k-K/2+F)%F;br[bin]=dr[k];bi[bin]=-di[k]}
+      fft(br,bi);
+      for(j=0;j<F+CP;j++){var q=(j-CP+F)%F;re[pos+j]=br[q];im[pos+j]=-bi[q]}pos+=F+CP}
+    re=re.subarray(0,pos);im=im.subarray(0,pos)}
+  return [re,im]}
+var SPT={rect:'Abrupt transitions give a sin(x)/x spectrum: side lobes only 13 dB down that roll off slowly and would swamp neighbouring channels. The envelope is perfectly flat, though.',
+rrc:'The filter removes the side lobes and confines the signal to (1 + α) × symbol rate. Lower α is narrower but makes the envelope peakier. Switch between QPSK, 16QAM and 64QAM: the spectrum does not move, only the envelope and bits per symbol change.',
+msk:'Frequency-shift keying with smooth phase. Constant envelope and side lobes that fall much faster than unfiltered QPSK, but a wider main lobe.',
+gmsk:'Smoothing the frequency pulses with a Gaussian filter pulls the side lobes down further while keeping the envelope perfectly constant. GSM chose it so the PA could run saturated. The price is only 1 bit per symbol.',
+ofdm:'Thirty-two narrow subcarriers add up to an almost rectangular block: steep edges and a flat top, with no single-carrier filter needed. The envelope is the cost: peaks 8–10 dB above average.',
+scfdma:'Same block-shaped spectrum as OFDM, but the symbols are spread across all subcarriers by a DFT first, so the waveform behaves like a single carrier and the peaks are a few dB lower. That is why uplinks use it.'};
+function spec(){var k=$('sp-s').value,al=+$('sp-a').value,isR=k.indexOf('rrc')==0;$('sp-a').disabled=!isR;$('sp-av').textContent=isR?al.toFixed(2):'not used by this scheme';
+  var s=gen(k,al),re=s[0],im=s[1],N=re.length,SEG=512,P=new Float64Array(SEG),a=new Float64Array(SEG),b=new Float64Array(SEG),i,j,w=[];
+  for(i=0;i<SEG;i++)w.push(.5-.5*Math.cos(2*Math.PI*i/SEG));
+  for(var o=0;o+SEG<=N;o+=SEG/2){for(i=0;i<SEG;i++){a[i]=re[o+i]*w[i];b[i]=im[o+i]*w[i]}fft(a,b);for(i=0;i<SEG;i++)P[(i+SEG/2)%SEG]+=a[i]*a[i]+b[i]*b[i]}
+  var mx=0,tot=0;for(i=0;i<SEG;i++){tot+=P[i];if(P[i]>mx)mx=P[i]}
+  var acc=P[SEG/2],hw=0;while(acc<.99*tot&&hw<SEG/2-1){hw++;acc+=P[SEG/2-hw]+P[SEG/2+hw]}
+  var obw=(2*hw+1)/SEG*SPS,pw=new Float64Array(N),mean=0;for(i=0;i<N;i++){pw[i]=re[i]*re[i]+im[i]*im[i];mean+=pw[i]}mean/=N;
+  var so=Array.prototype.slice.call(pw).sort(function(x,y){return x-y}),papr=10*Math.log10(so[Math.floor(.999*N)]/mean);
+  var bps={rect:2,rrc4:2,rrc16:4,rrc64:6,msk:1,gmsk:1,ofdm:2,scfdma:2}[k],big=obw>6;
+  $('sp-obw').textContent=(big?'more than 6':obw.toFixed(2))+' × symbol rate';$('sp-papr').textContent=Math.max(0,papr).toFixed(1)+' dB';$('sp-bps').textContent=bps+(k=='ofdm'||k=='scfdma'?' (QPSK)':'');
+  $('sp-eff').textContent=big?'below '+(bps/6).toFixed(2)+' bit/s/Hz':(bps/obw).toFixed(2)+' bit/s/Hz';$('sp-t').textContent=SPT[isR?'rrc':k];
+  var W=720,H=300,L=46,R=12,T=12,B=40,FL=-70,X=function(f){return L+(f+4)/8*(W-L-R)},Y=function(d){return T+(-d)/(-FL)*(H-T-B)},pts=[];
+  for(i=0;i<SEG;i++){var d=10*Math.log10(P[i]/mx+1e-12);pts.push(X((i-SEG/2)/SEG*SPS).toFixed(1)+','+Y(Math.max(FL,d)).toFixed(1))}
+  var g='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Power spectral density">';
+  if(!big)g+='<rect x="'+X(-obw/2)+'" y="'+T+'" width="'+(X(obw/2)-X(-obw/2))+'" height="'+(H-T-B)+'" fill="var(--digl)" opacity=".12"/>';
+  for(d=0;d>=FL;d-=10)g+='<path d="M'+L+' '+Y(d)+'H'+(W-R)+'" stroke="var(--line)"/><text class="ax" x="'+(L-6)+'" y="'+(Y(d)+4)+'" text-anchor="end">'+fx(d,0)+'</text>';
+  for(i=-4;i<=4;i++)g+='<path d="M'+X(i)+' '+T+'V'+(H-B)+'" stroke="var(--line)"/><text class="ax" x="'+X(i)+'" y="'+(H-B+15)+'" text-anchor="middle">'+fx(i,0)+'</text>';
+  g+='<text class="ax" x="'+(L+(W-L-R)/2)+'" y="'+(H-6)+'" text-anchor="middle">Frequency offset from carrier ÷ symbol rate</text><text class="ax" x="12" y="'+(T+(H-T-B)/2)+'" text-anchor="middle" transform="rotate(-90 12 '+(T+(H-T-B)/2)+')">dB</text>';
+  g+='<polyline fill="none" stroke="var(--digl)" stroke-width="1.6" points="'+pts.join(' ')+'"/></svg>';$('sp-plot').innerHTML=g;
+  var H2=110,n2=60*SPS,o2=20*SPS,rms=Math.sqrt(mean),top=3*rms,Y2=function(v){return H2-8-Math.min(v,top)/top*(H2-16)},e=[];
+  for(i=0;i<n2;i++)e.push((L+i/(n2-1)*(W-L-R)).toFixed(1)+','+Y2(Math.sqrt(pw[o2+i])).toFixed(1));
+  $('sp-env').innerHTML='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H2+'" role="img" aria-label="Signal envelope over time"><path d="M'+L+' '+(H2-8)+'H'+(W-R)+'" stroke="var(--line)"/><path d="M'+L+' '+Y2(rms)+'H'+(W-R)+'" stroke="var(--muted)" stroke-dasharray="5 4"/><text class="ax" x="'+(L-6)+'" y="'+(Y2(rms)+4)+'" text-anchor="end">RMS</text><polyline fill="none" stroke="var(--rfl)" stroke-width="1.5" points="'+e.join(' ')+'"/></svg>';}
+$('sp-s').addEventListener('change',spec);$('sp-a').addEventListener('input',spec);spec();
+
+/* ---------- subcarriers ---------- */
+function sinc(x){return Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x)}
+function subc(){var n=+$('sc-n').value,df=+$('sc-d').value,ep=+$('sc-o').value/100,W=720,H=270,L=14,R=14,T=14,B=38,half=n/2+2.5,m=Math.floor((n-1)/2),c0=-(n-1)/2;
+  var X=function(f){return L+(f+half)/(2*half)*(W-L-R)},Y=function(v){return T+(1.12-v)/1.42*(H-T-B)},col=['--digl','--rfl','--anal','--vio'];
+  var g='<svg xmlns="'+NS+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Overlapping subcarrier spectra">';
+  g+='<path d="M'+L+' '+Y(0)+'H'+(W-R)+'" stroke="var(--muted)"/>';
+  for(var k=0;k<n;k++){var p=[];for(var f=-half;f<=half+1e-9;f+=.04)p.push(X(f).toFixed(1)+','+Y(sinc(f-c0-k)).toFixed(1));
+    g+='<polyline fill="none" stroke="var('+col[k%4]+')" stroke-width="'+(k==m?2.4:1.4)+'" opacity="'+(k==m?1:.75)+'" points="'+p.join(' ')+'"/>';
+    g+='<text class="ax" x="'+X(c0+k)+'" y="'+(H-B+15)+'" text-anchor="middle">'+fx((c0+k)*df,df<30&&n%2==0?1:0)+'</text>'}
+  g+='<text class="ax" x="'+(L+(W-L-R)/2)+'" y="'+(H-6)+'" text-anchor="middle">Subcarrier centre frequency, kHz from carrier centre</text>';
+  var fs=c0+m+ep,pw=0,pi=0;g+='<path d="M'+X(fs)+' '+T+'V'+(H-B)+'" stroke="var(--ink)" stroke-dasharray="5 4"/>';
+  for(k=0;k<n;k++){var v=sinc(fs-c0-k);if(k==m)pw=v*v;else pi+=v*v;g+='<circle cx="'+X(fs)+'" cy="'+Y(v)+'" r="'+(k==m?5:3.5)+'" fill="var('+col[k%4]+')" stroke="var(--surface)"/>'}
+  $('sc-plot').innerHTML=g+'</svg>';
+  $('sc-nv').textContent=n;$('sc-ov').textContent=Math.round(ep*100)+' % of spacing';$('sc-t').textContent=(1000/df).toFixed(2)+' µs';$('sc-cp').textContent=(1000/df*144/2048).toFixed(2)+' µs';
+  $('sc-bw').textContent=n*df+' kHz';$('sc-hz').textContent=(ep*df*1000).toFixed(0)+' Hz'+(ep?' ('+(ep*df/2000*1e3).toFixed(2)+' ppm at 2 GHz)':'');$('sc-w').textContent=(Math.sqrt(pw)*100).toFixed(1)+' %';
+  var e=$('sc-sir');if(n==1){e.textContent='only one subcarrier';e.className=''}else if(pi<1e-12){e.textContent='no interference';e.className='pass'}else{var sir=10*Math.log10(pw/pi);e.textContent=fx(sir)+' dB';e.className=sir>=25?'pass':'fail'}}
+['sc-n','sc-d','sc-o'].forEach(function(i){$(i).addEventListener('input',subc)});subc();
+
+/* ---------- NR carrier ---------- */
+var NRB={15:{5:25,10:52,15:79,20:106,25:133,30:160,40:216,50:270},30:{5:11,10:24,15:38,20:51,25:65,30:78,40:106,50:133,60:162,80:217,100:273},60:{10:11,15:18,20:24,25:31,30:38,40:51,50:65,60:79,80:107,100:135}};
+function nrOpts(){var t=NRB[$('nr-s').value],b=$('nr-b'),cur=b.value,ks=Object.keys(t);b.innerHTML=ks.map(function(k){return '<option value="'+k+'">'+k+' MHz</option>'}).join('');b.value=t[cur]?cur:ks[ks.length-1];nr()}
+function nr(){var s=+$('nr-s').value,bw=+$('nr-b').value,rb=NRB[s][bw],sc=rb*12,ob=sc*s/1000,F=1;while(F<sc||F*s/1000<bw)F*=2;var slot=15/s;
+  $('nr-rb').textContent=rb;$('nr-sc').textContent=sc;$('nr-ob').textContent=ob.toFixed(2)+' MHz';$('nr-g').textContent=(bw-ob).toFixed(2)+' MHz';$('nr-f').textContent=F;
+  $('nr-fs').textContent=(F*s/1000).toFixed(2)+' Msample/s';$('nr-sl').textContent=slot+' ms';$('nr-r').textContent=(sc*14*8/slot/1000).toFixed(0)+' Mbit/s';}
+$('nr-s').addEventListener('change',nrOpts);$('nr-b').addEventListener('change',nr);nrOpts();
+
+/* ---------- tabs ---------- */
+(function(){var tabs=[].slice.call(document.querySelectorAll('section.tab')),bar=$('tabs'),subs=[],last={};
+  function btn(txt,fn){var b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=txt;b.addEventListener('click',fn);return b}
+  tabs.forEach(function(t){var nav=document.createElement('div');nav.className='subs';nav.setAttribute('role','tablist');nav.setAttribute('aria-label',t.dataset.title+' topics');
+    t._btn=btn(t.dataset.title,function(){show(last[t.id]||t.querySelector('.sub').id)});bar.appendChild(t._btn);
+    [].forEach.call(t.querySelectorAll('.sub'),function(s){s._tab=t;s._btn=btn(s.dataset.title,function(){show(s.id)});nav.appendChild(s._btn);subs.push(s)});
+    t.insertBefore(nav,t.firstChild)});
+  subs.forEach(function(s,i){var d=document.createElement('div');d.className='pn';
+    if(i)d.appendChild(Object.assign(btn('← '+subs[i-1].dataset.title,function(){show(subs[i-1].id,1)}),{className:'go'}));
+    if(i<subs.length-1)d.appendChild(Object.assign(btn(subs[i+1].dataset.title+' →',function(){show(subs[i+1].id,1)}),{className:'go'}));
+    [].forEach.call(d.children,function(b){b.removeAttribute('role')});s.appendChild(d)});
+  function show(id,scroll,quiet){var el=document.getElementById(id),s=el&&(el.classList.contains('sub')?el:el.closest('.sub'));if(!s)s=subs[0];
+    tabs.forEach(function(t){var on=t===s._tab;t.classList.toggle('on',on);t._btn.setAttribute('aria-selected',on)});
+    subs.forEach(function(x){var on=x===s;x.classList.toggle('on',on);x._btn.setAttribute('aria-selected',on)});
+    last[s._tab.id]=s.id;if(!quiet)try{history.replaceState(null,'','#'+s.id)}catch(e){}
+    var tb=s._tab._btn,bl=tb.offsetLeft-bar.offsetLeft;if(bl<bar.scrollLeft||bl+tb.offsetWidth>bar.scrollLeft+bar.clientWidth)bar.scrollLeft=Math.max(0,bl-60);
+    if(scroll){var y=bar.getBoundingClientRect().top+window.scrollY;if(window.scrollY>y)window.scrollTo(0,y)}
+    if(el&&el!==s&&scroll)el.scrollIntoView()}
+  function fromHash(){var h=location.hash.slice(1);if(h.indexOf('t-')==0&&document.getElementById(h))h=document.getElementById(h).querySelector('.sub').id;show(h||subs[0].id,!!h,!h)}
+  window.addEventListener('hashchange',fromHash);fromHash();
+})();
 
 /* redraw canvas when the theme changes */
 try{new MutationObserver(cons).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
