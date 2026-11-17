@@ -8,5 +8,6 @@ Interactive study lessons, published with GitHub Pages.
 - `Laptop/` Interactive block diagram of a 2026 premium laptop (Panther Lake-class SoC, LPDDR5X, NVMe, dGPU, Thunderbolt 4, USB-C power path, EC) with costs, protocol view, signal-path presets, interface speeds, PCIe lane map, ports, firmware & software layers and a battery-life study. Open `Laptop/index.html`.
 - `Memory/` Interactive guide to memory: hierarchy deep dives (registers, cache, DRAM, SSD/HDD), DDR, data lanes, and 2×16 / 4×16 configurations. Open `Memory/index.html`.
 - `PCIe/` Interactive guide to PCI Express: topology, lanes, generations 1.0 to 8.0, form factors, PCIe in phones, and NVMe card testing with LTSSM loopback, a simulated BER bench and Linux commands. Open `PCIe/index.html`. `PCIe/evolution.html` is an interactive lesson on how the protocol changed from 1.0 to 8.0 (signalling, encoding, equalization, packets, reliability) with a quiz.
+- `Satellite/` Design and analysis of PhoneSat-LTE, a 12U CubeSat that photographs Earth and sends the picture directly to an unmodified LTE phone: requirements, architecture trade, budgets, drawings, test plan, licensing and schedule. Open `Satellite/index.html`.
 
 The site is plain static files with no build step.
