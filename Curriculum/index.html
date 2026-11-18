@@ -176,6 +176,27 @@ ul.ready{margin:0;padding-left:18px;font-size:14px}
 ul.ready li{margin:5px 0}
 .hint{margin:12px 0 0;font-size:13px;color:var(--ink-3);background:var(--sunk);padding:10px 12px;border-radius:8px}
 
+/* sample sheet */
+.sched{display:grid;grid-template-columns:1fr 1.6fr;gap:16px;align-items:start}
+@media (max-width:900px){.sched{grid-template-columns:1fr}}
+dl.mini{margin:0;display:grid;gap:12px}
+dl.mini dt{font-weight:600;font-size:14px}
+dl.mini dd{margin:2px 0 0;font-size:13.5px;color:var(--ink-2)}
+.picks{display:grid;gap:0}
+.pick{display:grid;grid-template-columns:140px minmax(0,1fr);gap:4px 14px;padding:12px 0;border-top:1px solid var(--line)}
+.pick:first-child{border-top:0;padding-top:0}
+.pick-n{font-weight:600;font-size:14px;grid-row:span 2}
+.pick-o{display:grid;gap:8px}
+.pick-o div{display:grid;gap:1px}
+.pick-o b{font-size:13.5px}
+.pick-o span{font-size:13px;color:var(--ink-2)}
+.pick-w{font-size:12.5px;color:var(--ink-3);background:var(--sunk);border-radius:6px;padding:6px 9px}
+@media (max-width:560px){.pick{grid-template-columns:1fr}.pick-n{grid-row:auto}}
+.lvl{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lvl ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink-2)}
+.lvl li{margin:4px 0}
+@media (max-width:620px){.lvl{grid-template-columns:1fr}}
+
 /* college */
 .bars{display:grid;gap:10px}
 .bar-row{display:grid;grid-template-columns:210px 1fr 170px;gap:12px;align-items:center;font-size:13.5px}
@@ -529,6 +550,27 @@ sg:{cur:"S$",unit:"per year",barNote:"Subsidised fees for Singapore citizens. Th
 };
 
 const COLLEGE_AT={us:['hi'],in:['ss'],sg:['se','pu']};
+
+const SAMPLE6={
+ title:"Example: a real Grade 6 course sheet",
+ intro:"How the choices above look in practice, from one San Diego Unified middle school's Grade 6 course catalog. The school's name is left out. Other schools in the district use similar sheets, but course names and electives vary.",
+ required:[["Advisory","15 minutes a day: school spirit, study habits, grade and citizenship check-ins, school news."],["Science 6 (one semester)","Earth, life and physical science plus engineering, blended through the year under California's NGSS standards."],["Physical Education","Movement skills, fitness testing and goal setting, dance and teamwork. A uniform is required."]],
+ picks:[
+  {name:"Math",opts:[["Math 6","Ratios and rates, dividing fractions, negative numbers, expressions and equations, intro statistics."],["Accelerated Math 6","All Grade 6 standards plus half of Grade 7, at a faster pace. The first of two years that cover three years of math."]],
+   who:"The school decides. Your preference counts, along with grades, district and state test scores, and the teacher's recommendation."},
+  {name:"English (two-hour class)",opts:[["English 6","Reading, writing, speaking, listening and language, with support for a range of reading levels."],["Advanced English 6","Reads widely to critique society; writes stories, arguments, poetry and essays; studies the origins of English words and grammar."]],
+   who:"Your choice. Advanced expects your child to read 6th-grade-level text on their own for a full hour; the second hour is writing."},
+  {name:"Social Studies (one semester)",opts:[["Social Studies 6","Ancient civilizations: Mesopotamia, Egypt, Kush, the ancient Israelites, Greece, India, China and Rome. Students cite sources to support claims."],["Advanced Social Studies 6","In-depth case studies comparing ancient societies, abstract themes, research and varied creative assignments."]],
+   who:"Your choice, made separately from English."},
+  {name:"One elective",opts:[["Ranked choices","Student government, yearbook, chorus, musical theatre, band, orchestra or the Exploratory Wheel."]],
+   who:"First choice is not guaranteed."}
+ ],
+ checklist:{reg:["Reads outside school when a parent prompts","Does writing when it is assigned","Takes notes fairly consistently","Organization skills still developing","Talks casually about books or history","Likes a moderate pace with time for review","Enjoys teacher-led discussion","Enjoys exploring inside the classroom"],
+  adv:["Reads for enjoyment often outside school","Writes in free time for fun","Takes notes and follows directions without prompting","Well-developed organization skills","Talks analytically about books, history or science","Likes a faster pace and a heavier workload","Enjoys leading class discussions","Self-directed; explores beyond the classroom"]},
+ electives:[["Student government (ASB)","Application and teacher recommendation required; list it as your #1 choice. Students must keep high academic and citizenship grades."],["Yearbook","Application and teacher recommendation required; list it as #1. Photography, page layout, writing and proofreading."],["Chorus","Beginning or Intermediate, placed by the choir teacher."],["Chorus: musical and drama","Acting, singing and stagecraft through performances."],["Exploratory Wheel","Rotates through several subjects every few weeks. Good for a student who isn't sure yet."],["Band or Orchestra","Beginning or Advanced, placed by the director by experience. At least four concerts a year; advanced players can join an after-school jazz band."]],
+ support:[["English learners","Placed in an English Language Development course alongside grade-level English, based on the state's ELPAC test."],["Special education","Support through an IEP from specialists, therapists and a school psychologist. The team also advises teachers on students without IEPs who are struggling."]],
+ tips:["Advanced classes are chosen subject by subject. Students rarely take Advanced in everything.","Both levels prepare students for Honors and AP courses in high school.","Changing classes after the year starts depends on space and may not be possible.","PE uniform: gray T-shirt, navy shorts, socks and lace-up athletic shoes, plus a plain backup set and a combination lock."]
+};
 const IDS=["compare","us","in","sg"];
 let view="compare", stageIdx={us:0,in:0,sg:0}, yearSel={};
 let cmp={sub:1,stage:0,q:"",vis:{us:1,in:1,sg:1}};
@@ -601,7 +643,28 @@ function stageBody(k){
     <div class="sec-h"><h2>Skills that move a student forward</h2>${nextSt?`<span class="next">Ready for ${esc(nextSt.name)} →</span>`:`<span class="next">Ready for what comes after school →</span>`}</div>
     <div class="skills">${st.skills.map(sk=>`<div class="skill"><div class="cat">${esc(sk[0])}</div><div class="t">${esc(sk[1])}</div><div class="d">${esc(sk[2])}</div><div class="check"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.2l2 2 4-4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sign of readiness: ${esc(sk[3])}</span></div></div>`).join("")}</div>
     <div class="gate"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h11M10 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--sys)"/></svg><div><b>${esc(st.gate[0])}</b><p>${esc(st.gate[1])}</p></div></div>
-  </section>${st.choices?choicesHTML(st.choices):""}${COLLEGE_AT[k].includes(st.id)?collegeHTML(k):""}`;
+  </section>${st.choices?choicesHTML(st.choices):""}${k==="us"&&st.id==="mi"?sampleHTML():""}${COLLEGE_AT[k].includes(st.id)?collegeHTML(k):""}`;
+}
+
+function sampleHTML(){
+  const d=SAMPLE6, li=a=>a.map(x=>`<li>${esc(x)}</li>`).join("");
+  return `<section class="block" style="padding-top:8px" id="sample6">
+    <div class="sec-h"><h2>${esc(d.title)}</h2><span class="tag">Grade 6 · San Diego Unified</span></div>
+    <p class="lede-s">${esc(d.intro)}</p>
+    <div class="sched">
+      <div class="panel"><div class="panel-h"><h3>Every student takes</h3></div><div class="panel-b"><dl class="mini">${d.required.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl></div></div>
+      <div class="panel"><div class="panel-h"><h3>You help choose</h3></div><div class="panel-b picks">${d.picks.map(p=>`<div class="pick"><div class="pick-n">${esc(p.name)}</div><div class="pick-o">${p.opts.map(o=>`<div><b>${esc(o[0])}</b><span>${esc(o[1])}</span></div>`).join("")}</div><div class="pick-w">${esc(p.who)}</div></div>`).join("")}</div></div>
+    </div>
+    <div class="panel" style="margin-top:16px"><div class="panel-h"><h3>Which English and Social Studies level fits?</h3><span class="ylabel" style="margin:0">The school's own placement checklist</span></div>
+      <div class="panel-b lvl"><div><div class="pc-h">Grade-level class fits a student who</div><ul>${li(d.checklist.reg)}</ul></div><div><div class="pc-h" style="color:var(--sys)">Advanced fits a student who</div><ul>${li(d.checklist.adv)}</ul></div></div></div>
+    <div class="grid3" style="margin-top:16px;grid-template-columns:1.3fr 1fr">
+      <div class="panel"><div class="panel-h"><h3>Electives</h3></div><div class="panel-b"><dl class="mini">${d.electives.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl></div></div>
+      <div style="display:grid;gap:16px">
+        <div class="panel"><div class="panel-h"><h3>Support programs</h3></div><div class="panel-b"><dl class="mini">${d.support.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl></div></div>
+        <div class="panel"><div class="panel-h"><h3>Good to know</h3></div><div class="panel-b"><ul class="ready">${li(d.tips)}</ul></div></div>
+      </div>
+    </div>
+  </section>`;
 }
 let collegeSel={us:0,in:0,sg:0};
 function money(k,n){const c=COLLEGE[k].cur;return n===0?"No tuition":c+Math.round(n).toLocaleString(k==="in"?"en-IN":"en-US")}
